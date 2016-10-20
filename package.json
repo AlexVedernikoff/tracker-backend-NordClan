@@ -19,6 +19,7 @@
     "md5": "^2.2.1",
     "mongoose": "^4.6.4",
     "oauth2-server": "^2.4.1",
+    "request": "^2.75.0",
     "request-promise": "^4.1.1",
     "swagger-koa": "^1.0.10"
   },
