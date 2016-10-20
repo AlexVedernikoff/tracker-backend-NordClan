@@ -1,0 +1,16 @@
+{
+  "preset": "google",
+  "maximumLineLength": 120,
+  "requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
+  "disallowMultipleVarDecl": {
+    "allExcept": [ "undefined" ]
+  },
+  "requireSpacesInsideObjectBrackets": {
+    "allExcept": [ "[", "]", "{", "}" ]
+  },
+  "disallowSpacesInsideObjectBrackets": false,
+  "requireCurlyBraces": {
+    "keywords": [],
+    "allExcept": [ "if", "else" ]
+  }
+}

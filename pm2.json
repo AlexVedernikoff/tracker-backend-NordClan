@@ -1,0 +1,13 @@
+{
+  "apps" : [{
+    "name": "simtrack",
+    "script": "app.js",
+    "env": {
+      "NODE_ENV": "develop",
+    },
+    "env_production": {
+      "NODE_ENV": "production",
+      "PORT": 3000
+    }
+  }]
+}
