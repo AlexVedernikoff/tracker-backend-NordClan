@@ -1,10 +1,14 @@
 const koa = require('koa');
 const logger = require('koa-logger');
+const router = require('koa-router')();
 const cors = require('koa-cors');
 const body = require('koa-better-body');
+const swagger = require('swagger-koa');
 const mongoose = require('mongoose');
 
 const config = require('./configs');
+
+const spec = require('./spec.js');
 
 const app = koa();
 
@@ -25,6 +29,13 @@ app.use(function *(next) {
 app.use(logger());
 app.use(cors());
 app.use(body());
+app.use(swagger.init({
+  swaggerVersion: '2.0',
+  swaggerURL: '/swagger',
+  swaggerUI: './public/swagger/',
+  basePath: '/api',
+}));
+
 
 app.use(function *(next) {
   let start = new Date;
@@ -36,7 +47,13 @@ app.use(function *(next) {
   this.set('X-Server-Name', app.name);
 });
 
+app.use(router.get('/swagger/spec.js', function *() {
+  let spec = require('./spec.js');
+  this.body = spec;
+}).routes());
+
 app.use(require('./controllers').routes());
+app.use(router.use('/api', require('./controllers').routes()).routes());
 
 app.on('error', (err, ctx) => {
   console.error('server error', err, ctx);

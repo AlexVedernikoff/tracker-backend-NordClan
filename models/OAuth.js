@@ -170,7 +170,7 @@ class OAuth {
 
       user = yield user.save();
       callback(null, user);
-    });
+    }).catch(err => callback(err));
   }
 
   saveRefreshToken(refreshToken, clientId, expires, user, callback) {
