@@ -46,7 +46,7 @@ app.use(function *(next) {
   this.set('X-Server-Name', app.name);
 });
 
-app.use(router.get('/swagger/spec.js', function *() {
+app.use(router.get('/api/swagger/spec.js', function *() {
   let spec = require('./spec.js');
   this.body = spec;
 }).routes());
