@@ -15,11 +15,7 @@ const ProjectSchema = new mongoose.Schema({
 const ProjectModel = mongoose.model('Project', ProjectSchema);
 
 class Project {
-  constructor(application) {
-    let name = 'Project';
-
-    return this;
-  }
+  constructor() {}
 
   static find(params) {
     let populate = params.populate;
@@ -56,9 +52,10 @@ class Project {
 
   save() {
     let project = new ProjectModel(this);
+    if (this._id) task.isNew = false;
     return new Promise((resolve, reject) =>
       project.save((err, doc) => err ? reject(err) : resolve(Project.find({ _id: project._id })))
-    );
+    ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
   }
 }
 

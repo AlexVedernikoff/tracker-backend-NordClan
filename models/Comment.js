@@ -4,47 +4,40 @@ const md5 = require('md5');
 const mongoose = require('mongoose');
 
 const HttpError = require('./HttpError');
+const Task = require('./Task');
 const User = require('./User');
-const Project = require('./Project');
 
-const TaskSchema = new mongoose.Schema({
-  name: String,
-  status: String,
-  priority: Number,
-  type: String,
-  planedTime: Number,
-  currentTime: Number,
-  owner: { type: mongoose.Schema.ObjectId, ref: 'User' },
-  author: { type: mongoose.Schema.ObjectId, ref: 'User' },
-  project: { type: mongoose.Schema.ObjectId, ref: 'Project' },
-  psId: String,
+const CommentSchema = new mongoose.Schema({
+  message: String,
+  user: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
+  task: { type: mongoose.Schema.ObjectId, ref: 'Task', required: true },
 }, { versionKey: false, timestamps: true });
 
-const TaskModel = mongoose.model('Task', TaskSchema);
+const CommentModel = mongoose.model('Comment', CommentSchema);
 
-class Task {
+class Comment {
   constructor() {}
 
   static find(params) {
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.findOne(params);
+    let find = CommentModel.findOne(params);
     if (populate) find.populate(populate);
 
     return new Promise((resolve, reject) => find.exec((err, doc) => err ? reject(err) : resolve(doc)))
-      .then(task => task ? (new Task()).setData(task, true) : task);
+      .then(task => task ? (new Comment()).setData(task, true) : task);
   }
 
   static findAll(params) {
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.find(params);
+    let find = CommentModel.find(params);
     if (populate) find.populate(populate);
 
     return new Promise((resolve, reject) => find.exec((err, docs) => err ? reject(err) : resolve(docs)))
-      .then(tasks => tasks ? tasks.map(t => (new Task()).setData(t, true)) : tasks);
+      .then(tasks => tasks ? tasks.map(t => (new Comment()).setData(t, true)) : tasks);
   }
 
   setData(data = {}, isSafe) {
@@ -59,12 +52,20 @@ class Task {
   }
 
   save() {
-    let task = new TaskModel(this);
+    let task = new CommentModel(this);
     if (this._id) task.isNew = false;
     return new Promise((resolve, reject) =>
-      task.save((err, doc) => err ? reject(err) : resolve(Task.find({ _id: task._id })))
+      task.save((err, doc) => err ? reject(err) : resolve(Comment.find({ _id: task._id })))
     ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+  }
+
+  remove() {
+    let task = new CommentModel(this);
+    if (this._id) task.isNew = false;
+    return new Promise((resolve, reject) =>
+      task.remove((err, doc) => err ? reject(err) : resolve())
+    );
   }
 }
 
-module.exports = Task;
+module.exports = Comment;

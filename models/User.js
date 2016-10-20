@@ -22,11 +22,7 @@ const UserSchema = new mongoose.Schema({
 const UserModel = mongoose.model('User', UserSchema);
 
 class User {
-  constructor(application) {
-    let name = 'User';
-
-    return this;
-  }
+  constructor() {}
 
   static find(params) {
     let populate = params.populate;
@@ -63,9 +59,10 @@ class User {
 
   save() {
     let user = new UserModel(this);
+    if (this._id) task.isNew = false;
     return new Promise((resolve, reject) =>
       user.save((err, doc) => err ? reject(err) : resolve(User.find({ _id: user._id })))
-    );
+    ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
   }
 }
 

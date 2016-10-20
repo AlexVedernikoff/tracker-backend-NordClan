@@ -11,6 +11,7 @@ router.get('/(:taskId)?', function *() {
       owner: this.request.user._id,
       populate: 'owner author project'
     });
+    if (!task) this.throw(404, 'Task not found');
 
     this.body = task;
     return;

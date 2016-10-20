@@ -37,7 +37,7 @@ module.exports = {
           '400': {
             description: 'Неверные параметры'
           },
-          '500': {
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
@@ -66,7 +66,7 @@ module.exports = {
           '400': {
             description: 'Неверные параметры'
           },
-          '500': {
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
@@ -85,13 +85,13 @@ module.exports = {
           '401': {
             description: 'Токен невалидный'
           },
-          '500': {
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
       }
     },
-    '/user/:username': {
+    '/user/{username}': {
       get: {
         tags: ['Users'],
         summary: 'Получить информацию о пользователе',
@@ -110,13 +110,13 @@ module.exports = {
           '401': {
             description: 'Токен невалидный'
           },
-          '500': {
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
       }
     },
-    '/user/sync/:username': {
+    '/user/sync/{username}': {
       get: {
         tags: ['Users'],
         summary: 'Синхронизировать таски и проекты пользователя',
@@ -134,13 +134,13 @@ module.exports = {
           '401': {
             description: 'Токен невалидный'
           },
-          '500': {
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
       }
     },
-    '/task/:taskId': {
+    '/task/{taskId}': {
       get: {
         tags: ['Tasks'],
         summary: 'Получить все или конкретный таск',
@@ -159,13 +159,13 @@ module.exports = {
           '401': {
             description: 'Токен невалидный'
           },
-          '500': {
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
       }
     },
-    '/project/:projectId': {
+    '/project/{projectId}': {
       get: {
         tags: ['Projects'],
         summary: 'Получить все или конкретный проект',
@@ -184,7 +184,131 @@ module.exports = {
           '401': {
             description: 'Токен невалидный'
           },
-          '500': {
+          '50x': {
+            description: 'Ошибка сервера'
+          }
+        }
+      }
+    },
+    '/comment': {
+      post: {
+        tags: ['Comments'],
+        summary: 'Создать коментарий',
+        parameters: [
+          {
+            name: 'message',
+            type: 'string',
+            in: 'formData'
+          },
+          {
+            name: 'task',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'user',
+            type: 'string',
+            in: 'formData'
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            schema: { $ref: '#/definitions/Comment' }
+          },
+          '401': {
+            description: 'Токен невалидный'
+          },
+          '50x': {
+            description: 'Ошибка сервера'
+          }
+        }
+      }
+    },
+    '/comment/{commentId}': {
+      get: {
+        tags: ['Comments'],
+        summary: 'Получить коментарий',
+        parameters: [
+          {
+            name: 'commentId',
+            type: 'string',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            schema: { $ref: '#/definitions/Comment' }
+          },
+          '401': {
+            description: 'Токен невалидный'
+          },
+          '50x': {
+            description: 'Ошибка сервера'
+          }
+        }
+      },
+      put: {
+        tags: ['Comments'],
+        summary: 'Изменить коментарий',
+        parameters: [
+          {
+            name: 'commentId',
+            type: 'string',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'message',
+            type: 'string',
+            in: 'formData'
+          },
+          {
+            name: 'task',
+            type: 'string',
+            in: 'formData'
+          },
+          {
+            name: 'user',
+            type: 'string',
+            in: 'formData'
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            schema: { $ref: '#/definitions/Comment' }
+          },
+          '401': {
+            description: 'Токен невалидный'
+          },
+          '50x': {
+            description: 'Ошибка сервера'
+          }
+        }
+      },
+      delete: {
+        tags: ['Comments'],
+        summary: 'Удалить коментарий',
+        parameters: [
+          {
+            name: 'commentId',
+            type: 'string',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+          },
+          '401': {
+            description: 'Токен невалидный'
+          },
+          '50x': {
             description: 'Ошибка сервера'
           }
         }
@@ -240,13 +364,22 @@ module.exports = {
         psId: { type: 'string' },
       }
     },
+    Comment: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        user: { '$ref': '#/definitions/User' },
+        task: { '$ref': '#/definitions/Task' },
+      }
+    },
     Token: {
       type: 'object',
       properties: {
-        accessToken: { type: 'string' },
-        clientId: { type: 'string' },
+        token_type: { type: 'string' },
+        access_token: { type: 'string' },
+        refresh_token: { type: 'string' },
+        expires_in: { type: 'number' },
         user: { '$ref': '#/definitions/User' },
-        expires: { type: 'number' },
       }
     },
     Auth: {
