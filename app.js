@@ -31,7 +31,7 @@ app.use(cors());
 app.use(body());
 app.use(swagger.init({
   swaggerVersion: '2.0',
-  swaggerURL: '/swagger',
+  swaggerURL: '/api/swagger',
   swaggerUI: './public/swagger/',
   basePath: '/api',
 }));
