@@ -36,7 +36,6 @@ app.use(swagger.init({
   basePath: '/api',
 }));
 
-
 app.use(function *(next) {
   let start = new Date;
   yield next;

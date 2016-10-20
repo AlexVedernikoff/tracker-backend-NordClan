@@ -154,7 +154,7 @@ module.exports = {
         responses: {
           '200': {
             description: 'OK',
-            schema: { $ref: '#/definitions/Task' }            
+            schema: { $ref: '#/definitions/Task' }
           },
           '401': {
             description: 'Токен невалидный'
@@ -179,7 +179,7 @@ module.exports = {
         responses: {
           '200': {
             description: 'OK',
-            schema: { $ref: '#/definitions/Project' }            
+            schema: { $ref: '#/definitions/Project' }
           },
           '401': {
             description: 'Токен невалидный'

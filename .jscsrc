@@ -1,6 +1,6 @@
 {
   "preset": "google",
-  "excludeFiles": ["public/**"],
+  "excludeFiles": ["public/**", "node_modules/**"],
   "maximumLineLength": 120,
   "requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
   "disallowMultipleVarDecl": {
