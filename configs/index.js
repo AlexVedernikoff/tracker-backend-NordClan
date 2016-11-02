@@ -6,6 +6,14 @@ module.exports = {
     mongodb: {
       host: process.env.MONGO_PORT_27017_TCP_ADDR || 'localhost',
       name: 'SimTrack' + (process.env.NODE_ENV == 'production' ? '' : '-develop'),
+    },
+     postgres: {
+      host: 'localhost',
+      port: 5432,
+      dialect: 'postgres',
+      name: 'track-back',
+      username: 'admin',
+      password: 'admin'
     }
   },
 

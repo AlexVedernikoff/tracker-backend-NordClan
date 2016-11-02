@@ -1,3 +1,5 @@
+'use strict'
+
 const koa = require('koa');
 const logger = require('koa-logger');
 const router = require('koa-router')();
@@ -7,6 +9,8 @@ const swagger = require('swagger-koa');
 const mongoose = require('mongoose');
 
 const config = require('./configs');
+
+const sequelize = require('./orm');
 
 const spec = require('./spec.js');
 
@@ -60,8 +64,16 @@ app.on('error', (err, ctx) => {
 
 app.listen(config.port);
 
-let db = mongoose.connection;
+/*let db = mongoose.connection;
 if (!mongoose.connection.readyState) {
   mongoose.connect('mongodb://' + config.db.mongodb.host + '/' + config.db.mongodb.name);
   db.on('error', err => console.error('Mongoose connection error:', err));
-}
+}*/
+
+sequelize
+    .authenticate()
+  .then(function(err) {
+    console.log('Database connection has been established successfully.');
+  }, function(err) {
+    console.log('Unable to connect to the database:', err);
+  });
