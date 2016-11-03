@@ -5,6 +5,10 @@ var sequelize = new Sequelize(config.db.postgres.name, config.db.postgres.userna
       host: config.db.postgres.host,
       dialect: config.db.postgres.dialect,
       port:    config.db.postgres.port
+    }, {
+      define: {
+        underscored: true
+      }
     });
 
 module.exports = sequelize;
