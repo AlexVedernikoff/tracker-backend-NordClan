@@ -64,11 +64,11 @@ app.on('error', (err, ctx) => {
 
 app.listen(config.port);
 
-/*let db = mongoose.connection;
+let db = mongoose.connection;
 if (!mongoose.connection.readyState) {
   mongoose.connect('mongodb://' + config.db.mongodb.host + '/' + config.db.mongodb.name);
   db.on('error', err => console.error('Mongoose connection error:', err));
-}*/
+}
 
 sequelize
     .authenticate()

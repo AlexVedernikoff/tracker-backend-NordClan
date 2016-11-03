@@ -50,12 +50,14 @@ module.exports = {
         parameters: [
           {
             name: 'refresh_token',
-            in: 'body',
+            in: 'formData',
             type: 'string',
             required: true
           },
           {
-            type: 'basic'
+            name: 'Authorization',
+            in: 'header',
+            default: 'Basic ' + new Buffer('test:test').toString('base64')
           }
         ],
         responses: {
