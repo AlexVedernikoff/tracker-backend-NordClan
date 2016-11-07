@@ -1,19 +1,19 @@
 'use strict';
 
 const md5 = require('md5');
-const mongoose = require('mongoose');
+const sequelize = require('../orm');
+const Sequelize = require('sequelize');
 
 const HttpError = require('./HttpError');
 const Task = require('./Task');
 const User = require('./User');
 
-const CommentSchema = new mongoose.Schema({
-  message: String,
-  user: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
-  task: { type: mongoose.Schema.ObjectId, ref: 'Task', required: true },
-}, { versionKey: false, timestamps: true });
+const CommentModel = sequelize.define('comments', {
+    message: { type: Sequelize.STRING, allowNull: false }
+  });
 
-const CommentModel = mongoose.model('Comment', CommentSchema);
+CommentModel.belongsTo(User.model, { foreignKey: 'user_id' });
+CommentModel.belongsTo(Task.model, { foreignKey: 'task_id' });
 
 class Comment {
   constructor() {}
@@ -22,7 +22,7 @@ class Comment {
     let populate = params.populate;
     delete params.populate;
 
-    let find = CommentModel.findOne(params);
+    let find = CommentModel.findOne({ where: params });
     if (populate) find.populate(populate);
 
     return new Promise((resolve, reject) => find.exec((err, doc) => err ? reject(err) : resolve(doc)))
@@ -33,7 +33,7 @@ class Comment {
     let populate = params.populate;
     delete params.populate;
 
-    let find = CommentModel.find(params);
+    let find = CommentModel.findAll({ where: params });
     if (populate) find.populate(populate);
 
     return new Promise((resolve, reject) => find.exec((err, docs) => err ? reject(err) : resolve(docs)))
@@ -42,7 +42,7 @@ class Comment {
 
   setData(data = {}, isSafe) {
     if (isSafe) {
-      this._id = data._id;
+      this.id = data.id;
     }
 
     data = data.toObject ? data.toObject() : data;
@@ -53,15 +53,15 @@ class Comment {
 
   save() {
     let task = new CommentModel(this);
-    if (this._id) task.isNew = false;
+    if (this.id) task.isNewRecord = false;
     return new Promise((resolve, reject) =>
-      task.save((err, doc) => err ? reject(err) : resolve(Comment.find({ _id: task._id })))
+      task.save((err, doc) => err ? reject(err) : resolve(Comment.find({ id: task.id })))
     ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
   }
 
   remove() {
     let task = new CommentModel(this);
-    if (this._id) task.isNew = false;
+    if (this.id) task.isNewRecord = false;
     return new Promise((resolve, reject) =>
       task.remove((err, doc) => err ? reject(err) : resolve())
     );

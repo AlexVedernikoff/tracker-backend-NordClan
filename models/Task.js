@@ -1,35 +1,42 @@
 'use strict';
 
 const md5 = require('md5');
-const mongoose = require('mongoose');
 
 const HttpError = require('./HttpError');
+const sequelize = require('../orm');
+const Sequelize = require('sequelize');
+const TaskStatusModel = require('./pgTaskStatus');
+const TaskPriorityModel = require('./pgTaskPriority');
+const TaskTypeModel = require('./pgTaskType');
 const User = require('./User');
 const Project = require('./Project');
 
-const TaskSchema = new mongoose.Schema({
-  name: String,
-  status: String,
-  priority: Number,
-  type: String,
-  planedTime: Number,
-  currentTime: Number,
-  owner: { type: mongoose.Schema.ObjectId, ref: 'User' },
-  author: { type: mongoose.Schema.ObjectId, ref: 'User' },
-  project: { type: mongoose.Schema.ObjectId, ref: 'Project' },
-  psId: String,
-}, { versionKey: false, timestamps: true });
+const TaskModel = sequelize.define('tasks', {
+    name: { type: Sequelize.STRING, allowNull: false },
+    planned_time: Sequelize.DATE,
+    fact_time: Sequelize.DATE,
+    ps_id: Sequelize.INTEGER
+  });
 
-const TaskModel = mongoose.model('Task', TaskSchema);
+TaskModel.belongsTo(TaskStatusModel, { foreignKey: 'status_id' });
+TaskModel.belongsTo(TaskPriorityModel, { foreignKey: 'priority_id' });
+TaskModel.belongsTo(TaskTypeModel, { foreignKey: 'type_id' });
+TaskModel.belongsTo(User.model, { foreignKey: 'owner_id' });
+TaskModel.belongsTo(User.model, { foreignKey: 'author_id' });
+TaskModel.belongsTo(Project.model, { foreignKey: 'project_id' });
 
 class Task {
   constructor() {}
+
+  static get model() {
+    return TaskModel;
+  }
 
   static find(params) {
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.findOne(params);
+    let find = TaskModel.findOne({ where: params });
     if (populate) find.populate(populate);
 
     return new Promise((resolve, reject) => find.exec((err, doc) => err ? reject(err) : resolve(doc)))
@@ -40,7 +47,7 @@ class Task {
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.find(params);
+    let find = TaskModel.findAll({ where: params });
     if (populate) find.populate(populate);
 
     return new Promise((resolve, reject) => find.exec((err, docs) => err ? reject(err) : resolve(docs)))
@@ -49,7 +56,7 @@ class Task {
 
   setData(data = {}, isSafe) {
     if (isSafe) {
-      this._id = data._id;
+      this.id = data.id;
     }
 
     data = data.toObject ? data.toObject() : data;
@@ -60,9 +67,9 @@ class Task {
 
   save() {
     let task = new TaskModel(this);
-    if (this._id) task.isNew = false;
+    if (this.id) task.isNew = false;
     return new Promise((resolve, reject) =>
-      task.save((err, doc) => err ? reject(err) : resolve(Task.find({ _id: task._id })))
+      task.save((err, doc) => err ? reject(err) : resolve(Task.find({ id: task.id })))
     ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
   }
 }
