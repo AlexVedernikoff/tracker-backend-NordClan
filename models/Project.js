@@ -3,10 +3,10 @@
 const md5 = require('md5');
 
 const HttpError = require('./HttpError');
-
-const sequelize = require('../orm');
+const Task = require('./Task');
 const Sequelize = require('sequelize');
-const ProjectStatusModel = require('./pgProjectStatus');
+const sequelize = require('../orm');
+
 
 const ProjectModel = sequelize.define('projects', {
     name: { type: Sequelize.STRING, allowNull: false },
@@ -14,7 +14,7 @@ const ProjectModel = sequelize.define('projects', {
     ps_id: Sequelize.INTEGER
   });
 
-ProjectModel.belongsTo(ProjectStatusModel, { foreignKey: 'status_id' });
+ProjectModel.hasMany(Task.model, { foreignKey: 'project_id' });
 
 class Project {
   constructor() {}
@@ -27,22 +27,18 @@ class Project {
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findOne({ where: params });
-    if (populate) find.populate(populate);
+    let find = ProjectModel.findOne({ where: params, include: populate });
 
-    return new Promise((resolve, reject) => find.exec(params, (err, doc) => err ? reject(err) : resolve(doc)))
-      .then(project => project ? (new Project()).setData(project, true) : project);
+    return find.then(project => project ? (new Project()).setData(project, true) : project);
   }
 
   static findAll(params) {
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findAll({ where: params });
-    if (populate) find.populate(populate);
+    let find = ProjectModel.findAll({ where: params, include: populate });
 
-    return new Promise((resolve, reject) => find.exec(params, (err, docs) => err ? reject(err) : resolve(docs)))
-      .then(projects => projects ? projects.map(p => (new Project()).setData(p, true)) : []);
+    return find.then(projects => projects ? projects.map(p => (new Project()).setData(p, true)) : []);
   }
 
   setData(data = {}, isSafe) {
@@ -57,11 +53,14 @@ class Project {
   }
 
   save() {
-    let project = new ProjectModel(this);
-    if (this.id) task.isNewRecord = false;
-    return new Promise((resolve, reject) =>
-      project.save((err, doc) => err ? reject(err) : resolve(Project.find({ id: project.id })))
-    ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    let project = ProjectModel.build(this);
+    if (this.id) project.isNewRecord = false;
+    project.save()
+      .then(function() {
+        Project.find({ id: project.id });
+        console.log('Project was succesfully saved!');
+      })
+      .catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
   }
 }
 

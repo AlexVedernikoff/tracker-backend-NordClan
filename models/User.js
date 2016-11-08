@@ -3,8 +3,10 @@
 const md5 = require('md5');
 const sequelize = require('../orm');
 const Sequelize = require('sequelize');
-
+const Comment = require('./Comment');
+const Task = require('./Task');
 const HttpError = require('./HttpError');
+
 
 const UserModel = sequelize.define('users', {
     username: { type: Sequelize.STRING, allowNull: false },
@@ -21,6 +23,10 @@ const UserModel = sequelize.define('users', {
     ps_id: Sequelize.INTEGER
   });
 
+UserModel.hasMany(Task.model, { foreignKey: 'owner_id' });
+UserModel.hasMany(Task.model, { foreignKey: 'author_id' });
+UserModel.hasMany(Comment.model, { foreignKey: 'user_id' });
+
 class User {
   constructor() {}
 
@@ -32,22 +38,18 @@ class User {
     let populate = params.populate;
     delete params.populate;
 
-    let find = UserModel.findOne({ where: params });
-    if (populate) find.populate(populate);
+    let find = UserModel.findOne({ where: params, include: populate });
 
-    return new Promise((resolve, reject) => find.exec(params, (err, doc) => err ? reject(err) : resolve(doc)))
-      .then(user => user ? (new User()).setData(user, true) : user);
+    return find.then(user => user ? (new User()).setData(user, true) : user);
   }
 
   static findAll(params) {
     let populate = params.populate;
     delete params.populate;
 
-    let find = UserModel.findAll({ where: params });
-    if (populate) find.populate(populate);
+    let find = UserModel.findAll({ where: params, include: populate });
 
-    return new Promise((resolve, reject) => find.exec(params, (err, docs) => err ? reject(err) : resolve(docs)))
-      .then(users => users ? users.map(u => (new User()).setData(u, true)) : []);
+    return find.then(users => users ? users.map(u => (new User()).setData(u, true)) : []);
   }
 
   setData(data = {}, isSafe) {
@@ -62,11 +64,14 @@ class User {
   }
 
   save() {
-    let user = new UserModel(this);
-    if (this.id) task.isNewRecord = false;
-    return new Promise((resolve, reject) =>
-      user.save((err, doc) => err ? reject(err) : resolve(User.find({ id: user.id })))
-    ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    let user = UserModel.build(this);
+    if (this.id) user.isNewRecord = false;
+    user.save()
+      .then(function() {
+        User.find({ id: user.id });
+        console.log('User was succesfully saved!');
+      })
+      .catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
   }
 }
 
