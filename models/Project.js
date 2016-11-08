@@ -7,11 +7,18 @@ const Task = require('./Task');
 const Sequelize = require('sequelize');
 const sequelize = require('../orm');
 
-
 const ProjectModel = sequelize.define('projects', {
     name: { type: Sequelize.STRING, allowNull: false },
     start_date: Sequelize.DATE,
-    ps_id: Sequelize.INTEGER
+    ps_id: Sequelize.INTEGER,
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    }
   });
 
 ProjectModel.hasMany(Task.model, { foreignKey: 'project_id' });
@@ -29,7 +36,7 @@ class Project {
 
     let find = ProjectModel.findOne({ where: params, include: populate });
 
-    return find.then(project => project ? (new Project()).setData(project, true) : project);
+    return find.then(project => project ? (new Project()).setData(project.toJSON(), true) : project);
   }
 
   static findAll(params) {
@@ -38,7 +45,7 @@ class Project {
 
     let find = ProjectModel.findAll({ where: params, include: populate });
 
-    return find.then(projects => projects ? projects.map(p => (new Project()).setData(p, true)) : []);
+    return find.then(projects => projects ? projects.map(p => (new Project()).setData(p.toJSON(), true)) : []);
   }
 
   setData(data = {}, isSafe) {

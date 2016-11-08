@@ -7,7 +7,15 @@ const Sequelize = require('sequelize');
 const HttpError = require('./HttpError');
 
 const CommentModel = sequelize.define('comments', {
-    message: { type: Sequelize.STRING, allowNull: false }
+    message: { type: Sequelize.STRING, allowNull: false },
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    }
   });
 
 class Comment {
@@ -23,7 +31,7 @@ class Comment {
 
     let find = CommentModel.findOne({ where: params, include: populate });
 
-    return find.then(task => task ? (new Comment()).setData(task, true) : task);
+    return find.then(comments => comments ? (new Comment()).setData(comments.toJSON(), true) : comments);
   }
 
   static findAll(params) {
@@ -32,7 +40,7 @@ class Comment {
 
     let find = CommentModel.findAll({ where: params, include: populate });
 
-    return find.then(tasks => tasks ? tasks.map(t => (new Comment()).setData(t, true)) : tasks);
+    return find.then(comments => comments ? comments.map(t => (new Comment()).setData(c.toJSON(), true)) : comments);
   }
 
   setData(data = {}, isSafe) {

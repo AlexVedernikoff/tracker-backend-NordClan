@@ -7,20 +7,26 @@ const Comment = require('./Comment');
 const Task = require('./Task');
 const HttpError = require('./HttpError');
 
-
 const UserModel = sequelize.define('users', {
     username: { type: Sequelize.STRING, allowNull: false },
     firstname_ru: { type: Sequelize.STRING, allowNull: false },
     lastname_ru: { type: Sequelize.STRING, allowNull: false },
     firstname_en: Sequelize.STRING,
     lastname_en: Sequelize.STRING,
-    start_date: Sequelize.DATE,
     email: Sequelize.STRING,
     mobile: Sequelize.STRING,
     skype: Sequelize.STRING,
     photo: Sequelize.STRING,
     birthday: Sequelize.STRING,
-    ps_id: Sequelize.INTEGER
+    ps_id: Sequelize.INTEGER,
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    }
   });
 
 UserModel.hasMany(Task.model, { foreignKey: 'owner_id' });
@@ -40,7 +46,7 @@ class User {
 
     let find = UserModel.findOne({ where: params, include: populate });
 
-    return find.then(user => user ? (new User()).setData(user, true) : user);
+    return find.then(user => user ? (new User()).setData(user.toJSON(), true) : user);
   }
 
   static findAll(params) {
@@ -49,7 +55,7 @@ class User {
 
     let find = UserModel.findAll({ where: params, include: populate });
 
-    return find.then(users => users ? users.map(u => (new User()).setData(u, true)) : []);
+    return find.then(users => users ? users.map(u => (new User()).setData(u.toJSON(), true)) : []);
   }
 
   setData(data = {}, isSafe) {

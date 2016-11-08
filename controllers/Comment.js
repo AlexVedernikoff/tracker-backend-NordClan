@@ -6,7 +6,7 @@ let Comment = require('../models/Comment');
 
 router.get('/:commentId', function *() {
   if (this.params.commentId) {
-    let comment = yield Comment.find({ _id: this.params.commentId });
+    let comment = yield Comment.find({ id: this.params.commentId });
     if (!comment) this.throw(404, 'Comment not found');
     this.body = comment;
   }
@@ -14,7 +14,7 @@ router.get('/:commentId', function *() {
 
 router.put('/:commentId', function *() {
   if (this.params.commentId) {
-    let comment = yield Comment.find({ _id: this.params.commentId });
+    let comment = yield Comment.find({ id: this.params.commentId });
     if (!comment) this.throw(404, 'Comment not found');
     comment = yield comment.setData(this.request.fields).save();
     this.body = comment;
@@ -30,7 +30,7 @@ router.post('/', function *() {
 
 router.delete('/:commentId', function *() {
   if (this.params.commentId) {
-    let comment = yield Comment.find({ _id: this.params.commentId });
+    let comment = yield Comment.find({ id: this.params.commentId });
     yield comment.remove();
     this.body = '';
   }

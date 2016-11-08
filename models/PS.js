@@ -44,8 +44,8 @@ class PS {
       if (login !== username && userLogins.indexOf(login) < 0) userLogins.push(login);
     });
 
-    let projects = yield Project.findAll({ psId: { '$in': projectIds } });
-    projectIds = projectIds.filter(id => !projects.find(p => p.psId == id));
+    let projects = yield Project.findAll({ ps_id: { '$in': projectIds } });
+    projectIds = projectIds.filter(id => !projects.find(p => p.ps_id == id));
 
     for (let i = 0; i < projectIds.length; i++) {
       let psId = projectIds[i];
@@ -56,8 +56,8 @@ class PS {
         project.setData({
           name: psP.name,
           status: psP.status,
-          startDate: psP.startDate,
-          psId
+          start_date: psP.startDate,
+          ps_id: psId //-psId-
         });
         project = yield project.save();
         projects.push(project);
@@ -75,16 +75,16 @@ class PS {
         let user = new User();
         user.setData({
           username,
-          firstnameRu: psUser.firstNameRu,
-          lastnameRu: psUser.lastNameRu,
-          firstnameEn: psUser.firstNameEn,
-          lastnameEn: psUser.lastNameEn,
+          firstname_ru: psUser.firstNameRu,
+          lastname_ru: psUser.lastNameRu,
+          firstname_en: psUser.firstNameEn,
+          lastname_en: psUser.lastNameEn,
           email: psUser.emailPrimary,
           mobile: psUser.mobile,
           skype: psUser.skype,
           photo: psUser.photo,
           birthday: psUser.birthDate,
-          psId: psUser.id,
+          ps_id: psUser.id,
         });
         user = yield user.save();
         users.push(user);
@@ -99,12 +99,12 @@ class PS {
         status: psTask.status,
         priority: psTask.priority,
         type: psTask.type,
-        planedTime: psTask.plannedTime,
-        currentTime: psTask.currentTime,
-        owner: users.find(u => u.psId == psTask.owner.id),
-        author: users.find(u => u.psId == psTask.creator.id),
+        planed_time: psTask.plannedTime,
+        fact_time: psTask.currentTime,
+        owner: users.find(u => u.ps_id == psTask.owner.id),
+        author: users.find(u => u.ps_id == psTask.creator.id),
         project: projects.find(p => p.psId == psTask.idProj),
-        psId: psTask.id,
+        ps_id: psTask.id,
       });
 
       yield task.save();

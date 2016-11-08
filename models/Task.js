@@ -12,11 +12,18 @@ const TaskModel = sequelize.define('tasks', {
     name: { type: Sequelize.STRING, allowNull: false },
     planned_time: Sequelize.DATE,
     fact_time: Sequelize.DATE,
-    ps_id: Sequelize.INTEGER
+    ps_id: Sequelize.INTEGER,
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    }
   });
 
 TaskModel.hasMany(Comment.model, { foreignKey: 'task_id' });
-
 
 class Task {
   constructor() {}
@@ -31,7 +38,7 @@ class Task {
 
     let find = TaskModel.findOne({ where: params, include: populate });
 
-    return find.then(task => task ? (new Task()).setData(task, true) : task);
+    return find.then(task => task ? (new Task()).setData(task.toJSON(), true) : task);
   }
 
   static findAll(params) {
@@ -40,7 +47,7 @@ class Task {
 
     let find = TaskModel.findAll({ where: params, include: populate });
 
-    return find.then(tasks => tasks ? tasks.map(t => (new Task()).setData(t, true)) : tasks);
+    return find.then(tasks => tasks ? tasks.map(t => (new Task()).setData(t.toJSON(), true)) : tasks);
   }
 
   setData(data = {}, isSafe) {

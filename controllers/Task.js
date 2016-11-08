@@ -7,8 +7,8 @@ let Task = require('../models/Task');
 router.get('/(:taskId)?', function *() {
   if (this.params.taskId) {
     let task = yield Task.find({
-      _id: this.params.taskId,
-      owner: this.request.user._id,
+      id: this.params.taskId,
+      owner: this.request.user.id,
       populate: 'owner author project'
     });
     if (!task) this.throw(404, 'Task not found');
@@ -18,7 +18,7 @@ router.get('/(:taskId)?', function *() {
   }
 
   let tasks = yield Task.findAll({
-    owner: this.request.user._id,
+    owner: this.request.user.id,
     populate: 'owner author project'
   });
 
