@@ -11,6 +11,9 @@ const User = require('./User');
 const LDAP = require('./LDAP');
 const PS = require('./PS');
 
+const Sequelize = require('sequelize');
+const sequelize = require('../orm');
+
 const OAuthAccessTokensSchema = new mongoose.Schema({
   accessToken: { type: String },
   clientId: { type: String },
@@ -25,8 +28,59 @@ const OAuthRefreshTokensSchema = new mongoose.Schema({
   expires: { type: Date, expires: 3600 }
 }, { versionKey: false });
 
-const OAuthAccessTokensModel = mongoose.model('OAuthAccessTokens', OAuthAccessTokensSchema);
-const OAuthRefreshTokensModel = mongoose.model('OAuthRefreshTokens', OAuthRefreshTokensSchema);
+const OAuthAccessTokensModel = sequelize.define('oauth_access_tokens', {
+    access_token: { type: Sequelize.STRING },
+    client_id: { type: Sequelize.STRING },
+    expires: { type: Sequelize.DATE, defaultValue: function() {
+        let date = new Date();
+        return date.setDate(date.getDate() + 1);
+      }
+    }
+  }, {
+    timestapms: false,
+    scopes: {
+      deletedTokens: {
+        where: {
+          expires: {
+            $lt: new Date()
+          }
+        }
+      }
+    },
+    hooks: {
+      beforeCreate: function() {
+        let tokens = OAuthAccessTokensModel.scope('deletedTokens');
+        tokens.destroy();
+      }
+    }
+  });
+
+const OAuthRefreshTokensModel = sequelize.define('oauth_refresh_tokens', {
+    refresh_token: { type: Sequelize.STRING },
+    client_id: { type: Sequelize.STRING },
+    expires: { type: Sequelize.DATE, defaultValue: function() {
+        let date = new Date();
+        return date.setDate(date.getDate() + 7);
+      }
+    }
+  }, {
+    timestapms: false,
+    scopes: {
+      deletedTokens: {
+        where: {
+          expires: {
+            $lt: new Date()
+          }
+        }
+      }
+    },
+    hooks: {
+      beforeCreate: function() {
+        let tokens = OAuthRefreshTokensModel.scope('deletedTokens');
+        tokens.destroy();
+      }
+    }
+  });
 
 class OAuth {
   constructor(options) {
