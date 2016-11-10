@@ -1,7 +1,6 @@
 'use strict';
 
 const http = require('http');
-const mongoose = require('mongoose');
 const oauthServer = require('oauth2-server');
 const co = require('co');
 
@@ -14,23 +13,23 @@ const PS = require('./PS');
 const Sequelize = require('sequelize');
 const sequelize = require('../orm');
 
-const OAuthAccessTokensSchema = new mongoose.Schema({
-  accessToken: { type: String },
-  clientId: { type: String },
-  user: { type: mongoose.Schema.ObjectId, ref: 'User' },
-  expires: { type: Date, expires: 3600 }
-}, { versionKey: false });
-
-const OAuthRefreshTokensSchema = new mongoose.Schema({
-  refreshToken: { type: String },
-  clientId: { type: String },
-  user: { type: mongoose.Schema.ObjectId, ref: 'User' },
-  expires: { type: Date, expires: 3600 }
-}, { versionKey: false });
-
 const OAuthAccessTokensModel = sequelize.define('oauth_access_tokens', {
-    access_token: { type: Sequelize.STRING },
-    client_id: { type: Sequelize.STRING },
+    accessToken: {
+      field: 'access_token',
+      type: Sequelize.STRING
+    },
+    clientId: {
+      field: 'client_id',
+      type: Sequelize.STRING
+    },
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    },
     expires: { type: Sequelize.DATE, defaultValue: function() {
         let date = new Date();
         return date.setDate(date.getDate() + 1);
@@ -39,25 +38,41 @@ const OAuthAccessTokensModel = sequelize.define('oauth_access_tokens', {
   }, {
     timestapms: false,
     scopes: {
-      deletedTokens: {
-        where: {
-          expires: {
-            $lt: new Date()
+      deletedTokens: function() {
+        return {
+          where: {
+            expires: {
+              $lt: new Date()
+            }
           }
-        }
+        };
       }
     },
     hooks: {
       beforeCreate: function() {
         let tokens = OAuthAccessTokensModel.scope('deletedTokens');
-        tokens.destroy();
+        tokens.destroy({ where: { expires: { $lt: new Date() } } });
       }
     }
   });
 
 const OAuthRefreshTokensModel = sequelize.define('oauth_refresh_tokens', {
-    refresh_token: { type: Sequelize.STRING },
-    client_id: { type: Sequelize.STRING },
+    refreshToken:  {
+      field: 'refresh_token',
+      type: Sequelize.STRING
+    },
+    clientId:  {
+      field: 'client_id',
+      type: Sequelize.STRING
+    },
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    },
     expires: { type: Sequelize.DATE, defaultValue: function() {
         let date = new Date();
         return date.setDate(date.getDate() + 7);
@@ -66,21 +81,26 @@ const OAuthRefreshTokensModel = sequelize.define('oauth_refresh_tokens', {
   }, {
     timestapms: false,
     scopes: {
-      deletedTokens: {
-        where: {
-          expires: {
-            $lt: new Date()
+      deletedTokens: function() {
+        return {
+          where: {
+            expires: {
+              $lt: new Date()
+            }
           }
-        }
+        };
       }
     },
     hooks: {
       beforeCreate: function() {
         let tokens = OAuthRefreshTokensModel.scope('deletedTokens');
-        tokens.destroy();
+        tokens.destroy({ where: { expires: { $lt: new Date() } } });
       }
     }
   });
+
+OAuthAccessTokensModel.belongsTo(User.model, { foreignKey: 'user_id' });
+OAuthRefreshTokensModel.belongsTo(User.model, { foreignKey: 'user_id' });
 
 class OAuth {
   constructor(options) {
@@ -141,7 +161,7 @@ class OAuth {
         let { user } = bearerToken;
 
         if (user) {
-          this.req.user = new User().setData(user, true);
+          this.req.user = new User().setData(user.toJSON(), true);
           return resolve(this.req.user);
         }
 
@@ -150,36 +170,36 @@ class OAuth {
     });
   }
 
+  /* пока не создан роут на логаут, если будет бросать еррор сделать через скоуп в моделе oauth */
   logout() {
     if (this.req.oauth && this.req.oauth.bearerToken) {
-      OAuthAccessTokensModel.find({ clientId: this.req.oauth.bearerToken.clientId }, (err, docs) => {
-        docs.map(doc => doc.remove());
-      });
-      OAuthRefreshTokensModel.find({ clientId: this.req.oauth.bearerToken.clientId }, (err, docs) => {
-        docs.map(doc => doc.remove());
-      });
+      OAuthAccessTokensModel.findById({ clientId: this.req.oauth.bearerToken.clientId })
+        .then(function(token) {
+          token.destroy();
+        });
+      OAuthRefreshTokensModel.findById({ clientId: this.req.oauth.bearerToken.clientId })
+        .then(function(token) {
+          token.destroy();
+        });
     }
 
-    return Promise.resolve();
   }
 
   getAccessToken(accessToken, callback) {
-    let find = OAuthAccessTokensModel.findOne({ accessToken });
-    find.populate('user');
-    find.exec(callback);
+    let find = OAuthAccessTokensModel.findOne({ where: { accessToken: accessToken }, include: User.model });
+    find.then(token => callback(null, token));
   }
 
   saveAccessToken(accessToken, clientId, expires, user, callback) {
     let data = {
-      accessToken,
-      clientId,
-      expires,
-      user: user._id,
+      accessToken: accessToken,
+      clientId: clientId,
+      expires: expires,
+      user_id: user.id,
     };
 
-    let model = new OAuthAccessTokensModel(data);
-
-    model.save(callback);
+    OAuthAccessTokensModel.create(data)
+      .then(token => callback(null, token));
   }
 
   getClient(clientId, clientSecret, callback) {
@@ -210,16 +230,16 @@ class OAuth {
       user = new User();
       user.setData({
         username,
-        firstnameRu: psUser.firstNameRu,
-        lastnameRu: psUser.lastNameRu,
-        firstnameEn: psUser.firstNameEn,
-        lastnameEn: psUser.lastNameEn,
+        firstname_ru: psUser.firstNameRu,
+        lastname_ru: psUser.lastNameRu,
+        firstname_en: psUser.firstNameEn,
+        lastname_en: psUser.lastNameEn,
         email: psUser.emailPrimary,
         mobile: psUser.mobile,
         skype: psUser.skype,
         photo: psUser.photo,
         birthday: psUser.birthDate,
-        psId: psUser.id,
+        ps_id: psUser.id,
       });
 
       user = yield user.save();
@@ -229,24 +249,20 @@ class OAuth {
 
   saveRefreshToken(refreshToken, clientId, expires, user, callback) {
     let data = {
-      refreshToken,
-      clientId,
-      expires,
-      user: user._id,
+      refreshToken: refreshToken,
+      clientId: clientId,
+      expires: expires,
+      user_id: user.id,
     };
 
-    let model = new OAuthRefreshTokensModel(data);
+    OAuthRefreshTokensModel.create(data)
+     .then(token => callback(null, token));
 
-    model.save(callback);
   }
 
   getRefreshToken(refreshToken, callback) {
-    let find = OAuthRefreshTokensModel.findOne({ refreshToken });
-    find.populate('user');
-    find.exec((err, doc) => {
-      console.log(err, doc);
-      callback(err, doc);
-    });
+    let find = OAuthRefreshTokensModel.findOne({ where: { refreshToken: refreshToken }, include: User.model });
+    find.then(token => callback(null, token));
   }
 }
 
