@@ -5,7 +5,7 @@ let router = require('koa-router')();
 let User = require('../models/User');
 let PS = require('../models/PS');
 
-router.get('/(:username)?', function *() {
+router.get('/:username?', function *() {
   let { username = this.request.user.username } = this.params;
   let user = yield User.find({ username });
 
@@ -37,7 +37,7 @@ router.get('/(:username)?', function *() {
   this.body = user;
 });
 
-router.get('/sync/(:username)?', function *() {
+router.get('/sync/:username?', function *() {
   let { username = this.request.user.username } = this.params;
   yield* PS.syncTasks(username);
   this.body = 'OK';

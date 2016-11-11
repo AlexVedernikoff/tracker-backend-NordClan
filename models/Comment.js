@@ -6,6 +6,9 @@ const Sequelize = require('sequelize');
 
 const HttpError = require('./HttpError');
 
+const User = require('./User');
+const Task = require('./Task');
+
 const CommentModel = sequelize.define('comments', {
     message: { type: Sequelize.STRING, allowNull: false },
     createdAt: {
@@ -17,6 +20,9 @@ const CommentModel = sequelize.define('comments', {
       type: Sequelize.DATE
     }
   });
+
+CommentModel.belongsTo(User.model, { foreignKey: 'user_id' });
+CommentModel.belongsTo(Task.model, { foreignKey: 'task_id' });
 
 class Comment {
   constructor() {}

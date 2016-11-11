@@ -3,9 +3,9 @@
 const md5 = require('md5');
 
 const HttpError = require('./HttpError');
-const Task = require('./Task');
 const Sequelize = require('sequelize');
 const sequelize = require('../orm');
+const ProjectStatusModel = require('./ProjectStatus');
 
 const ProjectModel = sequelize.define('projects', {
     name: { type: Sequelize.STRING, allowNull: false },
@@ -21,7 +21,7 @@ const ProjectModel = sequelize.define('projects', {
     }
   });
 
-ProjectModel.hasMany(Task.model, { foreignKey: 'project_id' });
+ProjectModel.belongsTo(ProjectStatusModel, { foreignKey: 'status_id' });
 
 class Project {
   constructor() {}
@@ -34,7 +34,7 @@ class Project {
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findOne({ where: params, include: populate });
+    let find = ProjectModel.findOne({ where: params, include: ProjectStatusModel });
 
     return find.then(project => project ? (new Project()).setData(project.toJSON(), true) : project);
   }

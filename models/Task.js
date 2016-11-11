@@ -5,8 +5,12 @@ const md5 = require('md5');
 const HttpError = require('./HttpError');
 const Sequelize = require('sequelize');
 const sequelize = require('../orm');
+const User = require('./User');
+const Project = require('./Project');
 
-const Comment = require('./Comment');
+const TaskPriorityModel = require('./TaskPriority');
+const TaskStatusModel = require('./TaskStatus');
+const TaskTypeModel = require('./TaskType');
 
 const TaskModel = sequelize.define('tasks', {
     name: { type: Sequelize.STRING, allowNull: false },
@@ -23,7 +27,14 @@ const TaskModel = sequelize.define('tasks', {
     }
   });
 
-TaskModel.hasMany(Comment.model, { foreignKey: 'task_id' });
+TaskModel.belongsTo(Project.model, { foreignKey: 'project_id' });
+TaskModel.belongsTo(User.model, { as: 'owner', foreignKey: 'owner_id' });
+TaskModel.belongsTo(User.model, { as: 'author', foreignKey: 'author_id' });
+
+TaskModel.belongsTo(TaskPriorityModel, { foreignKey: 'priority_id' });
+TaskModel.belongsTo(TaskStatusModel, { foreignKey: 'status_id' });
+TaskModel.belongsTo(TaskTypeModel, { foreignKey: 'type_id' });
+
 
 class Task {
   constructor() {}
@@ -36,7 +47,9 @@ class Task {
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.findOne({ where: params, include: populate });
+    let find = TaskModel.findOne({ where: params, include: [{ model: User.model, as: 'owner' },
+     { model: User.model, as: 'author' }, { model: Project.model }, { model: TaskPriorityModel },
+      { model: TaskStatusModel }, { model: TaskTypeModel }]});
 
     return find.then(task => task ? (new Task()).setData(task.toJSON(), true) : task);
   }
@@ -45,7 +58,8 @@ class Task {
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.findAll({ where: params, include: populate });
+    let find = TaskModel.findAll({ where: params, include: [{ model: User.model, as: 'owner' },
+     { model: User.model, as: 'author' }, { model: Project.model }] });
 
     return find.then(tasks => tasks ? tasks.map(t => (new Task()).setData(t.toJSON(), true)) : tasks);
   }

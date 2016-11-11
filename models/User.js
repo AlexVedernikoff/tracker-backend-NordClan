@@ -3,8 +3,6 @@
 const md5 = require('md5');
 const sequelize = require('../orm');
 const Sequelize = require('sequelize');
-const Comment = require('./Comment');
-const Task = require('./Task');
 const HttpError = require('./HttpError');
 
 const UserModel = sequelize.define('users', {
@@ -28,10 +26,6 @@ const UserModel = sequelize.define('users', {
       type: Sequelize.DATE
     }
   });
-
-UserModel.hasMany(Task.model, { foreignKey: 'owner_id' });
-UserModel.hasMany(Task.model, { foreignKey: 'author_id' });
-UserModel.hasMany(Comment.model, { foreignKey: 'user_id' });
 
 class User {
   constructor() {}
