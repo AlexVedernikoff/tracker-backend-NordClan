@@ -66,12 +66,13 @@ class User {
   save() {
     let user = UserModel.build(this);
     if (this.id) user.isNewRecord = false;
-    user.save()
+    return new Promise((resolve, reject) => {
+      user.save()
       .then(function() {
-        User.find({ id: user.id });
-        console.log('User was succesfully saved!');
+        resolve(User.find({ id: user.id }));
       })
-      .catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    });
   }
 }
 

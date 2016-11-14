@@ -35,7 +35,6 @@ TaskModel.belongsTo(TaskPriorityModel, { foreignKey: 'priority_id' });
 TaskModel.belongsTo(TaskStatusModel, { foreignKey: 'status_id' });
 TaskModel.belongsTo(TaskTypeModel, { foreignKey: 'type_id' });
 
-
 class Task {
   constructor() {}
 
@@ -78,12 +77,13 @@ class Task {
   save() {
     let task = TaskModel.build(this);
     if (this.id) task.isNewRecord = false;
-    task.save()
+    return new Promise((resolve, reject) => {
+      task.save()
       .then(function() {
-        Task.find({ id: task.id });
-        console.log('Task was succesfully saved!');
+        resolve(Task.find({ id: task.id }));
       })
-      .catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    });
   }
 }
 

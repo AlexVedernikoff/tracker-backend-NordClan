@@ -9,7 +9,7 @@ router.get('/:taskId?', function *() {
     let task = yield Task.find({
       id: this.params.taskId,
       owner_id: this.request.user.id,
-      populate: 'owner author project'
+      populate: this.request.query.populate // 14.11 - 15-50
     });
     if (!task) this.throw(404, 'Task not found');
 

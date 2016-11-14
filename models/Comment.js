@@ -35,7 +35,8 @@ class Comment {
     let populate = params.populate;
     delete params.populate;
 
-    let find = CommentModel.findOne({ where: params, include: populate });
+    let find = CommentModel.findOne({ where: params, include: [{ model: User.model },
+     { model: Task.model }]});
 
     return find.then(comments => comments ? (new Comment()).setData(comments.toJSON(), true) : comments);
   }
@@ -61,23 +62,32 @@ class Comment {
   }
 
   save() {
-    let comment = CommentModel.build(this);
+    let comment = CommentModel.build({
+      id: this.id,
+      message: this.message,
+      task_id: this.task,
+      user_id: this.user
+    });
     if (this.id) comment.isNewRecord = false;
-    comment.save()
+    return new Promise((resolve, reject) => {
+      comment.save()
       .then(function() {
-        Comment.find({ id: comment.id });
-        console.log('Comment was succesfully saved!');
+        resolve(Comment.find({ id: comment.id }));
       })
-      .catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    });
   }
 
   remove() {
     let comment = CommentModel.build(this);
     if (this.id) comment.isNewRecord = false;
-    comment.destroy()
+    return new Promise((resolve, reject) => {
+      comment.destroy()
       .then(function() {
-        console.log('Comment was deleted!');
-      });
+        resolve();
+      })
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    });
   }
 }
 

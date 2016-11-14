@@ -62,12 +62,14 @@ class Project {
   save() {
     let project = ProjectModel.build(this);
     if (this.id) project.isNewRecord = false;
-    project.save()
+    return new Promise((resolve, reject) => {
+      project.save()
       .then(function() {
-        Project.find({ id: project.id });
-        console.log('Project was succesfully saved!');
+        resolve(Project.find({ id: project.id }));
       })
-      .catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    })
+
   }
 }
 
