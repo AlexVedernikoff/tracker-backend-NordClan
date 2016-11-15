@@ -31,7 +31,12 @@ class PS {
   }
 
   static *syncTasks(username) {
-    let psTasks = yield this.request(`tasks/user/${username}`);
+    let psTasks;
+    try {
+      psTasks = yield this.request(`tasks/user/${username}`);
+    } catch (e) {
+      throw new HttpError(404, 'User Not Found');
+    }
 
     let projectIds = [];
     let userLogins = [username];
@@ -52,12 +57,14 @@ class PS {
       let psP = yield this.request('projects', { qs: { projectIds: psId } });
       psP = psP[0];
       if (psP) {
+        let dateParts = psP.startDate.split('.');
+
         let project = new Project();
         project.setData({
           name: psP.name,
           status: psP.status,
-          start_date: psP.startDate,
-          ps_id: psId //-psId-
+          start_date: new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]),
+          ps_id: psId
         });
         project = yield project.save();
         projects.push(project);
