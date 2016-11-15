@@ -8,6 +8,9 @@ const HttpError = require('./HttpError');
 const Project = require('./Project');
 const User = require('./User');
 const Task = require('./Task');
+const ProjectStatus = require('./ProjectStatus');
+const TaskStatus = require('./TaskStatus');
+const TaskPriority = require('./TaskPriority');
 
 class PS {
   constructor(options) {
@@ -31,9 +34,8 @@ class PS {
   }
 
   static *syncTasks(username) {
-    let psTasks;
     try {
-      psTasks = yield this.request(`tasks/user/${username}`);
+      var psTasks = yield this.request(`tasks/user/${username}`);
     } catch (e) {
       throw new HttpError(404, 'User Not Found');
     }
@@ -57,12 +59,12 @@ class PS {
       let psP = yield this.request('projects', { qs: { projectIds: psId } });
       psP = psP[0];
       if (psP) {
+        let status = yield ProjectStatus.find({ name: psP.status });
         let dateParts = psP.startDate.split('.');
-
         let project = new Project();
         project.setData({
           name: psP.name,
-          status: psP.status,
+          status_id: status.id,
           start_date: new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]),
           ps_id: psId
         });
@@ -79,6 +81,7 @@ class PS {
       let psUser = yield this.request(`users/${username}`);
       psUser = psUser[0];
       if (psUser) {
+        let dateParts = psUser.birthDate.split('.');
         let user = new User();
         user.setData({
           username,
@@ -90,7 +93,7 @@ class PS {
           mobile: psUser.mobile,
           skype: psUser.skype,
           photo: psUser.photo,
-          birthday: psUser.birthDate,
+          birthday: new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]),
           ps_id: psUser.id,
         });
         user = yield user.save();
@@ -100,17 +103,18 @@ class PS {
 
     for (let i = 0; i < psTasks.length; i++) {
       let psTask = psTasks[i];
+      let status = yield TaskStatus.find({ ps_name: psTask.status });
       let task = new Task();
       task.setData({
         name: psTask.name,
-        status: psTask.status,
+        status_id: status.id, // null не известны все статусы в системе PS
         priority: psTask.priority,
-        type: psTask.type,
-        planed_time: psTask.plannedTime,
+        type: psTask.type, //-- хэш приходит вместо значения хранить его в БД на типы забить, пустое поле
+        planned_time: psTask.plannedTime,
         fact_time: psTask.currentTime,
-        owner: users.find(u => u.ps_id == psTask.owner.id),
-        author: users.find(u => u.ps_id == psTask.creator.id),
-        project: projects.find(p => p.psId == psTask.idProj),
+        owner_id: users.find(u => u.ps_id == psTask.owner.id).id,
+        author_id: users.find(u => u.ps_id == psTask.creator.id).id,
+        project_id: projects.find(p => p.ps_id == psTask.idProj).id,
         ps_id: psTask.id,
       });
 

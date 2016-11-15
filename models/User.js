@@ -15,8 +15,8 @@ const UserModel = sequelize.define('users', {
     mobile: Sequelize.STRING,
     skype: Sequelize.STRING,
     photo: Sequelize.STRING,
-    birthday: Sequelize.STRING,
-    ps_id: Sequelize.INTEGER,
+    birthday: Sequelize.DATE,
+    ps_id: Sequelize.STRING,
     createdAt: {
       field: 'created_at',
       type: Sequelize.DATE

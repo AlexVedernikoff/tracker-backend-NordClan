@@ -16,4 +16,33 @@ const TaskPriorityModel = sequelize.define('task_priorities', {
     timestapms: false
   });
 
-module.exports = TaskPriorityModel;
+class TaskPriority {
+  constructor() {}
+
+  static get model() {
+    return TaskPriorityModel;
+  }
+
+  static find(params) {
+    let populate = params.populate;
+    delete params.populate;
+
+    let find = TaskPriorityModel.findOne({ where: params });
+
+    return find.then(taskPriority => taskPriority ? (new TaskPriority())
+    .setData(taskPriority.toJSON(), true) : taskPriority);
+  }
+
+  setData(data = {}, isSafe) {
+    if (isSafe) {
+      this.id = data.id;
+    }
+
+    data = data.toObject ? data.toObject() : data;
+    Object.keys(data).map(k => this[k] = data[k]);
+
+    return this;
+  }
+}
+
+module.exports = TaskPriority;

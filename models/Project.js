@@ -5,12 +5,12 @@ const md5 = require('md5');
 const HttpError = require('./HttpError');
 const Sequelize = require('sequelize');
 const sequelize = require('../orm');
-const ProjectStatusModel = require('./ProjectStatus');
+const ProjectStatus = require('./ProjectStatus');
 
 const ProjectModel = sequelize.define('projects', {
     name: { type: Sequelize.STRING, allowNull: false },
     start_date: Sequelize.DATE,
-    ps_id: Sequelize.INTEGER,
+    ps_id: Sequelize.STRING,
     createdAt: {
       field: 'created_at',
       type: Sequelize.DATE
@@ -21,7 +21,7 @@ const ProjectModel = sequelize.define('projects', {
     }
   });
 
-ProjectModel.belongsTo(ProjectStatusModel, { foreignKey: 'status_id' });
+ProjectModel.belongsTo(ProjectStatus.model, { foreignKey: 'status_id' });
 
 class Project {
   constructor() {}
@@ -34,7 +34,7 @@ class Project {
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findOne({ where: params, include: ProjectStatusModel });
+    let find = ProjectModel.findOne({ where: params, include: ProjectStatus.model });
 
     return find.then(project => project ? (new Project()).setData(project.toJSON(), true) : project);
   }
@@ -43,7 +43,7 @@ class Project {
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findAll({ where: params, include: populate });
+    let find = ProjectModel.findAll({ where: params, include: ProjectStatus.model });
 
     return find.then(projects => projects ? projects.map(p => (new Project()).setData(p.toJSON(), true)) : []);
   }
@@ -68,7 +68,7 @@ class Project {
         resolve(Project.find({ id: project.id }));
       })
       .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
-    })
+    });
 
   }
 }

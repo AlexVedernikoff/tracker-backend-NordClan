@@ -13,9 +13,40 @@ const TaskStatusModel = sequelize.define('task_statuses', {
     updatedAt: {
       field: 'updated_at',
       type: Sequelize.DATE
-    }
+    },
+    is_open: { type: Sequelize.BOOLEAN, allowNull: false },
+    ps_name: { type: Sequelize.STRING, allowNull: false },
   }, {
     timestapms: false
   });
 
-module.exports = TaskStatusModel;
+class TaskStatus {
+  constructor() {}
+
+  static get model() {
+    return TaskStatusModel;
+  }
+
+  static find(params) {
+    let populate = params.populate;
+    delete params.populate;
+
+    let find = TaskStatusModel.findOne({ where: params });
+
+    return find.then(taskStatus => taskStatus ? (new TaskStatus())
+    .setData(taskStatus.toJSON(), true) : taskStatus);
+  }
+
+  setData(data = {}, isSafe) {
+    if (isSafe) {
+      this.id = data.id;
+    }
+
+    data = data.toObject ? data.toObject() : data;
+    Object.keys(data).map(k => this[k] = data[k]);
+
+    return this;
+  }
+}
+
+module.exports = TaskStatus;

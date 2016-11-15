@@ -8,15 +8,15 @@ const sequelize = require('../orm');
 const User = require('./User');
 const Project = require('./Project');
 
-const TaskPriorityModel = require('./TaskPriority');
-const TaskStatusModel = require('./TaskStatus');
+const TaskPriority = require('./TaskPriority');
+const TaskStatus = require('./TaskStatus');
 const TaskTypeModel = require('./TaskType');
 
 const TaskModel = sequelize.define('tasks', {
     name: { type: Sequelize.STRING, allowNull: false },
-    planned_time: Sequelize.DATE,
-    fact_time: Sequelize.DATE,
-    ps_id: Sequelize.INTEGER,
+    planned_time: Sequelize.INTEGER,
+    fact_time: Sequelize.INTEGER,
+    ps_id: Sequelize.STRING,
     createdAt: {
       field: 'created_at',
       type: Sequelize.DATE
@@ -31,8 +31,8 @@ TaskModel.belongsTo(Project.model, { foreignKey: 'project_id' });
 TaskModel.belongsTo(User.model, { as: 'owner', foreignKey: 'owner_id' });
 TaskModel.belongsTo(User.model, { as: 'author', foreignKey: 'author_id' });
 
-TaskModel.belongsTo(TaskPriorityModel, { foreignKey: 'priority_id' });
-TaskModel.belongsTo(TaskStatusModel, { foreignKey: 'status_id' });
+TaskModel.belongsTo(TaskPriority.model, { foreignKey: 'priority_id' });
+TaskModel.belongsTo(TaskStatus.model, { foreignKey: 'status_id' });
 TaskModel.belongsTo(TaskTypeModel, { foreignKey: 'type_id' });
 
 class Task {
@@ -43,7 +43,7 @@ class Task {
   }
 
   static find(params) {
-    let eagerLoad = [{ model: TaskPriorityModel }, { model: TaskStatusModel }, { model: TaskTypeModel }];
+    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskTypeModel }];
     let populate = params.populate;
     delete params.populate;
 
@@ -63,7 +63,7 @@ class Task {
   }
 
   static findAll(params) {
-    let eagerLoad = [{ model: TaskPriorityModel }, { model: TaskStatusModel }, { model: TaskTypeModel }];
+    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskTypeModel }];
     let populate = params.populate;
     delete params.populate;
 

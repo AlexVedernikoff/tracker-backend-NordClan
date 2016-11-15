@@ -16,6 +16,32 @@ const ProjectStatusModel = sequelize.define('project_statuses', {
     timestapms: false
   });
 
+class ProjectStatus {
+  constructor() {}
 
+  static get model() {
+    return ProjectStatusModel;
+  }
 
-module.exports = ProjectStatusModel;
+  static find(params) {
+    let populate = params.populate;
+    delete params.populate;
+
+    let find = ProjectStatusModel.findOne({ where: params });
+
+    return find.then(projectStatus => projectStatus ? (new ProjectStatus()).setData(projectStatus.toJSON(), true) : projectStatus);
+  }
+
+  setData(data = {}, isSafe) {
+    if (isSafe) {
+      this.id = data.id;
+    }
+
+    data = data.toObject ? data.toObject() : data;
+    Object.keys(data).map(k => this[k] = data[k]);
+
+    return this;
+  }
+}
+
+module.exports = ProjectStatus;
