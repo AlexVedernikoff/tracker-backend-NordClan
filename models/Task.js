@@ -43,22 +43,41 @@ class Task {
   }
 
   static find(params) {
+    let eagerLoad = [{ model: TaskPriorityModel }, { model: TaskStatusModel }, { model: TaskTypeModel }];
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.findOne({ where: params, include: [{ model: User.model, as: 'owner' },
-     { model: User.model, as: 'author' }, { model: Project.model }, { model: TaskPriorityModel },
-      { model: TaskStatusModel }, { model: TaskTypeModel }]});
+    if (populate && populate.owner) {
+      eagerLoad.push({ model: User.model, as: 'owner' });
+    }
+    if (populate && populate.author) {
+      eagerLoad.push({ model: User.model, as: 'author' });
+    }
+    if (populate && populate.project) {
+      eagerLoad.push({ model: Project.model });
+    }
+
+    let find = TaskModel.findOne({ where: params, include: eagerLoad });
 
     return find.then(task => task ? (new Task()).setData(task.toJSON(), true) : task);
   }
 
   static findAll(params) {
+    let eagerLoad = [{ model: TaskPriorityModel }, { model: TaskStatusModel }, { model: TaskTypeModel }];
     let populate = params.populate;
     delete params.populate;
 
-    let find = TaskModel.findAll({ where: params, include: [{ model: User.model, as: 'owner' },
-     { model: User.model, as: 'author' }, { model: Project.model }] });
+    if (populate && populate.owner) {
+      eagerLoad.push({ model: User.model, as: 'owner' });
+    }
+    if (populate && populate.author) {
+      eagerLoad.push({ model: User.model, as: 'author' });
+    }
+    if (populate && populate.project) {
+      eagerLoad.push({ model: Project.model });
+    }
+
+    let find = TaskModel.findAll({ where: params, include: eagerLoad });
 
     return find.then(tasks => tasks ? tasks.map(t => (new Task()).setData(t.toJSON(), true)) : tasks);
   }
