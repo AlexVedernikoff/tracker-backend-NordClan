@@ -29,7 +29,8 @@ class ProjectStatus {
 
     let find = ProjectStatusModel.findOne({ where: params });
 
-    return find.then(projectStatus => projectStatus ? (new ProjectStatus()).setData(projectStatus.toJSON(), true) : projectStatus);
+    return find.then(projectStatus => projectStatus ? (new ProjectStatus())
+    .setData(projectStatus.toJSON(), true) : projectStatus);
   }
 
   setData(data = {}, isSafe) {
