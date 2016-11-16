@@ -10,7 +10,7 @@ const User = require('./User');
 const Task = require('./Task');
 const ProjectStatus = require('./ProjectStatus');
 const TaskStatus = require('./TaskStatus');
-const TaskPriority = require('./TaskPriority');
+const TaskType = require('./TaskType');
 
 class PS {
   constructor(options) {
@@ -107,9 +107,9 @@ class PS {
       let task = new Task();
       task.setData({
         name: psTask.name,
-        status_id: status.id, // null не известны все статусы в системе PS
-        priority: psTask.priority,
-        type: psTask.type, //-- хэш приходит вместо значения хранить его в БД на типы забить, пустое поле
+        status_id: status.id, //может быть null т.к не известны все статусы в системе PS
+        priority_id: psTask.priority,
+        type: psTask.type, //-- хэш приходит вместо значения
         planned_time: psTask.plannedTime,
         fact_time: psTask.currentTime,
         owner_id: users.find(u => u.ps_id == psTask.owner.id).id,

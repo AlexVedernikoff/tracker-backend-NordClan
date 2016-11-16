@@ -10,7 +10,7 @@ const Project = require('./Project');
 
 const TaskPriority = require('./TaskPriority');
 const TaskStatus = require('./TaskStatus');
-const TaskTypeModel = require('./TaskType');
+const TaskType = require('./TaskType');
 
 const TaskModel = sequelize.define('tasks', {
     name: { type: Sequelize.STRING, allowNull: false },
@@ -33,7 +33,7 @@ TaskModel.belongsTo(User.model, { as: 'author', foreignKey: 'author_id' });
 
 TaskModel.belongsTo(TaskPriority.model, { foreignKey: 'priority_id' });
 TaskModel.belongsTo(TaskStatus.model, { foreignKey: 'status_id' });
-TaskModel.belongsTo(TaskTypeModel, { foreignKey: 'type_id' });
+TaskModel.belongsTo(TaskType.model, { foreignKey: 'type_id' });
 
 class Task {
   constructor() {}
@@ -43,7 +43,7 @@ class Task {
   }
 
   static find(params) {
-    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskTypeModel }];
+    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskType.model }];
     let populate = params.populate;
     delete params.populate;
 
@@ -63,7 +63,7 @@ class Task {
   }
 
   static findAll(params) {
-    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskTypeModel }];
+    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskType.model }];
     let populate = params.populate;
     delete params.populate;
 
