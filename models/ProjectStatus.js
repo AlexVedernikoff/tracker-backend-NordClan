@@ -24,9 +24,6 @@ class ProjectStatus {
   }
 
   static find(params) {
-    let populate = params.populate;
-    delete params.populate;
-
     let find = ProjectStatusModel.findOne({ where: params });
 
     return find.then(projectStatus => projectStatus ? (new ProjectStatus())

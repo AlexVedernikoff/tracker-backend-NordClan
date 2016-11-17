@@ -32,20 +32,37 @@ class Comment {
   }
 
   static find(params) {
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    let find = CommentModel.findOne({ where: params, include: [{ model: User.model },
-     { model: Task.model }]});
+    populate = populate ? populate.split(',') : [];
+    if (populate.indexOf('user') !== -1) {
+      eagerLoad.push({ model: User.model });
+    }
+    if (populate.indexOf('task') !== -1) {
+      eagerLoad.push({ model: Task.model });
+    }
+
+    let find = CommentModel.findOne({ where: params, include: eagerLoad });
 
     return find.then(comments => comments ? (new Comment()).setData(comments.toJSON(), true) : comments);
   }
 
   static findAll(params) {
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    let find = CommentModel.findAll({ where: params, include: populate });
+    populate = populate ? populate.split(',') : [];
+    if (populate.indexOf('user') !== -1) {
+      eagerLoad.push({ model: User.model });
+    }
+    if (populate.indexOf('task') !== -1) {
+      eagerLoad.push({ model: Task.model });
+    }
+
+    let find = CommentModel.findAll({ where: params, include: eagerLoad });
 
     return find.then(comments => comments ? comments.map(t => (new Comment()).setData(c.toJSON(), true)) : comments);
   }

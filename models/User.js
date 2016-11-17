@@ -35,19 +35,13 @@ class User {
   }
 
   static find(params) {
-    let populate = params.populate;
-    delete params.populate;
-
-    let find = UserModel.findOne({ where: params, include: populate });
+    let find = UserModel.findOne({ where: params });
 
     return find.then(user => user ? (new User()).setData(user.toJSON(), true) : user);
   }
 
   static findAll(params) {
-    let populate = params.populate;
-    delete params.populate;
-
-    let find = UserModel.findAll({ where: params, include: populate });
+    let find = UserModel.findAll({ where: params });
 
     return find.then(users => users ? users.map(u => (new User()).setData(u.toJSON(), true)) : []);
   }

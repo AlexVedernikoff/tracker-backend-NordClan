@@ -5,7 +5,7 @@ let router = require('koa-router')();
 let Task = require('../models/Task');
 
 router.get('/:taskId?', function *() {
-  if (this.params.taskId !== '{taskId}') {
+  if (this.params.taskId && this.params.taskId !== '{taskId}') {
     let task = yield Task.find({
       id: this.params.taskId,
       owner_id: this.request.user.id,

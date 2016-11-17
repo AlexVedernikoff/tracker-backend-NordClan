@@ -43,18 +43,28 @@ class Task {
   }
 
   static find(params) {
-    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskType.model }];
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    if (populate && populate.owner) {
+    populate = populate ? populate.split(',') : [];
+    if (populate.indexOf('owner') !== -1) {
       eagerLoad.push({ model: User.model, as: 'owner' });
     }
-    if (populate && populate.author) {
+    if (populate.indexOf('author') !== -1) {
       eagerLoad.push({ model: User.model, as: 'author' });
     }
-    if (populate && populate.project) {
+    if (populate.indexOf('project') !== -1) {
       eagerLoad.push({ model: Project.model });
+    }
+    if (populate.indexOf('taskPriority') !== -1) {
+      eagerLoad.push({ model: TaskPriority.model });
+    }
+    if (populate.indexOf('taskStatus') !== -1) {
+      eagerLoad.push({ model: TaskStatus.model });
+    }
+    if (populate.indexOf('taskType') !== -1) {
+      eagerLoad.push({ model: TaskType.model });
     }
 
     let find = TaskModel.findOne({ where: params, include: eagerLoad });
@@ -63,18 +73,28 @@ class Task {
   }
 
   static findAll(params) {
-    let eagerLoad = [{ model: TaskPriority.model }, { model: TaskStatus.model }, { model: TaskType.model }];
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    if (populate && populate.owner) {
+    populate = populate ? populate.split(',') : [];
+    if (populate.indexOf('owner') !== -1) {
       eagerLoad.push({ model: User.model, as: 'owner' });
     }
-    if (populate && populate.author) {
+    if (populate.indexOf('author') !== -1) {
       eagerLoad.push({ model: User.model, as: 'author' });
     }
-    if (populate && populate.project) {
+    if (populate.indexOf('project') !== -1) {
       eagerLoad.push({ model: Project.model });
+    }
+    if (populate.indexOf('taskPriority') !== -1) {
+      eagerLoad.push({ model: TaskPriority.model });
+    }
+    if (populate.indexOf('taskStatus') !== -1) {
+      eagerLoad.push({ model: TaskStatus.model });
+    }
+    if (populate.indexOf('taskType') !== -1) {
+      eagerLoad.push({ model: TaskType.model });
     }
 
     let find = TaskModel.findAll({ where: params, include: eagerLoad });

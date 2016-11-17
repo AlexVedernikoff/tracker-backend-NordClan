@@ -26,9 +26,6 @@ class TaskType {
   }
 
   static find(params) {
-    let populate = params.populate;
-    delete params.populate;
-
     let find = TaskTypeModel.findOne({ where: params });
 
     return find.then(taskType => taskType ? (new Project()).setData(taskType.toJSON(), true) : taskType);

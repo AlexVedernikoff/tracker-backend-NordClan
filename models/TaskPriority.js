@@ -24,9 +24,6 @@ class TaskPriority {
   }
 
   static find(params) {
-    let populate = params.populate;
-    delete params.populate;
-
     let find = TaskPriorityModel.findOne({ where: params });
 
     return find.then(taskPriority => taskPriority ? (new TaskPriority())

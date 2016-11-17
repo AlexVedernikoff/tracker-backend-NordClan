@@ -31,19 +31,31 @@ class Project {
   }
 
   static find(params) {
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findOne({ where: params, include: ProjectStatus.model });
+    populate = populate ? populate.split(',') : [];
+    if (populate.indexOf('projectStatus') !== -1) {
+      eagerLoad.push({ model: ProjectStatus.model });
+    }
+
+    let find = ProjectModel.findOne({ where: params, include: eagerLoad });
 
     return find.then(project => project ? (new Project()).setData(project.toJSON(), true) : project);
   }
 
   static findAll(params) {
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findAll({ where: params, include: ProjectStatus.model });
+    populate = populate ? populate.split(',') : [];
+    if (populate.indexOf('projectStatus') !== -1) {
+      eagerLoad.push({ model: ProjectStatus.model });
+    }
+
+    let find = ProjectModel.findAll({ where: params, include: eagerLoad });
 
     return find.then(projects => projects ? projects.map(p => (new Project()).setData(p.toJSON(), true)) : []);
   }

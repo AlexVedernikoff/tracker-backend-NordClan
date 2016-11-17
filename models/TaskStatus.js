@@ -28,9 +28,6 @@ class TaskStatus {
   }
 
   static find(params) {
-    let populate = params.populate;
-    delete params.populate;
-
     let find = TaskStatusModel.findOne({ where: params });
 
     return find.then(taskStatus => taskStatus ? (new TaskStatus())
