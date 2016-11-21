@@ -21,7 +21,7 @@ const ProjectModel = sequelize.define('projects', {
     }
   });
 
-ProjectModel.belongsTo(ProjectStatus.model, { foreignKey: 'status_id' });
+ProjectModel.belongsTo(ProjectStatus.model, { as: 'status', foreignKey: 'status_id' });
 
 class Project {
   constructor() {}
@@ -37,7 +37,7 @@ class Project {
 
     populate = populate ? populate.split(',') : [];
     let popObj = {
-      projectStatus: { model: ProjectStatus.model }
+      status: { model: ProjectStatus.model, as: 'status' }
     };
 
     populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
@@ -54,7 +54,7 @@ class Project {
 
     populate = populate ? populate.split(',') : [];
     let popObj = {
-      projectStatus: { model: ProjectStatus.model }
+      status: { model: ProjectStatus.model, as: 'status' }
     };
 
     populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
