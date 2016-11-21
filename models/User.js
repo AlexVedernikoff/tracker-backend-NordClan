@@ -1,54 +1,54 @@
 'use strict';
 
 const md5 = require('md5');
-const mongoose = require('mongoose');
-
+const sequelize = require('../orm');
+const Sequelize = require('sequelize');
 const HttpError = require('./HttpError');
 
-const UserSchema = new mongoose.Schema({
-  username: String,
-  firstnameRu: String,
-  lastnameRu: String,
-  firstnameEn: String,
-  lastnameEn: String,
-  email: String,
-  mobile: String,
-  skype: String,
-  photo: String,
-  birthday: String,
-  psId: String,
-}, { versionKey: false, timestamps: true });
-
-const UserModel = mongoose.model('User', UserSchema);
+const UserModel = sequelize.define('users', {
+    username: { type: Sequelize.STRING, allowNull: false },
+    firstname_ru: { type: Sequelize.STRING, allowNull: false },
+    lastname_ru: { type: Sequelize.STRING, allowNull: false },
+    firstname_en: Sequelize.STRING,
+    lastname_en: Sequelize.STRING,
+    email: Sequelize.STRING,
+    mobile: Sequelize.STRING,
+    skype: Sequelize.STRING,
+    photo: Sequelize.STRING,
+    birthday: Sequelize.DATE,
+    ps_id: Sequelize.STRING,
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    }
+  });
 
 class User {
   constructor() {}
 
+  static get model() {
+    return UserModel;
+  }
+
   static find(params) {
-    let populate = params.populate;
-    delete params.populate;
+    let find = UserModel.findOne({ where: params });
 
-    let find = UserModel.findOne(params);
-    if (populate) find.populate(populate);
-
-    return new Promise((resolve, reject) => find.exec(params, (err, doc) => err ? reject(err) : resolve(doc)))
-      .then(user => user ? (new User()).setData(user, true) : user);
+    return find.then(user => user ? (new User()).setData(user.toJSON(), true) : user);
   }
 
   static findAll(params) {
-    let populate = params.populate;
-    delete params.populate;
+    let find = UserModel.findAll({ where: params });
 
-    let find = UserModel.find(params);
-    if (populate) find.populate(populate);
-
-    return new Promise((resolve, reject) => find.exec(params, (err, docs) => err ? reject(err) : resolve(docs)))
-      .then(users => users ? users.map(u => (new User()).setData(u, true)) : []);
+    return find.then(users => users ? users.map(u => (new User()).setData(u.toJSON(), true)) : []);
   }
 
   setData(data = {}, isSafe) {
     if (isSafe) {
-      this._id = data._id;
+      this.id = data.id;
     }
 
     data = data.toObject ? data.toObject() : data;
@@ -58,11 +58,15 @@ class User {
   }
 
   save() {
-    let user = new UserModel(this);
-    if (this._id) task.isNew = false;
-    return new Promise((resolve, reject) =>
-      user.save((err, doc) => err ? reject(err) : resolve(User.find({ _id: user._id })))
-    ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    let user = UserModel.build(this);
+    if (this.id) user.isNewRecord = false;
+    return new Promise((resolve, reject) => {
+      user.save()
+      .then(function() {
+        resolve(User.find({ id: user.id }));
+      })
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    });
   }
 }
 

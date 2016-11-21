@@ -4,12 +4,12 @@ let router = require('koa-router')();
 
 let Task = require('../models/Task');
 
-router.get('/(:taskId)?', function *() {
-  if (this.params.taskId) {
+router.get('/:taskId?', function *() {
+  if (this.params.taskId && this.params.taskId !== '{taskId}') {
     let task = yield Task.find({
-      _id: this.params.taskId,
-      owner: this.request.user._id,
-      populate: 'owner author project'
+      id: this.params.taskId,
+      owner_id: this.request.user.id,
+      populate: this.request.query.populate
     });
     if (!task) this.throw(404, 'Task not found');
 
@@ -18,8 +18,8 @@ router.get('/(:taskId)?', function *() {
   }
 
   let tasks = yield Task.findAll({
-    owner: this.request.user._id,
-    populate: 'owner author project'
+    owner_id: this.request.user.id,
+    populate: this.request.query.populate
   });
 
   this.body = tasks;

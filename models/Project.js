@@ -1,47 +1,72 @@
 'use strict';
 
 const md5 = require('md5');
-const mongoose = require('mongoose');
 
 const HttpError = require('./HttpError');
+const Sequelize = require('sequelize');
+const sequelize = require('../orm');
+const ProjectStatus = require('./ProjectStatus');
 
-const ProjectSchema = new mongoose.Schema({
-  name: String,
-  status: String,
-  startDate: String,
-  psId: String,
-}, { versionKey: false, timestamps: true });
+const ProjectModel = sequelize.define('projects', {
+    name: { type: Sequelize.STRING, allowNull: false },
+    start_date: Sequelize.DATE,
+    ps_id: Sequelize.STRING,
+    createdAt: {
+      field: 'created_at',
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      field: 'updated_at',
+      type: Sequelize.DATE
+    }
+  });
 
-const ProjectModel = mongoose.model('Project', ProjectSchema);
+ProjectModel.belongsTo(ProjectStatus.model, { foreignKey: 'status_id' });
 
 class Project {
   constructor() {}
 
+  static get model() {
+    return ProjectModel;
+  }
+
   static find(params) {
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.findOne(params);
-    if (populate) find.populate(populate);
+    populate = populate ? populate.split(',') : [];
+    let popObj = {
+      projectStatus: { model: ProjectStatus.model }
+    };
 
-    return new Promise((resolve, reject) => find.exec(params, (err, doc) => err ? reject(err) : resolve(doc)))
-      .then(project => project ? (new Project()).setData(project, true) : project);
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
+
+    let find = ProjectModel.findOne({ where: params, include: eagerLoad });
+
+    return find.then(project => project ? (new Project()).setData(project.toJSON(), true) : project);
   }
 
   static findAll(params) {
+    let eagerLoad = [];
     let populate = params.populate;
     delete params.populate;
 
-    let find = ProjectModel.find(params);
-    if (populate) find.populate(populate);
+    populate = populate ? populate.split(',') : [];
+    let popObj = {
+      projectStatus: { model: ProjectStatus.model }
+    };
 
-    return new Promise((resolve, reject) => find.exec(params, (err, docs) => err ? reject(err) : resolve(docs)))
-      .then(projects => projects ? projects.map(p => (new Project()).setData(p, true)) : []);
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
+
+    let find = ProjectModel.findAll({ where: params, include: eagerLoad });
+
+    return find.then(projects => projects ? projects.map(p => (new Project()).setData(p.toJSON(), true)) : []);
   }
 
   setData(data = {}, isSafe) {
     if (isSafe) {
-      this._id = data._id;
+      this.id = data.id;
     }
 
     data = data.toObject ? data.toObject() : data;
@@ -51,11 +76,16 @@ class Project {
   }
 
   save() {
-    let project = new ProjectModel(this);
-    if (this._id) task.isNew = false;
-    return new Promise((resolve, reject) =>
-      project.save((err, doc) => err ? reject(err) : resolve(Project.find({ _id: project._id })))
-    ).catch(err => Promise.reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    let project = ProjectModel.build(this);
+    if (this.id) project.isNewRecord = false;
+    return new Promise((resolve, reject) => {
+      project.save()
+      .then(function() {
+        resolve(Project.find({ id: project.id }));
+      })
+      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
+    });
+
   }
 }
 

@@ -151,6 +151,11 @@ module.exports = {
             name: 'taskId',
             type: 'string',
             in: 'path'
+          },
+          {
+            name: 'populate',
+            type: 'string',
+            in: 'query',
           }
         ],
         responses: {
@@ -176,6 +181,11 @@ module.exports = {
             name: 'projectId',
             type: 'string',
             in: 'path'
+          },
+          {
+            name: 'populate',
+            type: 'string',
+            in: 'query',
           }
         ],
         responses: {
@@ -238,6 +248,11 @@ module.exports = {
             type: 'string',
             in: 'path',
             required: true
+          },
+          {
+            name: 'populate',
+            type: 'string',
+            in: 'query',
           }
         ],
         responses: {
