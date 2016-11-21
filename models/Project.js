@@ -36,9 +36,11 @@ class Project {
     delete params.populate;
 
     populate = populate ? populate.split(',') : [];
-    if (populate.indexOf('projectStatus') !== -1) {
-      eagerLoad.push({ model: ProjectStatus.model });
-    }
+    let popObj = {
+      projectStatus: { model: ProjectStatus.model }
+    };
+
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
     let find = ProjectModel.findOne({ where: params, include: eagerLoad });
 
@@ -51,9 +53,11 @@ class Project {
     delete params.populate;
 
     populate = populate ? populate.split(',') : [];
-    if (populate.indexOf('projectStatus') !== -1) {
-      eagerLoad.push({ model: ProjectStatus.model });
-    }
+    let popObj = {
+      projectStatus: { model: ProjectStatus.model }
+    };
+
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
     let find = ProjectModel.findAll({ where: params, include: eagerLoad });
 

@@ -37,12 +37,12 @@ class Comment {
     delete params.populate;
 
     populate = populate ? populate.split(',') : [];
-    if (populate.indexOf('user') !== -1) {
-      eagerLoad.push({ model: User.model });
-    }
-    if (populate.indexOf('task') !== -1) {
-      eagerLoad.push({ model: Task.model });
-    }
+    let popObj = {
+      user: { model: User.model },
+      task: { model: Task.model }
+    };
+
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
     let find = CommentModel.findOne({ where: params, include: eagerLoad });
 
@@ -55,12 +55,12 @@ class Comment {
     delete params.populate;
 
     populate = populate ? populate.split(',') : [];
-    if (populate.indexOf('user') !== -1) {
-      eagerLoad.push({ model: User.model });
-    }
-    if (populate.indexOf('task') !== -1) {
-      eagerLoad.push({ model: Task.model });
-    }
+    let popObj = {
+      user: { model: User.model },
+      task: { model: Task.model }
+    };
+
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
     let find = CommentModel.findAll({ where: params, include: eagerLoad });
 

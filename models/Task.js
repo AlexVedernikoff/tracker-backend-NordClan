@@ -48,24 +48,16 @@ class Task {
     delete params.populate;
 
     populate = populate ? populate.split(',') : [];
-    if (populate.indexOf('owner') !== -1) {
-      eagerLoad.push({ model: User.model, as: 'owner' });
-    }
-    if (populate.indexOf('author') !== -1) {
-      eagerLoad.push({ model: User.model, as: 'author' });
-    }
-    if (populate.indexOf('project') !== -1) {
-      eagerLoad.push({ model: Project.model });
-    }
-    if (populate.indexOf('taskPriority') !== -1) {
-      eagerLoad.push({ model: TaskPriority.model });
-    }
-    if (populate.indexOf('taskStatus') !== -1) {
-      eagerLoad.push({ model: TaskStatus.model });
-    }
-    if (populate.indexOf('taskType') !== -1) {
-      eagerLoad.push({ model: TaskType.model });
-    }
+    let popObj = {
+      owner: { model: User.model, as: 'owner' },
+      author: { model: User.model, as: 'author' },
+      project: { model: Project.model },
+      taskPriority: { model: TaskPriority.model },
+      taskStatus: { model: TaskStatus.model },
+      taskType: { model: TaskType.model }
+    };
+
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
     let find = TaskModel.findOne({ where: params, include: eagerLoad });
 
@@ -78,24 +70,16 @@ class Task {
     delete params.populate;
 
     populate = populate ? populate.split(',') : [];
-    if (populate.indexOf('owner') !== -1) {
-      eagerLoad.push({ model: User.model, as: 'owner' });
-    }
-    if (populate.indexOf('author') !== -1) {
-      eagerLoad.push({ model: User.model, as: 'author' });
-    }
-    if (populate.indexOf('project') !== -1) {
-      eagerLoad.push({ model: Project.model });
-    }
-    if (populate.indexOf('taskPriority') !== -1) {
-      eagerLoad.push({ model: TaskPriority.model });
-    }
-    if (populate.indexOf('taskStatus') !== -1) {
-      eagerLoad.push({ model: TaskStatus.model });
-    }
-    if (populate.indexOf('taskType') !== -1) {
-      eagerLoad.push({ model: TaskType.model });
-    }
+    let popObj = {
+      owner: { model: User.model, as: 'owner' },
+      author: { model: User.model, as: 'author' },
+      project: { model: Project.model },
+      taskPriority: { model: TaskPriority.model },
+      taskStatus: { model: TaskStatus.model },
+      taskType: { model: TaskType.model }
+    };
+
+    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
     let find = TaskModel.findAll({ where: params, include: eagerLoad });
 
