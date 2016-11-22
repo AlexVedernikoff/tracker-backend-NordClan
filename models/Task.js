@@ -31,9 +31,9 @@ TaskModel.belongsTo(Project.model, { foreignKey: 'project_id' });
 TaskModel.belongsTo(User.model, { as: 'owner', foreignKey: 'owner_id' });
 TaskModel.belongsTo(User.model, { as: 'author', foreignKey: 'author_id' });
 
-TaskModel.belongsTo(TaskPriority.model, { foreignKey: 'priority_id' });
-TaskModel.belongsTo(TaskStatus.model, { foreignKey: 'status_id' });
-TaskModel.belongsTo(TaskType.model, { foreignKey: 'type_id' });
+TaskModel.belongsTo(TaskPriority.model, { as: 'priority', foreignKey: 'priority_id' });
+TaskModel.belongsTo(TaskStatus.model, { as: 'status', foreignKey: 'status_id' });
+TaskModel.belongsTo(TaskType.model, { as: 'type',  foreignKey: 'type_id' });
 
 class Task {
   constructor() {}
@@ -51,10 +51,10 @@ class Task {
     let popObj = {
       owner: { model: User.model, as: 'owner' },
       author: { model: User.model, as: 'author' },
-      project: { model: Project.model },
-      taskPriority: { model: TaskPriority.model },
-      taskStatus: { model: TaskStatus.model },
-      taskType: { model: TaskType.model }
+      project: { model: Project.model, as: 'project' },
+      priority: { model: TaskPriority.model, as: 'priority' },
+      status: { model: TaskStatus.model, as: 'status' },
+      type: { model: TaskType.model, as: 'type' }
     };
 
     populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
@@ -73,10 +73,10 @@ class Task {
     let popObj = {
       owner: { model: User.model, as: 'owner' },
       author: { model: User.model, as: 'author' },
-      project: { model: Project.model },
-      taskPriority: { model: TaskPriority.model },
-      taskStatus: { model: TaskStatus.model },
-      taskType: { model: TaskType.model }
+      project: { model: Project.model, as: 'project' },
+      priority: { model: TaskPriority.model, as: 'priority' },
+      status: { model: TaskStatus.model, as: 'status' },
+      type: { model: TaskType.model, as: 'type' }
     };
 
     populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);

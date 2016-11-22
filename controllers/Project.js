@@ -5,7 +5,7 @@ let router = require('koa-router')();
 let Project = require('../models/Project');
 
 router.get('/:projectId?', function *() {
-  if (this.params.projectId && this.params.projectId !== '{projectId}') {
+  if (this.params.projectId) {
     let project = yield Project.find({
       id: this.params.projectId,
       populate: this.request.query.populate

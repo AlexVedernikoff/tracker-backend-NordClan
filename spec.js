@@ -145,13 +145,39 @@ module.exports = {
     '/task/{taskId}': {
       get: {
         tags: ['Tasks'],
-        summary: 'Получить все или конкретный таск',
+        summary: 'Получить конкретный таск',
         parameters: [
           {
             name: 'taskId',
             type: 'string',
-            in: 'path'
+            in: 'path',
+            required: true
           },
+          {
+            name: 'populate',
+            type: 'string',
+            in: 'query',
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            schema: { $ref: '#/definitions/Task' }
+          },
+          '401': {
+            description: 'Токен невалидный'
+          },
+          '50x': {
+            description: 'Ошибка сервера'
+          }
+        }
+      }
+    },
+    '/task': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Получить все таски',
+        parameters: [
           {
             name: 'populate',
             type: 'string',
@@ -175,13 +201,39 @@ module.exports = {
     '/project/{projectId}': {
       get: {
         tags: ['Projects'],
-        summary: 'Получить все или конкретный проект',
+        summary: 'Получить конкретный проект',
         parameters: [
           {
             name: 'projectId',
             type: 'string',
-            in: 'path'
+            in: 'path',
+            required: true
           },
+          {
+            name: 'populate',
+            type: 'string',
+            in: 'query',
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            schema: { $ref: '#/definitions/Project' }
+          },
+          '401': {
+            description: 'Токен невалидный'
+          },
+          '50x': {
+            description: 'Ошибка сервера'
+          }
+        }
+      }
+    },
+    '/project': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить все проекты',
+        parameters: [
           {
             name: 'populate',
             type: 'string',
