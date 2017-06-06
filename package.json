@@ -1,0 +1,21 @@
+{
+  "name": "sim-track-back",
+  "version": "1.0.0",
+  "description": "readme",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.simbirsoft:frontend/sim-track-back.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "pg": "^6.2.3",
+    "sequelize": "^3.30.4"
+  }
+}
