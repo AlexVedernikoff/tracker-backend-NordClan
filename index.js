@@ -1,11 +1,9 @@
 const express = require('express');
 const app = express();
-const router = express.Router();
 const path = require('path');
 const bodyParser = require('body-parser');
-const Sequelize = require('sequelize');
 const sequelize = require('./orm');
-const ProjectController = require('./controllers/Project');
+const routes = require('./controllers/index');
 
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -13,12 +11,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 
+app.all('*', function(req, res, next){
+	res.setHeader('Content-Type', 'application/json');
+	res.setHeader('Cache-Control', 'no-cache');
+	next();
+});
 
-app.post('/project/', ProjectController.create);
-app.get('/project/:id', ProjectController.read);
-app.put('/project/:id', ProjectController.update);
-app.del('/project/:id', ProjectController.delete)
-app.get('/projects', ProjectController.list);
+
+app.use('/', routes);
+
 
 sequelize
 	.authenticate()
@@ -28,8 +29,8 @@ sequelize
 		console.log('Unable to connect to the database:', err);
 	});
 
+
 app.listen(3000, () => {
 	console.log('listen 3000');
 });
 
-module.exports = app;
