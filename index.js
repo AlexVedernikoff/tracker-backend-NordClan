@@ -1,4 +1,5 @@
 const express = require('express');
+const swagger = require('swagger-express');
 const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -18,7 +19,20 @@ app.all('*', function(req, res, next){
 });
 
 
-app.use('/', routes);
+app.use(swagger.init(app, {
+	apiVersion: '1.0',
+	swaggerVersion: '2.0',
+	swaggerURL: '/',
+	swaggerUI: './public/swagger/',
+	basePath: '/api',
+}));
+
+app.get('/swagger/spec.js', function(req, res) {
+	res.send(require('./spec.js'));
+});
+
+
+app.use('/api', routes);
 
 
 sequelize
