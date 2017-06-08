@@ -1,6 +1,7 @@
-//const HttpError = require('./HttpError');
 const Sequelize = require('sequelize');
+const sequelizeTransforms = require('sequelize-transforms');
 const sequelize = require('../orm');
+sequelizeTransforms(sequelize);
 
 const ProjectModel = sequelize.define("Project", {
 	id: {
@@ -11,51 +12,93 @@ const ProjectModel = sequelize.define("Project", {
 	},
 	name: {
 		type: Sequelize.STRING,
-		defaultValue: null
+		trim: true,
+		allowNull: false,
+		validate: {
+			max: {
+				args: 255,
+				msg: 'Name must be less than 255 characters.'
+			}
+		}
 	},
 	description: {
+		trim: true,
 		type: Sequelize.TEXT,
 		defaultValue: null
 	},
 	status_id: {
 		type: Sequelize.INTEGER,
-		defaultValue: 0
+		defaultValue: 0,
+		validate: {
+			isInt: true,
+			min: 0,
+			max: 9
+		}
 	},
 	type_id: {
 		type: Sequelize.INTEGER,
-		defaultValue: 0
+		allowNull: false,
+		validate: {
+			isInt: true
+		}
 	},
 	notbillable: {
 		type: Sequelize.INTEGER(1),
-		defaultValue: 0
+		defaultValue: 0,
+		validate: {
+			isInt: true,
+			min: 0,
+			max: 1
+		}
 	},
 	budget: {
 		type: Sequelize.FLOAT,
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			isNumeric: true
+		}
 	},
 	risk_budget: {
 		type: Sequelize.FLOAT,
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			isNumeric: true
+		}
 	},
 	planned_start_date: {
 		type: Sequelize.DATE,
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			isDate: true,
+		}
 	},
 	planned_finish_date: {
 		type: Sequelize.DATE,
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			isDate: true,
+		}
 	},
 	fact_start_date: {
 		type: Sequelize.DATE,
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			isDate: true,
+		}
 	},
 	fact_finish_date: {
 		type: Sequelize.DATE,
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			isDate: true,
+		}
 	},
 	attaches: {
 		type: Sequelize.ARRAY(Sequelize.INTEGER),
-		defaultValue: null
+		defaultValue: null,
+		validate: {
+			notEmpty: true, // не пустая строка
+		}
 	},
 
 }, {
@@ -65,45 +108,4 @@ const ProjectModel = sequelize.define("Project", {
 });
 
 
-
-class Project {
-	constructor(attributes) {
-			this.attributes = {};
-			this.setAttributes(attributes)
-	};
-
-
-
-	static get model() {
-		return ProjectModel;
-	};
-
-	setAttributes(attributes) {
-		this.attributes = {
-			name: attributes.name,
-			description: attributes.description,
-			status_id: attributes.status_id,
-			type_id: attributes.type_id,
-			prefix: attributes.prefix,
-			notbillable: attributes.notbillable,
-			budget: attributes.budget,
-			risk_budget: attributes.risk_budget,
-			planned_start_date: attributes.planned_start_date,
-			planned_finish_date: attributes.planned_finish_date,
-			fact_start_date: attributes.fact_start_date,
-			fact_finish_date: attributes.fact_finish_date,
-			attaches: attributes.attaches,
-		};
-
-
-	};
-
-	getAttributes() {
-		return this.attributes;
-	};
-
-
-
-}
-
-module.exports = Project;
+module.exports = ProjectModel;

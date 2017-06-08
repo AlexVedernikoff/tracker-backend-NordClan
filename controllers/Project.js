@@ -1,30 +1,30 @@
 const createError = require('http-errors');
 const ProjectModel = require('../models/Project');
-const BaseController = require('./BaseController');
+
 
 exports.create = function(req, res, next){
 
-	ProjectModel.model.create(new ProjectModel(req.body).getAttributes())
+	ProjectModel.create(req.body)
 		.then(() => {
 			res.end();
 		})
 		.catch((err) => {
-			next(createError(err));
-	});
+			next(err);
+		});
 
 };
 
 
 exports.read = function(req, res, next){
 
-	ProjectModel.model.findById(req.params.id)
+	ProjectModel.findByPrimary(req.params.id)
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
 			res.end(JSON.stringify(project.dataValues));
 		})
 		.catch((err) => {
-			next(createError(err));
+			next(err);
 	});
 
 };
@@ -32,22 +32,22 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
 
-	ProjectModel.model.findById(req.params.id)
+	ProjectModel.findByPrimary(req.params.id)
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
 
-			project.updateAttributes(new ProjectModel(req.body).getAttributes())
+			project.updateAttributes(req.body)
 				.then(()=>{
 					res.end();
 				})
 				.catch((err) => {
-					next(createError(err));
+					next(err);
 				});
 
 		})
 		.catch((err) => {
-			next(createError(err));
+			next(err);
 		});
 
 };
@@ -55,7 +55,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	ProjectModel.model.findById(req.params.id)
+	ProjectModel.findByPrimary(req.params.id)
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
@@ -64,12 +64,12 @@ exports.delete = function(req, res, next){
 					res.end();
 				})
 				.catch((err) => {
-					next(createError(err));
+					next(err);
 			});
 
 		})
 		.catch((err) => {
-			next(createError(err));
+			next(err);
 	});
 
 };
@@ -77,7 +77,7 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
-	ProjectModel.model.findAndCountAll({
+	ProjectModel.findAndCountAll({
 			limit: req.query.limit ? req.query.limit : 10,
 			offset: req.query.limit && req.query.page ? +req.query.limit * +req.query.page : 0,
 		})
@@ -91,7 +91,7 @@ exports.list = function(req, res, next){
 			res.end(JSON.stringify(projects));
 		})
 		.catch((err) => {
-			next(createError(err));
+			next(err);
 		});
 };
 
@@ -102,6 +102,6 @@ exports.syncForce = function(req, res, next) {
 			res.end();
 		})
 		.catch((err) => {
-			next(createError(err));
+			next(err);
 		});
 };

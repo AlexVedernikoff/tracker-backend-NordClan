@@ -13,11 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "api-error-handler": "^1.0.0",
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "http-errors": "^1.6.1",
     "pg": "^6.2.3",
     "sequelize": "^3.30.4",
+    "sequelize-transforms": "^1.0.0",
     "swagger-express": "^1.0.5"
   }
 }
