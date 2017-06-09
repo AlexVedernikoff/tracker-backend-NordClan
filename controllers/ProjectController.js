@@ -1,10 +1,10 @@
 const createError = require('http-errors');
-const ProjectModel = require('../models/Project');
+const Project = require('../models/Project');
 
 
 exports.create = function(req, res, next){
 
-	ProjectModel.create(req.body)
+	Project.create(req.body)
 		.then(() => {
 			res.end();
 		})
@@ -17,7 +17,7 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
 
-	ProjectModel.findByPrimary(req.params.id)
+	Project.findByPrimary(req.params.id)
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
@@ -32,7 +32,7 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
 
-	ProjectModel.findByPrimary(req.params.id)
+	Project.findByPrimary(req.params.id)
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
@@ -55,7 +55,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	ProjectModel.findByPrimary(req.params.id)
+	Project.findByPrimary(req.params.id)
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
@@ -77,7 +77,7 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
-	ProjectModel.findAndCountAll({
+	Project.findAndCountAll({
 			limit: req.query.limit ? req.query.limit : 10,
 			offset: req.query.limit && req.query.page ? +req.query.limit * +req.query.page : 0,
 		})
@@ -97,7 +97,7 @@ exports.list = function(req, res, next){
 
 
 exports.syncForce = function(req, res, next) {
-	ProjectModel.model.sync({force: true})
+	Project.sync({force: true})
 		.then(() => {
 			res.end();
 		})

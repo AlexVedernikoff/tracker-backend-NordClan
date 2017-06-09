@@ -8,6 +8,12 @@ const production = process.env.NODE_ENV === 'production';
 module.exports = function () {
 	return function apiErrorHandler(err, req, res, next) {
 
+
+		if(err instanceof Sequelize.ForeignKeyConstraintError) {
+			err.status = 400;
+		}
+
+
 		doValidationErrorIfNeed();
 		return sendError();
 

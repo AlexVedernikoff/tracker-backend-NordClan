@@ -1,9 +1,10 @@
 const Sequelize = require('sequelize');
 const sequelizeTransforms = require('sequelize-transforms');
 const sequelize = require('../orm');
+const Portfolio = require('./Portfolio');
 sequelizeTransforms(sequelize);
 
-const ProjectModel = sequelize.define("Project", {
+const Project = sequelize.define("Project", {
 	id: {
 		type: Sequelize.INTEGER,
 		primaryKey: true,
@@ -43,7 +44,7 @@ const ProjectModel = sequelize.define("Project", {
 		}
 	},
 	notbillable: {
-		type: Sequelize.INTEGER(1),
+		type: Sequelize.INTEGER,
 		defaultValue: 0,
 		validate: {
 			isInt: true,
@@ -107,5 +108,6 @@ const ProjectModel = sequelize.define("Project", {
 	tableName: 'projects'
 });
 
+Project.belongsTo(Portfolio, {foreignKey: 'portfolio_id'});
 
-module.exports = ProjectModel;
+module.exports = Project;
