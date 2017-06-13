@@ -4,7 +4,7 @@ const sequelize = require('../orm');
 const Portfolio = require('./Portfolio');
 sequelizeTransforms(sequelize);
 
-const Project = sequelize.define("Project", {
+const Project = sequelize.define("projects", {
 	id: {
 		type: Sequelize.INTEGER,
 		primaryKey: true,
@@ -116,24 +116,20 @@ const Project = sequelize.define("Project", {
 			isInt: true
 		}
 	},
-	createdAt: {
-		field: 'created_at',
-		type: Sequelize.DATE,
-		allowNull: false,
-	},
-	updatedAt: {
-		field: 'updated_at',
-		type: Sequelize.DATE,
-		allowNull: false,
-	},
+	createdAt: {type: Sequelize.DATE, field: 'created_at'},
+	updatedAt: {type: Sequelize.DATE, field: 'updated_at'},
+	deletedAt: {type: Sequelize.DATE, field: 'deleted_at'}
 
 }, {
-	timestamps: true,
-	paranoid: false,
 	underscored: true,
+	timestamps: true,
+	paranoid: true,
 	tableName: 'projects'
 });
 
-Project.belongsTo(Portfolio, {foreignKey: 'portfolio_id'});
+Project.belongsTo(Portfolio, {foreignKey: {
+	name: 'portfolioId',
+	field: 'portfolio_id'
+}});
 
 module.exports = Project;

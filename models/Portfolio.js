@@ -3,7 +3,7 @@ const sequelizeTransforms = require('sequelize-transforms');
 const sequelize = require('../orm');
 sequelizeTransforms(sequelize);
 
-const Portfolio = sequelize.define("Project", {
+const Portfolio = sequelize.define("Portfolio", {
 	id: {
 		type: Sequelize.INTEGER,
 		primaryKey: true,
@@ -26,9 +26,13 @@ const Portfolio = sequelize.define("Project", {
 		type: Sequelize.TEXT,
 		defaultValue: null
 	},
+	createdAt: {type: Sequelize.DATE, field: 'created_at'},
+	updatedAt: {type: Sequelize.DATE, field: 'updated_at'},
+	deletedAt: {type: Sequelize.DATE, field: 'deleted_at'}
 }, {
-	paranoid: false,
 	underscored: true,
+	timestamps: true,
+	paranoid: true,
 	tableName: 'portfolios'
 });
 
