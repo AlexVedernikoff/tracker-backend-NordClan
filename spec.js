@@ -28,12 +28,12 @@ module.exports = {
 				summary: 'Получить все проекты',
 				parameters: [
 					{
-						name: 'limit',
+						name: 'pageSize',
 						type: 'integer',
 						in: 'query',
 					},
 					{
-						name: 'page',
+						name: 'currentPage',
 						type: 'integer',
 						in: 'query',
 					}
@@ -52,7 +52,7 @@ module.exports = {
 						example: 'string'
 					},
 					{
-						name: 'type_id',
+						name: 'typeId',
 						required: "true",
 						type: 'integer',
 						in: 'formData',
@@ -63,12 +63,12 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'status_id',
+						name: 'statusId',
 						type: 'integer',
 						in: 'formData',
 					},
 					{
-						name: 'portfolio_id',
+						name: 'portfolioId',
 						type: 'integer',
 						in: 'formData',
 					},
@@ -83,30 +83,30 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'risk_budget',
+						name: 'riskBudget',
 						type: 'number',
 						in: 'formData',
 					},
 					{
-						name: 'planned_start_date',
+						name: 'plannedStartDate',
 						type: 'string',
 						format: 'date',
 						in: 'formData',
 					},
 					{
-						name: 'planned_finish_date',
+						name: 'plannedFinishDate',
 						type: 'string',
 						format: 'date',
 						in: 'formData',
 					},
 					{
-						name: 'fact_start_date',
+						name: 'factStartDate',
 						type: 'string',
 						format: 'date',
 						in: 'formData',
 					},
 					{
-						name: 'fact_finish_date',
+						name: 'factFinishDate',
 						type: 'string',
 						format: 'date',
 						in: 'formData',
@@ -150,12 +150,12 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'status_id',
+						name: 'statusId',
 						type: 'integer',
 						in: 'formData',
 					},
 					{
-						name: 'type_id',
+						name: 'typeId',
 						type: 'integer',
 						in: 'formData',
 					},
@@ -170,27 +170,27 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'risk_budget',
+						name: 'risBudget',
 						type: 'numeric',
 						in: 'formData',
 					},
 					{
-						name: 'planned_start_date',
+						name: 'plannedStartDate',
 						type: 'date',
 						in: 'formData',
 					},
 					{
-						name: 'planned_finish_date',
+						name: 'plannedFinishDate',
 						type: 'date',
 						in: 'formData',
 					},
 					{
-						name: 'fact_start_date',
+						name: 'factStartDate',
 						type: 'date',
 						in: 'formData',
 					},
 					{
-						name: 'fact_finish_date',
+						name: 'factFinishDate',
 						type: 'date',
 						in: 'formData',
 					}

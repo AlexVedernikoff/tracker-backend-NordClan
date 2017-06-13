@@ -77,18 +77,34 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
+
 	Project.findAndCountAll({
-			limit: req.query.limit ? req.query.limit : 10,
-			offset: req.query.limit && req.query.page ? +req.query.limit * +req.query.page : 0,
+			limit: req.query.pageSize ? req.query.pageSize : 10,
+			offset: req.query.pageSize && req.query.page ? +req.query.pageSize * +req.query.page : 0,
 		})
 		.then(projects => {
-			projects = projects.rows ?
+
+			req.query.currentPage = req.query.currentPage ? req.query.currentPage : 1;
+			req.query.pageSize = req.query.pageSize ? req.query.pageSize : projects.count;
+
+
+			let projectsRows = projects.rows ?
 				projects.rows.map(
 					item =>
 						item.dataValues
 				) : [];
 
-			res.end(JSON.stringify(projects));
+
+			let responseObject = {
+				currentPage: req.query.currentPage,
+				pagesCount: Math.ceil(projects.count / req.query.pageSize),
+				pageSize: req.query.pageSize,
+				rowsCountAll: projects.count,
+				rowsCountOnCurrentPage: projectsRows.length,
+				data: projectsRows
+			};
+
+			res.end(JSON.stringify(responseObject));
 		})
 		.catch((err) => {
 			next(err);

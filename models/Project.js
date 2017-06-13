@@ -27,7 +27,8 @@ const Project = sequelize.define("Project", {
 		type: Sequelize.TEXT,
 		defaultValue: null
 	},
-	status_id: {
+	statusId: {
+		field: 'status_id',
 		type: Sequelize.INTEGER,
 		defaultValue: 0,
 		validate: {
@@ -36,7 +37,8 @@ const Project = sequelize.define("Project", {
 			max: 9
 		}
 	},
-	type_id: {
+	typeId: {
+		field: 'type_id',
 		type: Sequelize.INTEGER,
 		allowNull: false,
 		validate: {
@@ -59,35 +61,40 @@ const Project = sequelize.define("Project", {
 			isNumeric: true
 		}
 	},
-	risk_budget: {
+	riskBudget: {
+		field: 'risk_budget',
 		type: Sequelize.FLOAT,
 		defaultValue: null,
 		validate: {
 			isNumeric: true
 		}
 	},
-	planned_start_date: {
+	plannedStartDate: {
+		field: 'planned_start_date',
 		type: Sequelize.DATE,
 		defaultValue: null,
 		validate: {
 			isDate: true,
 		}
 	},
-	planned_finish_date: {
+	plannedFinishDate: {
+		field: 'planned_finish_date',
 		type: Sequelize.DATE,
 		defaultValue: null,
 		validate: {
 			isDate: true,
 		}
 	},
-	fact_start_date: {
+	factStartDate: {
+		field: 'fact_start_date',
 		type: Sequelize.DATE,
 		defaultValue: null,
 		validate: {
 			isDate: true,
 		}
 	},
-	fact_finish_date: {
+	factFinishDate: {
+		field: 'fact_finish_date',
 		type: Sequelize.DATE,
 		defaultValue: null,
 		validate: {
@@ -101,8 +108,27 @@ const Project = sequelize.define("Project", {
 			notEmpty: true, // не пустая строка
 		}
 	},
+	portfolioId: {
+		field: 'portfolio_id',
+		type: Sequelize.INTEGER,
+		defaultValue: null,
+		validate: {
+			isInt: true
+		}
+	},
+	createdAt: {
+		field: 'created_at',
+		type: Sequelize.DATE,
+		allowNull: false,
+	},
+	updatedAt: {
+		field: 'updated_at',
+		type: Sequelize.DATE,
+		allowNull: false,
+	},
 
 }, {
+	timestamps: true,
 	paranoid: false,
 	underscored: true,
 	tableName: 'projects'
