@@ -1,4 +1,4 @@
-const responses = {
+const responsesCodes = {
 	'200': {
 		description: 'OK',
 		schema: { $ref: '#/definitions/Project' }
@@ -13,6 +13,8 @@ const responses = {
 		description: 'Ошибка сервера'
 	}
 };
+
+
 
 module.exports = {
 	swagger: '2.0',
@@ -38,7 +40,7 @@ module.exports = {
 						in: 'query',
 					}
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			post: {
 				tags: ['Projects'],
@@ -46,10 +48,10 @@ module.exports = {
 				parameters: [
 					{
 						name: 'name',
-						required: "true",
 						type: 'string',
 						in: 'formData',
-						example: 'string'
+						example: 'string',
+						required: true
 					},
 					{
 						name: 'typeId',
@@ -112,7 +114,7 @@ module.exports = {
 						in: 'formData',
 					}
 				],
-				responses: responses
+				responses: responsesCodes
 			}
 		},
 		'/project/{projectId}': {
@@ -127,7 +129,7 @@ module.exports = {
 						required: true
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			put: {
 				tags: ['Projects'],
@@ -195,7 +197,7 @@ module.exports = {
 						in: 'formData',
 					}
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			delete: {
 				tags: ['Projects'],
@@ -208,7 +210,7 @@ module.exports = {
 						required: true
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 		},
 
@@ -231,7 +233,7 @@ module.exports = {
 						in: 'query',
 					}
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			post: {
 				tags: ['Portfolios'],
@@ -239,9 +241,9 @@ module.exports = {
 				parameters: [
 					{
 						name: 'name',
-						required: "true",
 						type: 'string',
 						in: 'formData',
+						required: true
 					},
 					{
 						name: 'description',
@@ -249,7 +251,7 @@ module.exports = {
 						in: 'formData',
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			}
 		},
 		'/portfolio/{portfolioId}': {
@@ -264,7 +266,7 @@ module.exports = {
 						required: true
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			put: {
 				tags: ['Portfolios'],
@@ -287,7 +289,7 @@ module.exports = {
 						in: 'formData',
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			delete: {
 				tags: ['Portfolios'],
@@ -300,7 +302,7 @@ module.exports = {
 						required: true
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 		},
 
@@ -323,7 +325,7 @@ module.exports = {
 						in: 'query',
 					}
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			post: {
 				tags: ['Sprints'],
@@ -331,9 +333,9 @@ module.exports = {
 				parameters: [
 					{
 						name: 'name',
-						required: "true",
 						type: 'string',
 						in: 'formData',
+						required: true
 					},
 					{
 						name: 'description',
@@ -370,7 +372,7 @@ module.exports = {
 						in: 'formData',
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			}
 		},
 		'/sprint/{sprintId}': {
@@ -385,7 +387,7 @@ module.exports = {
 						required: true
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			put: {
 				tags: ['Sprints'],
@@ -437,7 +439,7 @@ module.exports = {
 						in: 'formData',
 					},
 				],
-				responses: responses
+				responses: responsesCodes
 			},
 			delete: {
 				tags: ['Sprints'],
@@ -450,7 +452,173 @@ module.exports = {
 						required: true
 					},
 				],
-				responses: responses
+				responses: responsesCodes
+			},
+		},
+
+
+
+
+		'/task': {
+			get: {
+				tags: ['Tasks'],
+				summary: 'Получить все задачи',
+				parameters: [
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
+						in: 'query',
+					}
+				],
+				responses: responsesCodes
+			},
+			post: {
+				tags: ['Tasks'],
+				summary: 'Создать задачу',
+				parameters: [
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'typeId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'PlannedExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'FactExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'prioritiesId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'linkedTasks',
+						type: 'string',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			}
+		},
+		'/task/{sprintId}': {
+			get: {
+				tags: ['Tasks'],
+				summary: 'Получить конкретную задачу',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+			put: {
+				tags: ['Tasks'],
+				summary: 'Изменить конкретную задачу',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'PlannedExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'FactExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'typeId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'prioritiesId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'linkedTasks',
+						type: 'string',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			},
+			delete: {
+				tags: ['Tasks'],
+				summary: 'Удалить конкретную задачу',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
 			},
 		},
 

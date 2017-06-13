@@ -3,6 +3,7 @@ const router = express.Router();
 const ProjectController = require('./ProjectController');
 const PortfolioController = require('./PortfolioController');
 const SprintController = require('./SprintController');
+const TaskController = require('./TaskController');
 
 
 router.post('/project', ProjectController.create);
@@ -24,10 +25,17 @@ router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
 
+router.post('/task', TaskController.create);
+router.get('/task/:id', TaskController.read);
+router.put('/task/:id', TaskController.update);
+router.delete('/task/:id', TaskController.delete);
+router.get('/task', TaskController.list);
+
 
 router.get('/project-sync-force', ProjectController.syncForce);
 router.get('/portfolio-sync-force', PortfolioController.syncForce);
 router.get('/sprint-sync-force', SprintController.syncForce);
+router.get('/task-sync-force', TaskController.syncForce);
 
 
 
