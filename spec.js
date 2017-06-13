@@ -213,18 +213,20 @@ module.exports = {
 		},
 
 
+
+
 		'/portfolio': {
 			get: {
 				tags: ['Portfolios'],
 				summary: 'Получить все портфели',
 				parameters: [
 					{
-						name: 'limit',
+						name: 'pageSize',
 						type: 'integer',
 						in: 'query',
 					},
 					{
-						name: 'page',
+						name: 'currentPage',
 						type: 'integer',
 						in: 'query',
 					}
@@ -293,6 +295,156 @@ module.exports = {
 				parameters: [
 					{
 						name: 'portfolioId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responses
+			},
+		},
+
+
+
+
+		'/sprint': {
+			get: {
+				tags: ['Sprints'],
+				summary: 'Получить все спринты',
+				parameters: [
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
+						in: 'query',
+					}
+				],
+				responses: responses
+			},
+			post: {
+				tags: ['Sprints'],
+				summary: 'Создать спринт',
+				parameters: [
+					{
+						name: 'name',
+						required: "true",
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'plannedStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'plannedFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+					},
+				],
+				responses: responses
+			}
+		},
+		'/sprint/{sprintId}': {
+			get: {
+				tags: ['Sprints'],
+				summary: 'Получить конкретный портфель',
+				parameters: [
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responses
+			},
+			put: {
+				tags: ['Sprints'],
+				summary: 'Изменить конкретный портфель',
+				parameters: [
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'plannedStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'plannedFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+					},
+				],
+				responses: responses
+			},
+			delete: {
+				tags: ['Sprints'],
+				summary: 'Удалить конкретный спринт',
+				parameters: [
+					{
+						name: 'sprintId',
 						type: 'integer',
 						in: 'path',
 						required: true
