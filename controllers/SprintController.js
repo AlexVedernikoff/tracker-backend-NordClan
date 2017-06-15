@@ -109,13 +109,3 @@ exports.list = function(req, res, next){
 		});
 };
 
-
-exports.syncForce = function(req, res, next) {
-	Sprint.sync({force: true})
-		.then(() => {
-			res.end();
-		})
-		.catch((err) => {
-			next(err);
-		});
-};

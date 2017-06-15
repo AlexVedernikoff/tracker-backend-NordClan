@@ -109,13 +109,3 @@ exports.list = function(req, res, next){
 			next(err);
 		});
 };
-
-exports.syncForce = function(req, res, next) {
-	Portfolio.sync({force: true})
-		.then(() => {
-			res.end();
-		})
-		.catch((err) => {
-			next(err);
-		});
-};

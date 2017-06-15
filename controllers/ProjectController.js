@@ -110,14 +110,3 @@ exports.list = function(req, res, next){
 			next(err);
 		});
 };
-
-
-exports.syncForce = function(req, res, next) {
-	Project.sync({force: true})
-		.then(() => {
-			res.end();
-		})
-		.catch((err) => {
-			next(err);
-		});
-};

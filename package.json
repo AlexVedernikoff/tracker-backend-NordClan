@@ -17,6 +17,8 @@
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "http-errors": "^1.6.1",
+    "ldapjs": "^1.0.1",
+    "os": "^0.1.1",
     "pg": "^6.2.3",
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.7.0",
