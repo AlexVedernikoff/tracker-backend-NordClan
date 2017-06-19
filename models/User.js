@@ -1,8 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelizeTransforms = require('sequelize-transforms');
 const sequelize = require('../orm');
-const Project = require('./Project');
-const Sprint = require('./Sprint');
+const Department = require('./Department');
 sequelizeTransforms(sequelize);
 
 const User = sequelize.define("User", {
@@ -58,10 +57,10 @@ const User = sequelize.define("User", {
 	},
 	active: {
 		type: Sequelize.INTEGER,
-		allowNull: true,
-		validate: {
-			isInt: true
-		}
+		// allowNull: true,
+		// validate: {
+		// 	isInt: true
+		// }
 	},
 	photo: {
 		type: Sequelize.STRING,
@@ -116,29 +115,29 @@ const User = sequelize.define("User", {
 	birthDate: {
 		filed: "birth_date",
 		type: Sequelize.DATE,
-		trim: true,
-		allowNull: true,
-		validate: {
-			isDate: true
-		}
+		// trim: true,
+		// allowNull: true,
+		// validate: {
+		// 	isDate: true
+		// }
 	},
 	createDate: {
 		filed: "create_date",
 		type: Sequelize.DATE,
 		trim: true,
 		allowNull: true,
-		validate: {
-			isDate: true
-		}
+		// validate: {
+		// 	isDate: true
+		// }
 	},
 	deleteDate: {
 		filed: "delete_date",
 		type: Sequelize.DATE,
-		trim: true,
-		allowNull: true,
-		validate: {
-			isDate: true
-		}
+		//trim: true,
+		//allowNull: true,
+		// validate: {
+		// 	isDate: true
+		// }
 	},
 
 
@@ -149,6 +148,19 @@ const User = sequelize.define("User", {
 	underscored: true,
 	tableName: 'user'
 });
+
+
+
+const UserDepartmens = sequelize.define('UserDepartmens', {
+	id: {
+		type: Sequelize.INTEGER,
+		primaryKey: true,
+		autoIncrement: true
+	}
+});
+
+User.belongsToMany(Department, { through: UserDepartmens });
+Department.belongsToMany(User, { through: UserDepartmens });
 
 
 module.exports = User;

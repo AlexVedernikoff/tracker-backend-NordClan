@@ -6,6 +6,7 @@ const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
 const Task = require('../models/Task');
 const User = require('../models/User');
+const Department = require('../models/Department');
 const createError = require('http-errors');
 
 const Models  = [
@@ -14,6 +15,7 @@ const Models  = [
 	Sprint,
 	Task,
 	User,
+	Department,
 ];
 
 const ldapUrl = (os.hostname().indexOf('-qa') > 0) ? 'ldap://auth-test-estimate.simbirsoft:389/dc=simbirsoft' : 'ldap://auth.simbirsoft:389/dc=simbirsoft';
