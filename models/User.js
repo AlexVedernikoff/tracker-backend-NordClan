@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelizeTransforms = require('sequelize-transforms');
 const sequelize = require('../orm');
 const Department = require('./Department');
-sequelizeTransforms(sequelize);
+const UserDepartments = require('./UserDepartments');
+
 
 const User = sequelize.define("User", {
 	id: {
@@ -13,7 +13,6 @@ const User = sequelize.define("User", {
 	},
 	login: {
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: false,
 		validate: {
 			max: 225
@@ -22,7 +21,6 @@ const User = sequelize.define("User", {
 	lastNameEn: {
 		filed: 'last_name_en',
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -31,7 +29,6 @@ const User = sequelize.define("User", {
 	firstNameEn: {
 		filed: 'first_name_en',
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -40,7 +37,6 @@ const User = sequelize.define("User", {
 	lastNameRu: {
 		filed: 'last_name_ru',
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -49,7 +45,6 @@ const User = sequelize.define("User", {
 	firstNameRu: {
 		filed: 'first_name_ru',
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -57,14 +52,13 @@ const User = sequelize.define("User", {
 	},
 	active: {
 		type: Sequelize.INTEGER,
-		// allowNull: true,
-		// validate: {
-		// 	isInt: true
-		// }
+		allowNull: true,
+		validate: {
+			isInt: true
+		}
 	},
 	photo: {
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -73,7 +67,6 @@ const User = sequelize.define("User", {
 	emailPrimary: {
 		filed: 'email_primary',
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -82,7 +75,6 @@ const User = sequelize.define("User", {
 	emailSecondary: {
 		filed: 'email_secondary',
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -90,7 +82,6 @@ const User = sequelize.define("User", {
 	},
 	phone: {
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 225
@@ -98,7 +89,7 @@ const User = sequelize.define("User", {
 	},
 	skype: {
 		type: Sequelize.STRING,
-		trim: true,
+		//trim: true,
 		allowNull: true,
 		validate: {
 			max: 255
@@ -106,7 +97,6 @@ const User = sequelize.define("User", {
 	},
 	city: {
 		type: Sequelize.STRING,
-		trim: true,
 		allowNull: true,
 		validate: {
 			max: 255
@@ -115,31 +105,32 @@ const User = sequelize.define("User", {
 	birthDate: {
 		filed: "birth_date",
 		type: Sequelize.DATE,
-		// trim: true,
-		// allowNull: true,
-		// validate: {
-		// 	isDate: true
-		// }
+		allowNull: true,
+		validate: {
+			isDate: true
+		}
 	},
 	createDate: {
 		filed: "create_date",
 		type: Sequelize.DATE,
-		trim: true,
 		allowNull: true,
-		// validate: {
-		// 	isDate: true
-		// }
+		validate: {
+			isDate: true
+		}
 	},
 	deleteDate: {
 		filed: "delete_date",
 		type: Sequelize.DATE,
-		//trim: true,
-		//allowNull: true,
-		// validate: {
-		// 	isDate: true
-		// }
+		allowNull: true,
+		validate: {
+			isDate: true
+		}
 	},
-
+	psId: {
+		field: 'ps_id',
+		allowNull: true,
+		type: Sequelize.STRING
+	},
 
 
 }, {
@@ -149,18 +140,7 @@ const User = sequelize.define("User", {
 	tableName: 'user'
 });
 
-
-
-const UserDepartmens = sequelize.define('UserDepartmens', {
-	id: {
-		type: Sequelize.INTEGER,
-		primaryKey: true,
-		autoIncrement: true
-	}
-});
-
-User.belongsToMany(Department, { through: UserDepartmens });
-Department.belongsToMany(User, { through: UserDepartmens });
-
+User.belongsToMany(Department, { through: UserDepartments });
+Department.belongsToMany(User, { through: UserDepartments });
 
 module.exports = User;

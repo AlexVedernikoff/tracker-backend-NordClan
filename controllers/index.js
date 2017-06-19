@@ -34,7 +34,6 @@ router.get('/task', TaskController.list);
 
 
 router.get('/sync-force', SyncController.syncForce);
-router.get('/sync-users', SyncController.syncUsers);
 
 
 
