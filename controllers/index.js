@@ -4,7 +4,7 @@ const ProjectController = require('./ProjectController');
 const PortfolioController = require('./PortfolioController');
 const SprintController = require('./SprintController');
 const TaskController = require('./TaskController');
-const SyncController = require('./SyncController');
+const AuthController = require('./AuthController');
 
 
 router.post('/project', ProjectController.create);
@@ -32,10 +32,8 @@ router.put('/task/:id', TaskController.update);
 router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
 
-
-router.get('/sync-force', SyncController.syncForce);
-
-
+router.post('/auth/login', AuthController.login);
+router.get('/auth/logout', AuthController.logout);
 
 
 module.exports = router;

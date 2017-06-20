@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../orm');
 const Department = require('./Department');
 const UserDepartments = require('./UserDepartments');
+const UserTokens = require('./UserTokens');
 
 
 const User = sequelize.define("User", {
@@ -104,7 +105,7 @@ const User = sequelize.define("User", {
 	},
 	birthDate: {
 		filed: "birth_date",
-		type: Sequelize.DATE,
+		type: Sequelize.DATEONLY,
 		allowNull: true,
 		validate: {
 			isDate: true
@@ -140,7 +141,19 @@ const User = sequelize.define("User", {
 	tableName: 'user'
 });
 
+
 User.belongsToMany(Department, { through: UserDepartments });
 Department.belongsToMany(User, { through: UserDepartments });
+User.hasMany(UserTokens, {
+	foreignKey: {
+		name: 'userId',
+		field: 'user_id'
+	}
+});
+UserTokens.belongsTo(User, {foreignKey: {
+	name: 'userId',
+	field: 'user_id'
+}});
+
 
 module.exports = User;

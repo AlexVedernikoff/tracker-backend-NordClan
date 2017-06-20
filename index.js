@@ -4,8 +4,9 @@ const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
 const sequelize = require('./orm');
-const errorHandler = require('./models/HttpError');
+const errorHandler = require('./components/HttpError');
 const routes = require('./controllers/index');
+const checkTokenMiddleWare = require('./models/Auth').checkTokenMiddleWare;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
@@ -18,6 +19,7 @@ app.all('*', function(req, res, next){
 	next();
 });
 
+app.use(checkTokenMiddleWare);
 
 app.use(swagger.init(app, {
 	apiVersion: '1.0',

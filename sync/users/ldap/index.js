@@ -28,6 +28,8 @@ module.exports = function() {
 					search.on('searchEntry', function(entry) {
 						let ldapUser = entry.object;
 
+						console.log(ldapUser);
+
 						if(!ldapUser.uid || !ldapUser.mail || !ldapUser.sn || !ldapUser.givenName) {
 							return ;
 						}

@@ -1,7 +1,3 @@
-const ldap = require('ldapjs');
-const createError = require('http-errors');
-const os = require('os');
-
 const Portfolio = require('../models/Portfolio');
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
@@ -9,6 +5,7 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const Department = require('../models/Department');
 const UserDepartments = require('../models/UserDepartments');
+const UserTokens = require('../models/UserTokens');
 
 const Models  = [
 	Portfolio,
@@ -18,24 +15,23 @@ const Models  = [
 	User,
 	Department,
 	UserDepartments,
+	UserTokens,
 ];
 
-exports.syncForce = function(req, res, next) {
-	let chain = Promise.resolve();
 
+(() => {
+	let chain = Promise.resolve();
 	Models.forEach(function(Model) {
 		chain = chain
 			.then(() => Model.sync({force: true}))
-
 	});
+
 
 	chain
 		.then(() => {
-			res.end();
+			console.info('Done');
 		})
 		.catch((err) => {
-			next(err);
+			console.error(err);
 		});
-
-};
-
+})();

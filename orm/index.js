@@ -5,7 +5,7 @@ let sequelize = new Sequelize(config.db.postgres.name, config.db.postgres.userna
  host: config.db.postgres.host,
  dialect: config.db.postgres.dialect,
  port:    config.db.postgres.port,
- logging: false
+ //logging: false
 }, {
  define: {
 		underscored: true,
