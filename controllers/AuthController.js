@@ -75,7 +75,21 @@ exports.login = function(req, res, next){
 
 exports.logout = function(req, res, next){
 
+	UserTokens.destroy({
+		where: {
+			user_id: req.user.id,
+			token: req.token
+		}
+	})
+		.then((row) => {
+			if(!row) { return next(createError(404)); }
 
+			res.sendStatus(200);
+
+		})
+		.catch((err) => {
+			next(err);
+		});
 
 };
 
