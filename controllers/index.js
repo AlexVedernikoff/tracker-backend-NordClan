@@ -33,7 +33,8 @@ router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
 
 router.post('/auth/login', AuthController.login);
-router.get('/auth/logout', AuthController.logout);
+router.delete('/auth/logout', AuthController.logout);
+router.put('/auth/refresh', AuthController.refresh);
 
 
 module.exports = router;

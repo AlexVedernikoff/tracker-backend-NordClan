@@ -93,3 +93,50 @@ exports.logout = function(req, res, next){
 
 };
 
+
+exports.refresh = function(req, res, next){
+
+
+
+
+
+	UserTokens.destroy({
+		where: {
+			user_id: req.user.id,
+			token: req.token
+		}
+	})
+		.then((row) => {
+			if(!row) { return next(createError(404)); }
+
+			const token = Auth.createJwtToken(req.decoded.user);
+
+			UserTokens.create({
+				userId: req.user.id,
+				token: token.token,
+				expires: token.expires
+			})
+				.then(() => res.status(200).json({token: token.token, expire: token.expires, user: req.user.id}))
+				.catch((err) => {
+					if (err) {
+						console.error(err.stack);
+					}
+					return next(createError(err));
+				});
+
+
+
+
+		})
+		.catch((err) => {
+			next(err);
+		});
+
+
+
+
+
+
+
+};
+
