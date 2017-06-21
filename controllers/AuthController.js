@@ -61,7 +61,7 @@ exports.login = function(req, res, next){
 						}
 						return res.status(500).json({code: 0, type: 1, message: 'Failed to save userdata'});
 					});
-				
+
 			}
 		});
 	}

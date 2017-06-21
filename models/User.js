@@ -13,7 +13,7 @@ const User = sequelize.define("User", {
 		allowNull: false
 	},
 	ldapLogin: {
-		filed: 'ldap_login',
+		field: 'ldap_login',
 		type: Sequelize.TEXT,
 		allowNull: false,
 	},
@@ -25,7 +25,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	lastNameEn: {
-		filed: 'last_name_en',
+		field: 'last_name_en',
 		type: Sequelize.STRING,
 		allowNull: true,
 		validate: {
@@ -33,7 +33,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	firstNameEn: {
-		filed: 'first_name_en',
+		field: 'first_name_en',
 		type: Sequelize.STRING,
 		allowNull: true,
 		validate: {
@@ -41,7 +41,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	lastNameRu: {
-		filed: 'last_name_ru',
+		field: 'last_name_ru',
 		type: Sequelize.STRING,
 		allowNull: true,
 		validate: {
@@ -49,7 +49,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	firstNameRu: {
-		filed: 'first_name_ru',
+		field: 'first_name_ru',
 		type: Sequelize.STRING,
 		allowNull: true,
 		validate: {
@@ -71,7 +71,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	emailPrimary: {
-		filed: 'email_primary',
+		field: 'email_primary',
 		type: Sequelize.STRING,
 		allowNull: true,
 		validate: {
@@ -79,7 +79,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	emailSecondary: {
-		filed: 'email_secondary',
+		field: 'email_secondary',
 		type: Sequelize.STRING,
 		allowNull: true,
 		validate: {
@@ -95,7 +95,6 @@ const User = sequelize.define("User", {
 	},
 	skype: {
 		type: Sequelize.STRING,
-		//trim: true,
 		allowNull: true,
 		validate: {
 			max: 255
@@ -109,7 +108,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	birthDate: {
-		filed: "birth_date",
+		field: "birth_date",
 		type: Sequelize.DATEONLY,
 		allowNull: true,
 		validate: {
@@ -117,7 +116,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	createDate: {
-		filed: "create_date",
+		field: "create_date",
 		type: Sequelize.DATE,
 		allowNull: true,
 		validate: {
@@ -125,7 +124,7 @@ const User = sequelize.define("User", {
 		}
 	},
 	deleteDate: {
-		filed: "delete_date",
+		field: "delete_date",
 		type: Sequelize.DATE,
 		allowNull: true,
 		validate: {
