@@ -55,7 +55,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	Portfolio.findByPrimary(req.params.id)
+	Portfolio.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((portfolio) => {
 			if(!portfolio) { return next(createError(404)); }
 

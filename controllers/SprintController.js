@@ -54,7 +54,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	Sprint.findByPrimary(req.params.id)
+	Sprint.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((row) => {
 			if(!row) { return next(createError(404)); }
 

@@ -55,7 +55,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	Project.findByPrimary(req.params.id)
+	Project.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
