@@ -54,7 +54,7 @@ exports.login = function(req, res, next){
 					token: token.token,
 					expires: token.expires
 				})
-					.then(() => res.status(200).json({token: token.token, expire: token.expires, user: user.dataValues.id}))
+					.then(() => res.status(200).json({token: token.token, expire: token.expires}))
 					.catch((err) => {
 						if (err) {
 							console.error(err.stack);

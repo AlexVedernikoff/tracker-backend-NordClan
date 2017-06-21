@@ -26,15 +26,14 @@ function checkTokenMiddleWare(req, res, next) {
 	let token, decoded;
 
 	if (!req.headers.authorization) {
-		if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
-			console.log('no token login');
+		if (req.url.indexOf('auth/login') > -1 || req.url.indexOf('swagger') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
 			return next();
 		}
 		return next(createError(401, 'Need  authorization'));
 	}
 
 	try {
-		token = req.headers.authorization;
+		token = req.headers.authorization.split(' ')[1];
 		decoded = jwt.decode(token, tokenSecret);
 		req.token = token;
 		req.decoded = decoded;

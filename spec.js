@@ -622,6 +622,60 @@ module.exports = {
 			},
 		},
 
+
+		'/auth/login': {
+			post: {
+				tags: ['Auth'],
+				summary: 'Получить токен авторизации',
+				parameters: [
+					{
+						name: 'login',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'password',
+						type: 'string',
+						in: 'formData',
+						format: "password",
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+		'/auth/logout': {
+			delete: {
+				tags: ['Auth'],
+				summary: 'Удалить токен из базы системы',
+				parameters: [
+					{
+						name: 'token',
+						type: 'string',
+						in: 'header',
+						required: true
+					}
+				],
+				responses: responsesCodes
+			},
+		},
+		'/auth/refresh': {
+			put: {
+				tags: ['Auth'],
+				summary: 'Обновить токен',
+				parameters: [
+					{
+						name: 'token',
+						type: 'string',
+						in: 'header',
+						required: true
+					}
+				],
+				responses: responsesCodes
+			},
+		},
+
 	},
 	securityDefinitions: {
 		apiKey: {
