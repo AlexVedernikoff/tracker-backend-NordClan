@@ -76,7 +76,7 @@ const Sprint = sequelize.define("Sprint", {
 	underscored: true,
 	timestamps: true,
 	paranoid: true,
-	tableName: 'sprint'
+	tableName: 'sprints'
 });
 
 Sprint.belongsTo(Project, {foreignKey: {

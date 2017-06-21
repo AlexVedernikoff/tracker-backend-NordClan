@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../orm');
 const Department = require('./Department');
 const UserDepartments = require('./UserDepartments');
-const UserTokens = require('./UserTokens');
+const UserTokens = require('./Token');
 
 
 const User = sequelize.define("User", {
@@ -11,6 +11,11 @@ const User = sequelize.define("User", {
 		primaryKey: true,
 		autoIncrement: true,
 		allowNull: false
+	},
+	ldapLogin: {
+		filed: 'ldap_login',
+		type: Sequelize.TEXT,
+		allowNull: false,
 	},
 	login: {
 		type: Sequelize.STRING,
@@ -138,7 +143,7 @@ const User = sequelize.define("User", {
 	timestamps: true,
 	paranoid: true,
 	underscored: true,
-	tableName: 'user'
+	tableName: 'users'
 });
 
 

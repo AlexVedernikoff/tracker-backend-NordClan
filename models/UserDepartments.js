@@ -10,8 +10,9 @@ const UserDepartments = sequelize.define('UserDepartments', {
 		autoIncrement: true
 	}
 }, {
-	timestamps: true,
 	underscored: true,
+	timestamps: false,
+	paranoid: false,
 	tableName: 'user_departments'
 });
 

@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const moment = require('moment');
 const jwt = require('jwt-simple');
 const User = require('./User');
-const UserTokens = require('./UserTokens');
+const UserTokens = require('./Token');
 const tokenSecret = 'token_s';
 
 

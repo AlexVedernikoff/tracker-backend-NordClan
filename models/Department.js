@@ -28,7 +28,7 @@ const Department = sequelize.define("Department", {
 	underscored: true,
 	timestamps: true,
 	paranoid: true,
-	tableName: 'department'
+	tableName: 'departments'
 });
 
 

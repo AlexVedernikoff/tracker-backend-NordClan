@@ -3,7 +3,7 @@ const sequelize = require('../orm');
 const User = require('./User');
 
 
-const UserTokens = sequelize.define("UserTokens", {
+const Token = sequelize.define("Token", {
 	id: {
 		type: Sequelize.INTEGER,
 		primaryKey: true,
@@ -22,8 +22,8 @@ const UserTokens = sequelize.define("UserTokens", {
 	underscored: true,
 	timestamps: false,
 	paranoid: false,
-	tableName: 'user_tokens'
+	tableName: 'tokens'
 });
 
 
-module.exports = UserTokens;
+module.exports = Token;

@@ -5,7 +5,7 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const Department = require('../models/Department');
 const UserDepartments = require('../models/UserDepartments');
-const UserTokens = require('../models/UserTokens');
+const UserTokens = require('../models/Token');
 
 const Models  = [
 	Portfolio,

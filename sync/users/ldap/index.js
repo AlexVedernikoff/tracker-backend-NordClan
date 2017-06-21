@@ -30,7 +30,7 @@ module.exports = function() {
 
 						console.log(ldapUser);
 
-						if(!ldapUser.uid || !ldapUser.mail || !ldapUser.sn || !ldapUser.givenName) {
+						if(!ldapUser.cn ||!ldapUser.uid || !ldapUser.mail || !ldapUser.sn || !ldapUser.givenName) {
 							return ;
 						}
 
@@ -42,6 +42,7 @@ module.exports = function() {
 							.then(user => {
 								if(user) {
 									user.updateAttributes({
+										ldapLogin: ldapUser.cn,
 										emailPrimary: ldapUser.mail,
 										lastNameRu: ldapUser.sn,
 										firstNameRu: ldapUser.givenName,
@@ -53,6 +54,7 @@ module.exports = function() {
 								} else {
 
 									User.create({
+										ldapLogin: ldapUser.cn,
 										login: ldapUser.uid,
 										emailPrimary: ldapUser.mail,
 										lastNameRu: ldapUser.sn,
@@ -73,7 +75,7 @@ module.exports = function() {
 
 
 					search.on('error', function(err) {
-						console.error('error3: ' + (err));
+						console.error('error: ' + (err));
 						reject(err);
 					});
 

@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const ldap = require('ldapjs');
 const Auth = require('../models/Auth');
 const User = require('../models/User');
-const UserTokens = require('../models/UserTokens');
+const Token = require('../models/Token');
 
 
 //const ldapUrl = 'ldap://auth-test-estimate.simbirsoft:389/dc=simbirsoft';
@@ -38,8 +38,7 @@ exports.login = function(req, res, next){
 			url: ldapUrl
 		});
 
-
-		client.bind('cn=' + user.firstNameEn + ' ' + user.lastNameEn + ',cn=People,dc=simbirsoft', password, function(err) {
+		client.bind('cn=' + user.ldapLogin + ',cn=People,dc=simbirsoft', password, function(err) {
 			if (err) {
 				client.unbind();
 				next(createError(err));
@@ -50,9 +49,7 @@ exports.login = function(req, res, next){
 					password: req.body.password
 				});
 
-				console.log(user.dataValues.id);
-
-				UserTokens.create({
+				Token.create({
 					userId: user.dataValues.id,
 					token: token.token,
 					expires: token.expires
@@ -64,8 +61,7 @@ exports.login = function(req, res, next){
 						}
 						return res.status(500).json({code: 0, type: 1, message: 'Failed to save userdata'});
 					});
-
-
+				
 			}
 		});
 	}
@@ -75,7 +71,7 @@ exports.login = function(req, res, next){
 
 exports.logout = function(req, res, next){
 
-	UserTokens.destroy({
+	Token.destroy({
 		where: {
 			user_id: req.user.id,
 			token: req.token
@@ -95,12 +91,8 @@ exports.logout = function(req, res, next){
 
 
 exports.refresh = function(req, res, next){
-
-
-
-
-
-	UserTokens.destroy({
+	
+	Token.destroy({
 		where: {
 			user_id: req.user.id,
 			token: req.token
@@ -111,7 +103,7 @@ exports.refresh = function(req, res, next){
 
 			const token = Auth.createJwtToken(req.decoded.user);
 
-			UserTokens.create({
+			Token.create({
 				userId: req.user.id,
 				token: token.token,
 				expires: token.expires
@@ -126,16 +118,10 @@ exports.refresh = function(req, res, next){
 
 
 
-
 		})
 		.catch((err) => {
 			next(err);
 		});
-
-
-
-
-
 
 
 };
