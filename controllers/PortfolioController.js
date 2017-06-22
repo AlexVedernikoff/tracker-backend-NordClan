@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const Portfolio = require('../models/Portfolio');
+const Portfolio = require('../models').Portfolio;
 
 
 exports.create = function(req, res, next){

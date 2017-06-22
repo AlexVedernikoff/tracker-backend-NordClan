@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const Task = require('../models/Task');
+const Task = require('../models').Task;
 
 
 exports.create = function(req, res, next){

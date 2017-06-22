@@ -2,8 +2,8 @@ const request = require('request');
 const xml2json = require('xml2json');
 const moment = require('moment');
 const _ = require('underscore');
-const Department = require('../../../models/Department');
-const User = require('../../../models/User');
+const Department = require('../../../models').Department;
+const User = require('../../../models').User;
 const auth = {
 	user: 'serviceman',
 	pass: 'FdKg&$b*)FeA{',

@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const Project = require('../models/Project');
+const Project = require('../models').Project;
 
 
 exports.create = function(req, res, next){

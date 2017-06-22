@@ -1,21 +1,16 @@
-const Portfolio = require('../models/Portfolio');
-const Project = require('../models/Project');
-const Sprint = require('../models/Sprint');
-const Task = require('../models/Task');
-const User = require('../models/User');
-const Department = require('../models/Department');
-const UserDepartments = require('../models/UserDepartments');
-const UserTokens = require('../models/Token');
+const models = require('../models');
 
 const Models  = [
-	Portfolio,
-	Project,
-	Sprint,
-	Task,
-	User,
-	Department,
-	UserDepartments,
-	UserTokens,
+	models.Portfolio,
+	models.Project,
+	models.Sprint,
+	models.Task,
+	models.Tag,
+	models.ItemTag,
+	models.User,
+	models.Department,
+	models.UserDepartments,
+	models.Token,
 ];
 
 

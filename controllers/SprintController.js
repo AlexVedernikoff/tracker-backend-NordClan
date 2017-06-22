@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const Sprint = require('../models/Sprint');
+const Sprint = require('../models').Sprint;
 
 
 exports.create = function(req, res, next){

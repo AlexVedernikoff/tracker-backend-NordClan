@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const sequelize = require('./orm');
 const errorHandler = require('./components/HttpError');
 const routes = require('./controllers/index');
-const checkTokenMiddleWare = require('./models/Auth').checkTokenMiddleWare;
+const checkTokenMiddleWare = require('./components/Auth').checkTokenMiddleWare;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());

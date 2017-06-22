@@ -1,8 +1,8 @@
 const createError = require('http-errors');
 const ldap = require('ldapjs');
-const Auth = require('../models/Auth');
-const User = require('../models/User');
-const Token = require('../models/Token');
+const Auth = require('../components/Auth');
+const User = require('../models').User;
+const Token = require('../models').Token;
 
 
 //const ldapUrl = 'ldap://auth-test-estimate.simbirsoft:389/dc=simbirsoft';
