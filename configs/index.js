@@ -13,14 +13,9 @@ module.exports = {
 		}
 	},
 
-	ldap: {
-		host: 'auth.simbirsoft',
-		port: 389,
-		domain: 'simbirsoft',
-		dn: 'cn=People,dc=simbirsoft',
-		username: 'admin',
-		password: 'admin',
-	},
+    auth: {
+        accessTokenLifetime: 60 * 60 * 24 * 7,
+    },
 
 	ps: {
 		host: 'portaltest.simbirsoft',

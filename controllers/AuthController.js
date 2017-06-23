@@ -55,7 +55,18 @@ exports.login = function(req, res, next){
 					})
 					.then(() => {
 						res.cookie('authorization' , 'Basic ' + token.token, { maxAge: token.expires.format('X')});
-						res.status(200).json({token: token.token, expire: token.expires})
+						delete user.dataValues.psId;
+						delete user.dataValues.createDate;
+						delete user.dataValues.deleteDate;
+						delete user.dataValues.created_at;
+						delete user.dataValues.updated_at;
+						delete user.dataValues.deleted_at;
+
+						res.status(200).json({
+							token: token.token,
+							expire: token.expires,
+							user: user.dataValues
+						})
 					})
 					.catch((err) => {
 						if (err) {

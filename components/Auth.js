@@ -3,6 +3,7 @@ const moment = require('moment');
 const jwt = require('jwt-simple');
 const User = require('../models').User;
 const UserTokens = require('../models').Token;
+const config = require('.././configs');
 const tokenSecret = 'token_s';
 
 
@@ -14,7 +15,7 @@ function createJwtToken(user) {
 	const payload = {
 		user: user,
 		iat: moment().format(),
-		expires: moment().add(7, 'days')
+		expires: moment().add(config.auth.accessTokenLifetime, 's')
 	};
 	return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
 }
@@ -25,10 +26,11 @@ function checkTokenMiddleWare(req, res, next) {
 
 	let token, decoded, authorization;
 
+	if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
+		return next();
+	}
+
 	if (!req.headers.authorization && !req.cookies.authorization) {
-		if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
-			return next();
-		}
 		return next(createError(401, 'Need  authorization'));
 	}
 
