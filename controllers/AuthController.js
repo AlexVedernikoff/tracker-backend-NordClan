@@ -1,4 +1,5 @@
 const createError = require('http-errors');
+const moment = require('moment');
 const ldap = require('ldapjs');
 const Auth = require('../components/Auth');
 const User = require('../models').User;
@@ -69,12 +70,7 @@ exports.login = function(req, res, next){
 							user: user.dataValues
 						})
 					})
-					.catch((err) => {
-						if (err) {
-							console.error(err.stack);
-						}
-						return res.status(500).json({code: 0, type: 1, message: 'Failed to save userdata'});
-					});
+					.catch((err) => next(createError(err)));
 
 			}
 		});
