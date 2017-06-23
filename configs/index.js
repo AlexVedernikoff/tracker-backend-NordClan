@@ -13,9 +13,8 @@ module.exports = {
         }
     },
 
-    oauth: {
-        accessTokenLifetime: 60 * 60 * 24,
-        refreshTokenLifetime: 60 * 60 * 24 * 7,
+    auth: {
+        accessTokenLifetime: 60 * 60 * 24 * 7,
     },
 
     ldap: {
