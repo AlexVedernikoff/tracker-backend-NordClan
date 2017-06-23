@@ -1,7 +1,7 @@
 const ldap = require('ldapjs');
 const orm = require('../../../orm/index');
 const User = require('../../../models').User;
-const ldapUrl = 'ldap://auth-test-estimate.simbirsoft:389/dc=simbirsoft';
+const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 // Синхронизация пользователей
 module.exports = function() {
@@ -34,11 +34,14 @@ module.exports = function() {
 							return ;
 						}
 
-						User.findOne({
-							where: {
-								login: ldapUser.uid
-							}
-						})
+
+
+						User
+							.findOne({
+								where: {
+									login: ldapUser.uid
+								}
+							})
 							.then(user => {
 								if(user) {
 									user.updateAttributes({

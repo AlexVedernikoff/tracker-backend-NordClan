@@ -1,43 +1,32 @@
 module.exports = {
-  appName: 'SimTrack',
-  port: process.env.PORT || 3000,
+	appName: 'SimTrack',
+	port: process.env.PORT || 8080,
 
-  db: {
-    mongodb: {
-      host: process.env.MONGO_PORT_27017_TCP_ADDR || 'localhost',
-      name: 'SimTrack' + (process.env.NODE_ENV == 'production' ? '' : '-develop'),
-    },
-    postgres: {
-      host: 'localhost',
-      port: 5432,
-      dialect: 'postgres',
-      name: 'track-back',
-      username: 'admin',
-      password: 'admin'
-    }
-  },
+	db: {
+		postgres: {
+			host: 'localhost',
+			port: 5432,
+			dialect: 'postgres',
+			name: 'sim-track',
+			username: 'postgres',
+			password: '123456'
+		}
+	},
 
-  oauth: {
-    accessTokenLifetime: 60 * 60 * 24,
-    refreshTokenLifetime: 60 * 60 * 24 * 7,
-  },
+	ldap: {
+		host: 'auth.simbirsoft',
+		port: 389,
+		domain: 'simbirsoft',
+		dn: 'cn=People,dc=simbirsoft',
+		username: 'admin',
+		password: 'admin',
+	},
 
-  ldap: {
-    host: 'auth.simbirsoft',
-    port: 389,
-    domain: 'simbirsoft',
-    //username: 'serviceman',
-    //password: 'FdKg&$b*)FeA{',
-    dn: 'cn=People,dc=simbirsoft',
-    username: 'admin',
-    password: 'admin',
-  },
-
-  ps: {
-    host: 'portaltest.simbirsoft',
-    port: 8080,
-    path: '/default/rest/',
-    username: 'serviceman',
-    password: 'FdKg&$b*)FeA{',
-  },
+	ps: {
+		host: 'portaltest.simbirsoft',
+		port: 8080,
+		path: '/default/rest/',
+		username: 'serviceman',
+		password: 'FdKg&$b*)FeA{',
+	},
 };
