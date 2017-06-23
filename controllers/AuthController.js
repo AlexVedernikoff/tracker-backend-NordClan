@@ -61,6 +61,7 @@ exports.login = function(req, res, next){
 						delete user.dataValues.created_at;
 						delete user.dataValues.updated_at;
 						delete user.dataValues.deleted_at;
+						user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
 
 						res.status(200).json({
 							token: token.token,
