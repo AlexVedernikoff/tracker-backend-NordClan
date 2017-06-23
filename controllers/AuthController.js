@@ -4,8 +4,6 @@ const Auth = require('../components/Auth');
 const User = require('../models').User;
 const Token = require('../models').Token;
 
-
-//const ldapUrl = 'ldap://auth-test-estimate.simbirsoft:389/dc=simbirsoft';
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 exports.login = function(req, res, next){
@@ -49,12 +47,16 @@ exports.login = function(req, res, next){
 					password: req.body.password
 				});
 
-				Token.create({
-					userId: user.dataValues.id,
-					token: token.token,
-					expires: token.expires
-				})
-					.then(() => res.status(200).json({token: token.token, expire: token.expires}))
+				Token
+					.create({
+						userId: user.dataValues.id,
+						token: token.token,
+						expires: token.expires.format()
+					})
+					.then(() => {
+						res.cookie('authorization' , 'Basic ' + token.token, { maxAge: token.expires.format('X')});
+						res.status(200).json({token: token.token, expire: token.expires})
+					})
 					.catch((err) => {
 						if (err) {
 							console.error(err.stack);

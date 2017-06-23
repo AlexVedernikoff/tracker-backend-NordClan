@@ -1,6 +1,8 @@
 const express = require('express');
-const swagger = require('swagger-express');
 const app = express();
+const config = require('./configs');
+const swagger = require('swagger-express');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 const bodyParser = require('body-parser');
 const sequelize = require('./orm');
@@ -10,6 +12,7 @@ const checkTokenMiddleWare = require('./components/Auth').checkTokenMiddleWare;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/api/swagger/spec.js', function(req, res) {
@@ -26,9 +29,7 @@ app.use(swagger.init(app, {
 }));
 
 
-
 app.use(checkTokenMiddleWare);
-
 app.all('*', function(req, res, next){
 	res.setHeader('Content-Type', 'application/json');
 	res.setHeader('Cache-Control', 'no-cache');
@@ -38,17 +39,16 @@ app.all('*', function(req, res, next){
 app.use('/api', routes);
 app.use(errorHandler());
 
-
 sequelize
 	.authenticate()
-  .then((err) => {
+  .then(() => {
 		 console.log('Database connection has been established successfully.');
 	}, function (err) {
 		console.log('Unable to connect to the database:', err);
 	});
 
 
-app.listen(8080, () => {
-	console.log('listen 8080');
+app.listen(config.port, () => {
+	console.log('listen ' + config.port );
 });
 

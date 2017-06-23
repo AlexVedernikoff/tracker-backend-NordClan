@@ -14,7 +14,7 @@ function createJwtToken(user) {
 	const payload = {
 		user: user,
 		iat: moment().format(),
-		expires: moment().add(1, 'days').format()
+		expires: moment().add(7, 'days')
 	};
 	return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
 }
@@ -23,17 +23,19 @@ function createJwtToken(user) {
 
 function checkTokenMiddleWare(req, res, next) {
 
-	let token, decoded;
+	let token, decoded, authorization;
 
-	if (!req.headers.authorization) {
-		if (req.url.indexOf('auth/login') > -1 || req.url.indexOf('swagger') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
+	if (!req.headers.authorization && !req.cookies.authorization) {
+		if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
 			return next();
 		}
 		return next(createError(401, 'Need  authorization'));
 	}
 
+
 	try {
-		token = req.headers.authorization.split(' ')[1];
+		authorization = req.headers.authorization? req.headers.authorization : req.cookies.authorization;
+		token = authorization.split(' ')[1];
 		decoded = jwt.decode(token, tokenSecret);
 		req.token = token;
 		req.decoded = decoded;
@@ -42,22 +44,24 @@ function checkTokenMiddleWare(req, res, next) {
 	}
 
 
-	User.findOne({
-		where: {
-			login: decoded.user.login
-		},
-		attributes: ['id']
-	})
+	User
+		.findOne({
+			where: {
+				login: decoded.user.login
+			},
+			attributes: ['id']
+		})
 		.then((user) => {
 			if(!user) return next(createError(401, 'No such user in the system'));
 
-			UserTokens.findOne({
-				where: {
-					user_id: user.dataValues.id,
-					token: token
-				},
-				attributes: ['expires']
-			})
+			UserTokens
+				.findOne({
+					where: {
+						user_id: user.dataValues.id,
+						token: token
+					},
+					attributes: ['expires']
+				})
 				.then((token) => {
 					if (!token) return next(createError(401, 'No such access token in the system'));
 					if (moment().isAfter(token.expires)) return next(createError(401, 'Access token has expired'));
@@ -65,14 +69,10 @@ function checkTokenMiddleWare(req, res, next) {
 
 					return next();
 				})
-				.catch((err) => {
-					return next(createError(err));
-				});
+				.catch((err) => next(createError(err)));
 
 		})
-		.catch((err) => {
-			return next(createError(err));
-		});
+		.catch((err) => next(createError(err)));
 
 
 }
