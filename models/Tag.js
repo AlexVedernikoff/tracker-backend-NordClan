@@ -32,7 +32,10 @@ module.exports = function(sequelize, DataTypes) {
 		Tag.belongsToMany(models.Task, {
 			through: {
 				model: models.ItemTag,
-				unique: false
+				unique: false,
+				scope: {
+					taggable: 'task'
+				}
 			},
 			foreignKey: 'tag_id',
 			constraints: false
@@ -41,7 +44,10 @@ module.exports = function(sequelize, DataTypes) {
 		Tag.belongsToMany(models.Project, {
 			through: {
 				model: models.ItemTag,
-				unique: false
+				unique: false,
+				scope: {
+					taggable: 'project'
+				}
 			},
 			foreignKey: 'tag_id',
 			constraints: false
@@ -50,7 +56,10 @@ module.exports = function(sequelize, DataTypes) {
 		Tag.belongsToMany(models.Sprint, {
 			through: {
 				model: models.ItemTag,
-				unique: false
+				unique: false,
+				scope: {
+					taggable: 'sprint'
+				}
 			},
 			foreignKey: 'tag_id',
 			constraints: false
@@ -59,7 +68,10 @@ module.exports = function(sequelize, DataTypes) {
 		Tag.belongsToMany(models.Portfolio, {
 			through: {
 				model: models.ItemTag,
-				unique: false
+				unique: false,
+				scope: {
+					taggable: 'portfolio'
+				}
 			},
 			foreignKey: 'tag_id',
 			constraints: false

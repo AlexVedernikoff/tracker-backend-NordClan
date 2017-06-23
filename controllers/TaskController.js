@@ -108,4 +108,3 @@ exports.list = function(req, res, next){
 			next(err);
 		});
 };
-
