@@ -1,5 +1,6 @@
 const statuses = require('statuses');
 const Sequelize = require('sequelize');
+const ldap = require('ldapjs');
 
 const production = process.env.NODE_ENV === 'production';
 
@@ -7,6 +8,11 @@ const production = process.env.NODE_ENV === 'production';
 
 module.exports = function () {
 	return function apiErrorHandler(err, req, res, next) {
+
+		if(err instanceof ldap.InvalidCredentialsError) {
+			err.status = 404;
+		}
+
 
 
 		if(err instanceof Sequelize.ForeignKeyConstraintError) {
