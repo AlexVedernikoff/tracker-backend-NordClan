@@ -38,5 +38,6 @@ router.get('/task', TaskController.list);
 
 
 router.post('/tag', TagController.create);
+router.delete('/tag', TagController.delete);
 
 module.exports = router;
