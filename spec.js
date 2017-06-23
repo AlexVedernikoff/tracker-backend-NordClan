@@ -1,462 +1,699 @@
+const responsesCodes = {
+	'200': {
+		description: 'OK',
+		schema: { $ref: '#/definitions/Project' }
+	},
+	'400': {
+		description: 'Не коректныые данные запроса'
+	},
+	'401': {
+		description: 'Токен невалидный'
+	},
+	'50x': {
+		description: 'Ошибка сервера'
+	}
+};
+
+
+
 module.exports = {
-  swagger: '2.0',
-  info: {
-    title: 'Sim-Track API',
-    version: '1.0.0'
-  },
-  basePath: '/api',
-  paths: {
-    '/auth/login': {
-      post: {
-        tags: ['Auth'],
-        summary: 'Получить access-token',
-        parameters: [
-          {
-            name: 'username',
-            in: 'formData',
-            type: 'string',
-            required: true
-          },
-          {
-            name: 'password',
-            in: 'formData',
-            type: 'string',
-            required: true
-          },
-          {
-            name: 'Authorization',
-            in: 'header',
-            default: 'Basic ' + new Buffer('test:test').toString('base64')
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Token' }
-          },
-          '400': {
-            description: 'Неверные параметры'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/auth/refresh': {
-      post: {
-        tags: ['Auth'],
-        summary: 'Обновить access-token',
-        parameters: [
-          {
-            name: 'refresh_token',
-            in: 'formData',
-            type: 'string',
-            required: true
-          },
-          {
-            name: 'Authorization',
-            in: 'header',
-            default: 'Basic ' + new Buffer('test:test').toString('base64')
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Token' }
-          },
-          '400': {
-            description: 'Неверные параметры'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/auth/check': {
-      get: {
-        tags: ['Auth'],
-        summary: 'Проверить access-token',
-        parameters: [],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/User' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/user/{username}': {
-      get: {
-        tags: ['Users'],
-        summary: 'Получить информацию о пользователе',
-        parameters: [
-          {
-            name: 'username',
-            type: 'string',
-            in: 'path'
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/User' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/user/sync/{username}': {
-      get: {
-        tags: ['Users'],
-        summary: 'Синхронизировать таски и проекты пользователя',
-        parameters: [
-          {
-            name: 'username',
-            type: 'string',
-            in: 'path'
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/task/{taskId}': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Получить конкретный таск',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'string',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'populate',
-            type: 'string',
-            in: 'query',
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Task' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/task': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Получить все таски',
-        parameters: [
-          {
-            name: 'populate',
-            type: 'string',
-            in: 'query',
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Task' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/project/{projectId}': {
-      get: {
-        tags: ['Projects'],
-        summary: 'Получить конкретный проект',
-        parameters: [
-          {
-            name: 'projectId',
-            type: 'string',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'populate',
-            type: 'string',
-            in: 'query',
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Project' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/project': {
-      get: {
-        tags: ['Projects'],
-        summary: 'Получить все проекты',
-        parameters: [
-          {
-            name: 'populate',
-            type: 'string',
-            in: 'query',
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Project' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/comment': {
-      post: {
-        tags: ['Comments'],
-        summary: 'Создать коментарий',
-        parameters: [
-          {
-            name: 'message',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'task',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'user',
-            type: 'string',
-            in: 'formData'
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Comment' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    },
-    '/comment/{commentId}': {
-      get: {
-        tags: ['Comments'],
-        summary: 'Получить коментарий',
-        parameters: [
-          {
-            name: 'commentId',
-            type: 'string',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'populate',
-            type: 'string',
-            in: 'query',
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Comment' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      },
-      put: {
-        tags: ['Comments'],
-        summary: 'Изменить коментарий',
-        parameters: [
-          {
-            name: 'commentId',
-            type: 'string',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'message',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'task',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'user',
-            type: 'string',
-            in: 'formData'
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            schema: { $ref: '#/definitions/Comment' }
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      },
-      delete: {
-        tags: ['Comments'],
-        summary: 'Удалить коментарий',
-        parameters: [
-          {
-            name: 'commentId',
-            type: 'string',
-            in: 'path',
-            required: true
-          }
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-          },
-          '401': {
-            description: 'Токен невалидный'
-          },
-          '50x': {
-            description: 'Ошибка сервера'
-          }
-        }
-      }
-    }
-  },
-  securityDefinitions: {
-    apiKey: {
-      type: 'apiKey',
-      name: 'Authorization',
-      in: 'header',
-      description: 'ex.: Bearer 91ae3866cb9b1441d152c205cd8dc622118f6ef9'
-    }
-  },
-  definitions: {
-    User: {
-      type: 'object',
-      properties: {
-        username: { type: 'string' },
-        firstnameRu: { type: 'string' },
-        lastnameRu: { type: 'string' },
-        firstnameEn: { type: 'string' },
-        lastnameEn: { type: 'string' },
-        email: { type: 'string' },
-        mobile: { type: 'string' },
-        skype: { type: 'string' },
-        photo: { type: 'string' },
-        birthday: { type: 'string' },
-        psId: { type: 'string' },
-      }
-    },
-    Project: {
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-        status: { type: 'string' },
-        startDate: { type: 'string' },
-        psId: { type: 'string' },
-      }
-    },
-    Task: {
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-        status: { type: 'string' },
-        priority: { type: 'number' },
-        type: { type: 'string' },
-        planedTime: { type: 'number' },
-        currentTime: { type: 'number' },
-        owner: { '$ref': '#/definitions/User' },
-        author: { '$ref': '#/definitions/User' },
-        project: { '$ref': '#/definitions/Project' },
-        psId: { type: 'string' },
-      }
-    },
-    Comment: {
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-        user: { '$ref': '#/definitions/User' },
-        task: { '$ref': '#/definitions/Task' },
-      }
-    },
-    Token: {
-      type: 'object',
-      properties: {
-        token_type: { type: 'string' },
-        access_token: { type: 'string' },
-        refresh_token: { type: 'string' },
-        expires_in: { type: 'number' },
-        user: { '$ref': '#/definitions/User' },
-      }
-    },
-    Auth: {
-      type: 'object',
-      properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-      }
-    }
-  }
+	swagger: '2.0',
+	info: {
+		title: 'Sim-Track API',
+		version: '1.0.0'
+	},
+	basePath: '/api',
+	paths: {
+		'/project': {
+			get: {
+				tags: ['Projects'],
+				summary: 'Получить все проекты',
+				parameters: [
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
+						in: 'query',
+					}
+				],
+				responses: responsesCodes
+			},
+			post: {
+				tags: ['Projects'],
+				summary: 'Создать проект',
+				parameters: [
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+						example: 'string',
+						required: true
+					},
+					{
+						name: 'typeId',
+						required: "true",
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'portfolioId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'notbillable',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'budget',
+						type: 'number',
+						in: 'formData',
+					},
+					{
+						name: 'riskBudget',
+						type: 'number',
+						in: 'formData',
+					},
+					{
+						name: 'plannedStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'plannedFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					}
+				],
+				responses: responsesCodes
+			}
+		},
+		'/project/{projectId}': {
+			get: {
+				tags: ['Projects'],
+				summary: 'Получить конкретный проект',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+			put: {
+				tags: ['Projects'],
+				summary: 'Изменить конкретный проект',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'typeId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'notbillable',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'budget',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'risBudget',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'plannedStartDate',
+						type: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'plannedFinishDate',
+						type: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factStartDate',
+						type: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factFinishDate',
+						type: 'date',
+						in: 'formData',
+					}
+				],
+				responses: responsesCodes
+			},
+			delete: {
+				tags: ['Projects'],
+				summary: 'Удалить конкретный проект',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+
+
+
+
+		'/portfolio': {
+			get: {
+				tags: ['Portfolios'],
+				summary: 'Получить все портфели',
+				parameters: [
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
+						in: 'query',
+					}
+				],
+				responses: responsesCodes
+			},
+			post: {
+				tags: ['Portfolios'],
+				summary: 'Создать портфель',
+				parameters: [
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			}
+		},
+		'/portfolio/{portfolioId}': {
+			get: {
+				tags: ['Portfolios'],
+				summary: 'Получить конкретный портфель',
+				parameters: [
+					{
+						name: 'portfolioId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+			put: {
+				tags: ['Portfolios'],
+				summary: 'Изменить конкретный портфель',
+				parameters: [
+					{
+						name: 'portfolioId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			},
+			delete: {
+				tags: ['Portfolios'],
+				summary: 'Удалить конкретный портфель',
+				parameters: [
+					{
+						name: 'portfolioId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+
+
+
+
+		'/sprint': {
+			get: {
+				tags: ['Sprints'],
+				summary: 'Получить все спринты',
+				parameters: [
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
+						in: 'query',
+					}
+				],
+				responses: responsesCodes
+			},
+			post: {
+				tags: ['Sprints'],
+				summary: 'Создать спринт',
+				parameters: [
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'plannedStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'plannedFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			}
+		},
+		'/sprint/{sprintId}': {
+			get: {
+				tags: ['Sprints'],
+				summary: 'Получить конкретный портфель',
+				parameters: [
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+			put: {
+				tags: ['Sprints'],
+				summary: 'Изменить конкретный портфель',
+				parameters: [
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'plannedStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'plannedFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factStartDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'factFinishDate',
+						type: 'string',
+						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			},
+			delete: {
+				tags: ['Sprints'],
+				summary: 'Удалить конкретный спринт',
+				parameters: [
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+
+
+
+
+		'/task': {
+			get: {
+				tags: ['Tasks'],
+				summary: 'Получить все задачи',
+				parameters: [
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
+						in: 'query',
+					}
+				],
+				responses: responsesCodes
+			},
+			post: {
+				tags: ['Tasks'],
+				summary: 'Создать задачу',
+				parameters: [
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'typeId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'PlannedExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'FactExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'prioritiesId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'linkedTasks',
+						type: 'string',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			}
+		},
+		'/task/{sprintId}': {
+			get: {
+				tags: ['Tasks'],
+				summary: 'Получить конкретную задачу',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+			put: {
+				tags: ['Tasks'],
+				summary: 'Изменить конкретную задачу',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'name',
+						type: 'string',
+						in: 'formData',
+					},
+					{
+						name: 'description',
+						type: 'string',
+						in: 'formData',
+					},
+
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'PlannedExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'FactExecutionTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+					{
+						name: 'typeId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'prioritiesId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'linkedTasks',
+						type: 'string',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			},
+			delete: {
+				tags: ['Tasks'],
+				summary: 'Удалить конкретную задачу',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+
+
+		'/auth/login': {
+			post: {
+				tags: ['Auth'],
+				summary: 'Получить токен авторизации',
+				parameters: [
+					{
+						name: 'login',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'password',
+						type: 'string',
+						in: 'formData',
+						format: "password",
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+		'/auth/logout': {
+			delete: {
+				tags: ['Auth'],
+				summary: 'Удалить токен из базы системы',
+				parameters: [
+					{
+						name: 'token',
+						type: 'string',
+						in: 'header',
+						required: true
+					}
+				],
+				responses: responsesCodes
+			},
+		},
+		'/auth/refresh': {
+			put: {
+				tags: ['Auth'],
+				summary: 'Обновить токен',
+				parameters: [
+					{
+						name: 'token',
+						type: 'string',
+						in: 'header',
+						required: true
+					}
+				],
+				responses: responsesCodes
+			},
+		},
+
+	},
+	securityDefinitions: {
+		apiKey: {
+			type: 'apiKey',
+			name: 'Authorization',
+			in: 'header',
+			description: 'ex.: Basic 91ae3866cb9b1441d152c205cd8dc622118f6ef9'
+		}
+	},
+	definitions: {
+		Project: {
+			type: 'object',
+			properties: {
+				name: { type: 'string' },
+				status: { type: 'string' },
+				startDate: { type: 'string' },
+				psId: { type: 'string' },
+			}
+		},
+	}
 };
