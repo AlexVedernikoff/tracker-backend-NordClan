@@ -1,6 +1,6 @@
 module.exports = {
     appName: 'SimTrack',
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 8080,
 
     db: {
         postgres: {
@@ -9,7 +9,7 @@ module.exports = {
             dialect: 'postgres',
             name: 'sim-track',
             username: 'postgres',
-            password: '123'
+            password: '123456'
         }
     },
 

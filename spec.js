@@ -682,7 +682,7 @@ module.exports = {
 			type: 'apiKey',
 			name: 'Authorization',
 			in: 'header',
-			description: 'ex.: Bearer 91ae3866cb9b1441d152c205cd8dc622118f6ef9'
+			description: 'ex.: Basic 91ae3866cb9b1441d152c205cd8dc622118f6ef9'
 		}
 	},
 	definitions: {
