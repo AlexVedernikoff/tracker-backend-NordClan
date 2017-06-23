@@ -1,6 +1,8 @@
-node_modules
+/node_modules/*
 *.log
 .vscode
 jsconfig.json
 dump
 tmp
+.idea/*
+package-lock.json

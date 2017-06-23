@@ -1,13 +1,43 @@
-'use strict';
+const express = require('express');
+const router = express.Router();
+const ProjectController = require('./ProjectController');
+const PortfolioController = require('./PortfolioController');
+const SprintController = require('./SprintController');
+const TaskController = require('./TaskController');
+const AuthController = require('./AuthController');
+const TagController = require('./TagController');
 
-let router = require('koa-router')();
+router.post('/auth/login', AuthController.login);
+router.delete('/auth/logout', AuthController.logout);
+router.put('/auth/refresh', AuthController.refresh);
 
-let OAuth = require('../models/OAuth');
+router.post('/project', ProjectController.create);
+router.get('/project/:id', ProjectController.read);
+router.put('/project/:id', ProjectController.update);
+router.delete('/project/:id', ProjectController.delete);
+router.get('/project', ProjectController.list);
 
-router.use('/auth', require('./Auth').routes());
-router.use('/user', OAuth.authorize, require('./User').routes());
-router.use('/task', OAuth.authorize, require('./Task').routes());
-router.use('/project', OAuth.authorize, require('./Project').routes());
-router.use('/comment', OAuth.authorize, require('./Comment').routes());
+
+router.post('/portfolio', PortfolioController.create);
+router.get('/portfolio/:id', PortfolioController.read);
+router.put('/portfolio/:id', PortfolioController.update);
+router.delete('/portfolio/:id', PortfolioController.delete);
+router.get('/portfolio', PortfolioController.list);
+
+router.post('/sprint', SprintController.create);
+router.get('/sprint/:id', PortfolioController.read);
+router.put('/sprint/:id', SprintController.update);
+router.delete('/sprint/:id', SprintController.delete);
+router.get('/sprint', SprintController.list);
+
+router.post('/task', TaskController.create);
+router.get('/task/:id', TaskController.read);
+router.put('/task/:id', TaskController.update);
+router.delete('/task/:id', TaskController.delete);
+router.get('/task', TaskController.list);
+
+
+router.post('/tag', TagController.create);
+router.delete('/tag', TagController.delete);
 
 module.exports = router;

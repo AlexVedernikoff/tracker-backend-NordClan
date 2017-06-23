@@ -1,92 +1,157 @@
-'use strict';
+module.exports = function(sequelize, DataTypes) {
 
-const md5 = require('md5');
+	let Project = sequelize.define("Project", {
+		id: {
+			type: DataTypes.INTEGER,
+			primaryKey: true,
+			autoIncrement: true,
+			allowNull: false
+		},
+		name: {
+			type: DataTypes.STRING,
+			trim: true,
+			allowNull: false,
+			validate: {
+				max: {
+					args: 255,
+					msg: 'Name must be less than 255 characters.'
+				}
+			}
+		},
+		description: {
+			trim: true,
+			type: DataTypes.TEXT,
+			defaultValue: null
+		},
+		statusId: {
+			field: 'status_id',
+			type: DataTypes.INTEGER,
+			defaultValue: 0,
+			validate: {
+				isInt: true,
+				min: 0,
+				max: 9
+			}
+		},
+		typeId: {
+			field: 'type_id',
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			validate: {
+				isInt: true
+			}
+		},
+		notbillable: {
+			type: DataTypes.INTEGER,
+			defaultValue: 0,
+			validate: {
+				isInt: true,
+				min: 0,
+				max: 1
+			}
+		},
+		budget: {
+			type: DataTypes.FLOAT,
+			defaultValue: null,
+			validate: {
+				isNumeric: true
+			}
+		},
+		riskBudget: {
+			field: 'risk_budget',
+			type: DataTypes.FLOAT,
+			defaultValue: null,
+			validate: {
+				isNumeric: true
+			}
+		},
+		plannedStartDate: {
+			field: 'planned_start_date',
+			type: DataTypes.DATE,
+			defaultValue: null,
+			validate: {
+				isDate: true,
+			}
+		},
+		plannedFinishDate: {
+			field: 'planned_finish_date',
+			type: DataTypes.DATE,
+			defaultValue: null,
+			validate: {
+				isDate: true,
+			}
+		},
+		factStartDate: {
+			field: 'fact_start_date',
+			type: DataTypes.DATE,
+			defaultValue: null,
+			validate: {
+				isDate: true,
+			}
+		},
+		factFinishDate: {
+			field: 'fact_finish_date',
+			type: DataTypes.DATE,
+			defaultValue: null,
+			validate: {
+				isDate: true,
+			}
+		},
+		attaches: {
+			type: DataTypes.ARRAY(DataTypes.INTEGER),
+			defaultValue: null,
+			validate: {
+				notEmpty: true, // не пустая строка
+			}
+		},
+		portfolioId: {
+			field: 'portfolio_id',
+			type: DataTypes.INTEGER,
+			defaultValue: null,
+			validate: {
+				isInt: true
+			}
+		},
+		createdAt: {type: DataTypes.DATE, field: 'created_at'},
+		updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
+		deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
 
-const HttpError = require('./HttpError');
-const Sequelize = require('sequelize');
-const sequelize = require('../orm');
-const ProjectStatus = require('./ProjectStatus');
+	}, {
+		underscored: true,
+		timestamps: true,
+		paranoid: true,
+		tableName: 'projects'
+	});
 
-const ProjectModel = sequelize.define('projects', {
-    name: { type: Sequelize.STRING, allowNull: false },
-    start_date: Sequelize.DATE,
-    ps_id: Sequelize.STRING,
-    createdAt: {
-      field: 'created_at',
-      type: Sequelize.DATE
-    },
-    updatedAt: {
-      field: 'updated_at',
-      type: Sequelize.DATE
-    }
-  });
 
-ProjectModel.belongsTo(ProjectStatus.model, { as: 'status', foreignKey: 'status_id' });
+	Project.associate = function(models) {
 
-class Project {
-  constructor() {}
+		Project.belongsTo(models.Portfolio, {foreignKey: {
+			name: 'portfolioId',
+			field: 'portfolio_id'
+		}});
 
-  static get model() {
-    return ProjectModel;
-  }
+		Project.hasMany(models.Sprint, {foreignKey: {
+			name: 'projectId',
+			field: 'project_id'
+		}});
 
-  static find(params) {
-    let eagerLoad = [];
-    let populate = params.populate;
-    delete params.populate;
+		Project.belongsToMany(models.Tag, {
+			through: {
+				model: models.ItemTag,
+				unique: false,
+				scope: {
+					taggable: 'project'
+				}
+			},
+			foreignKey: 'taggable_id',
+			constraints: false
+		});
 
-    populate = populate ? populate.split(',') : [];
-    let popObj = {
-      status: { model: ProjectStatus.model, as: 'status' }
-    };
+	};
 
-    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
+	return Project;
+};
 
-    let find = ProjectModel.findOne({ where: params, include: eagerLoad });
 
-    return find.then(project => project ? (new Project()).setData(project.toJSON(), true) : project);
-  }
 
-  static findAll(params) {
-    let eagerLoad = [];
-    let populate = params.populate;
-    delete params.populate;
-
-    populate = populate ? populate.split(',') : [];
-    let popObj = {
-      status: { model: ProjectStatus.model, as: 'status' }
-    };
-
-    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
-
-    let find = ProjectModel.findAll({ where: params, include: eagerLoad });
-
-    return find.then(projects => projects ? projects.map(p => (new Project()).setData(p.toJSON(), true)) : []);
-  }
-
-  setData(data = {}, isSafe) {
-    if (isSafe) {
-      this.id = data.id;
-    }
-
-    data = data.toObject ? data.toObject() : data;
-    Object.keys(data).map(k => this[k] = data[k]);
-
-    return this;
-  }
-
-  save() {
-    let project = ProjectModel.build(this);
-    if (this.id) project.isNewRecord = false;
-    return new Promise((resolve, reject) => {
-      project.save()
-      .then(function() {
-        resolve(Project.find({ id: project.id }));
-      })
-      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
-    });
-
-  }
-}
-
-module.exports = Project;

@@ -1,73 +1,157 @@
-'use strict';
+module.exports = function(sequelize, DataTypes) {
 
-const md5 = require('md5');
-const sequelize = require('../orm');
-const Sequelize = require('sequelize');
-const HttpError = require('./HttpError');
+	let User = sequelize.define("User", {
+		id: {
+			type: DataTypes.INTEGER,
+			primaryKey: true,
+			autoIncrement: true,
+			allowNull: false
+		},
+		ldapLogin: {
+			field: 'ldap_login',
+			type: DataTypes.TEXT,
+			allowNull: false,
+		},
+		login: {
+			type: DataTypes.STRING,
+			allowNull: false,
+			validate: {
+				max: 225
+			}
+		},
+		lastNameEn: {
+			field: 'last_name_en',
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		firstNameEn: {
+			field: 'first_name_en',
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		lastNameRu: {
+			field: 'last_name_ru',
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		firstNameRu: {
+			field: 'first_name_ru',
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		active: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+			validate: {
+				isInt: true
+			}
+		},
+		photo: {
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		emailPrimary: {
+			field: 'email_primary',
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		emailSecondary: {
+			field: 'email_secondary',
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		phone: {
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 225
+			}
+		},
+		skype: {
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 255
+			}
+		},
+		city: {
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				max: 255
+			}
+		},
+		birthDate: {
+			field: "birth_date",
+			type: DataTypes.DATEONLY,
+			allowNull: true,
+			validate: {
+				isDate: true
+			}
+		},
+		createDate: {
+			field: "create_date",
+			type: DataTypes.DATE,
+			allowNull: true,
+			validate: {
+				isDate: true
+			}
+		},
+		deleteDate: {
+			field: "delete_date",
+			type: DataTypes.DATE,
+			allowNull: true,
+			validate: {
+				isDate: true
+			}
+		},
+		psId: {
+			field: 'ps_id',
+			allowNull: true,
+			type: DataTypes.STRING
+		},
 
-const UserModel = sequelize.define('users', {
-    username: { type: Sequelize.STRING, allowNull: false },
-    firstname_ru: { type: Sequelize.STRING, allowNull: false },
-    lastname_ru: { type: Sequelize.STRING, allowNull: false },
-    firstname_en: Sequelize.STRING,
-    lastname_en: Sequelize.STRING,
-    email: Sequelize.STRING,
-    mobile: Sequelize.STRING,
-    skype: Sequelize.STRING,
-    photo: Sequelize.STRING,
-    birthday: Sequelize.DATE,
-    ps_id: Sequelize.STRING,
-    createdAt: {
-      field: 'created_at',
-      type: Sequelize.DATE
-    },
-    updatedAt: {
-      field: 'updated_at',
-      type: Sequelize.DATE
-    }
-  });
 
-class User {
-  constructor() {}
+	}, {
+		timestamps: true,
+		paranoid: true,
+		underscored: true,
+		tableName: 'users'
+	});
 
-  static get model() {
-    return UserModel;
-  }
+	User.associate = function(models) {
+		User.belongsToMany(models.Department, { through: models.UserDepartments });
 
-  static find(params) {
-    let find = UserModel.findOne({ where: params });
+		User.hasMany(models.Token, {
+			foreignKey: {
+				name: 'userId',
+				field: 'user_id'
+			}
+		});
 
-    return find.then(user => user ? (new User()).setData(user.toJSON(), true) : user);
-  }
 
-  static findAll(params) {
-    let find = UserModel.findAll({ where: params });
+	};
 
-    return find.then(users => users ? users.map(u => (new User()).setData(u.toJSON(), true)) : []);
-  }
-
-  setData(data = {}, isSafe) {
-    if (isSafe) {
-      this.id = data.id;
-    }
-
-    data = data.toObject ? data.toObject() : data;
-    Object.keys(data).map(k => this[k] = data[k]);
-
-    return this;
-  }
-
-  save() {
-    let user = UserModel.build(this);
-    if (this.id) user.isNewRecord = false;
-    return new Promise((resolve, reject) => {
-      user.save()
-      .then(function() {
-        resolve(User.find({ id: user.id }));
-      })
-      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
-    });
-  }
-}
-
-module.exports = User;
+	return User;
+};

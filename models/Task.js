@@ -1,114 +1,139 @@
-'use strict';
+module.exports = function(sequelize, DataTypes) {
 
-const md5 = require('md5');
+	let Task = sequelize.define("Task", {
+		id: {
+			type: DataTypes.INTEGER,
+			primaryKey: true,
+			autoIncrement: true,
+			allowNull: false
+		},
+		name: {
+			type: DataTypes.STRING,
+			trim: true,
+			allowNull: false,
+			validate: {
+				max: {
+					args: 255,
+					msg: 'Name must be less than 255 characters.'
+				}
+			}
+		},
+		typeId: {
+			field: 'type_id',
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			validate: {
+				isInt: true
+			}
+		},
+		statusId: {
+			field: 'status_id',
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			validate: {
+				isInt: true
+			}
+		},
+		description: {
+			trim: true,
+			type: DataTypes.TEXT,
+			defaultValue: null
+		},
+		PlannedExecutionTime: {
+			field: 'planned_execution_time',
+			type: DataTypes.FLOAT,
+			defaultValue: null,
+			validate: {
+				isNumeric: true
+			}
+		},
+		FactExecutionTime: {
+			field: 'fact_execution_time',
+			type: DataTypes.FLOAT,
+			defaultValue: null,
+			validate: {
+				isNumeric: true
+			}
+		},
+		attaches: {
+			type: DataTypes.ARRAY(DataTypes.INTEGER),
+			defaultValue: null,
+			validate: {
+				notEmpty: true, // не пустая строка
+			}
+		},
+		subTasks: {
+			field: 'sub_tasks',
+			type: DataTypes.ARRAY(DataTypes.INTEGER),
+			defaultValue: null,
+			validate: {
+				notEmpty: true, // не пустая строка
+			}
+		},
+		linkedTasks: {
+			field: 'linked_tasks',
+			type: DataTypes.ARRAY(DataTypes.INTEGER),
+			defaultValue: null,
+			validate: {
+				notEmpty: true, // не пустая строка
+			}
+		},
+		prioritiesId: {
+			field: 'priorities_id',
+			type: DataTypes.INTEGER,
+			defaultValue: null,
+			validate: {
+				isInt: true
+			}
+		},
+		createdAt: {type: DataTypes.DATE, field: 'created_at'},
+		updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
+		deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+	}, {
+		timestamps: true,
+		paranoid: true,
+		underscored: true,
+		tableName: 'tasks'
+	});
 
-const HttpError = require('./HttpError');
-const Sequelize = require('sequelize');
-const sequelize = require('../orm');
-const User = require('./User');
-const Project = require('./Project');
 
-const TaskPriority = require('./TaskPriority');
-const TaskStatus = require('./TaskStatus');
-const TaskType = require('./TaskType');
+	Task.associate = function(models) {
 
-const TaskModel = sequelize.define('tasks', {
-    name: { type: Sequelize.STRING, allowNull: false },
-    planned_time: Sequelize.INTEGER,
-    fact_time: Sequelize.INTEGER,
-    ps_id: Sequelize.STRING,
-    createdAt: {
-      field: 'created_at',
-      type: Sequelize.DATE
-    },
-    updatedAt: {
-      field: 'updated_at',
-      type: Sequelize.DATE
-    }
-  });
+		Task.belongsTo(models.Project, {foreignKey: {
+			name: 'projectId',
+			field: 'project_id',
+			allowNull: false,
+		}});
 
-TaskModel.belongsTo(Project.model, { foreignKey: 'project_id' });
-TaskModel.belongsTo(User.model, { as: 'owner', foreignKey: 'owner_id' });
-TaskModel.belongsTo(User.model, { as: 'author', foreignKey: 'author_id' });
+		Task.belongsTo(models.Task, {foreignKey: {
+			name: 'parentId',
+			field: 'parent_id'
+		}});
 
-TaskModel.belongsTo(TaskPriority.model, { as: 'priority', foreignKey: 'priority_id' });
-TaskModel.belongsTo(TaskStatus.model, { as: 'status', foreignKey: 'status_id' });
-TaskModel.belongsTo(TaskType.model, { as: 'type',  foreignKey: 'type_id' });
+		Task.belongsTo(models.Sprint, {foreignKey: {
+			name: 'sprintId',
+			field: 'sprint_id'
+		}});
 
-class Task {
-  constructor() {}
+		Task.belongsToMany(models.Tag, {
+			through: {
+				model: models.ItemTag,
+				unique: false,
+				scope: {
+					taggable: 'task'
+				}
+			},
+			foreignKey: 'taggable_id',
+			constraints: false
+		});
 
-  static get model() {
-    return TaskModel;
-  }
+	};
 
-  static find(params) {
-    let eagerLoad = [];
-    let populate = params.populate;
-    delete params.populate;
+	return Task;
+};
 
-    populate = populate ? populate.split(',') : [];
-    let popObj = {
-      owner: { model: User.model, as: 'owner' },
-      author: { model: User.model, as: 'author' },
-      project: { model: Project.model, as: 'project' },
-      priority: { model: TaskPriority.model, as: 'priority' },
-      status: { model: TaskStatus.model, as: 'status' },
-      type: { model: TaskType.model, as: 'type' }
-    };
 
-    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
 
-    let find = TaskModel.findOne({ where: params, include: eagerLoad });
 
-    return find.then(task => task ? (new Task()).setData(task.toJSON(), true) : task);
-  }
 
-  static findAll(params) {
-    let eagerLoad = [];
-    let populate = params.populate;
-    delete params.populate;
-
-    populate = populate ? populate.split(',') : [];
-    let popObj = {
-      owner: { model: User.model, as: 'owner' },
-      author: { model: User.model, as: 'author' },
-      project: { model: Project.model, as: 'project' },
-      priority: { model: TaskPriority.model, as: 'priority' },
-      status: { model: TaskStatus.model, as: 'status' },
-      type: { model: TaskType.model, as: 'type' }
-    };
-
-    populate.map(p => popObj[p] ? eagerLoad.push(popObj[p]) : false);
-
-    let find = TaskModel.findAll({ where: params, include: eagerLoad });
-
-    return find.then(tasks => tasks ? tasks.map(t => (new Task()).setData(t.toJSON(), true)) : tasks);
-  }
-
-  setData(data = {}, isSafe) {
-    if (isSafe) {
-      this.id = data.id;
-    }
-
-    data = data.toObject ? data.toObject() : data;
-    Object.keys(data).map(k => this[k] = data[k]);
-
-    return this;
-  }
-
-  save() {
-    let task = TaskModel.build(this);
-    if (this.id) task.isNewRecord = false;
-    return new Promise((resolve, reject) => {
-      task.save()
-      .then(function() {
-        resolve(Task.find({ id: task.id }));
-      })
-      .catch(err => reject(new HttpError(400, (err.errors ? err.errors[Object.keys(err.errors)[0]] : err))));
-    });
-  }
-}
-
-module.exports = Task;
 
