@@ -95,7 +95,6 @@ syncUsers = function() {
 							})
 								.then(user => {
 									if(user) user.updateAttributes(x, {
-										//validate: false,
 									}).catch((err) => {
 										console.error(err);
 										console.error('error: ' + (err));
