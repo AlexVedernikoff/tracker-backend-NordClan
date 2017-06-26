@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const TagController = require('./TagController');
 const Task = require('../models').Task;
+const Tag = require('../models').Tag;
 
 
 exports.create = function(req, res, next){
@@ -86,34 +87,46 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
+	Task
+		.findAll({
+			limit: req.query.pageSize ? req.query.pageSize : 9999999999999,
+			offset: req.query.pageSize && req.query.page ? +req.query.pageSize * +req.query.page : 0,
+			include: [
+				{
+					model: Tag,
+					attributes: ['name'],
+					through: {
+						attributes: []
+					}
+				}
+			]
+		})
+		.then(projects => {
 
-	Task.findAndCountAll({
-		limit: req.query.pageSize ? req.query.pageSize : 10,
-		offset: req.query.pageSize && req.query.page ? +req.query.pageSize * +req.query.page : 0,
-	})
-		.then(sprints => {
 
-			req.query.currentPage = req.query.currentPage ? req.query.currentPage : 1;
-			req.query.pageSize = req.query.pageSize ? req.query.pageSize : sprints.count;
+			Task
+				.count()
+				.then((count) => {
+
+					let projectsRows = projects ?
+						projects.map(
+							item =>
+								item.dataValues
+						) : [];
+
+					let responseObject = {
+						currentPage: req.query.currentPage ? req.query.currentPage : 1,
+						pagesCount: Math.ceil(count / (req.query.currentPage ? req.query.currentPage : 1)),
+						pageSize: req.query.pageSize ? req.query.pageSize : count,
+						rowsCountAll: count,
+						rowsCountOnCurrentPage: projectsRows.length,
+						data: projectsRows
+					};
+					res.end(JSON.stringify(responseObject));
+
+				});
 
 
-			let projectsRows = sprints.rows ?
-				sprints.rows.map(
-					item =>
-						item.dataValues
-				) : [];
-
-
-			let responseObject = {
-				currentPage: req.query.currentPage,
-				pagesCount: Math.ceil(sprints.count / req.query.pageSize),
-				pageSize: req.query.pageSize,
-				rowsCountAll: sprints.count,
-				rowsCountOnCurrentPage: projectsRows.length,
-				data: projectsRows
-			};
-
-			res.end(JSON.stringify(responseObject));
 		})
 		.catch((err) => {
 			next(err);

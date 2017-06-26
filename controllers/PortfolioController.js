@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const TagController = require('./TagController');
 const Portfolio = require('../models').Portfolio;
+const Tag = require('../models').Tag;
 
 
 exports.create = function(req, res, next){
@@ -92,33 +93,46 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
-	Portfolio.findAndCountAll({
-		limit: req.query.pageSize ? req.query.pageSize : 10,
-		offset: req.query.pageSize && req.query.page ? +req.query.pageSize * +req.query.page : 0,
-	})
-		.then(portfolio => {
+	Portfolio
+		.findAll({
+			limit: req.query.pageSize ? req.query.pageSize : 9999999999999,
+			offset: req.query.pageSize && req.query.page ? +req.query.pageSize * +req.query.page : 0,
+			include: [
+				{
+					model: Tag,
+					attributes: ['name'],
+					through: {
+						attributes: []
+					}
+				}
+			]
+		})
+		.then(projects => {
 
-			req.query.currentPage = req.query.currentPage ? req.query.currentPage : 1;
-			req.query.pageSize = req.query.pageSize ? req.query.pageSize : portfolio.count;
+
+			Portfolio
+				.count()
+				.then((count) => {
+
+					let projectsRows = projects ?
+						projects.map(
+							item =>
+								item.dataValues
+						) : [];
+
+					let responseObject = {
+						currentPage: req.query.currentPage ? req.query.currentPage : 1,
+						pagesCount: Math.ceil(count / (req.query.currentPage ? req.query.currentPage : 1)),
+						pageSize: req.query.pageSize ? req.query.pageSize : count,
+						rowsCountAll: count,
+						rowsCountOnCurrentPage: projectsRows.length,
+						data: projectsRows
+					};
+					res.end(JSON.stringify(responseObject));
+
+				});
 
 
-			let projectsRows = portfolio.rows ?
-				portfolio.rows.map(
-					item =>
-						item.dataValues
-				) : [];
-
-
-			let responseObject = {
-				currentPage: req.query.currentPage,
-				pagesCount: Math.ceil(portfolio.count / req.query.pageSize),
-				pageSize: req.query.pageSize,
-				rowsCountAll: portfolio.count,
-				rowsCountOnCurrentPage: projectsRows.length,
-				data: projectsRows
-			};
-
-			res.end(JSON.stringify(responseObject));
 		})
 		.catch((err) => {
 			next(err);
