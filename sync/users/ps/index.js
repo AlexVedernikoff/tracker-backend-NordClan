@@ -64,7 +64,7 @@ syncUsers = function() {
 					skype: (!_.isEmpty(x.skype)) ? x.skype: null,
 					city: (!_.isEmpty(x.city)) ? x.city: null,
 					phone: (!_.isEmpty(x.phone)) ? x.phone: null,
-					mobile: (!_.isEmpty(x.mobile)) ? x.mobile: null,
+					mobile: x.mobile,
 					active: +!!x.active,
 
 					birthDate: (!_.isEmpty(x.birthDate)) ? moment(x.birthDate, 'DD.MM.YYYY' ).format() : null,
@@ -95,7 +95,7 @@ syncUsers = function() {
 							})
 								.then(user => {
 									if(user) user.updateAttributes(x, {
-										validate: false,
+										//validate: false,
 									}).catch((err) => {
 										console.error(err);
 										console.error('error: ' + (err));

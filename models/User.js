@@ -16,7 +16,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: false,
 			validate: {
-				max: 225
+				len: [2, 100]
 			}
 		},
 		lastNameEn: {
@@ -24,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [2, 100]
 			}
 		},
 		firstNameEn: {
@@ -32,7 +32,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [2, 100]
 			}
 		},
 		lastNameRu: {
@@ -40,7 +40,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [2, 100]
 			}
 		},
 		firstNameRu: {
@@ -48,7 +48,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [2, 100]
 			}
 		},
 		active: {
@@ -62,7 +62,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [0, 100]
 			}
 		},
 		emailPrimary: {
@@ -70,7 +70,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [0, 100]
 			}
 		},
 		emailSecondary: {
@@ -78,28 +78,35 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [0, 100]
 			}
 		},
 		phone: {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 225
+				len: [0, 100]
+			}
+		},
+		mobile: {
+			type: DataTypes.STRING,
+			allowNull: true,
+			validate: {
+				len: [0, 100]
 			}
 		},
 		skype: {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 255
+				len: [0, 100]
 			}
 		},
 		city: {
 			type: DataTypes.STRING,
 			allowNull: true,
 			validate: {
-				max: 255
+				len: [0, 100]
 			}
 		},
 		birthDate: {

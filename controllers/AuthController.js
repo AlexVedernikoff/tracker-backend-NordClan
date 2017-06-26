@@ -17,7 +17,8 @@ exports.login = function(req, res, next){
 	User.findOne({
 		where: {
 			login: req.body.login,
-		}
+		},
+		attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ]
 	})
 		.then((user) => {
 			if(!user) {
@@ -56,13 +57,8 @@ exports.login = function(req, res, next){
 					})
 					.then(() => {
 						res.cookie('authorization' , 'Basic ' + token.token, { maxAge: token.expires.format('X')});
-						delete user.dataValues.psId;
-						delete user.dataValues.createDate;
-						delete user.dataValues.deleteDate;
-						delete user.dataValues.created_at;
-						delete user.dataValues.updated_at;
-						delete user.dataValues.deleted_at;
 						user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
+						delete user.dataValues.ldapLogin;
 
 						res.status(200).json({
 							token: token.token,
