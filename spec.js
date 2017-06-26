@@ -1,7 +1,6 @@
 const responsesCodes = {
 	'200': {
 		description: 'OK',
-		schema: { $ref: '#/definitions/Project' }
 	},
 	'400': {
 		description: 'Не коректныые данные запроса'
@@ -112,6 +111,13 @@ module.exports = {
 						type: 'string',
 						format: 'date',
 						in: 'formData',
+					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
 					}
 				],
 				responses: responsesCodes
@@ -195,6 +201,13 @@ module.exports = {
 						name: 'factFinishDate',
 						type: 'date',
 						in: 'formData',
+					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
 					}
 				],
 				responses: responsesCodes
@@ -250,6 +263,13 @@ module.exports = {
 						type: 'string',
 						in: 'formData',
 					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
+					}
 				],
 				responses: responsesCodes
 			}
@@ -288,6 +308,13 @@ module.exports = {
 						type: 'string',
 						in: 'formData',
 					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
+					}
 				],
 				responses: responsesCodes
 			},
@@ -371,6 +398,13 @@ module.exports = {
 						type: 'integer',
 						in: 'formData',
 					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
+					}
 				],
 				responses: responsesCodes
 			}
@@ -438,6 +472,13 @@ module.exports = {
 						type: 'integer',
 						in: 'formData',
 					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
+					}
 				],
 				responses: responsesCodes
 			},
@@ -530,6 +571,13 @@ module.exports = {
 						type: 'string',
 						in: 'formData',
 					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
+					}
 				],
 				responses: responsesCodes
 			}
@@ -604,6 +652,13 @@ module.exports = {
 						type: 'string',
 						in: 'formData',
 					},
+					{
+						name: 'tags',
+						type: 'string',
+						format: 'date',
+						description: 'tags separated by ","',
+						in: 'formData',
+					}
 				],
 				responses: responsesCodes
 			},
@@ -684,16 +739,5 @@ module.exports = {
 			in: 'header',
 			description: 'ex.: Basic 91ae3866cb9b1441d152c205cd8dc622118f6ef9'
 		}
-	},
-	definitions: {
-		Project: {
-			type: 'object',
-			properties: {
-				name: { type: 'string' },
-				status: { type: 'string' },
-				startDate: { type: 'string' },
-				psId: { type: 'string' },
-			}
-		},
 	}
 };

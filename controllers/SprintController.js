@@ -1,12 +1,13 @@
 const createError = require('http-errors');
+const TagController = require('./TagController');
 const Sprint = require('../models').Sprint;
 
 
 exports.create = function(req, res, next){
 
 	Sprint.create(req.body)
-		.then(() => {
-			res.end();
+		.then((model) => {
+			TagController.tagsHandlerForModel(model, req, res, next);
 		})
 		.catch((err) => {
 			next(err);
@@ -17,7 +18,17 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
 
-	Sprint.findByPrimary(req.params.id)
+	Sprint.findByPrimary(req.params.id, {
+		include: [
+			{
+				model: Tag,
+				attributes: ['name'],
+				through: {
+					attributes: []
+				}
+			}
+		]
+	})
 		.then((row) => {
 			if(!row) { return next(createError(404)); }
 
@@ -32,14 +43,14 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
 
-	Sprint.findByPrimary(req.params.id)
+	Sprint.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((row) => {
 			if(!row) { return next(createError(404)); }
 
 
 			row.updateAttributes(req.body)
-				.then(()=>{
-					res.end();
+				.then((model)=>{
+					TagController.tagsHandlerForModel(model, req, res, next);
 				})
 				.catch((err) => {
 					next(err);

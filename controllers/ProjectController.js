@@ -1,12 +1,16 @@
 const createError = require('http-errors');
+const TagController = require('./TagController');
 const Project = require('../models').Project;
+const Tag = require('../models').Tag;
+const ItemTag = require('../models').ItemTag;
 
 
 exports.create = function(req, res, next){
 
-	Project.create(req.body)
-		.then(() => {
-			res.end();
+	Project
+		.create(req.body)
+		.then((model) => {
+			TagController.tagsHandlerForModel(model, req, res, next);
 		})
 		.catch((err) => {
 			next(err);
@@ -17,11 +21,22 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
 
-	Project.findByPrimary(req.params.id)
-		.then((project) => {
-			if(!project) { return next(createError(404)); }
+	Project
+		.findByPrimary(req.params.id, {
+			include: [
+				{
+					model: Tag,
+					attributes: ['name'],
+					through: {
+						attributes: []
+					}
+				}
+			]
+		})
+		.then((model) => {
+			if(!model) { return next(createError(404)); }
 
-			res.end(JSON.stringify(project.dataValues));
+			res.end(JSON.stringify(model.dataValues));
 		})
 		.catch((err) => {
 			next(err);
@@ -32,14 +47,16 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
 
-	Project.findByPrimary(req.params.id)
+	Project
+		.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
 
-			project.updateAttributes(req.body)
-				.then(()=>{
-					res.end();
+			project
+				.updateAttributes(req.body)
+				.then((model)=>{
+					TagController.tagsHandlerForModel(model, req, res, next);
 				})
 				.catch((err) => {
 					next(err);

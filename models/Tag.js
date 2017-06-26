@@ -1,5 +1,4 @@
 module.exports = function(sequelize, DataTypes) {
-
 	let Tag = sequelize.define('Tag', {
 		id: {
 			type: DataTypes.INTEGER,
@@ -82,6 +81,3 @@ module.exports = function(sequelize, DataTypes) {
 
 	return Tag;
 };
-
-
-

@@ -3,7 +3,6 @@ const path      = require("path");
 const Sequelize = require("sequelize");
 const sequelize = require('../orm');
 
-
 let db = {};
 
 fs

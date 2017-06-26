@@ -1,12 +1,13 @@
 const createError = require('http-errors');
+const TagController = require('./TagController');
 const Portfolio = require('../models').Portfolio;
 
 
 exports.create = function(req, res, next){
 
 	Portfolio.create(req.body)
-		.then(() => {
-			res.end();
+		.then((model) => {
+			TagController.tagsHandlerForModel(model, req, res, next);
 		})
 		.catch((err) => {
 			next(createError(err));
@@ -17,7 +18,18 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
 
-	Portfolio.findByPrimary(req.params.id)
+	Portfolio
+		.findByPrimary(req.params.id, {
+			include: [
+				{
+					model: Tag,
+					attributes: ['name'],
+					through: {
+						attributes: []
+					}
+				}
+			]
+		})
 		.then((portfolio) => {
 			if(!portfolio) { return next(createError(404)); }
 
@@ -32,14 +44,16 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
 
-	Portfolio.findByPrimary(req.params.id)
+	Portfolio
+		.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((portfolio) => {
 			if(!portfolio) { return next(createError(404)); }
 
 
-			portfolio.updateAttributes(req.body)
-				.then(()=>{
-					res.end();
+			portfolio
+				.updateAttributes(req.body)
+				.then((model)=>{
+					TagController.tagsHandlerForModel(model, req, res, next);
 				})
 				.catch((err) => {
 					next(err);
@@ -55,7 +69,8 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	Portfolio.findByPrimary(req.params.id, { attributes: ['id'] })
+	Portfolio
+		.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((portfolio) => {
 			if(!portfolio) { return next(createError(404)); }
 
