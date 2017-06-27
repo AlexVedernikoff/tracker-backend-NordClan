@@ -37,7 +37,7 @@ app.all('*', function(req, res, next){
 	res.setHeader('Cache-Control', 'no-cache');
 
 	res.setHeader('Access-Control-Allow-Credentials', true);
-	res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+	res.setHeader('Access-Control-Allow-Origin', req.headers.origin? req.headers.origin: '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
 	next();
