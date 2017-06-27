@@ -14,7 +14,6 @@ exports.checkTokenMiddleWare = checkTokenMiddleWare;
 function createJwtToken(user) {
 	const payload = {
 		user: user,
-		iat: moment().format(),
 		expires: moment().add(config.auth.accessTokenLifetime, 's')
 	};
 	return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};

@@ -767,32 +767,16 @@ module.exports = {
 			delete: {
 				tags: ['Auth'],
 				summary: 'Удалить токен из базы системы',
-				parameters: [
-					{
-						name: 'token',
-						type: 'string',
-						in: 'header',
-						required: true
-					}
-				],
 				responses: responsesCodes
 			},
 		},
-		'/auth/refresh': {
+/*		'/auth/refresh': {
 			put: {
 				tags: ['Auth'],
 				summary: 'Обновить токен',
-				parameters: [
-					{
-						name: 'token',
-						type: 'string',
-						in: 'header',
-						required: true
-					}
-				],
 				responses: responsesCodes
 			},
-		},
+		},*/
 
 	},
 	securityDefinitions: {
