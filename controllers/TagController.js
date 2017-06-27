@@ -77,13 +77,13 @@ class TagController {
 							.findOne({ where: {
 								tagId: tag.dataValues.id,
 								taggableId: this.req.body.taggableId,
-								taggable: this.req.body.taggble,
+								taggable: this.req.body.taggable,
 							}})
 							.then((item) => {
 								if(!item) return this.next(createError(404, 'ItemTag not found'));
 								item
 									.destroy()
-									.then(() => res.end())
+									.then(() => this.res.end())
 									.catch((err) => this.next(createError(err)));
 							})
 							.catch((err) => this.next(createError(err)));

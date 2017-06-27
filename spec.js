@@ -678,6 +678,69 @@ module.exports = {
 		},
 
 
+
+		'/tag': {
+			post: {
+				tags: ['Tag'],
+				summary: 'Создать тег для сущности',
+				parameters: [
+					{
+						name: 'taggable',
+						description: 'Имя сущности: \'task\', \'sprint\', \'project\', \'portfolio\'',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'taggableId',
+						description: 'ID сущности',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'tag',
+						description: 'Тег',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+			delete: {
+				tags: ['Tag'],
+				summary: 'Удалить тег для сущности',
+				parameters: [
+					{
+						name: 'taggable',
+						description: 'Имя сущности: \'task\', \'sprint\', \'project\', \'portfolio\'',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'taggableId',
+						description: 'ID сущности',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'tag',
+						description: 'Тег',
+						type: 'string',
+						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+
+
+
+
 		'/auth/login': {
 			post: {
 				tags: ['Auth'],
