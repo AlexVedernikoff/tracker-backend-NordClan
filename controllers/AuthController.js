@@ -56,7 +56,11 @@ exports.login = function(req, res, next){
 						expires: token.expires.format()
 					})
 					.then(() => {
-						res.cookie('authorization' , 'Basic ' + token.token, { maxAge: token.expires.format('X')});
+						res.cookie('authorization', 'Basic ' + token.token, {
+							maxAge: 604800000,
+							domain: extractHostname(req.headers.origin),
+							httpOnly: true
+						});
 						user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
 						delete user.dataValues.ldapLogin;
 
@@ -84,7 +88,13 @@ exports.logout = function(req, res, next){
 		}
 	})
 		.then((row) => {
-			if(!row) { return next(createError(404)); }
+			if(!row) return next(createError(404));
+
+
+			res.cookie('authorization', 'Basic ' + req.token, {
+				maxAge: -604800000,
+				domain: extractHostname(req.headers.origin)
+			});
 
 			res.sendStatus(200);
 
@@ -132,3 +142,23 @@ exports.refresh = function(req, res, next){
 
 };
 
+
+
+function extractHostname(url) {
+	var hostname;
+	//find & remove protocol (http, ftp, etc.) and get hostname
+
+	if (url.indexOf("://") > -1) {
+		hostname = url.split('/')[2];
+	}
+	else {
+		hostname = url.split('/')[0];
+	}
+
+	//find & remove port number
+	hostname = hostname.split(':')[0];
+	//find & remove "?"
+	hostname = hostname.split('?')[0];
+
+	return hostname;
+}
