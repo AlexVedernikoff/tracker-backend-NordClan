@@ -91,9 +91,10 @@ exports.logout = function(req, res, next){
 			if(!row) return next(createError(404));
 
 
-			res.cookie('authorization', 'Basic ' + req.token, {
-				maxAge: -604800000,
-				domain: extractHostname(req.headers.origin)
+			res.cookie('authorization', '', {
+				maxAge: 0,
+				domain: extractHostname(req.headers.origin),
+				httpOnly: true
 			});
 
 			res.sendStatus(200);
