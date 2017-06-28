@@ -4,6 +4,7 @@ const ldap = require('ldapjs');
 const Auth = require('../components/Auth');
 const User = require('../models').User;
 const Token = require('../models').Token;
+const config = require('.././configs');
 
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
@@ -17,6 +18,7 @@ exports.login = function(req, res, next){
 	User.findOne({
 		where: {
 			login: req.body.login,
+			active: 1,
 		},
 		attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ]
 	})
@@ -57,7 +59,7 @@ exports.login = function(req, res, next){
 					})
 					.then(() => {
 						res.cookie('authorization', 'Basic ' + token.token, {
-							maxAge: 604800000,
+							maxAge: config.auth.accessTokenLifetime * 1000,
 							domain: extractHostname(req.headers.origin),
 							httpOnly: true
 						});
@@ -146,9 +148,7 @@ exports.refresh = function(req, res, next){
 
 
 function extractHostname(url) {
-	var hostname;
-	//find & remove protocol (http, ftp, etc.) and get hostname
-
+	let hostname;
 	if (url.indexOf("://") > -1) {
 		hostname = url.split('/')[2];
 	}
