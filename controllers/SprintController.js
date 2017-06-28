@@ -92,6 +92,8 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
+	let where = {};
+
 	let includeForCount = {
 		model: Tag,
 		as: 'tagForQuery',
@@ -117,12 +119,21 @@ exports.list = function(req, res, next){
 		}
 	};
 
+	if(req.query.name) {
+		where.name = {
+			$iLike: "%" + req.query.name + "%"
+		}
+	}
+	if(req.query.statusId) {
+		where.statusId = req.query.statusId;
+	}
 
 	Sprint
 		.findAll({
 			limit: req.query.pageSize ? +req.query.pageSize : 1000,
 			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
 			include: req.query.tags ? [includeForCount, includeForQuery] : [includeForQuery],
+			where: where,
 			subQuery: true,
 		})
 		.then(projects => {

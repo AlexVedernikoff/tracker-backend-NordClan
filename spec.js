@@ -29,12 +29,12 @@ module.exports = {
 				summary: 'Получить все проекты',
 				parameters: [
 					{
-						name: 'pageSize',
-						type: 'integer',
+						name: 'name',
+						type: 'string',
 						in: 'query',
 					},
 					{
-						name: 'currentPage',
+						name: 'statusId',
 						type: 'integer',
 						in: 'query',
 					},
@@ -42,6 +42,16 @@ module.exports = {
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
+						in: 'query',
+					},
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
 						in: 'query',
 					}
 				],
@@ -240,12 +250,12 @@ module.exports = {
 				summary: 'Получить все портфели',
 				parameters: [
 					{
-						name: 'pageSize',
-						type: 'integer',
+						name: 'name',
+						type: 'string',
 						in: 'query',
 					},
 					{
-						name: 'currentPage',
+						name: 'statusId',
 						type: 'integer',
 						in: 'query',
 					},
@@ -253,6 +263,16 @@ module.exports = {
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
+						in: 'query',
+					},
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
 						in: 'query',
 					}
 				],
@@ -351,12 +371,12 @@ module.exports = {
 				summary: 'Получить все спринты',
 				parameters: [
 					{
-						name: 'pageSize',
-						type: 'integer',
+						name: 'name',
+						type: 'string',
 						in: 'query',
 					},
 					{
-						name: 'currentPage',
+						name: 'statusId',
 						type: 'integer',
 						in: 'query',
 					},
@@ -364,6 +384,16 @@ module.exports = {
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
+						in: 'query',
+					},
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
 						in: 'query',
 					}
 				],
@@ -519,12 +549,12 @@ module.exports = {
 				summary: 'Получить все задачи',
 				parameters: [
 					{
-						name: 'pageSize',
-						type: 'integer',
+						name: 'name',
+						type: 'string',
 						in: 'query',
 					},
 					{
-						name: 'currentPage',
+						name: 'statusId',
 						type: 'integer',
 						in: 'query',
 					},
@@ -532,6 +562,16 @@ module.exports = {
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
+						in: 'query',
+					},
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'currentPage',
+						type: 'integer',
 						in: 'query',
 					}
 				],
