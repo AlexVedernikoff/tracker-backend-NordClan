@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const TagController = require('./TagController');
 const Portfolio = require('../models').Portfolio;
 const Tag = require('../models').Tag;
+const ItemTag = require('../models').ItemTag;
 
 
 exports.create = function(req, res, next){
@@ -93,26 +94,49 @@ exports.delete = function(req, res, next){
 
 exports.list = function(req, res, next){
 
+	let includeForCount = {
+		model: Tag,
+		as: 'tagForQuery',
+		required: true,
+		attributes: [],
+		where: {
+			name: {
+				$or: req.query.tags ? req.query.tags.split(',').map((el) => el.trim()) : [],
+			},
+		},
+		through: {
+			model: ItemTag,
+			attributes: []
+		}
+	};
+
+	let includeForQuery = {
+		model: Tag,
+		attributes: ['name'],
+		through: {
+			model: ItemTag,
+			attributes: []
+		}
+	};
+
+
 	Portfolio
 		.findAll({
-			limit: req.query.pageSize ? req.query.pageSize : 9999999999999,
-			offset: req.query.pageSize && req.query.page ? +req.query.pageSize * +req.query.page : 0,
-			include: [
-				{
-					model: Tag,
-					attributes: ['name'],
-					through: {
-						attributes: []
-					}
-				}
-			]
+			limit: req.query.pageSize ? +req.query.pageSize : 1000,
+			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
+			include: req.query.tags ? [includeForCount, includeForQuery] : [includeForQuery],
+			subQuery: true,
 		})
 		.then(projects => {
 
-
 			Portfolio
-				.count()
+				.count({
+					include: req.query.tags ? [includeForCount] : [],
+					group: ['Portfolio.id']
+				})
 				.then((count) => {
+
+					count = count.length;
 
 					let projectsRows = projects ?
 						projects.map(
@@ -121,15 +145,18 @@ exports.list = function(req, res, next){
 						) : [];
 
 					let responseObject = {
-						currentPage: req.query.currentPage ? req.query.currentPage : 1,
-						pagesCount: Math.ceil(count / (req.query.currentPage ? req.query.currentPage : 1)),
-						pageSize: req.query.pageSize ? req.query.pageSize : count,
+						currentPage: req.query.currentPage ? +req.query.currentPage : 1,
+						pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
+						pageSize: req.query.pageSize ? +req.query.pageSize : +count,
 						rowsCountAll: count,
 						rowsCountOnCurrentPage: projectsRows.length,
 						data: projectsRows
 					};
 					res.end(JSON.stringify(responseObject));
 
+				})
+				.catch((err) => {
+					next(err);
 				});
 
 
@@ -137,4 +164,5 @@ exports.list = function(req, res, next){
 		.catch((err) => {
 			next(err);
 		});
+
 };

@@ -53,6 +53,19 @@ module.exports = function(sequelize, DataTypes) {
 			constraints: false
 		});
 
+		Portfolio.belongsToMany(models.Tag, {
+			as: 'tagForQuery',
+			through: {
+				model: models.ItemTag,
+				unique: false,
+				scope: {
+					taggable: 'portfolio'
+				}
+			},
+			foreignKey: 'taggable_id',
+			constraints: false
+		});
+
 	};
 
 	return Portfolio;

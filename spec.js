@@ -37,6 +37,12 @@ module.exports = {
 						name: 'currentPage',
 						type: 'integer',
 						in: 'query',
+					},
+					{
+						name: 'tags',
+						type: 'string',
+						description: 'tags separated by ","',
+						in: 'query',
 					}
 				],
 				responses: responsesCodes
@@ -115,7 +121,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
@@ -205,7 +210,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
@@ -243,6 +247,12 @@ module.exports = {
 					{
 						name: 'currentPage',
 						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'tags',
+						type: 'string',
+						description: 'tags separated by ","',
 						in: 'query',
 					}
 				],
@@ -311,7 +321,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
@@ -349,6 +358,12 @@ module.exports = {
 					{
 						name: 'currentPage',
 						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'tags',
+						type: 'string',
+						description: 'tags separated by ","',
 						in: 'query',
 					}
 				],
@@ -401,7 +416,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
@@ -475,7 +489,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
@@ -513,6 +526,12 @@ module.exports = {
 					{
 						name: 'currentPage',
 						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'tags',
+						type: 'string',
+						description: 'tags separated by ","',
 						in: 'query',
 					}
 				],
@@ -574,7 +593,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
@@ -655,7 +673,6 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						format: 'date',
 						description: 'tags separated by ","',
 						in: 'formData',
 					}
