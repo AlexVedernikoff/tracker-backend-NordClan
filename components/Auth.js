@@ -66,7 +66,7 @@ function checkTokenMiddleWare(req, res, next) {
 				.then((token) => {
 					if (!token) return next(createError(401, 'No such access token in the system'));
 					if (moment().isAfter(token.expires)) return next(createError(401, 'Access token has expired'));
-					req.user = user
+					req.user = user;
 
 					return next();
 				})

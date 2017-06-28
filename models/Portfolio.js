@@ -18,6 +18,11 @@ module.exports = function(sequelize, DataTypes) {
 				}
 			}
 		},
+		authorId: {
+			field: 'author_id',
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
 		description: {
 			trim: true,
 			type: DataTypes.TEXT,
@@ -67,6 +72,9 @@ module.exports = function(sequelize, DataTypes) {
 		});
 
 	};
+
+
+
 
 	return Portfolio;
 };

@@ -7,6 +7,10 @@ const ItemTag = require('../models').ItemTag;
 
 exports.create = function(req, res, next){
 
+	Portfolio.beforeValidate((model, options) => {
+		model.authorId = req.user.id;
+	});
+
 	Portfolio.create(req.body)
 		.then((model) => {
 			TagController.tagsHandlerForModel(model, req, res, next);

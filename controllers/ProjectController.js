@@ -7,6 +7,10 @@ const ItemTag = require('../models').ItemTag;
 
 exports.create = function(req, res, next){
 
+	Project.beforeValidate((model, options) => {
+		model.authorId = req.user.id;
+	});
+
 	Project
 		.create(req.body)
 		.then((model) => {
