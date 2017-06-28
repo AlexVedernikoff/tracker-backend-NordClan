@@ -23,6 +23,14 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TEXT,
 			defaultValue: null
 		},
+		prefix: {
+			type: DataTypes.STRING(30),
+			trim: true,
+			allowNull: true,
+			validate: {
+				len: [1, 30]
+			}
+		},
 		statusId: {
 			field: 'status_id',
 			type: DataTypes.INTEGER,

@@ -81,6 +81,12 @@ module.exports = {
 						in: 'formData',
 					},
 					{
+						name: 'prefix',
+						type: 'string',
+						in: 'formData',
+						example: 'string',
+					},
+					{
 						name: 'description',
 						type: 'string',
 						in: 'formData',
@@ -172,6 +178,12 @@ module.exports = {
 						name: 'name',
 						type: 'string',
 						in: 'formData',
+					},
+					{
+						name: 'prefix',
+						type: 'string',
+						in: 'formData',
+						example: 'string',
 					},
 					{
 						name: 'description',
