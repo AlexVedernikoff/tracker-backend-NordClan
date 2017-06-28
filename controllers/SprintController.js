@@ -1,4 +1,5 @@
 const createError = require('http-errors');
+const _ = require('underscore');
 const TagController = require('./TagController');
 const Sprint = require('../models').Sprint;
 const Tag = require('../models').Tag;
@@ -130,6 +131,7 @@ exports.list = function(req, res, next){
 
 	Sprint
 		.findAll({
+			attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
 			limit: req.query.pageSize ? +req.query.pageSize : 1000,
 			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
 			include: req.query.tags ? [includeForCount, includeForQuery] : [includeForQuery],

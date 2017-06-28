@@ -29,6 +29,12 @@ module.exports = {
 				summary: 'Получить все проекты',
 				parameters: [
 					{
+						name: 'fields',
+						description: 'fields separated by ","',
+						type: 'string',
+						in: 'query',
+					},
+					{
 						name: 'name',
 						type: 'string',
 						in: 'query',
@@ -250,6 +256,12 @@ module.exports = {
 				summary: 'Получить все портфели',
 				parameters: [
 					{
+						name: 'fields',
+						description: 'fields separated by ","',
+						type: 'string',
+						in: 'query',
+					},
+					{
 						name: 'name',
 						type: 'string',
 						in: 'query',
@@ -370,6 +382,12 @@ module.exports = {
 				tags: ['Sprints'],
 				summary: 'Получить все спринты',
 				parameters: [
+					{
+						name: 'fields',
+						description: 'fields separated by ","',
+						type: 'string',
+						in: 'query',
+					},
 					{
 						name: 'name',
 						type: 'string',
@@ -548,6 +566,12 @@ module.exports = {
 				tags: ['Tasks'],
 				summary: 'Получить все задачи',
 				parameters: [
+					{
+						name: 'fields',
+						description: 'fields separated by ","',
+						type: 'string',
+						in: 'query',
+					},
 					{
 						name: 'name',
 						type: 'string',
