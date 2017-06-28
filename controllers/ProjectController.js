@@ -185,7 +185,7 @@ exports.list = function(req, res, next){
 						attributes: ['name']
 					},
 					// вывод текущего спринта
-					{
+					/*{
 						model: Sprint,
 						limit: 1,
 						order: [
@@ -199,9 +199,13 @@ exports.list = function(req, res, next){
 							// 	$between: [req.query.dateSprintBegin, req.query.dateSprintEnd]
 							// }
 						}
-					}
+					}*/
 			],
 			where: where,
+			order: [
+				['statusId', 'DESC'],
+				['createdAt', 'DESC'],
+			],
 			subQuery: true,
 		})
 		.then(projects => {
@@ -248,7 +252,7 @@ exports.list = function(req, res, next){
 						pageSize: req.query.pageSize ? +req.query.pageSize : +count,
 						rowsCountAll: count,
 						rowsCountOnCurrentPage: projects.length,
-						data: resultProjects
+						data: Object.keys(resultProjects).map((k) => resultProjects[k])
 					};
 					res.end(JSON.stringify(responseObject));
 
