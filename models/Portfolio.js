@@ -8,25 +8,17 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: false
 		},
 		name: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(150),
 			trim: true,
 			allowNull: false,
 			validate: {
-				max: {
-					args: 255,
-					msg: 'Name must be less than 255 characters.'
-				}
+				len: [1, 150]
 			}
 		},
 		authorId: {
 			field: 'author_id',
 			type: DataTypes.INTEGER,
 			allowNull: false,
-		},
-		description: {
-			trim: true,
-			type: DataTypes.TEXT,
-			defaultValue: null
 		},
 		createdAt: {type: DataTypes.DATE, field: 'created_at'},
 		updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
@@ -46,34 +38,7 @@ module.exports = function(sequelize, DataTypes) {
 			field: 'portfolio_id'
 		}});
 
-		Portfolio.belongsToMany(models.Tag, {
-			through: {
-				model: models.ItemTag,
-				unique: false,
-				scope: {
-					taggable: 'portfolio'
-				}
-			},
-			foreignKey: 'taggable_id',
-			constraints: false
-		});
-
-		Portfolio.belongsToMany(models.Tag, {
-			as: 'tagForQuery',
-			through: {
-				model: models.ItemTag,
-				unique: false,
-				scope: {
-					taggable: 'portfolio'
-				}
-			},
-			foreignKey: 'taggable_id',
-			constraints: false
-		});
-
 	};
-
-
 
 
 	return Portfolio;

@@ -67,7 +67,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		plannedStartDate: {
 			field: 'planned_start_date',
-			type: DataTypes.DATE,
+			type: DataTypes.DATEONLY,
 			defaultValue: null,
 			validate: {
 				isDate: true,
@@ -75,7 +75,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		plannedFinishDate: {
 			field: 'planned_finish_date',
-			type: DataTypes.DATE,
+			type: DataTypes.DATEONLY,
 			defaultValue: null,
 			validate: {
 				isDate: true,
@@ -83,7 +83,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		factStartDate: {
 			field: 'fact_start_date',
-			type: DataTypes.DATE,
+			type: DataTypes.DATEONLY,
 			defaultValue: null,
 			validate: {
 				isDate: true,
@@ -91,7 +91,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		factFinishDate: {
 			field: 'fact_finish_date',
-			type: DataTypes.DATE,
+			type: DataTypes.DATEONLY,
 			defaultValue: null,
 			validate: {
 				isDate: true,
@@ -131,9 +131,11 @@ module.exports = function(sequelize, DataTypes) {
 
 	Project.associate = function(models) {
 
-		Project.belongsTo(models.Portfolio, {foreignKey: {
-			name: 'portfolioId',
-			field: 'portfolio_id'
+		Project.belongsTo(models.Portfolio, {
+			as: 'portfolio',
+			foreignKey: {
+				name: 'portfolioId',
+				field: 'portfolio_id'
 		}});
 
 		Project.hasMany(models.Sprint, {foreignKey: {
@@ -141,13 +143,22 @@ module.exports = function(sequelize, DataTypes) {
 			field: 'project_id'
 		}});
 
-		Project.hasMany(models.Sprint, {foreignKey: {
+		Project.hasMany(models.Sprint, {
+			as: 'currentSprints',
+			foreignKey: {
+				name: 'projectId',
+				field: 'project_id'
+		}});
+
+		Project.hasMany(models.Sprint, {
 			as: 'sprintForQuery',
-			name: 'projectId',
-			field: 'project_id'
+			foreignKey: {
+				name: 'projectId',
+				field: 'project_id'
 		}});
 
 		Project.belongsToMany(models.Tag, {
+			as: 'tags',
 			through: {
 				model: models.ItemTag,
 				unique: false,

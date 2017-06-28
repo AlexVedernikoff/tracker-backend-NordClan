@@ -122,6 +122,7 @@ exports.list = function(req, res, next){
 		};
 
 	let includeForQuery = {
+		as: 'tags',
 		model: Tag,
 		attributes: ['name'],
 		through: {
@@ -139,34 +140,6 @@ exports.list = function(req, res, next){
 		where.statusId = req.query.statusId;
 	}
 
-	let data = [
-		{
-			"id": 1,
-			"name": "My name",
-			"portfolioId": null,
-			"elemType": "project",
-		},
-		{
-			"id": 2,
-			"name": "My name",
-			"portfolioId": null,
-			"elemType": "project",
-		},
-		{
-			"elemType": "portfolio",
-			"id": "12",
-			"name": "My name",
-			"data": [
-				{
-					"id": 1,
-					"name": "My name",
-					"portfolioId": 12,
-					"elemType": "project",
-				},
-			]
-		}
-	];
-
 
 	Project
 		.findAll({
@@ -181,11 +154,13 @@ exports.list = function(req, res, next){
 				[
 					includeForQuery,
 					{
+						as: 'portfolio',
 						model: Portfolio,
 						attributes: ['name']
 					},
-					// вывод текущего спринта
-					/*{
+					{
+						// вывод текущего спринта
+						as: 'currentSprints',
 						model: Sprint,
 						limit: 1,
 						order: [
@@ -193,13 +168,13 @@ exports.list = function(req, res, next){
 						],
 						where: {
 							factStartDate: {
-								$gte: moment().format('yyyy-mm-dd')
+								$lte: moment().format('YYYY-MM-DD') // factStartDate <= now
 							},
-							// factFinishDate: {
-							// 	$between: [req.query.dateSprintBegin, req.query.dateSprintEnd]
-							// }
+							factFinishDate: {
+								$gte: moment().format('YYYY-MM-DD') // factFinishDate >= now
+							}
 						}
-					}*/
+					}
 			],
 			where: where,
 			order: [
@@ -233,12 +208,12 @@ exports.list = function(req, res, next){
 									resultProjects['portfolio-' + row.portfolioId] = {
 										elemType: 'portfolio',
 										id: row.portfolioId,
-										name: row.Portfolio.name,
-										data: {}
+										name: row.portfolio.name,
+										data: []
 									}
 								}
 
-								resultProjects['portfolio-' + row.portfolioId].data['project-' + row.id] = row;
+								resultProjects['portfolio-' + row.portfolioId].data.push(row);
 
 							}
 

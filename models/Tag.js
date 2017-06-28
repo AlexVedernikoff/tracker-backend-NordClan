@@ -64,18 +64,6 @@ module.exports = function(sequelize, DataTypes) {
 			constraints: false
 		});
 
-		Tag.belongsToMany(models.Portfolio, {
-			through: {
-				model: models.ItemTag,
-				unique: false,
-				scope: {
-					taggable: 'portfolio'
-				}
-			},
-			foreignKey: 'tag_id',
-			constraints: false
-		});
-
 	};
 
 

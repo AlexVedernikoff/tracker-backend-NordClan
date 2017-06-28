@@ -35,7 +35,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		factStartDate: {
 			field: 'fact_start_date',
-			type: DataTypes.DATE,
+			type: DataTypes.DATEONLY,
 			defaultValue: null,
 			validate: {
 				isDate: true,
@@ -43,7 +43,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		factFinishDate: {
 			field: 'fact_finish_date',
-			type: DataTypes.DATE,
+			type: DataTypes.DATEONLY,
 			defaultValue: null,
 			validate: {
 				isDate: true,

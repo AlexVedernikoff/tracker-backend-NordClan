@@ -101,38 +101,10 @@ exports.list = function(req, res, next){
 
 	let where = {};
 
-	let includeForCount = {
-		model: Tag,
-		as: 'tagForQuery',
-		required: true,
-		attributes: [],
-		where: {
-			name: {
-				$or: req.query.tags ? req.query.tags.split(',').map((el) => el.trim()) : [],
-			},
-		},
-		through: {
-			model: ItemTag,
-			attributes: []
-		}
-	};
-
-	let includeForQuery = {
-		model: Tag,
-		attributes: ['name'],
-		through: {
-			model: ItemTag,
-			attributes: []
-		}
-	};
-
 	if(req.query.name) {
 		where.name = {
 			$iLike: "%" + req.query.name + "%"
 		}
-	}
-	if(req.query.statusId) {
-		where.statusId = req.query.statusId;
 	}
 
 	Portfolio
@@ -140,7 +112,6 @@ exports.list = function(req, res, next){
 			attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
 			limit: req.query.pageSize ? +req.query.pageSize : 1000,
 			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-			include: req.query.tags ? [includeForCount, includeForQuery] : [includeForQuery],
 			where: where,
 			subQuery: true,
 		})
@@ -148,11 +119,9 @@ exports.list = function(req, res, next){
 
 			Portfolio
 				.count({
-					include: req.query.tags ? [includeForCount] : [],
 					group: ['Portfolio.id']
 				})
 				.then((count) => {
-
 					count = count.length;
 
 					let projectsRows = projects ?

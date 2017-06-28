@@ -301,17 +301,6 @@ module.exports = {
 						in: 'query',
 					},
 					{
-						name: 'statusId',
-						type: 'integer',
-						in: 'query',
-					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'query',
-					},
-					{
 						name: 'pageSize',
 						type: 'integer',
 						in: 'query',
@@ -334,17 +323,6 @@ module.exports = {
 						in: 'formData',
 						required: true
 					},
-					{
-						name: 'description',
-						type: 'string',
-						in: 'formData',
-					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'formData',
-					}
 				],
 				responses: responsesCodes
 			}
@@ -378,17 +356,6 @@ module.exports = {
 						type: 'string',
 						in: 'formData',
 					},
-					{
-						name: 'description',
-						type: 'string',
-						in: 'formData',
-					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'formData',
-					}
 				],
 				responses: responsesCodes
 			},
