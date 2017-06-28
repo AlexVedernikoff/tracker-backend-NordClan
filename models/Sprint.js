@@ -33,22 +33,6 @@ module.exports = function(sequelize, DataTypes) {
 				max: 9
 			}
 		},
-		plannedStartDate: {
-			field: 'planned_start_date',
-			type: DataTypes.DATE,
-			defaultValue: null,
-			validate: {
-				isDate: true,
-			}
-		},
-		plannedFinishDate: {
-			field: 'planned_finish_date',
-			type: DataTypes.DATE,
-			defaultValue: null,
-			validate: {
-				isDate: true,
-			}
-		},
 		factStartDate: {
 			field: 'fact_start_date',
 			type: DataTypes.DATE,

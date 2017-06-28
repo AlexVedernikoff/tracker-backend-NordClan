@@ -1,10 +1,12 @@
 const createError = require('http-errors');
+const moment = require('moment');
 const _ = require('underscore');
 const TagController = require('./TagController');
 const Project = require('../models').Project;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
 const Portfolio = require('../models').Portfolio;
+const Sprint = require('../models').Sprint;
 
 
 exports.create = function(req, res, next){
@@ -181,6 +183,22 @@ exports.list = function(req, res, next){
 					{
 						model: Portfolio,
 						attributes: ['name']
+					},
+					// вывод текущего спринта
+					{
+						model: Sprint,
+						limit: 1,
+						order: [
+							['factStartDate', 'DESC'],
+						],
+						where: {
+							factStartDate: {
+								$gte: moment().format('yyyy-mm-dd')
+							},
+							// factFinishDate: {
+							// 	$between: [req.query.dateSprintBegin, req.query.dateSprintEnd]
+							// }
+						}
 					}
 			],
 			where: where,

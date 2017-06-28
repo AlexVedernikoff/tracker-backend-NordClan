@@ -41,14 +41,6 @@ module.exports = function(sequelize, DataTypes) {
 				max: 9
 			}
 		},
-		typeId: {
-			field: 'type_id',
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			validate: {
-				isInt: true
-			}
-		},
 		notbillable: {
 			type: DataTypes.INTEGER,
 			defaultValue: 0,
@@ -145,6 +137,12 @@ module.exports = function(sequelize, DataTypes) {
 		}});
 
 		Project.hasMany(models.Sprint, {foreignKey: {
+			name: 'projectId',
+			field: 'project_id'
+		}});
+
+		Project.hasMany(models.Sprint, {foreignKey: {
+			as: 'sprintForQuery',
 			name: 'projectId',
 			field: 'project_id'
 		}});

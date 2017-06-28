@@ -59,7 +59,21 @@ module.exports = {
 						name: 'currentPage',
 						type: 'integer',
 						in: 'query',
-					}
+					},
+					{
+						name: 'dateSprintBegin',
+						description: 'yyyy-mm-dd',
+						type: 'string',
+						format: 'date',
+						in: 'query',
+					},
+					{
+						name: 'dateSprintEnd',
+						description: 'yyyy-mm-dd',
+						type: 'string',
+						format: 'date',
+						in: 'query',
+					},
 				],
 				responses: responsesCodes
 			},
@@ -452,20 +466,6 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'plannedStartDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'plannedFinishDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
 						name: 'factStartDate',
 						description: 'yyyy-mm-dd',
 						type: 'string',
@@ -526,20 +526,6 @@ module.exports = {
 					{
 						name: 'description',
 						type: 'string',
-						in: 'formData',
-					},
-					{
-						name: 'plannedStartDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'plannedFinishDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
 						in: 'formData',
 					},
 					{
