@@ -33,6 +33,7 @@ exports.read = function(req, res, next){
 		.findByPrimary(req.params.id, {
 			include: [
 				{
+					as: 'tags',
 					model: Tag,
 					attributes: ['name'],
 					through: {
@@ -44,6 +45,8 @@ exports.read = function(req, res, next){
 		.then((model) => {
 			if(!model) { return next(createError(404)); }
 
+
+			if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
 			res.end(JSON.stringify(model.dataValues));
 		})
 		.catch((err) => {
