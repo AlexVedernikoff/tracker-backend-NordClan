@@ -128,6 +128,9 @@ exports.list = function(req, res, next){
 	if(req.query.statusId) {
 		where.statusId = req.query.statusId;
 	}
+	if(req.query.projectId) {
+		where.projectId = req.query.projectId;
+	}
 
 	Sprint
 		.findAll({
