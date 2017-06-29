@@ -449,11 +449,6 @@ module.exports = {
 						required: true
 					},
 					{
-						name: 'projectId',
-						type: 'integer',
-						in: 'formData',
-					},
-					{
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
@@ -515,11 +510,6 @@ module.exports = {
 						description: 'yyyy-mm-dd',
 						type: 'string',
 						format: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'projectId',
-						type: 'integer',
 						in: 'formData',
 					},
 					{
