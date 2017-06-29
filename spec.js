@@ -694,7 +694,7 @@ module.exports = {
 					{
 						name: 'taggable',
 						description: 'Имя сущности: \'task\', \'sprint\', \'project\', \'portfolio\'',
-						type: 'integer',
+						type: 'string',
 						in: 'formData',
 						required: true
 					},
