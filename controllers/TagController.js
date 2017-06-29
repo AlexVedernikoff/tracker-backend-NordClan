@@ -38,6 +38,7 @@ class TagController {
 
 
 	create() {
+		let promises = [];
 		this
 			.validate()
 			.then(()  => {
@@ -47,16 +48,25 @@ class TagController {
 					.then((Model) => {
 						if(!Model) return this.next(createError(404, 'taggable model not found'));
 
-						models.Tag
-							.findOrCreate({where: {name: this.req.body.tag.trim()}})
-							.spread((tag, created) => {
+						this.req.body.tag.split(',').map((el) => {
+							promises.push(
+								models.Tag
+									.findOrCreate({where: {name: el.trim()}})
+									.spread((tag, created) => {
 
-								Model
-									.addTag(tag)
-									.then(() => this.res.end())
-									.catch((err) => this.next(createError(err)));
-							})
-							.catch((err) => this.next(createError(err)));
+										Model
+											.addTag(tag)
+											.catch((err) => this.next(createError(err)));
+									})
+									.catch((err) => this.next(createError(err)))
+							);
+						});
+
+						Promise
+							.all(promises)
+							.then(() => this.res.end())
+							.catch((err) => this.next(createError(err)))
+
 
 					})
 					.catch((err) => this.next(createError(err)));

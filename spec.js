@@ -434,7 +434,6 @@ module.exports = {
 						name: 'projectId',
 						type: 'integer',
 						in: 'formData',
-						required: true
 					},
 					{
 						name: 'name',
@@ -693,7 +692,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'taggable',
-						description: 'Имя сущности: \'task\', \'sprint\', \'project\', \'portfolio\'',
+						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
 						type: 'string',
 						in: 'formData',
 						required: true
@@ -721,7 +720,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'taggable',
-						description: 'Имя сущности: \'task\', \'sprint\', \'project\', \'portfolio\'',
+						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
 						type: 'integer',
 						in: 'formData',
 						required: true
@@ -735,7 +734,7 @@ module.exports = {
 					},
 					{
 						name: 'tag',
-						description: 'Тег',
+						description: 'tags separated by ","',
 						type: 'string',
 						in: 'formData',
 						required: true
