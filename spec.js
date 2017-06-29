@@ -125,34 +125,6 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'plannedStartDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'plannedFinishDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'factStartDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'factFinishDate',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'formData',
-					},
-					{
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
@@ -220,30 +192,6 @@ module.exports = {
 					{
 						name: 'risBudget',
 						type: 'numeric',
-						in: 'formData',
-					},
-					{
-						name: 'plannedStartDate',
-						description: 'yyyy-mm-dd',
-						type: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'plannedFinishDate',
-						description: 'yyyy-mm-dd',
-						type: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'factStartDate',
-						description: 'yyyy-mm-dd',
-						type: 'date',
-						in: 'formData',
-					},
-					{
-						name: 'factFinishDate',
-						description: 'yyyy-mm-dd',
-						type: 'date',
 						in: 'formData',
 					},
 					{

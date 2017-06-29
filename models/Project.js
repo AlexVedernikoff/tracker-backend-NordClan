@@ -65,38 +65,6 @@ module.exports = function(sequelize, DataTypes) {
 				isNumeric: true
 			}
 		},
-		plannedStartDate: {
-			field: 'planned_start_date',
-			type: DataTypes.DATEONLY,
-			defaultValue: null,
-			validate: {
-				isDate: true,
-			}
-		},
-		plannedFinishDate: {
-			field: 'planned_finish_date',
-			type: DataTypes.DATEONLY,
-			defaultValue: null,
-			validate: {
-				isDate: true,
-			}
-		},
-		factStartDate: {
-			field: 'fact_start_date',
-			type: DataTypes.DATEONLY,
-			defaultValue: null,
-			validate: {
-				isDate: true,
-			}
-		},
-		factFinishDate: {
-			field: 'fact_finish_date',
-			type: DataTypes.DATEONLY,
-			defaultValue: null,
-			validate: {
-				isDate: true,
-			}
-		},
 		attaches: {
 			type: DataTypes.ARRAY(DataTypes.INTEGER),
 			defaultValue: null,
