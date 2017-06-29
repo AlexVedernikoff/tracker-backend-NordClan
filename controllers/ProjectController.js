@@ -104,8 +104,89 @@ exports.list = function(req, res, next){
 
 	let where = {};
 	let resultProjects = {};
+	let queryIncludes = [];
 
-	let includeForCount = {
+	if(req.query.name) {
+		where.name = { $iLike: "%" + req.query.name + "%" };
+	}
+	if(req.query.statusId) {
+		where.statusId = req.query.statusId;
+	}
+
+	// вывод текущего спринта
+	queryIncludes.push({
+		as: 'currentSprints',
+		model: Sprint,
+		attributes: ['name', 'factStartDate', 'factFinishDate', 'id', 'projectId'],
+		limit: 1,
+		order: [
+			['factStartDate', 'DESC'],
+		],
+		where: {
+			factStartDate: {
+				$lte: moment().format('YYYY-MM-DD') // factStartDate <= now
+			},
+			factFinishDate: {
+				$gte: moment().format('YYYY-MM-DD') // factFinishDate >= now
+			}
+		}
+	});
+
+	// вывод тегов
+	queryIncludes.push({
+		as: 'tags',
+		model: Tag,
+		attributes: ['name'],
+		through: {
+			model: ItemTag,
+			attributes: []
+		}
+	});
+
+	// Порфтель
+	queryIncludes.push({
+		as: 'portfolio',
+		model: Portfolio,
+		attributes: ['name']
+	});
+
+
+	// Фильтрация по дате
+	let queryFactStartDate = {};
+	let queryFactFinishDate = {};
+
+	if(req.query.dateSprintBegin) {
+		queryFactStartDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD'); // factStartDate >= queryBegin
+		queryFactFinishDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD'); // factStartDate >= queryBegin
+	}
+
+	if(req.query.dateSprintEnd) {
+		queryFactStartDate.$lte = moment(req.query.dateSprintEnd).format('YYYY-MM-DD'); // factStartDate >= queryBegin
+		queryFactFinishDate.$lte = moment(req.query.dateSprintEnd).format('YYYY-MM-DD'); // factStartDate >= queryBegin
+	}
+
+	if(req.query.dateSprintBegin || req.query.dateSprintEnd) {
+		queryIncludes.push({
+			as: 'sprintForQuery',
+			model: Sprint,
+			attributes: [],
+			where: {
+				$or: [
+					{
+						factStartDate: queryFactStartDate
+					},
+					{
+						factFinishDate: queryFactFinishDate
+					}
+				]
+
+			}
+		});
+	}
+
+	// Фильтрация по тегам
+	if(req.query.tags) {
+		queryIncludes.push({
 			model: Tag,
 			as: 'tagForQuery',
 			required: true,
@@ -119,26 +200,9 @@ exports.list = function(req, res, next){
 				model: ItemTag,
 				attributes: []
 			}
-		};
-
-	let includeForQuery = {
-		as: 'tags',
-		model: Tag,
-		attributes: ['name'],
-		through: {
-			model: ItemTag,
-			attributes: []
-		}
-	};
-
-	if(req.query.name) {
-		where.name = {
-			$iLike: "%" + req.query.name + "%"
-		}
+		});
 	}
-	if(req.query.statusId) {
-		where.statusId = req.query.statusId;
-	}
+
 
 
 	Project
@@ -146,36 +210,7 @@ exports.list = function(req, res, next){
 			attributes: req.query.fields ? _.union(['id','portfolioId','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
 			limit: req.query.pageSize ? +req.query.pageSize : 1000,
 			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-			include: req.query.tags ?
-				[
-					includeForCount,
-					includeForQuery
-				] :
-				[
-					includeForQuery,
-					{
-						as: 'portfolio',
-						model: Portfolio,
-						attributes: ['name']
-					},
-					{
-						// вывод текущего спринта
-						as: 'currentSprints',
-						model: Sprint,
-						limit: 1,
-						order: [
-							['factStartDate', 'DESC'],
-						],
-						where: {
-							factStartDate: {
-								$lte: moment().format('YYYY-MM-DD') // factStartDate <= now
-							},
-							factFinishDate: {
-								$gte: moment().format('YYYY-MM-DD') // factFinishDate >= now
-							}
-						}
-					}
-			],
+			include: queryIncludes,
 			where: where,
 			order: [
 				['statusId', 'DESC'],
@@ -187,8 +222,8 @@ exports.list = function(req, res, next){
 
 			Project
 				.count({
-					include: req.query.tags ? [includeForCount] : [],
-					where: where,
+					//include: req.query.tags ? [includeForCount] : [],
+					//where: where,
 					group: ['Project.id']
 				})
 				.then((count) => {
@@ -198,7 +233,9 @@ exports.list = function(req, res, next){
 					if(projects) {
 						for (key in projects) {
 							let row = projects[key].dataValues;
+							if(row.tags) row.tags = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
 							row.elemType = 'project';
+
 
 							if(row.portfolioId === null) {
 								resultProjects['project-' + row.id] = row;

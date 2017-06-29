@@ -45,6 +45,20 @@ module.exports = {
 						in: 'query',
 					},
 					{
+						name: 'dateSprintBegin',
+						description: 'yyyy-mm-dd',
+						type: 'string',
+						format: 'date',
+						in: 'query',
+					},
+					{
+						name: 'dateSprintEnd',
+						description: 'yyyy-mm-dd',
+						type: 'string',
+						format: 'date',
+						in: 'query',
+					},
+					{
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
@@ -60,20 +74,6 @@ module.exports = {
 						type: 'integer',
 						in: 'query',
 					},
-					{
-						name: 'dateSprintBegin',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'query',
-					},
-					{
-						name: 'dateSprintEnd',
-						description: 'yyyy-mm-dd',
-						type: 'string',
-						format: 'date',
-						in: 'query',
-					},
 				],
 				responses: responsesCodes
 			},
@@ -87,12 +87,6 @@ module.exports = {
 						in: 'formData',
 						example: 'string',
 						required: true
-					},
-					{
-						name: 'typeId',
-						required: "true",
-						type: 'integer',
-						in: 'formData',
 					},
 					{
 						name: 'prefix',
@@ -210,11 +204,6 @@ module.exports = {
 					},
 					{
 						name: 'statusId',
-						type: 'integer',
-						in: 'formData',
-					},
-					{
-						name: 'typeId',
 						type: 'integer',
 						in: 'formData',
 					},
@@ -389,6 +378,11 @@ module.exports = {
 						in: 'query',
 					},
 					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'query',
+					},
+					{
 						name: 'name',
 						type: 'string',
 						in: 'query',
@@ -428,6 +422,12 @@ module.exports = {
 						required: true
 					},
 					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
 						name: 'description',
 						type: 'string',
 						in: 'formData',
@@ -438,6 +438,7 @@ module.exports = {
 						type: 'string',
 						format: 'date',
 						in: 'formData',
+						required: true
 					},
 					{
 						name: 'factFinishDate',
@@ -445,6 +446,7 @@ module.exports = {
 						type: 'string',
 						format: 'date',
 						in: 'formData',
+						required: true
 					},
 					{
 						name: 'projectId',
@@ -483,6 +485,12 @@ module.exports = {
 						name: 'sprintId',
 						type: 'integer',
 						in: 'path',
+						required: true
+					},
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
 						required: true
 					},
 					{
