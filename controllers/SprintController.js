@@ -114,6 +114,7 @@ exports.list = function(req, res, next){
 	};
 
 	let includeForQuery = {
+		as: 'tags',
 		model: Tag,
 		attributes: ['name'],
 		through: {
