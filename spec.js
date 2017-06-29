@@ -777,13 +777,33 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
-/*		'/auth/refresh': {
-			put: {
-				tags: ['Auth'],
-				summary: 'Обновить токен',
+
+
+
+		'/user/{userId}': {
+			get: {
+				tags: ['User'],
+				summary: 'Получить информацию о конкретном пользователе',
+				parameters: [
+					{
+						name: 'userId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
 				responses: responsesCodes
 			},
-		},*/
+		},
+		'/user/me': {
+			get: {
+				tags: ['User'],
+				summary: 'Получить информацию о текущем пользователе',
+				responses: responsesCodes
+			},
+		},
+
+
 
 	},
 	securityDefinitions: {

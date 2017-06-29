@@ -6,10 +6,14 @@ const SprintController = require('./SprintController');
 const TaskController = require('./TaskController');
 const AuthController = require('./AuthController');
 const TagController = require('./TagController');
+const UserController = require('./UserController');
 
 router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
 router.put('/auth/refresh', AuthController.refresh);
+
+router.get('/user/me', UserController.me);
+router.get('/user/:id', UserController.raed);
 
 router.post('/project', ProjectController.create);
 router.get('/project/:id', ProjectController.read);
@@ -39,5 +43,7 @@ router.get('/task', TaskController.list);
 
 router.post('/tag', TagController.create);
 router.delete('/tag', TagController.delete);
+
+
 
 module.exports = router;
