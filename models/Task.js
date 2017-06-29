@@ -121,6 +121,7 @@ module.exports = function(sequelize, DataTypes) {
 		}});
 
 		Task.belongsToMany(models.Tag, {
+			as: 'tags',
 			through: {
 				model: models.ItemTag,
 				unique: false,

@@ -37,8 +37,12 @@ exports.read = function(req, res, next){
 					model: Tag,
 					attributes: ['name'],
 					through: {
+						model: ItemTag,
 						attributes: []
-					}
+					},
+					order: [
+						['name', 'ASC'],
+					],
 				}
 			]
 		})
@@ -131,8 +135,12 @@ exports.list = function(req, res, next){
 			},
 			factFinishDate: {
 				$gte: moment().format('YYYY-MM-DD') // factFinishDate >= now
+			},
+			deletedAt: {
+				$eq: null // IS NULL
 			}
-		}
+		},
+		required: false
 	});
 
 	// вывод тегов
@@ -140,6 +148,9 @@ exports.list = function(req, res, next){
 		as: 'tags',
 		model: Tag,
 		attributes: ['name'],
+		order: [
+			['name', 'ASC'],
+		],
 		through: {
 			model: ItemTag,
 			attributes: []

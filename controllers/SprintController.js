@@ -32,8 +32,12 @@ exports.read = function(req, res, next){
 				model: Tag,
 				attributes: ['name'],
 				through: {
+					model: ItemTag,
 					attributes: []
-				}
+				},
+				order: [
+					['name', 'ASC'],
+				],
 			}
 		]
 	})
@@ -120,7 +124,10 @@ exports.list = function(req, res, next){
 		through: {
 			model: ItemTag,
 			attributes: []
-		}
+		},
+		order: [
+			['name', 'ASC'],
+		],
 	};
 
 	if(req.query.name) {

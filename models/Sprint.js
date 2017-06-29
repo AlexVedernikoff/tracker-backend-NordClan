@@ -78,6 +78,7 @@ module.exports = function(sequelize, DataTypes) {
 		}});
 
 		Sprint.belongsToMany(models.Tag, {
+			as: 'tags',
 			through: {
 				model: models.ItemTag,
 				unique: false,
