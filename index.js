@@ -8,7 +8,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const sequelize = require('./orm');
 const errorHandler = require('./components/HttpError');
-const routes = require('./controllers/index');
+const routes = require('./routers/index');
 const checkTokenMiddleWare = require('./components/Auth').checkTokenMiddleWare;
 
 app.use(express.static(path.join(__dirname, 'public')));

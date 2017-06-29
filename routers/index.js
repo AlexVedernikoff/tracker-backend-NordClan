@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const ProjectController = require('./ProjectController');
-const PortfolioController = require('./PortfolioController');
-const SprintController = require('./SprintController');
-const TaskController = require('./TaskController');
-const AuthController = require('./AuthController');
-const TagController = require('./TagController');
-const UserController = require('./UserController');
+const ProjectController = require('../controllers/ProjectController');
+const PortfolioController = require('../controllers/PortfolioController');
+const SprintController = require('../controllers/SprintController');
+const TaskController = require('../controllers/TaskController');
+const AuthController = require('../controllers/AuthController');
+const TagController = require('../controllers/TagController');
+const UserController = require('../controllers/UserController');
 
 router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
