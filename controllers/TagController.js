@@ -127,9 +127,11 @@ exports.tagsHandlerForModel = function(Model, req, res, next) {
 				.findOrCreate({where: {name: itemTag.trim()}})
 				.spread((tag, created) => {
 
+					console.log(Model.dataValues.id);
+
 					Model
 						.addTag(tag)
-						.then(() => res.end())
+						.then(() => res.end(JSON.stringify({id: Model.dataValues.id})))
 						.catch((err) => next(createError(err)));
 				})
 				.catch((err) => next(createError(err)));
@@ -137,7 +139,7 @@ exports.tagsHandlerForModel = function(Model, req, res, next) {
 		});
 
 	} else {
-		res.end();
+		res.end(JSON.stringify({id: Model.dataValues.id}));
 	}
 
 	function extractTags() {

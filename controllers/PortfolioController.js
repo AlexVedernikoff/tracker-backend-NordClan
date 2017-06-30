@@ -59,9 +59,7 @@ exports.update = function(req, res, next){
 
 			portfolio
 				.updateAttributes(req.body)
-				.then((model)=>{
-					TagController.tagsHandlerForModel(model, req, res, next);
-				})
+				.then((model)=> res.end(JSON.stringify({id: model.dataValues.id})))
 				.catch((err) => {
 					next(err);
 				});
