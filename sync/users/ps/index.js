@@ -4,11 +4,28 @@ const moment = require('moment');
 const _ = require('underscore');
 const Department = require('../../../models').Department;
 const User = require('../../../models').User;
+
+const baseUrl = 'http://ps.simbirsoft/default/rest/';
 const auth = {
 	user: 'serviceman',
 	pass: 'FdKg&$b*)FeA{',
 	sendImmediately: true
 };
+const departmentIDs = [
+	'o2k007g0000jjksd9m30000000' // Analitycs
+	,'o2k007g0000jcktq5td0000000' // Mobile Dev
+	,'o2k187g0000l7j0u3840000000' // Design
+	,'o2k007g0000jcktnngp0000000' // C++
+	,'o2k187g0000lgkhv2ckg000000' // .Net
+	,'o2k187g0000lgoe24igg000000' // Bitrix
+	,'o2k187g0000lgoe4rp60000000' // Python
+	,'o2k187g0000lh1fp702g000000' // QA Automation
+	,'o2k187g0000lgkho90fg000000' //  Ruby
+	,'o2k187g0000lgkhmfg6g000000' // QA o2k187g0000lgkhmfg6g000000
+	,'o2k187g0000lgoekeh9g000000' // Frontend/JS o2k187g0000lgoekeh9g000000
+	,'o2k187g0000lh58rbh10000000' // Java o2k187g0000lh58rbh10000000
+	,'o2k187g0000lgoe7gos0000000' // PHP o2k187g0000lgoe7gos0000000
+];
 const jsonOpts = {
 	object: true,
 	reversible: false,
@@ -17,9 +34,6 @@ const jsonOpts = {
 	trim: true,
 	arrayNotation: false
 };
-const baseUrl = 'http://ps.simbirsoft/default/rest/';
-
-
 module.exports = function() {
 
 	return new Promise((resolve, reject) => {
@@ -143,44 +157,48 @@ syncDepartments = function() {
 	})
 		.then((Departments) => {
 			let promise =  Promise.resolve();
+			var allowedIds = departmentIDs.join(' ');
 			Departments
 				.forEach((x) => {
 					promise.then(() => {
-						return Department.findOne({
-							where: {
-								psId: x.psId
-							}
-						})
-							.then(department => {
-								if(department) {
-									return department.updateAttributes({
-										name: x.name,
-									});
+						if (allowedIds.indexOf(x.psId) >= 0) {
 
-								} else {
-									return Department.create({
-										name: x.name,
+							return Department
+								.findOne({
+									where: {
 										psId: x.psId
-									}, {
-										validate: false,
-										raw: true,
-									});
-								}
-							})
-							.then((department) => {
-								x.psMembers.forEach((memberId) => {
-
-									User.findOne({where: { psId: memberId}})
-										.then((user) => {
-											if(user) {
-												user.addDepartment(department);
-											}
+									}
+								})
+								.then(department => {
+									if(department) {
+										return department.updateAttributes({
+											name: x.name,
 										});
-								});
 
+									} else {
+										return Department.create({
+											name: x.name,
+											psId: x.psId
+										}, {
+											validate: false,
+											raw: true,
+										});
+									}
+								})
+								.then((department) => {
+									x.psMembers.forEach((memberId) => {
 
+										User.findOne({where: { psId: memberId}})
+											.then((user) => {
+												if(user) {
+													user.addDepartment(department);
+												}
+											});
+									});
+								})
 
-							})
+						}
+
 					});
 				});
 
