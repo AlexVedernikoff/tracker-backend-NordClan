@@ -148,7 +148,10 @@ module.exports = function(sequelize, DataTypes) {
 	});
 
 	User.associate = function(models) {
-		User.belongsToMany(models.Department, { through: models.UserDepartments });
+		User.belongsToMany(models.Department, {
+			as: 'department',
+			through: models.UserDepartments
+		});
 
 		User.hasMany(models.Token, {
 			foreignKey: {

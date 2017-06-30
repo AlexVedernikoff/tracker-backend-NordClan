@@ -43,12 +43,31 @@ class UserController {
 					id: this.userId,
 					active: 1,
 				},
-				attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ]
+				attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ],
+				include: [
+					{
+						model: models.Department,
+						as: 'department',
+						required: true,
+						attributes: ['name'],
+						through: {
+							model: models.UserDepartments,
+							attributes: []
+						},
+					}
+
+				]
 			})
 			.then((user) => {
 				if(!user) {
 					return this.next(createError(404, 'User not found'));
 				}
+
+				if(user.dataValues.department[0]) {
+					user.dataValues.department = user.dataValues.department[0].name;
+				}
+
+				//if(user.dataValues.department) user.dataValues.department = Object.keys(user.dataValues.department).map((k) => user.dataValues.department[k].name); // Преобразую отделы из объекта в массив
 				this.res.end(JSON.stringify(user.dataValues));
 
 			})
