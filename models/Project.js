@@ -125,6 +125,17 @@ module.exports = function(sequelize, DataTypes) {
 				field: 'project_id'
 		}});
 
+		Project.hasMany(models.ItemTag, {
+			as: 'itemTag',
+			foreignKey: {
+				name: 'taggableId',
+				field: 'taggable_id'
+			},
+			scope: {
+				taggable: 'project'
+			}
+		});
+
 		Project.belongsToMany(models.Tag, {
 			as: 'tags',
 			through: {

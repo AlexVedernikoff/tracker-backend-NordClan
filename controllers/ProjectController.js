@@ -140,7 +140,7 @@ exports.list = function(req, res, next){
 				$eq: null // IS NULL
 			}
 		},
-		required: false
+		separate: false
 	});
 
 	// вывод тегов
@@ -198,98 +198,111 @@ exports.list = function(req, res, next){
 		});
 	}
 
-	// Фильтрация по тегам
-	if(req.query.tags) {
-		queryIncludes.push({
-			model: Tag,
-			as: 'tagForQuery',
-			required: true,
-			attributes: [],
-			where: {
-				name: {
-					$or: req.query.tags ? req.query.tags.split(',').map((el) => el.trim()) : [],
-				},
-			},
-			through: {
-				model: ItemTag,
-				attributes: []
+
+	let chain = Promise.resolve()
+		.then(() => {
+			if(req.query.tags) {
+				return Tag
+					.findAll({
+						where: {
+							name: {
+								$or: req.query.tags.split(',').map((el) => el.trim())
+							}
+						}
+					});
 			}
-		});
-	}
-
-
-
-	Project
-		.findAll({
-			attributes: req.query.fields ? _.union(['id','portfolioId','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
-			limit: req.query.pageSize ? +req.query.pageSize : 1000,
-			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-			include: queryIncludes,
-			where: where,
-			order: [
-				['statusId', 'DESC'],
-				['createdAt', 'DESC'],
-			],
-			subQuery: true,
 		})
-		.then(projects => {
-
-			Project
-				.count({
-					//include: req.query.tags ? [includeForCount] : [],
-					//where: where,
-					group: ['Project.id']
+		.then((tags) => {
+			if(tags) {
+				queryIncludes.push({
+					model: ItemTag,
+					as: 'itemTag',
+					required: true,
+					attributes: [],
+					where: {
+						tag_id: {
+							$or: tags.map(el => el.dataValues.id),
+						},
+					},
+				});
+			}
+		})
+		.then(() => {
+			return Project
+				.findAll({
+					attributes: req.query.fields ? _.union(['id','portfolioId','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
+					limit: req.query.pageSize ? +req.query.pageSize : 1000,
+					offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
+					include: queryIncludes,
+					where: where,
+					order: [
+						['statusId', 'DESC'],
+						['createdAt', 'DESC'],
+					],
+					subQuery: true,
 				})
-				.then((count) => {
-					count = count.length;
+				.then(projects => {
+
+					return Project
+						.count({
+							//include: req.query.tags ? [includeForCount] : [],
+							include: queryIncludes,
+							where: where,
+							group: ['Project.id']
+						})
+						.then((count) => {
+							count = count.length;
 
 
-					if(projects) {
-						for (key in projects) {
-							let row = projects[key].dataValues;
-							if(row.tags) row.tags = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
-							row.elemType = 'project';
+							if(projects) {
+								for (key in projects) {
+									let row = projects[key].dataValues;
+									if(row.tags) row.tags = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
+									row.elemType = 'project';
 
 
-							if(row.portfolioId === null) {
-								resultProjects['project-' + row.id] = row;
-							} else {
+									if(row.portfolioId === null) {
+										resultProjects['project-' + row.id] = row;
+									} else {
 
-								if(!resultProjects['portfolio-' + row.portfolioId]) {
-									resultProjects['portfolio-' + row.portfolioId] = {
-										elemType: 'portfolio',
-										id: row.portfolioId,
-										name: row.portfolio.name,
-										data: []
+										if(!resultProjects['portfolio-' + row.portfolioId]) {
+											resultProjects['portfolio-' + row.portfolioId] = {
+												elemType: 'portfolio',
+												id: row.portfolioId,
+												name: row.portfolio.name,
+												data: []
+											}
+										}
+
+										resultProjects['portfolio-' + row.portfolioId].data.push(row);
+
 									}
+
 								}
-
-								resultProjects['portfolio-' + row.portfolioId].data.push(row);
-
 							}
 
-						}
-					}
 
+							let responseObject = {
+								currentPage: req.query.currentPage ? +req.query.currentPage : 1,
+								pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
+								pageSize: req.query.pageSize ? +req.query.pageSize : +count,
+								rowsCountAll: count,
+								rowsCountOnCurrentPage: projects.length,
+								data: Object.keys(resultProjects).map((k) => resultProjects[k])
+							};
+							res.end(JSON.stringify(responseObject));
 
-					let responseObject = {
-						currentPage: req.query.currentPage ? +req.query.currentPage : 1,
-						pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
-						pageSize: req.query.pageSize ? +req.query.pageSize : +count,
-						rowsCountAll: count,
-						rowsCountOnCurrentPage: projects.length,
-						data: Object.keys(resultProjects).map((k) => resultProjects[k])
-					};
-					res.end(JSON.stringify(responseObject));
+						})
+						.catch((err) => {
+							next(err);
+						});
+
 
 				})
-				.catch((err) => {
-					next(err);
-				});
-
-
 		})
 		.catch((err) => {
 			next(err);
 		});
+
+
 };
