@@ -48,7 +48,7 @@ class UserController {
 					{
 						model: models.Department,
 						as: 'department',
-						required: true,
+						required: false,
 						attributes: ['name'],
 						through: {
 							model: models.UserDepartments,
