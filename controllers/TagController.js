@@ -1,121 +1,154 @@
 const createError = require('http-errors');
 const models = require('../models');
 
-class TagController {
-	constructor(req, res, next) {
-		this.req = req;
-		this.res = res;
-		this.next = next;
-	}
+exports.list = function(req, res, next){
 
-	validate(){
-		return new Promise((resolve, reject) => {
-			this.req.checkBody('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project', 'portfolio']);
-			this.req.checkBody('taggableId', 'taggableId must be int').isInt();
-			this.req.checkBody('tag', 'tab must be more then 2 chars').isLength({min: 2});
+	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('id', 'taggableId must be int').isInt();
 
-			this.req
-				.getValidationResult()
-				.then((result) => {
+	req
+		.getValidationResult()
+		.then((result) => {
 
-					if (!result.isEmpty()) {
-						let err = new Error();
-						err.statusCode = 400;
-						err.name = 'ValidationError';
-						err.message = { errors: result.array() };
-						this.next(err);
+			if (!result.isEmpty()) {
+				let err = new Error();
+				err.statusCode = 400;
+				err.name = 'ValidationError';
+				err.message = { errors: result.array() };
+				next(err);
+			}
+
+			models[firstLetterUp(req.params.taggable)]
+				.findByPrimary(req.params.id, {
+					attributes: ['id'],
+					include: [
+						{
+							as: 'tags',
+							model: models.Tag,
+							attributes: ['name'],
+							through: {
+								model: models.ItemTag,
+								attributes: []
+							},
+							order: [
+								['name', 'ASC'],
+							],
+						}
+					],
+				})
+				.then((Model) => {
+					if(!Model) return next(createError(404, 'taggable model not found'));
+					let row = Model.dataValues;
+					let result = [];
+					if(row.tags){
+						result = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
 					}
 
-					resolve();
+					res.end(JSON.stringify(result));
 
-				});
+				})
+				.catch((err) => next(createError(err)));
+
 		});
-	};
-
-	firstLetterUp(value) {
-		return value[0].toUpperCase() + value.substring(1);
-	}
-
-
-	create() {
-		let promises = [];
-		this
-			.validate()
-			.then(()  => {
-
-				models[this.firstLetterUp(this.req.body.taggable)]
-					.findByPrimary(this.req.body.taggableId, { attributes: ['id'] })
-					.then((Model) => {
-						if(!Model) return this.next(createError(404, 'taggable model not found'));
-
-						this.req.body.tag.split(',').map((el) => {
-							promises.push(
-								models.Tag
-									.findOrCreate({where: {name: el.trim()}})
-									.spread((tag, created) => {
-
-										Model
-											.addTag(tag)
-											.catch((err) => this.next(createError(err)));
-									})
-									.catch((err) => this.next(createError(err)))
-							);
-						});
-
-						Promise
-							.all(promises)
-							.then(() => this.res.end())
-							.catch((err) => this.next(createError(err)))
-
-
-					})
-					.catch((err) => this.next(createError(err)));
-
-			});
-	};
-
-	remove() {
-		this
-			.validate()
-			.then(()  => {
-				models.Tag
-					.find({where: {name: this.req.body.tag.trim()}, attributes: ['id'] })
-					.then((tag) => {
-						if(!tag) return this.next(createError(404, 'tag not found'));
-
-						models.ItemTag
-							.findOne({ where: {
-								tagId: tag.dataValues.id,
-								taggableId: this.req.body.taggableId,
-								taggable: this.req.body.taggable,
-							}})
-							.then((item) => {
-								if(!item) return this.next(createError(404, 'ItemTag not found'));
-								item
-									.destroy()
-									.then(() => this.res.end())
-									.catch((err) => this.next(createError(err)));
-							})
-							.catch((err) => this.next(createError(err)));
-
-					})
-					.catch((err) => this.next(createError(err)));
-			});
-
-	}
-
-}
-
+};
 
 exports.create = function(req, res, next){
-	new TagController(req, res, next).create();
+
+	req.checkBody('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkBody('taggableId', 'taggableId must be int').isInt();
+	req.checkBody('tag', 'tab must be more then 2 chars').isLength({min: 2});
+
+	req
+		.getValidationResult()
+		.then((result) => {
+
+			if (!result.isEmpty()) {
+				let err = new Error();
+				err.statusCode = 400;
+				err.name = 'ValidationError';
+				err.message = { errors: result.array() };
+				next(err);
+			}
+
+			let promises = [];
+
+			models[firstLetterUp(req.body.taggable)]
+				.findByPrimary(req.body.taggableId, { attributes: ['id'] })
+				.then((Model) => {
+					if(!Model) return next(createError(404, 'taggable model not found'));
+
+					req.body.tag.split(',').map((el) => {
+						promises.push(
+							models.Tag
+								.findOrCreate({where: {name: el.trim()}})
+								.spread((tag, created) => {
+
+									Model
+										.addTag(tag)
+										.catch((err) => next(createError(err)));
+								})
+								.catch((err) => next(createError(err)))
+						);
+					});
+
+					Promise
+						.all(promises)
+						.then(() => res.end())
+						.catch((err) => next(createError(err)))
+
+
+				})
+				.catch((err) => next(createError(err)));
+
+
+		});
 };
 
 exports.delete = function(req, res, next){
-	new TagController(req, res, next).remove();
+
+	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('id', 'taggableId must be int').isInt();
+	req.checkQuery('tag', 'tab must be more then 2 chars').isLength({min: 2});
+
+	req
+		.getValidationResult()
+		.then((result) => {
+
+			if (!result.isEmpty()) {
+				let err = new Error();
+				err.statusCode = 400;
+				err.name = 'ValidationError';
+				err.message = { errors: result.array() };
+				next(err);
+			}
+
+			models.Tag
+				.find({where: {name: req.query.tag.trim()}, attributes: ['id'] })
+				.then((tag) => {
+					if(!tag) return next(createError(404, 'tag not found'));
+
+					models.ItemTag
+						.findOne({ where: {
+							tagId: tag.dataValues.id,
+							taggableId: req.params.id,
+							taggable: req.params.taggable,
+						}})
+						.then((item) => {
+							if(!item) return next(createError(404, 'ItemTag not found'));
+							item
+								.destroy()
+								.then(() => res.end())
+								.catch((err) => next(createError(err)));
+						})
+						.catch((err) => next(createError(err)));
+
+				})
+				.catch((err) => next(createError(err)));
+		});
 };
 
 
+// Обработчик тегов при создании записи проекта, задачи, спринта
 exports.tagsHandlerForModel = function(Model, req, res, next) {
 	let tags = false;
 	extractTags();
@@ -148,3 +181,8 @@ exports.tagsHandlerForModel = function(Model, req, res, next) {
 		}
 	}
 };
+
+
+function firstLetterUp(value) {
+	return value[0].toUpperCase() + value.substring(1);
+}

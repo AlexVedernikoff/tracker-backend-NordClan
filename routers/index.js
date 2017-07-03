@@ -42,7 +42,8 @@ router.get('/task', TaskController.list);
 
 
 router.post('/tag', TagController.create);
-router.delete('/tag', TagController.delete);
+router.delete('/tag/:taggable/:id', TagController.delete);
+router.get('/tag/:taggable/:id', TagController.list);
 
 
 

@@ -194,12 +194,6 @@ module.exports = {
 						type: 'numeric',
 						in: 'formData',
 					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'formData',
-					}
 				],
 				responses: responsesCodes
 			},
@@ -459,12 +453,6 @@ module.exports = {
 						format: 'date',
 						in: 'formData',
 					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'formData',
-					}
 				],
 				responses: responsesCodes
 			},
@@ -658,12 +646,6 @@ module.exports = {
 						name: 'linkedTasks',
 						type: 'string',
 						in: 'formData',
-					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'formData',
 					}
 				],
 				responses: responsesCodes
@@ -682,6 +664,7 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
+
 
 
 
@@ -714,6 +697,29 @@ module.exports = {
 				],
 				responses: responsesCodes
 			},
+		},
+		'/tag/{taggable}/{taggableId}': {
+			get: {
+				tags: ['Tag'],
+				summary: 'Получить теги для сущности',
+				parameters: [
+					{
+						name: 'taggable',
+						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
+						type: 'string',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'taggableId',
+						description: 'ID сущности',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
 			delete: {
 				tags: ['Tag'],
 				summary: 'Удалить тег для сущности',
@@ -722,21 +728,21 @@ module.exports = {
 						name: 'taggable',
 						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
 						type: 'integer',
-						in: 'formData',
+						in: 'path',
 						required: true
 					},
 					{
 						name: 'taggableId',
 						description: 'ID сущности',
 						type: 'integer',
-						in: 'formData',
+						in: 'path',
 						required: true
 					},
 					{
 						name: 'tag',
 						description: 'tags separated by ","',
 						type: 'string',
-						in: 'formData',
+						in: 'query',
 						required: true
 					},
 				],
