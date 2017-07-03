@@ -140,7 +140,7 @@ exports.list = function(req, res, next){
 				$eq: null // IS NULL
 			}
 		},
-		separate: false
+		separate: true
 	});
 
 	// вывод тегов
