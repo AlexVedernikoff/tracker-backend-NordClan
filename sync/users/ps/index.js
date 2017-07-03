@@ -4,6 +4,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const Department = require('../../../models').Department;
 const User = require('../../../models').User;
+const gm = require('gm');
 
 const baseUrl = 'http://ps.simbirsoft/default/rest/';
 const auth = {
@@ -108,11 +109,59 @@ syncUsers = function() {
 								}
 							})
 								.then(user => {
-									if(user) user.updateAttributes(x, {
-									}).catch((err) => {
-										console.error(err);
-										console.error('error: ' + (err));
-									});
+									if(user) {
+
+											let promise = new Promise(function(resolve, reject) {
+												if(x.photo) {
+													// Обрабатываю фотографии
+													gm(request(x.photo))
+														.size({ bufferStream: true }, function(err, size){
+															if(err) reject(err);
+
+															if(!err && size.width) {
+
+																if(size.width >= size.height) {
+																	this.resize(null, 200);
+																}else if(size.width < size.height){
+																	this.resize(200, null);
+																}
+															}
+
+															let photoPath = '/uploads/usersPhotos/' + user.id + '.jpg';
+															this.write('./public' + photoPath, function (err) {
+																if (err) reject(err);
+																resolve(photoPath);
+															});
+														});
+												} else {
+													resolve();
+												}
+											})
+												.then((photoPath)=>{
+													if(photoPath) {
+														x.photo = photoPath;
+														console.log(photoPath);
+													}
+
+												})
+												.catch((err)=>{
+													if(err) {
+														x.photo = null;
+														console.error(err);
+													}
+												})
+												.then(() => {
+													// Обновляю пользователя
+													user
+														.updateAttributes(x, {})
+														.catch((err) => {
+															console.error(err);
+															console.error('error: ' + (err));
+														});
+												});
+
+
+									}
 								})
 								.catch((err) => {
 									console.error('error: ' + (err));
@@ -157,7 +206,7 @@ syncDepartments = function() {
 	})
 		.then((Departments) => {
 			let promise =  Promise.resolve();
-			var allowedIds = departmentIDs.join(' ');
+			let allowedIds = departmentIDs.join(' ');
 			Departments
 				.forEach((x) => {
 					promise.then(() => {
