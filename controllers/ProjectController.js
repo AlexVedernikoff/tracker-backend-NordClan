@@ -200,6 +200,7 @@ exports.list = function(req, res, next){
 
 
 	let chain = Promise.resolve()
+		// Фильтрация по тегам ищем id тегов
 		.then(() => {
 			if(req.query.tags) {
 				return Tag
@@ -212,6 +213,7 @@ exports.list = function(req, res, next){
 					});
 			}
 		})
+		// Включаем фильтрация по тегам в запрос
 		.then((tags) => {
 			if(tags) {
 				queryIncludes.push({
