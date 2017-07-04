@@ -160,8 +160,6 @@ exports.tagsHandlerForModel = function(Model, req, res, next) {
 				.findOrCreate({where: {name: itemTag.trim()}})
 				.spread((tag, created) => {
 
-					console.log(Model.dataValues.id);
-
 					Model
 						.addTag(tag)
 						.then(() => res.end(JSON.stringify({id: Model.dataValues.id})))
