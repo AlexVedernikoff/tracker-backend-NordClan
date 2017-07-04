@@ -186,12 +186,12 @@ module.exports = {
 					},
 					{
 						name: 'budget',
-						type: 'numeric',
+						type: 'number',
 						in: 'formData',
 					},
 					{
-						name: 'risBudget',
-						type: 'numeric',
+						name: 'riskBudget',
+						type: 'number',
 						in: 'formData',
 					},
 				],
