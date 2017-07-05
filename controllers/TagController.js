@@ -3,7 +3,7 @@ const models = require('../models');
 
 exports.list = function(req, res, next){
 
-	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
 	req.checkParams('id', 'taggableId must be int').isInt();
 
 	req
@@ -54,7 +54,7 @@ exports.list = function(req, res, next){
 
 exports.create = function(req, res, next){
 
-	req.checkBody('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkBody('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
 	req.checkBody('taggableId', 'taggableId must be int').isInt();
 	req.checkBody('tag', 'tab must be more then 2 chars').isLength({min: 2});
 
@@ -77,25 +77,49 @@ exports.create = function(req, res, next){
 				.then((Model) => {
 					if(!Model) return next(createError(404, 'taggable model not found'));
 
-					req.body.tag.split(',').map((el) => {
-						promises.push(
-							models.Tag
-								.findOrCreate({where: {name: el.trim()}})
-								.spread((tag, created) => {
+						models.Tag
+							.findOrCreate({where: {name: req.body.tag.trim()}})
+							.spread((tag, created) => {
 
-									Model
-										.addTag(tag)
-										.catch((err) => next(createError(err)));
-								})
-								.catch((err) => next(createError(err)))
-						);
-					});
+								return Model
+									.addTag(tag)
+									.catch((err) => next(createError(err)));
+							})
+							.then(() => {
+								// Возвращаю массив тегов
+								return models[firstLetterUp(req.body.taggable)]
+									.findByPrimary(req.body.taggableId, {
+										attributes: ['id'],
+										include: [
+											{
+												as: 'tags',
+												model: models.Tag,
+												attributes: ['name'],
+												through: {
+													model: models.ItemTag,
+													attributes: []
+												},
+												order: [
+													['name', 'ASC'],
+												],
+											}
+										],
+									})
+									.then((Model) => {
+										if(!Model) return next(createError(404, 'taggable model not found'));
+										let row = Model.dataValues;
+										let result = [];
+										if(row.tags){
+											result = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
+										}
 
-					Promise
-						.all(promises)
-						.then(() => res.end())
-						.catch((err) => next(createError(err)))
+										res.end(JSON.stringify(result));
 
+									})
+									.catch((err) => next(createError(err)));
+
+							})
+							.catch((err) => next(createError(err)))
 
 				})
 				.catch((err) => next(createError(err)));
@@ -106,7 +130,7 @@ exports.create = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\' or \'portfolio\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
 	req.checkParams('id', 'taggableId must be int').isInt();
 	req.checkQuery('tag', 'tab must be more then 2 chars').isLength({min: 2});
 
@@ -137,7 +161,41 @@ exports.delete = function(req, res, next){
 							if(!item) return next(createError(404, 'ItemTag not found'));
 							item
 								.destroy()
-								.then(() => res.end())
+								.then(() => {
+
+									// Возвращаю массив тегов
+									return models[firstLetterUp(req.params.taggable)]
+										.findByPrimary(req.params.id, {
+											attributes: ['id'],
+											include: [
+												{
+													as: 'tags',
+													model: models.Tag,
+													attributes: ['name'],
+													through: {
+														model: models.ItemTag,
+														attributes: []
+													},
+													order: [
+														['name', 'ASC'],
+													],
+												}
+											],
+										})
+										.then((Model) => {
+											if(!Model) return next(createError(404, 'taggable model not found'));
+											let row = Model.dataValues;
+											let result = [];
+											if(row.tags){
+												result = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
+											}
+
+											res.end(JSON.stringify(result));
+
+										})
+										.catch((err) => next(createError(err)));
+
+								})
 								.catch((err) => next(createError(err)));
 						})
 						.catch((err) => next(createError(err)));
