@@ -132,7 +132,7 @@ exports.delete = function(req, res, next){
 
 	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
 	req.checkParams('id', 'taggableId must be int').isInt();
-	req.checkQuery('tag', 'tab must be more then 2 chars').isLength({min: 2});
+	req.checkQuery('tag', 'tab must be more then 1 char').isLength({min: 1});
 
 	req
 		.getValidationResult()
