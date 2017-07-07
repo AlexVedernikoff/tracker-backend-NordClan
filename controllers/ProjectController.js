@@ -43,6 +43,14 @@ exports.read = function(req, res, next){
 					order: [
 						['name', 'ASC'],
 					],
+				},
+				{
+					as: 'sprints',
+					model: Sprint,
+					attributes: ['id', 'name', 'factStartDate', 'factFinishDate', 'statusId'],
+					order: [
+						['factStartDate', 'DESC'],
+					],
 				}
 			]
 		})

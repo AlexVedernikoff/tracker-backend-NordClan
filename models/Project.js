@@ -112,6 +112,13 @@ module.exports = function(sequelize, DataTypes) {
 		}});
 
 		Project.hasMany(models.Sprint, {
+			as: 'sprints',
+			foreignKey: {
+				name: 'projectId',
+				field: 'project_id'
+		}});
+
+		Project.hasMany(models.Sprint, {
 			as: 'currentSprints',
 			foreignKey: {
 				name: 'projectId',
