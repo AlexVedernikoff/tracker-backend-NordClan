@@ -67,12 +67,12 @@ exports.create = function(req, res, next){
 				err.statusCode = 400;
 				err.name = 'ValidationError';
 				err.message = { errors: result.array() };
-				next(err);
+				return next(err);
 			}
 
 			let promises = [];
 
-			models[firstLetterUp(req.body.taggable)]
+			return models[firstLetterUp(req.body.taggable)]
 				.findByPrimary(req.body.taggableId, { attributes: ['id'] })
 				.then((Model) => {
 					if(!Model) return next(createError(404, 'taggable model not found'));
