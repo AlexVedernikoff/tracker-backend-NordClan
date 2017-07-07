@@ -496,6 +496,16 @@ module.exports = {
 						in: 'query',
 					},
 					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'query',
+					},
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'query',
+					},
+					{
 						name: 'tags',
 						type: 'string',
 						description: 'tags separated by ","',
@@ -541,6 +551,11 @@ module.exports = {
 						type: 'integer',
 						in: 'formData',
 						required: true
+					},
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'formData',
 					},
 					{
 						name: 'description',
@@ -634,6 +649,11 @@ module.exports = {
 					},
 					{
 						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'sprintId',
 						type: 'integer',
 						in: 'formData',
 					},
