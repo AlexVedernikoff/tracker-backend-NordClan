@@ -41,11 +41,11 @@ exports.read = function(req, res, next){
 			}
 		]
 	})
-		.then((row) => {
-			if(!row) { return next(createError(404)); }
+		.then((model) => {
+			if(!model) { return next(createError(404)); }
 
 			if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
-			res.end(JSON.stringify(row.dataValues));
+			res.end(JSON.stringify(model.dataValues));
 		})
 		.catch((err) => {
 			next(err);

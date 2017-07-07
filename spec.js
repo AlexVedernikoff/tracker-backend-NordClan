@@ -592,7 +592,7 @@ module.exports = {
 				responses: responsesCodes
 			}
 		},
-		'/task/{sprintId}': {
+		'/task/{taskId}': {
 			get: {
 				tags: ['Tasks'],
 				summary: 'Получить конкретную задачу',
