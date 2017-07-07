@@ -55,6 +55,7 @@ exports.read = function(req, res, next){
 
 
 exports.update = function(req, res, next){
+	let resultRespons = {};
 
 	Task.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((row) => {
@@ -63,7 +64,16 @@ exports.update = function(req, res, next){
 
 			row.updateAttributes(req.body)
 				.then((model)=>{
-					TagController.tagsHandlerForModel(model, req, res, next);
+
+					resultRespons.id = model.id;
+					// Получаю измененные поля
+					_.keys(model.dataValues).forEach((key) => {
+						if(req.body[key])
+							resultRespons[key] = model.dataValues[key];
+					});
+
+					res.end(JSON.stringify(resultRespons));
+
 				})
 				.catch((err) => {
 					next(err);
