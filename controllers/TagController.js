@@ -143,7 +143,7 @@ exports.delete = function(req, res, next){
 				err.statusCode = 400;
 				err.name = 'ValidationError';
 				err.message = { errors: result.array() };
-				next(err);
+				return next(err);
 			}
 
 			models.Tag
@@ -151,7 +151,7 @@ exports.delete = function(req, res, next){
 				.then((tag) => {
 					if(!tag) return next(createError(404, 'tag not found'));
 
-					models.ItemTag
+					return models.ItemTag
 						.findOne({ where: {
 							tagId: tag.dataValues.id,
 							taggableId: req.params.id,
