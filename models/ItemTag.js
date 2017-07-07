@@ -28,6 +28,17 @@ module.exports = function(sequelize, DataTypes) {
 		tableName: 'item_tags'
 	});
 
+	ItemTag.associate = function(models) {
+
+		ItemTag.belongsTo(models.Tag,{
+				as: 'tag',
+				foreignKey: {
+					name: 'tagId',
+					field: 'tag_id'
+				}
+		});
+
+	};
 
 	return ItemTag;
 };

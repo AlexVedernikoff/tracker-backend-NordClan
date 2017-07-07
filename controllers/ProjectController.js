@@ -161,16 +161,17 @@ exports.list = function(req, res, next){
 
 	// вывод тегов
 	queryIncludes.push({
-		as: 'tags',
-		model: Tag,
-		attributes: ['name'],
-		order: [
-			['name', 'ASC'],
-		],
-		through: {
-			model: ItemTag,
-			attributes: []
-		}
+		model: ItemTag,
+		as: 'itemTag',
+		where: {
+			taggable: 'project'
+		},
+		separate: true,
+		include: [{
+			as: 'tag',
+			model: Tag,
+			attributes: ['name'],
+		}],
 	});
 
 	// Порфтель
@@ -248,7 +249,7 @@ exports.list = function(req, res, next){
 		.then(() => {
 			return Project
 				.findAll({
-					attributes: req.query.fields ? _.union(['id','portfolioId','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
+					attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
 					limit: req.query.pageSize ? +req.query.pageSize : 1000,
 					offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
 					include: queryIncludes,
@@ -263,7 +264,6 @@ exports.list = function(req, res, next){
 
 					return Project
 						.count({
-							//include: req.query.tags ? [includeForCount] : [],
 							include: queryIncludes,
 							where: where,
 							group: ['Project.id']
@@ -275,8 +275,9 @@ exports.list = function(req, res, next){
 							if(projects) {
 								for (key in projects) {
 									let row = projects[key].dataValues;
-									if(row.tags) row.tags = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
+									if(row.itemTag) row.tags = Object.keys(row.itemTag).map((k) => row.itemTag[k].tag.name); // Преобразую теги в массив
 									row.elemType = 'project';
+									delete row.itemTag;
 
 
 									if(row.portfolioId === null) {

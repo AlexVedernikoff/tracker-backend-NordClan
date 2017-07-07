@@ -146,14 +146,14 @@ module.exports = function(sequelize, DataTypes) {
 		Project.belongsToMany(models.Tag, {
 			as: 'tags',
 			through: {
+				as: 'item_tag',
 				model: models.ItemTag,
-				unique: false,
 				scope: {
 					taggable: 'project'
 				}
 			},
 			foreignKey: 'taggable_id',
-			constraints: false
+			otherKey: 'tag_id',
 		});
 
 		Project.belongsToMany(models.Tag, {
