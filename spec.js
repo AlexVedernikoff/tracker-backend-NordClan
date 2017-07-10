@@ -858,6 +858,25 @@ module.exports = {
 
 
 
+		'/dictionary/statuses/{entity}': {
+			get: {
+				tags: ['Dictionary'],
+				summary: 'Справочник статусов',
+				responses: responsesCodes,
+				parameters: [
+					{
+						name: 'entity',
+						type: 'integer',
+						description: 'Может принимать значения: \'task\', \'sprint\', \'project\'',
+						in: 'path',
+						required: true
+					},
+				],
+			},
+		},
+
+
+
 	},
 	securityDefinitions: {
 		apiKey: {

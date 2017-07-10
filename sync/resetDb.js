@@ -11,6 +11,9 @@ const Models  = [
 	models.Department,
 	models.UserDepartments,
 	models.Token,
+	models.ProjectStatuses,
+	models.SprintStatuses,
+	models.TaskStatuses,
 ];
 
 

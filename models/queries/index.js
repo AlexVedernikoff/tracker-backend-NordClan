@@ -1,6 +1,7 @@
 const fs        = require("fs");
 const path      = require("path");
 
+// Часто используемые запросы к бд
 let queryFunctions = {};
 fs
 	.readdirSync(__dirname)

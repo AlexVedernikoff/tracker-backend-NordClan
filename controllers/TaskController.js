@@ -158,7 +158,6 @@ exports.list = function(req, res, next){
 
 
 	if(req.query.sprintId) {
-
 		if(req.query.sprintId == 0) {
 			where.sprintId = {
 				$eq: null
@@ -166,7 +165,6 @@ exports.list = function(req, res, next){
 		} else {
 			where.sprintId = req.query.sprintId;
 		}
-
 	}
 
 	Task
