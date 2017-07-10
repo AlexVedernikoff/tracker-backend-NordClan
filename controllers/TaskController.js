@@ -4,6 +4,7 @@ const TagController = require('./TagController');
 const Task = require('../models').Task;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
+const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next){
@@ -155,8 +156,17 @@ exports.list = function(req, res, next){
 		where.projectId = req.query.projectId;
 	}
 
+
 	if(req.query.sprintId) {
-		where.sprintId = req.query.sprintId;
+
+		if(req.query.sprintId == 0) {
+			where.sprintId = {
+				$eq: null
+			}
+		} else {
+			where.sprintId = req.query.sprintId;
+		}
+
 	}
 
 	Task
@@ -172,6 +182,7 @@ exports.list = function(req, res, next){
 
 			Task
 				.count({
+					where: where,
 					include: req.query.tags ? [includeForCount] : [],
 					group: ['Task.id']
 				})
