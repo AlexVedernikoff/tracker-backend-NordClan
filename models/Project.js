@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
 		statusId: {
 			field: 'status_id',
 			type: DataTypes.INTEGER,
-			defaultValue: 0,
+			defaultValue: 1,
 			validate: {
 				isInt: true,
 				min: 0,
@@ -40,7 +40,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		notbillable: {
 			type: DataTypes.INTEGER,
-			defaultValue: 0,
+			defaultValue: 1,
 			validate: {
 				isInt: true,
 				min: 0,
@@ -151,6 +151,16 @@ module.exports = function(sequelize, DataTypes) {
 			},
 			foreignKey: 'taggable_id',
 			otherKey: 'tag_id',
+		});
+
+		Project.belongsToMany(models.User, {
+			as: 'projectUsers',
+			through: {
+				model: models.ProjectUsers,
+				unique: false,
+			},
+			foreignKey: 'user_id',
+			constraints: false
 		});
 
 		Project.belongsToMany(models.Tag, {

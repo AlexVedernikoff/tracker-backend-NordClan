@@ -843,8 +843,6 @@ module.exports = {
 			},
 		},
 
-
-
 		'/dictionary/statuses/{entity}': {
 			get: {
 				tags: ['Dictionary'],
@@ -861,6 +859,15 @@ module.exports = {
 				],
 			},
 		},
+
+		'/dictionary/project-roles': {
+			get: {
+				tags: ['Dictionary'],
+				summary: 'Справочник ролей пользователей для проекта',
+				responses: responsesCodes,
+			},
+		},
+
 
 
 

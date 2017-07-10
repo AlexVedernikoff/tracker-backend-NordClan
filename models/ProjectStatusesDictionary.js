@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
 
-	 const ProjectStatuses = sequelize.define("ProjectStatuses", {
+	 const ProjectStatuses = sequelize.define("ProjectStatusesDictionary", {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,

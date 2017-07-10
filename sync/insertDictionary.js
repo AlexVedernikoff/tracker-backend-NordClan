@@ -1,9 +1,10 @@
 const models = require('../models');
 
 const dictionariesModels  = [
-	models.ProjectStatuses,
-	models.SprintStatuses,
-	models.TaskStatuses,
+	models.ProjectStatusesDictionary,
+	models.SprintStatusesDictionary,
+	models.TaskStatusesDictionary,
+	models.ProjectRolesDictionary,
 ];
 
 
@@ -16,7 +17,6 @@ const dictionariesModels  = [
 					.then(() => model.bulkCreate(model.values));
 			})
 	});
-
 
 	chain
 		.then(() => {

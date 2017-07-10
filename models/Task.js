@@ -18,6 +18,7 @@ module.exports = function(sequelize, DataTypes) {
 		typeId: {
 			field: 'type_id',
 			type: DataTypes.INTEGER,
+			defaultValue: 1,
 			allowNull: false,
 			validate: {
 				isInt: true
@@ -26,6 +27,7 @@ module.exports = function(sequelize, DataTypes) {
 		statusId: {
 			field: 'status_id',
 			type: DataTypes.INTEGER,
+			defaultValue: 1,
 			allowNull: false,
 			validate: {
 				isInt: true

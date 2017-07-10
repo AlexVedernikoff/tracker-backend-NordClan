@@ -8,6 +8,7 @@ const AuthController = require('../controllers/AuthController');
 const TagController = require('../controllers/TagController');
 const UserController = require('../controllers/UserController');
 const DictionaryController = require('../controllers/DictionaryController');
+const ProjectUsersController = require('../controllers/ProjectUsersController');
 
 
 router.post('/auth/login', AuthController.login);
@@ -23,6 +24,9 @@ router.get('/project/:id', ProjectController.read);
 router.put('/project/:id', ProjectController.update);
 router.delete('/project/:id', ProjectController.delete);
 router.get('/project', ProjectController.list);
+
+router.post('/project-users', ProjectUsersController.create);
+router.delete('/project-users/:projectId/:userId', ProjectUsersController.delete);
 
 router.post('/portfolio', PortfolioController.create);
 router.get('/portfolio/:id', PortfolioController.read);
@@ -48,5 +52,8 @@ router.delete('/tag/:taggable/:id', TagController.delete);
 router.get('/tag/:taggable/:id', TagController.list);
 
 router.get('/dictionary/statuses/:entity', DictionaryController.statuses);
+router.get('/dictionary/project-roles', DictionaryController.projectRoles);
+
+
 
 module.exports = router;
