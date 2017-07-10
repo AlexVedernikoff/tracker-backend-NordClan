@@ -61,7 +61,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	Sprint.findByPrimary(req.params.id, { attributes: ['id'] })
+	Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
 		.then((model) => {
 			if(!model) { return next(createError(404)); }
 
@@ -69,7 +69,6 @@ exports.delete = function(req, res, next){
 				.then(()=>{
 					return queries.sprint.allSprintsByProject(model.projectId)
 						.then((sprints) => {
-							console.log(sprints);
 							res.end(JSON.stringify(sprints));
 						});
 				})
