@@ -144,17 +144,3 @@ exports.list = function(req, res, next){
 			next(err);
 		});
 };
-
-/*
-
-function allSprintsByProject(projectId) {
-	let result = [];
-	return Sprint
-		.findAll({where: {projectId: projectId, deletedAt: null}, order: [['factFinishDate', 'DESC'], ['name', 'ASC']], attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']})
-		.then((model) => {
-			model.forEach((elModel) => {
-				result.push(elModel.dataValues);
-			});
-			return result;
-		});
-};*/
