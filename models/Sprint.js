@@ -18,7 +18,7 @@ module.exports = function(sequelize, DataTypes) {
 		statusId: {
 			field: 'status_id',
 			type: DataTypes.INTEGER,
-			defaultValue: 0,
+			defaultValue: 1,
 			validate: {
 				isInt: true,
 				min: 0,
