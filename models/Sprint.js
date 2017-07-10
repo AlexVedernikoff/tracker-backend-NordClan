@@ -18,11 +18,6 @@ module.exports = function(sequelize, DataTypes) {
 				}
 			}
 		},
-		description: {
-			trim: true,
-			type: DataTypes.TEXT,
-			defaultValue: null
-		},
 		statusId: {
 			field: 'status_id',
 			type: DataTypes.INTEGER,
@@ -49,6 +44,13 @@ module.exports = function(sequelize, DataTypes) {
 				isDate: true,
 			}
 		},
+		// allottedTime: {
+		// 	type: DataTypes.FLOAT,
+		// 	defaultValue: null,
+		// 	validate: {
+		// 		isNumeric: true
+		// 	}
+		// },
 		authorId: {
 			field: 'author_id',
 			type: DataTypes.INTEGER,

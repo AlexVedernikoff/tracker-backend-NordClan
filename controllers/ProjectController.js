@@ -7,6 +7,7 @@ const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
 const Portfolio = require('../models').Portfolio;
 const Sprint = require('../models').Sprint;
+const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next){
@@ -18,7 +19,8 @@ exports.create = function(req, res, next){
 	Project
 		.create(req.body)
 		.then((model) => {
-			TagController.tagsHandlerForModel(model, req, res, next);
+			return queries.tag.saveTagsForModel(model, req.body.tags)
+				.then(() => res.end(JSON.stringify({id: model.id})));
 		})
 		.catch((err) => {
 			next(err);
@@ -216,7 +218,7 @@ exports.list = function(req, res, next){
 	}
 
 
-	let chain = Promise.resolve()
+	Promise.resolve()
 		// Фильтрация по тегам ищем id тегов
 		.then(() => {
 			if(req.query.tags) {

@@ -370,11 +370,6 @@ module.exports = {
 						required: true
 					},
 					{
-						name: 'description',
-						type: 'string',
-						in: 'formData',
-					},
-					{
 						name: 'factStartDate',
 						description: 'yyyy-mm-dd',
 						type: 'string',
@@ -431,11 +426,6 @@ module.exports = {
 					},
 					{
 						name: 'name',
-						type: 'string',
-						in: 'formData',
-					},
-					{
-						name: 'description',
 						type: 'string',
 						in: 'formData',
 					},

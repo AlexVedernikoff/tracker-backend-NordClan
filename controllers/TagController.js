@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const models = require('../models');
+const queries = require('../models/queries');
 
 exports.list = function(req, res, next){
 
@@ -70,57 +71,18 @@ exports.create = function(req, res, next){
 				return next(err);
 			}
 
-			let promises = [];
-
 			return models[firstLetterUp(req.body.taggable)]
 				.findByPrimary(req.body.taggableId, { attributes: ['id'] })
-				.then((Model) => {
-					if(!Model) return next(createError(404, 'taggable model not found'));
+				.then((model) => {
+					if(!model) return next(createError(404, 'taggable model not found'));
 
-						models.Tag
-							.findOrCreate({where: {name: req.body.tag.trim()}})
-							.spread((tag, created) => {
-
-								return Model
-									.addTag(tag)
-									.catch((err) => next(createError(err)));
-							})
-							.then(() => {
-								// Возвращаю массив тегов
-								return models[firstLetterUp(req.body.taggable)]
-									.findByPrimary(req.body.taggableId, {
-										attributes: ['id'],
-										include: [
-											{
-												as: 'tags',
-												model: models.Tag,
-												attributes: ['name'],
-												through: {
-													model: models.ItemTag,
-													attributes: []
-												},
-												order: [
-													['name', 'ASC'],
-												],
-											}
-										],
-									})
-									.then((Model) => {
-										if(!Model) return next(createError(404, 'taggable model not found'));
-										let row = Model.dataValues;
-										let result = [];
-										if(row.tags){
-											result = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
-										}
-
-										res.end(JSON.stringify(result));
-
-									})
-									.catch((err) => next(createError(err)));
-
-							})
-							.catch((err) => next(createError(err)))
-
+					return queries.tag.saveTagsForModel(model, req.body.tag)
+						.then(() => {
+							return queries.tag.getAllTagsByModel(firstLetterUp(req.body.taggable), model.id)
+								.then((tags) => {
+									res.end(JSON.stringify(tags));
+								})
+						});
 				})
 				.catch((err) => next(createError(err)));
 
@@ -206,37 +168,7 @@ exports.delete = function(req, res, next){
 };
 
 
-// Обработчик тегов при создании записи проекта, задачи, спринта
-exports.tagsHandlerForModel = function(Model, req, res, next) {
-	let tags = false;
-	extractTags();
-	if(tags) {
 
-		tags.forEach(function(itemTag) {
-
-			models.Tag
-				.findOrCreate({where: {name: itemTag.trim()}})
-				.spread((tag, created) => {
-
-					Model
-						.addTag(tag)
-						.then(() => res.end(JSON.stringify({id: Model.dataValues.id})))
-						.catch((err) => next(createError(err)));
-				})
-				.catch((err) => next(createError(err)));
-
-		});
-
-	} else {
-		res.end(JSON.stringify({id: Model.dataValues.id}));
-	}
-
-	function extractTags() {
-		if('tags' in req.body && req.body.tags) {
-			tags = req.body.tags.toString().split(',');
-		}
-	}
-};
 
 
 function firstLetterUp(value) {

@@ -14,7 +14,8 @@ exports.create = function(req, res, next){
 
 	Task.create(req.body)
 		.then((model) => {
-			TagController.tagsHandlerForModel(model, req, res, next);
+			return queries.tag.saveTagsForModel(model, req.body.tags)
+				.then(() => res.end(JSON.stringify({id: model.id})));
 		})
 		.catch((err) => {
 			next(err);

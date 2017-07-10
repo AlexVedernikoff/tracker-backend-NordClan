@@ -14,7 +14,7 @@ exports.create = function(req, res, next){
 
 	Portfolio.create(req.body)
 		.then((model) => {
-			TagController.tagsHandlerForModel(model, req, res, next);
+			res.end(JSON.stringify({id: model.id}));
 		})
 		.catch((err) => {
 			next(createError(err));

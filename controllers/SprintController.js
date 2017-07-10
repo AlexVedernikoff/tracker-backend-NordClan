@@ -4,6 +4,7 @@ const TagController = require('./TagController');
 const Sprint = require('../models').Sprint;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
+const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next){
@@ -14,7 +15,13 @@ exports.create = function(req, res, next){
 
 	Sprint.create(req.body)
 		.then((model) => {
-			TagController.tagsHandlerForModel(model, req, res, next);
+			return queries.tag.saveTagsForModel(model, req.body.tags)
+				.then(() => {
+					return queries.sprint.allSprintsByProject(model.projectId)
+						.then((sprints) => {
+							res.end(JSON.stringify({id: model.id, sprints: sprints}));
+						});
+				});
 		})
 		.catch((err) => {
 			next(err);
@@ -41,11 +48,11 @@ exports.read = function(req, res, next){
 			}
 		]
 	})
-		.then((row) => {
-			if(!row) { return next(createError(404)); }
+		.then((model) => {
+			if(!model) { return next(createError(404)); }
 
 			if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
-			res.end(JSON.stringify(row.dataValues));
+			res.end(JSON.stringify(model.dataValues));
 		})
 		.catch((err) => {
 			next(err);
@@ -55,19 +62,17 @@ exports.read = function(req, res, next){
 
 
 exports.update = function(req, res, next){
+	Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
+		.then((model) => {
+			if(!model) { return next(createError(404)); }
 
-	Sprint.findByPrimary(req.params.id, { attributes: ['id'] })
-		.then((row) => {
-			if(!row) { return next(createError(404)); }
-
-
-			row.updateAttributes(req.body)
+			return model.updateAttributes(req.body)
 				.then((model)=>{
-					TagController.tagsHandlerForModel(model, req, res, next);
+					return queries.sprint.allSprintsByProject(model.projectId)
+						.then((sprints) => {
+							res.end(JSON.stringify(sprints));
+						});
 				})
-				.catch((err) => {
-					next(err);
-				});
 		})
 		.catch((err) => {
 			next(err);
@@ -79,16 +84,17 @@ exports.update = function(req, res, next){
 exports.delete = function(req, res, next){
 
 	Sprint.findByPrimary(req.params.id, { attributes: ['id'] })
-		.then((row) => {
-			if(!row) { return next(createError(404)); }
+		.then((model) => {
+			if(!model) { return next(createError(404)); }
 
-			row.destroy()
+			return model.destroy()
 				.then(()=>{
-					res.end();
+					return queries.sprint.allSprintsByProject(model.projectId)
+						.then((sprints) => {
+							res.end(JSON.stringify(sprints));
+						});
 				})
-				.catch((err) => {
-					next(err);
-				});
+
 		})
 		.catch((err) => {
 			next(err);
@@ -190,3 +196,16 @@ exports.list = function(req, res, next){
 		});
 };
 
+/*
+
+function allSprintsByProject(projectId) {
+	let result = [];
+	return Sprint
+		.findAll({where: {projectId: projectId, deletedAt: null}, order: [['factFinishDate', 'DESC'], ['name', 'ASC']], attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']})
+		.then((model) => {
+			model.forEach((elModel) => {
+				result.push(elModel.dataValues);
+			});
+			return result;
+		});
+};*/

@@ -29,7 +29,7 @@ router.delete('/portfolio/:id', PortfolioController.delete);
 router.get('/portfolio', PortfolioController.list);
 
 router.post('/sprint', SprintController.create);
-router.get('/sprint/:id', PortfolioController.read);
+router.get('/sprint/:id', SprintController.read);
 router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
