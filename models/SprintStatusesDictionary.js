@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
 
-	const SprintStatuses = sequelize.define("SprintStatuses", {
+	const SprintStatuses = sequelize.define("SprintStatusesDictionary", {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
@@ -23,9 +23,8 @@ module.exports = function(sequelize, DataTypes) {
 	});
 
 	SprintStatuses.values = [
-		{id: 1, name: 'Новый'},
+		{id: 1, name: 'Не в процессе'},
 		{id: 2, name: 'В процессе'},
-		{id: 3, name: 'Завершен'},
 	];
 
 	return SprintStatuses;
