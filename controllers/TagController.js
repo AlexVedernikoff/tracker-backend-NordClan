@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
+const _ = require('underscore');
 
 exports.list = function(req, res, next){
 
@@ -167,8 +168,52 @@ exports.delete = function(req, res, next){
 		});
 };
 
+exports.autocompliter = function(req, res, next){
 
+	let resultResponse = [];
 
+	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkQuery('tagName', 'tab must be more then 2 chars').isLength({min: 2});
+	req
+		.getValidationResult()
+		.then((result) => {
+
+			if (!result.isEmpty()) {
+				let err = new Error();
+				err.statusCode = 400;
+				err.name = 'ValidationError';
+				err.message = {errors: result.array()};
+				return next(err);
+			}
+
+			models.ItemTag.findAll({
+				where: {
+					taggable: req.params.taggable
+				},
+				include: [
+					{
+						as: 'tag',
+						model: models.Tag,
+						where: {
+							name: {
+								$iLike: '%' + req.query.tagName + '%'
+							},
+						}
+					}
+				]
+
+			})
+				.then((itemTags) => {
+					itemTags.forEach((itemTag) => {
+						resultResponse.push(itemTag.tag.name);
+					});
+
+					res.end(JSON.stringify(_.uniq(resultResponse)));
+				});
+
+		});
+
+};
 
 
 function firstLetterUp(value) {

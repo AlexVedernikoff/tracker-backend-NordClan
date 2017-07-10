@@ -708,6 +708,29 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
+		'/tag/autocompliter/{taggable}': {
+			get: {
+				tags: ['Tag'],
+				summary: 'Поиск тегов по типу сущности',
+				parameters: [
+					{
+						name: 'taggable',
+						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
+						type: 'string',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'tagName',
+						description: 'Тег для поиска',
+						type: 'string',
+						in: 'query',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 		'/tag/{taggable}/{taggableId}': {
 			get: {
 				tags: ['Tag'],
@@ -820,7 +843,7 @@ module.exports = {
 		'/user/autocompliter': {
 			get: {
 				tags: ['User'],
-				summary: '',
+				summary: 'Поиск пользователей по типу autocompliter',
 				responses: responsesCodes,
 				parameters: [
 					{

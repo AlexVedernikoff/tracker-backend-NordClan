@@ -42,6 +42,7 @@ router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
 
 
+router.get('/tag/autocompliter/:taggable', TagController.autocompliter);
 router.post('/tag', TagController.create);
 router.delete('/tag/:taggable/:id', TagController.delete);
 router.get('/tag/:taggable/:id', TagController.list);
