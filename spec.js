@@ -335,12 +335,6 @@ module.exports = {
 						in: 'query',
 					},
 					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'query',
-					},
-					{
 						name: 'pageSize',
 						type: 'integer',
 						in: 'query',
@@ -384,14 +378,7 @@ module.exports = {
 						format: 'date',
 						in: 'formData',
 						required: true
-					},
-					{
-						name: 'tags',
-						type: 'string',
-						description: 'tags separated by ","',
-						in: 'formData',
-					}
-				],
+					}				],
 				responses: responsesCodes
 			}
 		},
@@ -685,7 +672,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'taggable',
-						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
+						description: 'Имя сущности: \'task\', \'project\'',
 						type: 'string',
 						in: 'formData',
 						required: true
@@ -715,7 +702,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'taggable',
-						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
+						description: 'Имя сущности: \'task\', \'project\'',
 						type: 'string',
 						in: 'path',
 						required: true
@@ -738,7 +725,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'taggable',
-						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
+						description: 'Имя сущности: \'task\', \'project\'',
 						type: 'string',
 						in: 'path',
 						required: true
@@ -759,7 +746,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'taggable',
-						description: 'Имя сущности: \'task\', \'sprint\', \'project\'',
+						description: 'Имя сущности: \'task\', \'project\'',
 						type: 'integer',
 						in: 'path',
 						required: true

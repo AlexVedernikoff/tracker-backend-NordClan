@@ -32,6 +32,9 @@ exports.autocompliter = function(req, res, next) {
 
 	return models.User
 		.findAll({where: {
+			deletedAt: {
+				$eq: null
+			},
 			$or: [
 				{
 					firstNameRu: {

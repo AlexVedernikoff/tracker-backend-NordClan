@@ -79,31 +79,6 @@ module.exports = function(sequelize, DataTypes) {
 			field: 'sprint_id'
 		}});
 
-		Sprint.belongsToMany(models.Tag, {
-			as: 'tags',
-			through: {
-				model: models.ItemTag,
-				unique: false,
-				scope: {
-					taggable: 'sprint'
-				}
-			},
-			foreignKey: 'taggable_id',
-			constraints: false
-		});
-
-		Sprint.belongsToMany(models.Tag, {
-			as: 'tagForQuery',
-			through: {
-				model: models.ItemTag,
-				unique: false,
-				scope: {
-					taggable: 'sprint'
-				}
-			},
-			foreignKey: 'taggable_id',
-			constraints: false
-		});
 
 	};
 

@@ -131,6 +131,8 @@ exports.list = function(req, res, next){
 	let resultProjects = {};
 	let queryIncludes = [];
 
+	where.deletedAt = {$eq: null }; // IS NULL
+
 	if(req.query.name) {
 		where.name = { $iLike: "%" + req.query.name + "%" };
 	}

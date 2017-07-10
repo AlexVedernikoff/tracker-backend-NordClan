@@ -128,6 +128,7 @@ exports.delete = function(req, res, next){
 exports.list = function(req, res, next){
 
 	let where = {};
+	where.deletedAt = {$eq: null }; // IS NULL
 
 	let includeForCount = {
 		model: Tag,

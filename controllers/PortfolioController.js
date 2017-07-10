@@ -3,8 +3,6 @@ const _ = require('underscore');
 const TagController = require('./TagController');
 const Portfolio = require('../models').Portfolio;
 const Tag = require('../models').Tag;
-const ItemTag = require('../models').ItemTag;
-
 
 exports.create = function(req, res, next){
 
@@ -98,6 +96,7 @@ exports.delete = function(req, res, next){
 exports.list = function(req, res, next){
 
 	let where = {};
+	where.deletedAt = {$eq: null }; // IS NULL
 
 	if(req.query.name) {
 		where.name = {

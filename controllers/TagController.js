@@ -5,7 +5,7 @@ const _ = require('underscore');
 
 exports.list = function(req, res, next){
 
-	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
 	req.checkParams('id', 'taggableId must be int').isInt();
 
 	req
@@ -56,7 +56,7 @@ exports.list = function(req, res, next){
 
 exports.create = function(req, res, next){
 
-	req.checkBody('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkBody('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
 	req.checkBody('taggableId', 'taggableId must be int').isInt();
 	req.checkBody('tag', 'tab must be more then 2 chars').isLength({min: 2});
 
@@ -93,7 +93,7 @@ exports.create = function(req, res, next){
 
 exports.delete = function(req, res, next){
 
-	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
 	req.checkParams('id', 'taggableId must be int').isInt();
 	req.checkQuery('tag', 'tab must be more then 1 char').isLength({min: 1});
 
@@ -172,7 +172,7 @@ exports.autocompliter = function(req, res, next){
 
 	let resultResponse = [];
 
-	req.checkParams('taggable', 'taggable must be \'task\' or \'sprint\' or \'project\'' ).isIn(['task', 'sprint', 'project']);
+	req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task',  'project']);
 	req.checkQuery('tagName', 'tab must be more then 2 chars').isLength({min: 2});
 	req
 		.getValidationResult()
