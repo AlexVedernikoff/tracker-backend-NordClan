@@ -12,10 +12,7 @@ module.exports = function(sequelize, DataTypes) {
 			trim: true,
 			allowNull: false,
 			validate: {
-				max: {
-					args: 255,
-					msg: 'Name must be less than 255 characters.'
-				}
+				len: [1, 255]
 			}
 		},
 		typeId: {
