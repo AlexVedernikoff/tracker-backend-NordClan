@@ -104,20 +104,26 @@ module.exports = function(sequelize, DataTypes) {
 
 	Task.associate = function(models) {
 
-		Task.belongsTo(models.Project, {foreignKey: {
-			name: 'projectId',
-			field: 'project_id',
-			allowNull: false,
+		Task.belongsTo(models.Project, {
+			as: 'project',
+			foreignKey: {
+				name: 'projectId',
+				field: 'project_id',
+				allowNull: false,
 		}});
 
-		Task.belongsTo(models.Task, {foreignKey: {
-			name: 'parentId',
-			field: 'parent_id'
+		Task.belongsTo(models.Task, {
+			as: 'parentTask',
+			foreignKey: {
+				name: 'parentId',
+				field: 'parent_id'
 		}});
 
-		Task.belongsTo(models.Sprint, {foreignKey: {
-			name: 'sprintId',
-			field: 'sprint_id'
+		Task.belongsTo(models.Sprint, {
+			as: 'sprint',
+			foreignKey: {
+				name: 'sprintId',
+				field: 'sprint_id'
 		}});
 
 		Task.belongsToMany(models.Tag, {

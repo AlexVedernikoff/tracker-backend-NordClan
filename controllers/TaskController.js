@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const _ = require('underscore');
 const TagController = require('./TagController');
+const models = require('../models');
 const Task = require('../models').Task;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
@@ -40,6 +41,21 @@ exports.read = function(req, res, next){
 				order: [
 					['name', 'ASC'],
 				],
+			},
+			{
+				as: 'project',
+				model: models.Project,
+				attributes: ['id', 'name', 'prefix']
+			},
+			{
+				as: 'parentTask',
+				model: models.Task,
+				attributes: ['id', 'name']
+			},
+			{
+				as: 'sprint',
+				model: models.Sprint,
+				attributes: ['id', 'name']
 			}
 		]
 	})
