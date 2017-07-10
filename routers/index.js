@@ -12,6 +12,7 @@ router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
 router.put('/auth/refresh', AuthController.refresh);
 
+router.get('/user/autocompliter', UserController.autocompliter);
 router.get('/user/me', UserController.me);
 router.get('/user/:id', UserController.raed);
 

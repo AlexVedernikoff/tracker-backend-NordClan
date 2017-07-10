@@ -817,6 +817,21 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
+		'/user/autocompliter': {
+			get: {
+				tags: ['User'],
+				summary: '',
+				responses: responsesCodes,
+				parameters: [
+					{
+						name: 'userName',
+						type: 'integer',
+						in: 'query',
+						required: true
+					},
+				],
+			},
+		},
 
 
 

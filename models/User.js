@@ -144,7 +144,12 @@ module.exports = function(sequelize, DataTypes) {
 		timestamps: true,
 		paranoid: true,
 		underscored: true,
-		tableName: 'users'
+		tableName: 'users',
+		getterMethods: {
+			fullNameRu: function(){
+				return this.firstNameRu.concat(' ', this.lastNameRu);
+			}
+		}
 	});
 
 	User.associate = function(models) {

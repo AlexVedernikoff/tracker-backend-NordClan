@@ -25,6 +25,35 @@ exports.raed = function(req, res, next){
 		});
 };
 
+exports.autocompliter = function(req, res, next) {
+
+	if(!req.query.userName) return next(createError(400, 'userName need'));
+	let result = [];
+
+	return models.User
+		.findAll({where: {
+			$or: [
+				{
+					firstNameRu: {
+						$iLike: '%' + req.query.userName + '%'
+					},
+				},
+				{
+					lastNameRu: {
+						$iLike: '%' + req.query.userName + '%'
+					}
+				}
+			]
+		}, attributes: ['id', 'firstNameRu', 'lastNameRu']})
+		.then((users) => {
+
+			users.forEach((user) => {
+				result.push({fullNameRu: user.fullNameRu, id: user.id});
+			});
+			res.end(JSON.stringify(result));
+		})
+};
+
 
 
 class UserController {
@@ -67,7 +96,6 @@ class UserController {
 					user.dataValues.department = user.dataValues.department[0].name;
 				}
 
-				//if(user.dataValues.department) user.dataValues.department = Object.keys(user.dataValues.department).map((k) => user.dataValues.department[k].name); // Преобразую отделы из объекта в массив
 				this.res.end(JSON.stringify(user.dataValues));
 
 			})
