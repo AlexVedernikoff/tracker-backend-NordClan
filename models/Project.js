@@ -176,6 +176,9 @@ module.exports = function(sequelize, DataTypes) {
 			constraints: false
 		});
 
+
+		Project.hasOne(models.ProjectUsers);
+
 	};
 
 	return Project;

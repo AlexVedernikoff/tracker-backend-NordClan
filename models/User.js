@@ -165,6 +165,8 @@ module.exports = function(sequelize, DataTypes) {
 			}
 		});
 
+		User.hasOne(models.ProjectUsers);
+
 
 	};
 

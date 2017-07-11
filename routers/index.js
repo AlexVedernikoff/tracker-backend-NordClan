@@ -26,6 +26,7 @@ router.delete('/project/:id', ProjectController.delete);
 router.get('/project', ProjectController.list);
 
 router.post('/project-users', ProjectUsersController.create);
+router.get('/project-users/:projectId', ProjectUsersController.list);
 router.delete('/project-users/:projectId/:userId', ProjectUsersController.delete);
 
 router.post('/portfolio', PortfolioController.create);

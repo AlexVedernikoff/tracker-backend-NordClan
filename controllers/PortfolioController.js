@@ -77,12 +77,9 @@ exports.delete = function(req, res, next){
 		.then((portfolio) => {
 			if(!portfolio) { return next(createError(404)); }
 
-			portfolio.destroy()
+			return portfolio.destroy()
 				.then(()=>{
 					res.end();
-				})
-				.catch((err) => {
-					next(err);
 				});
 
 		})

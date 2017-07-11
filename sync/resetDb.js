@@ -2,20 +2,20 @@ const models = require('../models');
 
 const Models  = [
 	// models.Portfolio,
-	// models.Project,
+	models.Project,
 	// models.Sprint,
 	// models.Task,
 	// models.Tag,
 	// models.ItemTag,
-	// models.User,
+	models.User,
 	// models.Department,
 	// models.UserDepartments,
 	// models.Token,
 	// models.ProjectStatuses,
 	// models.SprintStatuses,
 	// models.TaskStatuses,
-	//models.ProjectUsers,
-	models.ProjectRolesDictionary,
+	models.ProjectUsers,
+	//models.ProjectRolesDictionary,
 ];
 
 

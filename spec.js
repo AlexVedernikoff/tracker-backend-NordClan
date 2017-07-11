@@ -213,7 +213,69 @@ module.exports = {
 		},
 
 
-
+		'/project-users': {
+			post: {
+				tags: ['Projects'],
+				summary: 'Привязать пользователя к конкретному проекту',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'userId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'rolesIds',
+						type: 'string',
+						description: 'rolesId separated by ",". See project roles dictionary. Will replace rolesId',
+						in: 'formData',
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+		'/project-users/{projectId}': {
+			get: {
+				tags: ['Projects'],
+				summary: 'Получить пользователей проекта с их ролями',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+		'/project-users/{projectId}/{userId}': {
+			delete: {
+				tags: ['Projects'],
+				summary: 'Привязать пользователя к конкретному проекту',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'userId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 
 		'/portfolio': {
 			get: {
