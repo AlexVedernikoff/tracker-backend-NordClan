@@ -723,7 +723,27 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
-
+		'/task-users': {
+			post: {
+				tags: ['Tasks'],
+				summary: 'Назначить исполнителем пользователя на проект',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+					{
+						name: 'userId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 
 
 
