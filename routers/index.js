@@ -16,7 +16,7 @@ router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
 router.put('/auth/refresh', AuthController.refresh);
 
-router.get('/user/autocompliter', UserController.autocompliter);
+router.get('/user/autocompleter', UserController.autocomplete);
 router.get('/user/me', UserController.me);
 router.get('/user/:id', UserController.raed);
 
@@ -30,6 +30,7 @@ router.post('/project-users', ProjectUsersController.create);
 router.get('/project-users/:projectId', ProjectUsersController.list);
 router.delete('/project-users/:projectId/:userId', ProjectUsersController.delete);
 
+router.get('/portfolio/autocompleter', PortfolioController.autocomplete);
 router.post('/portfolio', PortfolioController.create);
 router.get('/portfolio/:id', PortfolioController.read);
 router.put('/portfolio/:id', PortfolioController.update);

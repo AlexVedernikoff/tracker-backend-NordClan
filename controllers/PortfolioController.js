@@ -146,3 +146,30 @@ exports.list = function(req, res, next){
 		});
 
 };
+
+exports.autocomplete = function(req, res, next){
+	if(!req.query.portfolioName) return next(createError(400, 'portfolioName need'));
+	let responseObject = [];
+	Portfolio
+		.findAll({
+			attributes: ['id','name'],
+			where: {
+				name: {
+					$iLike: '%' + req.query.portfolioName + '%'
+				}
+			}
+		})
+		.then(portfolios => {
+			portfolios.forEach((portfolio) => {
+				responseObject.push({
+					id: portfolio.id,
+					name: portfolio.name
+				});
+			});
+
+			res.end(JSON.stringify(responseObject));
+		})
+		.catch((err) => {
+			next(err);
+		});
+};

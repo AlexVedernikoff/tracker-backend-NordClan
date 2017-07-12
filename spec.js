@@ -378,6 +378,21 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
+		'/portfolio/autocompleter': {
+			get: {
+				tags: ['Portfolios'],
+				summary: '',
+				parameters: [
+					{
+						name: 'portfolioName',
+						type: 'integer',
+						in: 'query',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 
 
 
@@ -964,7 +979,7 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
-		'/user/autocompliter': {
+		'/user/autocompleter': {
 			get: {
 				tags: ['User'],
 				summary: 'Поиск пользователей по типу autocompliter',

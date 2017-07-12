@@ -25,7 +25,7 @@ exports.raed = function(req, res, next){
 		});
 };
 
-exports.autocompliter = function(req, res, next) {
+exports.autocomplete = function(req, res, next) {
 
 	if(!req.query.userName) return next(createError(400, 'userName need'));
 	let result = [];
