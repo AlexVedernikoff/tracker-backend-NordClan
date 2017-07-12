@@ -16,3 +16,17 @@ exports.findOneActiveProject = function(projectId, attributes = ['id']) {
 
 };
 
+exports.savePortfolioToProject = function(projectModel, portfolioName) {
+	models.Portfolio
+		.findOrCreate({
+			where: {
+				name: portfolioName,
+				authorId: projectModel.authorId,
+			}
+		})
+		.spread((portfolio, created) => {
+			return projectModel.updateAttributes({
+				portfolioId: portfolio.id
+			});
+		})
+};

@@ -110,6 +110,12 @@ module.exports = {
 						in: 'formData',
 					},
 					{
+						name: 'portfolioName',
+						description: 'создаст новый портфель и прикрепит его к проекту',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
 						name: 'notbillable',
 						type: 'integer',
 						in: 'formData',
@@ -623,12 +629,12 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'PlannedExecutionTime',
+						name: 'plannedExecutionTime',
 						type: 'numeric',
 						in: 'formData',
 					},
 					{
-						name: 'FactExecutionTime',
+						name: 'factExecutionTime',
 						type: 'numeric',
 						in: 'formData',
 					},
@@ -693,12 +699,12 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'PlannedExecutionTime',
+						name: 'plannedExecutionTime',
 						type: 'numeric',
 						in: 'formData',
 					},
 					{
-						name: 'FactExecutionTime',
+						name: 'factExecutionTime',
 						type: 'numeric',
 						in: 'formData',
 					},

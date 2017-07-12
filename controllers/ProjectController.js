@@ -20,12 +20,14 @@ exports.create = function(req, res, next){
 		.create(req.body)
 		.then((model) => {
 			return queries.tag.saveTagsForModel(model, req.body.tags)
+				.then(() => {
+					if(!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
+				})
 				.then(() => res.end(JSON.stringify({id: model.id})));
 		})
 		.catch((err) => {
 			next(err);
 		});
-
 };
 
 

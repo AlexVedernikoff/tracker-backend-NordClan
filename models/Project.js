@@ -21,11 +21,11 @@ module.exports = function(sequelize, DataTypes) {
 			defaultValue: null
 		},
 		prefix: {
-			type: DataTypes.STRING(30),
+			type: DataTypes.STRING(8),
 			trim: true,
 			allowNull: true,
 			validate: {
-				len: [1, 30]
+				len: [1, 8]
 			}
 		},
 		statusId: {
