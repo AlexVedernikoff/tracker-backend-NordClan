@@ -72,6 +72,11 @@ exports.read = function(req, res, next){
 			if(!model) { return next(createError(404)); }
 
 			if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
+
+			if(model.dataValues.performer[0]) {
+				model.dataValues.performer = model.dataValues.performer[0];
+			}
+
 			res.end(JSON.stringify(model.dataValues));
 		})
 		.catch((err) => {
@@ -139,6 +144,16 @@ exports.list = function(req, res, next){
 	let where = {};
 	where.deletedAt = {$eq: null }; // IS NULL
 
+	let includePerformer = {
+		as: 'performer',
+		model: models.User,
+		attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
+		through: {
+			model: models.TaskUsers,
+			attributes: []
+		},
+	};
+
 	let includeForCount = {
 		model: Tag,
 		as: 'tagForQuery',
@@ -198,7 +213,7 @@ exports.list = function(req, res, next){
 			attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
 			limit: req.query.pageSize ? +req.query.pageSize : 1000,
 			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-			include: req.query.tags ? [includeForCount, includeForQuery] : [includeForQuery],
+			include: req.query.tags ? [includeForCount, includeForQuery , includePerformer] : [includeForQuery, includePerformer],
 			where: where,
 			subQuery: true,
 		})
@@ -216,8 +231,13 @@ exports.list = function(req, res, next){
 
 					let projectsRows = projects ?
 						projects.map(
-							item =>
-								item.dataValues
+							item => {
+								if(item.dataValues.performer[0]) {
+									item.dataValues.performer = item.dataValues.performer[0];
+								}
+								return item.dataValues;
+							}
+
 						) : [];
 
 					let responseObject = {

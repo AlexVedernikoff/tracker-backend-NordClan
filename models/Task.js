@@ -150,7 +150,7 @@ module.exports = function(sequelize, DataTypes) {
 			foreignKey: 'taggable_id',
 			constraints: false
 		});
-		
+
 		Task.belongsToMany(models.User, {
 			as: 'performer',
 			through: {
