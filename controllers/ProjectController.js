@@ -80,6 +80,8 @@ exports.update = function(req, res, next){
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
+			// сброс портфеля
+			if (req.body.portfolioId == 0) req.body.portfolioId = null;
 
 			project
 				.updateAttributes(req.body)

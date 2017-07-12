@@ -200,6 +200,12 @@ module.exports = {
 						type: 'number',
 						in: 'formData',
 					},
+					{
+						name: 'portfolioId',
+						description: '0 чтобы сбросить портфель у проекта',
+						type: 'integer',
+						in: 'formData',
+					},
 				],
 				responses: responsesCodes
 			},
@@ -720,6 +726,7 @@ module.exports = {
 					},
 					{
 						name: 'sprintId',
+						description: '0 чтобы сбросить спринт у задачи',
 						type: 'integer',
 						in: 'formData',
 					},

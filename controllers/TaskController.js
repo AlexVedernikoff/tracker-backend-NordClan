@@ -95,6 +95,9 @@ exports.update = function(req, res, next){
 		.then((row) => {
 			if(!row) { return next(createError(404)); }
 
+			// сброс задаче в бек лог
+			if (req.body.sprintId == 0) req.body.sprintId = null;
+
 
 			row.updateAttributes(req.body)
 				.then((model)=>{
