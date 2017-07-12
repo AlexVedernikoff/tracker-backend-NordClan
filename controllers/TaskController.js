@@ -56,6 +56,15 @@ exports.read = function(req, res, next){
 				as: 'sprint',
 				model: models.Sprint,
 				attributes: ['id', 'name']
+			},
+			{
+				as: 'performer',
+				model: models.User,
+				attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
+				through: {
+					model: models.TaskUsers,
+					attributes: []
+				},
 			}
 		]
 	})

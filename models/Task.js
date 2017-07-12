@@ -38,7 +38,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TEXT,
 			defaultValue: null
 		},
-		PlannedExecutionTime: {
+		plannedExecutionTime: {
 			field: 'planned_execution_time',
 			type: DataTypes.FLOAT,
 			defaultValue: null,
@@ -46,7 +46,7 @@ module.exports = function(sequelize, DataTypes) {
 				isNumeric: true
 			}
 		},
-		FactExecutionTime: {
+		factExecutionTime: {
 			field: 'fact_execution_time',
 			type: DataTypes.FLOAT,
 			defaultValue: null,
@@ -149,6 +149,14 @@ module.exports = function(sequelize, DataTypes) {
 			},
 			foreignKey: 'taggable_id',
 			constraints: false
+		});
+		
+		Task.belongsToMany(models.User, {
+			as: 'performer',
+			through: {
+				model: models.TaskUsers,
+			},
+			foreignKey: 'task_id',
 		});
 
 	};
