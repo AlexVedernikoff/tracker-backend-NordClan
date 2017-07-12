@@ -440,7 +440,18 @@ module.exports = {
 						format: 'date',
 						in: 'formData',
 						required: true
-					}				],
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'allottedTime',
+						type: 'numeric',
+						in: 'formData',
+					},
+				],
 				responses: responsesCodes
 			}
 		},
@@ -490,6 +501,16 @@ module.exports = {
 						description: 'yyyy-mm-dd',
 						type: 'string',
 						format: 'date',
+						in: 'formData',
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+					},
+					{
+						name: 'allottedTime',
+						type: 'numeric',
 						in: 'formData',
 					},
 				],

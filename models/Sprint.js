@@ -41,13 +41,14 @@ module.exports = function(sequelize, DataTypes) {
 				isDate: true,
 			}
 		},
-		// allottedTime: {
-		// 	type: DataTypes.FLOAT,
-		// 	defaultValue: null,
-		// 	validate: {
-		// 		isNumeric: true
-		// 	}
-		// },
+		allottedTime: {
+			field: 'allotted_time',
+			type: DataTypes.FLOAT,
+			defaultValue: null,
+			validate: {
+				isNumeric: true
+			}
+		},
 		authorId: {
 			field: 'author_id',
 			type: DataTypes.INTEGER,
