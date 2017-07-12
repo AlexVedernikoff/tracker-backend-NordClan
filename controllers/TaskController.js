@@ -75,6 +75,8 @@ exports.read = function(req, res, next){
 
 			if(model.dataValues.performer[0]) {
 				model.dataValues.performer = model.dataValues.performer[0];
+			} else {
+				model.dataValues.performer = null;
 			}
 
 			res.end(JSON.stringify(model.dataValues));
@@ -234,6 +236,8 @@ exports.list = function(req, res, next){
 							item => {
 								if(item.dataValues.performer[0]) {
 									item.dataValues.performer = item.dataValues.performer[0];
+								} else {
+									item.dataValues.performer = null;
 								}
 								return item.dataValues;
 							}
