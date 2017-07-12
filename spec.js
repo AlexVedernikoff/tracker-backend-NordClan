@@ -750,7 +750,7 @@ module.exports = {
 				summary: 'Назначить исполнителем пользователя на проект',
 				parameters: [
 					{
-						name: 'projectId',
+						name: 'taskId',
 						type: 'integer',
 						in: 'formData',
 						required: true
@@ -759,6 +759,27 @@ module.exports = {
 						name: 'userId',
 						type: 'integer',
 						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
+		'/task-users/{taskId}/{userId}': {
+			delete: {
+				tags: ['Tasks'],
+				summary: 'Убрать исполнителя у проекта',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'userId',
+						type: 'integer',
+						in: 'path',
 						required: true
 					},
 				],
