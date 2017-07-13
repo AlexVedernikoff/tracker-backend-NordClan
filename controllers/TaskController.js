@@ -162,7 +162,7 @@ exports.list = function(req, res, next){
 	let includeSprint = {
 		as: 'sprint',
 		model: models.Sprint,
-		attributes: ['id', 'name']
+		attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
 	};
 
 	let includeForCount = {
