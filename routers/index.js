@@ -25,7 +25,6 @@ router.get('/project/:id', ProjectController.read);
 router.put('/project/:id', ProjectController.update);
 router.delete('/project/:id', ProjectController.delete);
 router.get('/project', ProjectController.list);
-
 router.put('/project-status/:id', ProjectController.setStatus);
 
 router.post('/project-users', ProjectUsersController.create);
@@ -45,6 +44,7 @@ router.get('/sprint/:id', SprintController.read);
 router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
+router.put('/sprint-status/:id', SprintController.setStatus);
 
 router.post('/task', TaskController.create);
 router.get('/task/:id', TaskController.read);

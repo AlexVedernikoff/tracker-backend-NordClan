@@ -577,7 +577,27 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
-
+		'/sprint-status/{sprintId}': {
+			put: {
+				tags: ['Sprints'],
+				summary: 'Изменить статус конкретного спринта',
+				parameters: [
+					{
+						name: 'sprintId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 
 
 
