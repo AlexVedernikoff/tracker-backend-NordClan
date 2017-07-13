@@ -67,8 +67,6 @@ exports.create = function(req, res, next){
 };
 
 exports.delete = function(req, res, next){
-	console.log(req.params.userId);
-	console.log(req.params.taskId);
 
 	models.TaskUsers.findOne({
 		where: {

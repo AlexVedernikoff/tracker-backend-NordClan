@@ -32,9 +32,7 @@ exports.autocomplete = function(req, res, next) {
 
 	return models.User
 		.findAll({where: {
-			deletedAt: {
-				$eq: null
-			},
+			active: 1,
 			$or: [
 				{
 					firstNameRu: {
