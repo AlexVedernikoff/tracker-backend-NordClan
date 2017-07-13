@@ -161,7 +161,6 @@ exports.list = function(req, res, next){
 		as: 'currentSprints',
 		model: Sprint,
 		attributes: ['name', 'factStartDate', 'factFinishDate', 'id', 'projectId'],
-		limit: 1,
 		order: [
 			['factStartDate', 'DESC'],
 		],
@@ -298,6 +297,9 @@ exports.list = function(req, res, next){
 									if(row.itemTag) row.tags = Object.keys(row.itemTag).map((k) => row.itemTag[k].tag.name); // Преобразую теги в массив
 									row.elemType = 'project';
 									delete row.itemTag;
+									if(row.currentSprints && row.currentSprints[0]) {
+										row.currentSprints = [row.currentSprints[0]];
+									}
 
 
 									if(row.portfolioId === null) {
