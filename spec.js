@@ -812,6 +812,27 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
+		'/task-status/{taskId}': {
+			put: {
+				tags: ['Tasks'],
+				summary: 'Изменить статус конкретной задачи',
+				parameters: [
+					{
+						name: 'taskId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 		'/task-users': {
 			post: {
 				tags: ['Tasks'],

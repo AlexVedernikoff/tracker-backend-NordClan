@@ -6,6 +6,7 @@ const Task = require('../models').Task;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
 const queries = require('../models/queries');
+const ValidationHelper = require('../components/ValidationHelper');
 
 
 exports.create = function(req, res, next){
@@ -269,6 +270,35 @@ exports.list = function(req, res, next){
 				});
 
 
+		})
+		.catch((err) => {
+			next(err);
+		});
+};
+
+
+exports.setStatus = function(req, res, next){
+	Task.build( {id: req.params.id, statusId: req.body.statusId}).validate({fields: ['id', 'statusId']})
+		.then(validate => {
+			if(validate) throw createError(validate);
+		})
+		.then(() => {
+			return Task
+				.findByPrimary(req.params.id, { validate: true, attributes: ['id'] })
+				.then((task) => {
+					if(!task) { return next(createError(404)); }
+
+					return task
+						.updateAttributes({
+							statusId: req.body.statusId
+						})
+						.then((model)=>{
+							res.end(JSON.stringify({
+								id: model.id,
+								statusId: model.statusId
+							}));
+						})
+				})
 		})
 		.catch((err) => {
 			next(err);

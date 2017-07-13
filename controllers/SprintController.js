@@ -154,10 +154,10 @@ exports.setStatus = function(req, res, next){
 
 	Sprint
 		.findByPrimary(req.params.id, { attributes: ['id'] })
-		.then((project) => {
-			if(!project) { return next(createError(404)); }
+		.then((sprint) => {
+			if(!sprint) { return next(createError(404)); }
 
-			return project
+			return sprint
 				.updateAttributes({
 					statusId: req.body.statusId
 				})

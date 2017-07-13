@@ -5,7 +5,13 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
 			autoIncrement: true,
-			allowNull: false
+			allowNull: false,
+			validate: {
+				is: ["^[0-9]+$",'i'],
+				// isInt: true,
+				// min: 0,
+				// max: 9
+			}
 		},
 		name: {
 			type: DataTypes.STRING,
@@ -30,7 +36,9 @@ module.exports = function(sequelize, DataTypes) {
 			defaultValue: 1,
 			allowNull: false,
 			validate: {
-				isInt: true
+				isInt: true,
+				min: 0,
+				max: 9
 			}
 		},
 		description: {

@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
 const _ = require('underscore');
+const StringHelper = require('../components/StringHelper');
 
 exports.list = function(req, res, next){
 
@@ -20,7 +21,7 @@ exports.list = function(req, res, next){
 				next(err);
 			}
 
-			models[firstLetterUp(req.params.taggable)]
+			models[StringHelper.firstLetterUp(req.params.taggable)]
 				.findByPrimary(req.params.id, {
 					attributes: ['id'],
 					include: [
@@ -72,14 +73,14 @@ exports.create = function(req, res, next){
 				return next(err);
 			}
 
-			return models[firstLetterUp(req.body.taggable)]
+			return models[StringHelper.firstLetterUp(req.body.taggable)]
 				.findByPrimary(req.body.taggableId, { attributes: ['id'] })
 				.then((model) => {
 					if(!model) return next(createError(404, 'taggable model not found'));
 
 					return queries.tag.saveTagsForModel(model, req.body.tag)
 						.then(() => {
-							return queries.tag.getAllTagsByModel(firstLetterUp(req.body.taggable), model.id)
+							return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.body.taggable), model.id)
 								.then((tags) => {
 									res.end(JSON.stringify(tags));
 								})
@@ -127,7 +128,7 @@ exports.delete = function(req, res, next){
 								.then(() => {
 
 									// Возвращаю массив тегов
-									return models[firstLetterUp(req.params.taggable)]
+									return models[StringHelper.firstLetterUp(req.params.taggable)]
 										.findByPrimary(req.params.id, {
 											attributes: ['id'],
 											include: [
@@ -214,8 +215,3 @@ exports.autocompliter = function(req, res, next){
 		});
 
 };
-
-
-function firstLetterUp(value) {
-	return value[0].toUpperCase() + value.substring(1);
-}
