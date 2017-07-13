@@ -223,7 +223,27 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
-
+		'/project-status/{projectId}': {
+			put: {
+				tags: ['Projects'],
+				summary: 'Изменить статус конкретного проекта',
+				parameters: [
+					{
+						name: 'projectId',
+						type: 'integer',
+						in: 'path',
+						required: true
+					},
+					{
+						name: 'statusId',
+						type: 'integer',
+						in: 'formData',
+						required: true
+					},
+				],
+				responses: responsesCodes
+			},
+		},
 
 		'/project-users': {
 			post: {

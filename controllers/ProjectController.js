@@ -366,3 +366,35 @@ exports.list = function(req, res, next){
 		});
 
 };
+
+exports.setStatus = function(req, res, next){
+	if(!req.params.id) return next(createError(400, 'projectId need'));
+	if(!req.body.statusId) return next(createError(400, 'points need'));
+	if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'points must be integer'));
+
+	const resultRespons = {};
+
+	Project
+		.findByPrimary(req.params.id, { attributes: ['id'] })
+		.then((project) => {
+			if(!project) { return next(createError(404)); }
+
+			return project
+				.updateAttributes({
+					statusId: req.body.statusId
+				})
+				.then((model)=>{
+					resultRespons.id = model.id;
+					// Получаю измененные поля
+					_.keys(model.dataValues).forEach((key) => {
+						if(req.body[key])
+							resultRespons[key] = model.dataValues[key];
+					});
+
+					res.end(JSON.stringify(resultRespons));
+				})
+		})
+		.catch((err) => {
+			next(err);
+		});
+};
