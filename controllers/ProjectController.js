@@ -53,6 +53,11 @@ exports.read = function(req, res, next){
 					model: Sprint,
 					attributes: ['id', 'name', 'factStartDate', 'factFinishDate', 'statusId', 'allottedTime'],
 					order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+				},
+				{
+					as: 'portfolio',
+					model: Portfolio,
+					attributes: ['id', 'name'],
 				}
 			]
 		})
@@ -72,18 +77,27 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
 	let resultRespons = {};
+	let portfolioIdOld;
 
 	Project
-		.findByPrimary(req.params.id, { attributes: ['id'] })
+		.findByPrimary(req.params.id, { attributes: ['id', 'portfolioId'] })
 		.then((project) => {
 			if(!project) { return next(createError(404)); }
 
 			// сброс портфеля
-			if (req.body.portfolioId == 0) req.body.portfolioId = null;
+			if (req.body.portfolioId == 0) {
+				req.body.portfolioId = null;
+				portfolioIdOld = project.portfolioId;
+			}
+
 
 			project
 				.updateAttributes(req.body)
 				.then((model)=>{
+
+					// Запускаю проверку портфеля на пустоту и его удаление
+					if(portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+
 					resultRespons.id = model.id;
 					// Получаю измененные поля
 					_.keys(model.dataValues).forEach((key) => {

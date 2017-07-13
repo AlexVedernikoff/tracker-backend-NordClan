@@ -25,17 +25,19 @@ module.exports = function(sequelize, DataTypes) {
 		deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
 	}, {
 		underscored: true,
-		timestamps: true,
-		paranoid: true,
+		timestamps: false,
+		paranoid: false,
 		tableName: 'portfolios'
 	});
 
 
 	Portfolio.associate = function(models) {
 
-		Portfolio.hasMany(models.Project, {foreignKey: {
-			name: 'portfolioId',
-			field: 'portfolio_id'
+		Portfolio.hasMany(models.Project, {
+			as: 'projects',
+			foreignKey: {
+				name: 'portfolioId',
+				field: 'portfolio_id'
 		}});
 
 	};
