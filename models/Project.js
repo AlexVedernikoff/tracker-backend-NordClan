@@ -154,12 +154,13 @@ module.exports = function(sequelize, DataTypes) {
 		});
 
 		Project.belongsToMany(models.User, {
-			as: 'projectUsers',
+			as: 'users',
 			through: {
+				as: 'projectUsers',
 				model: models.ProjectUsers,
 				unique: false,
 			},
-			foreignKey: 'user_id',
+			foreignKey: 'project_id',
 			constraints: false
 		});
 

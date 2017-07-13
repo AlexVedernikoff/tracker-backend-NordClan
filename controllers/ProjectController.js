@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const moment = require('moment');
 const _ = require('underscore');
 const TagController = require('./TagController');
+const models = require('../models');
 const Project = require('../models').Project;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
@@ -58,12 +59,31 @@ exports.read = function(req, res, next){
 					as: 'portfolio',
 					model: Portfolio,
 					attributes: ['id', 'name'],
+				},
+				{
+					as: 'users',
+					model: models.User,
+					attributes: ['id', 'firstNameRu', 'lastNameRu'],
+					through: {
+						as: 'projectUsers',
+						model: models.ProjectUsers,
+						attributes: ['rolesIds']
+					},
 				}
 			]
 		})
 		.then((model) => {
-			if(!model) { return next(createError(404)); }
+			if(!model) return next(createError(404));
 
+			if(model.users) {
+				model.users.forEach((user, key) => {
+					model.users[key] = {
+						id: user.id,
+						fullNameRu: user.fullNameRu,
+						rolesIds: JSON.parse(user.projectUsers.rolesIds),
+					}
+				});
+			}
 
 			if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
 			res.end(JSON.stringify(model.dataValues));
