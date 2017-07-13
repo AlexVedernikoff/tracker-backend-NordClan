@@ -290,62 +290,62 @@ module.exports = {
 		},
 
 		'/portfolio': {
-			get: {
-				tags: ['Portfolios'],
-				summary: 'Получить все портфели',
-				parameters: [
-					{
-						name: 'fields',
-						description: 'fields separated by ","',
-						type: 'string',
-						in: 'query',
-					},
-					{
-						name: 'name',
-						type: 'string',
-						in: 'query',
-					},
-					{
-						name: 'pageSize',
-						type: 'integer',
-						in: 'query',
-					},
-					{
-						name: 'currentPage',
-						type: 'integer',
-						in: 'query',
-					}
-				],
-				responses: responsesCodes
-			},
-			post: {
-				tags: ['Portfolios'],
-				summary: 'Создать портфель',
-				parameters: [
-					{
-						name: 'name',
-						type: 'string',
-						in: 'formData',
-						required: true
-					},
-				],
-				responses: responsesCodes
-			}
+			// get: {
+			// 	tags: ['Portfolios'],
+			// 	summary: 'Получить все портфели',
+			// 	parameters: [
+			// 		{
+			// 			name: 'fields',
+			// 			description: 'fields separated by ","',
+			// 			type: 'string',
+			// 			in: 'query',
+			// 		},
+			// 		{
+			// 			name: 'name',
+			// 			type: 'string',
+			// 			in: 'query',
+			// 		},
+			// 		{
+			// 			name: 'pageSize',
+			// 			type: 'integer',
+			// 			in: 'query',
+			// 		},
+			// 		{
+			// 			name: 'currentPage',
+			// 			type: 'integer',
+			// 			in: 'query',
+			// 		}
+			// 	],
+			// 	responses: responsesCodes
+			// },
+			// post: {
+			// 	tags: ['Portfolios'],
+			// 	summary: 'Создать портфель',
+			// 	parameters: [
+			// 		{
+			// 			name: 'name',
+			// 			type: 'string',
+			// 			in: 'formData',
+			// 			required: true
+			// 		},
+			// 	],
+			// 	responses: responsesCodes
+			// }
 		},
 		'/portfolio/{portfolioId}': {
-			get: {
-				tags: ['Portfolios'],
-				summary: 'Получить конкретный портфель',
-				parameters: [
-					{
-						name: 'portfolioId',
-						type: 'integer',
-						in: 'path',
-						required: true
-					},
-				],
-				responses: responsesCodes
-			},
+			// get: {
+			// 	tags: ['Portfolios'],
+			// 	summary: 'Получить конкретный портфель',
+			// 	parameters: [
+			// 		{
+			// 			name: 'portfolioId',
+			// 			type: 'integer',
+			// 			in: 'path',
+			// 			required: true
+			// 		},
+			// 	],
+			// 	responses: responsesCodes
+			// },
 			put: {
 				tags: ['Portfolios'],
 				summary: 'Изменить конкретный портфель',
@@ -364,19 +364,19 @@ module.exports = {
 				],
 				responses: responsesCodes
 			},
-			delete: {
-				tags: ['Portfolios'],
-				summary: 'Удалить конкретный портфель',
-				parameters: [
-					{
-						name: 'portfolioId',
-						type: 'integer',
-						in: 'path',
-						required: true
-					},
-				],
-				responses: responsesCodes
-			},
+			// delete: {
+			// 	tags: ['Portfolios'],
+			// 	summary: 'Удалить конкретный портфель',
+			// 	parameters: [
+			// 		{
+			// 			name: 'portfolioId',
+			// 			type: 'integer',
+			// 			in: 'path',
+			// 			required: true
+			// 		},
+			// 	],
+			// 	responses: responsesCodes
+			// },
 		},
 		'/portfolio/autocompleter': {
 			get: {

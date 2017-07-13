@@ -31,11 +31,14 @@ router.get('/project-users/:projectId', ProjectUsersController.list);
 router.delete('/project-users/:projectId/:userId', ProjectUsersController.delete);
 
 router.get('/portfolio/autocompleter', PortfolioController.autocomplete);
+router.put('/portfolio/:id', PortfolioController.update);
+// Отключил т.к. портфели выбираются или создаются при создании проекта. Остальное в системе не используется
+/*
 router.post('/portfolio', PortfolioController.create);
 router.get('/portfolio/:id', PortfolioController.read);
-router.put('/portfolio/:id', PortfolioController.update);
 router.delete('/portfolio/:id', PortfolioController.delete);
 router.get('/portfolio', PortfolioController.list);
+*/
 
 router.post('/sprint', SprintController.create);
 router.get('/sprint/:id', SprintController.read);
