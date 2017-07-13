@@ -96,7 +96,7 @@ exports.update = function(req, res, next){
 			if(!row) { return next(createError(404)); }
 
 			// сброс задаче в бек лог
-			if (req.body.sprintId == 0) req.body.sprintId = null;
+			if(req.body.sprintId == 0) req.body.sprintId = null;
 
 
 			row.updateAttributes(req.body)
@@ -159,6 +159,12 @@ exports.list = function(req, res, next){
 		},
 	};
 
+	let includeSprint = {
+		as: 'sprint',
+		model: models.Sprint,
+		attributes: ['id', 'name']
+	};
+
 	let includeForCount = {
 		model: Tag,
 		as: 'tagForQuery',
@@ -218,7 +224,7 @@ exports.list = function(req, res, next){
 			attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
 			limit: req.query.pageSize ? +req.query.pageSize : 1000,
 			offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-			include: req.query.tags ? [includeForCount, includeForQuery , includePerformer] : [includeForQuery, includePerformer],
+			include: req.query.tags ? [includeForCount, includeForQuery , includePerformer, includeSprint] : [includeForQuery, includePerformer, includeSprint],
 			where: where,
 			subQuery: true,
 		})
