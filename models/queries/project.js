@@ -25,6 +25,7 @@ exports.savePortfolioToProject = function(projectModel, portfolioName) {
 			}
 		})
 		.spread((portfolio, created) => {
+			if(!portfolio) throw createError(500, 'Can not create Portfolio');
 			return projectModel.updateAttributes({
 				portfolioId: portfolio.id
 			});

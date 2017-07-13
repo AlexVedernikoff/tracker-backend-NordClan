@@ -25,7 +25,7 @@ module.exports = function(sequelize, DataTypes) {
 		deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
 	}, {
 		underscored: true,
-		timestamps: false,
+		timestamps: true,
 		paranoid: false,
 		tableName: 'portfolios'
 	});
