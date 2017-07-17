@@ -85,9 +85,14 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
+        finishedAt: {
+            field: 'finished_at',
+			type: DataTypes.DATE,
+            defaultValue: null,
+		},
 		createdAt: {type: DataTypes.DATE, field: 'created_at'},
 		updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-		deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+		deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
 
 	}, {
 		underscored: true,

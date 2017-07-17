@@ -369,20 +369,24 @@ exports.list = function(req, res, next){
 
 };
 
+
 exports.setStatus = function(req, res, next){
 	if(!req.params.id) return next(createError(400, 'projectId need'));
 	if(!req.body.statusId) return next(createError(400, 'statusId need'));
 	if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
 
+	const attributesForUpdate = {
+        statusId: req.body.statusId,
+        finishedAt: +req.body.statusId === 3 ? new Date() : null // Если проект завершен, то ставим finishedAt, иначе убираем
+    };
+
 	Project
 		.findByPrimary(req.params.id, { attributes: ['id'] })
 		.then((project) => {
-			if(!project) { return next(createError(404)); }
+			if(!project) throw createError(404);
 
 			return project
-				.updateAttributes({
-					statusId: req.body.statusId
-				})
+				.updateAttributes(attributesForUpdate)
 				.then((model)=>{
 					res.end(JSON.stringify({
 						id: model.id,
