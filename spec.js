@@ -290,7 +290,7 @@ module.exports = {
 		'/project-users/{projectId}/{userId}': {
 			delete: {
 				tags: ['Projects'],
-				summary: 'Привязать пользователя к конкретному проекту',
+				summary: 'Отвязать пользователя от конкретного проекта',
 				parameters: [
 					{
 						name: 'projectId',
