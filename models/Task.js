@@ -1,6 +1,7 @@
-module.exports = function(sequelize, DataTypes) {
+const ModelsHooks = require('../components/ModelsHooks');
 
-	let Task = sequelize.define("Task", {
+module.exports = function(sequelize, DataTypes) {
+	const Task = sequelize.define("Task", {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
@@ -102,12 +103,16 @@ module.exports = function(sequelize, DataTypes) {
 		timestamps: true,
 		paranoid: true,
 		underscored: true,
-		tableName: 'tasks'
+		tableName: 'tasks',
+    hooks: {
+      afterFind: function(model) {
+        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+      }
+    }
 	});
 
-
+ 
 	Task.associate = function(models) {
-
 		Task.belongsTo(models.Project, {
 			as: 'project',
 			foreignKey: {

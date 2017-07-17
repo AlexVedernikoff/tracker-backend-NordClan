@@ -1,6 +1,7 @@
-module.exports = function(sequelize, DataTypes) {
+const ModelsHooks = require('../components/ModelsHooks');
 
-	let Portfolio = sequelize.define("Portfolio", {
+module.exports = function(sequelize, DataTypes) {
+	const Portfolio = sequelize.define("Portfolio", {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
@@ -27,12 +28,15 @@ module.exports = function(sequelize, DataTypes) {
 		underscored: true,
 		timestamps: true,
 		paranoid: false,
-		tableName: 'portfolios'
+		tableName: 'portfolios',
+    hooks: {
+      afterFind: function(model) {
+        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+      }
+    }
 	});
-
-
+	
 	Portfolio.associate = function(models) {
-
 		Portfolio.hasMany(models.Project, {
 			as: 'projects',
 			foreignKey: {
@@ -41,7 +45,6 @@ module.exports = function(sequelize, DataTypes) {
 		}});
 
 	};
-
 
 	return Portfolio;
 };

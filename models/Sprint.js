@@ -1,5 +1,6 @@
-module.exports = function(sequelize, DataTypes) {
+const ModelsHooks = require('../components/ModelsHooks');
 
+module.exports = function(sequelize, DataTypes) {
 	let Sprint = sequelize.define("Sprint", {
 		id: {
 			type: DataTypes.INTEGER,
@@ -64,12 +65,16 @@ module.exports = function(sequelize, DataTypes) {
 		underscored: true,
 		timestamps: true,
 		paranoid: true,
-		tableName: 'sprints'
+		tableName: 'sprints',
+    hooks: {
+      afterFind: function(model) {
+        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+      }
+    }
+
 	});
 
-
 	Sprint.associate = function(models) {
-
 		Sprint.belongsTo(models.Project, {foreignKey: {
 			name: 'projectId',
 			field: 'project_id'

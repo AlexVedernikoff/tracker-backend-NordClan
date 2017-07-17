@@ -1,5 +1,6 @@
-module.exports = function(sequelize, DataTypes) {
+const ModelsHooks = require('../components/ModelsHooks');
 
+module.exports = function(sequelize, DataTypes) {
 	let Project = sequelize.define("Project", {
 		id: {
 			type: DataTypes.INTEGER,
@@ -100,40 +101,11 @@ module.exports = function(sequelize, DataTypes) {
 		paranoid: true,
 		tableName: 'projects',
 		hooks: {
-            afterFind: function(project, options) {
-
-            	if(Array.isArray(project)) {
-                    project.forEach((p) => {
-                        if(p.dataValues.deleted_at || p.dataValues.deleted_at === null)
-                        delete p.dataValues.deleted_at;
-
-                        if(p.dataValues.created_at)
-                        delete p.dataValues.created_at;
-
-                        if(p.dataValues.updated_at)
-                        delete p.dataValues.updated_at;
-
-                    });
-                    return;
-				}
-
-/*
-                if(project.dataValues && (project.dataValues.deleted_at || project.dataValues.deleted_at === null))
-                    delete project.dataValues.deleted_at;
-
-                if(project.dataValues && project.dataValues.created_at)
-                    delete project.dataValues.created_at;
-
-                if(project.dataValues && project.dataValues.updated_at)
-                    delete project.dataValues.updated_at;
-*/
-
-
+      afterFind: function(model) {
+          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
 			}
 		}
-
 	});
-
 
 	Project.associate = function(models) {
 
@@ -223,10 +195,7 @@ module.exports = function(sequelize, DataTypes) {
 
 	};
 
-
-
 	return Project;
 };
-
 
 
