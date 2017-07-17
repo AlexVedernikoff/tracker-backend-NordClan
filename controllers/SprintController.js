@@ -91,12 +91,19 @@ exports.list = function(req, res, next){
 			$iLike: "%" + req.query.name + "%"
 		}
 	}
-	if(req.query.statusId) {
-		where.statusId = req.query.statusId;
-	}
-	if(req.query.projectId) {
-		where.projectId = req.query.projectId;
-	}
+
+    if(req.query.statusId) {
+        where.statusId = {
+            in: req.query.statusId.toString().split(',').map((el)=>el.trim())
+        }
+    }
+
+    if(req.query.projectId) {
+        where.projectId = {
+            in: req.query.projectId.toString().split(',').map((el)=>el.trim())
+        }
+    }
+
 
 	Sprint
 		.findAll({

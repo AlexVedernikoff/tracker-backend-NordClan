@@ -93,7 +93,38 @@ module.exports = function(sequelize, DataTypes) {
 		underscored: true,
 		timestamps: true,
 		paranoid: true,
-		tableName: 'projects'
+		tableName: 'projects',
+		hooks: {
+            afterFind: function(project, options) {
+
+            	if(Array.isArray(project)) {
+                    project.forEach((p) => {
+                        if(p.dataValues.deleted_at || p.dataValues.deleted_at === null)
+                        delete p.dataValues.deleted_at;
+
+                        if(p.dataValues.created_at)
+                        delete p.dataValues.created_at;
+
+                        if(p.dataValues.updated_at)
+                        delete p.dataValues.updated_at;
+
+                    });
+                    return;
+				}
+
+                if(project.dataValues.deleted_at || project.dataValues.deleted_at === null)
+                    delete project.dataValues.deleted_at;
+
+                if(project.dataValues.created_at)
+                    delete project.dataValues.created_at;
+
+                if(project.dataValues.updated_at)
+                    delete project.dataValues.updated_at;
+
+
+			}
+		}
+
 	});
 
 
@@ -184,6 +215,8 @@ module.exports = function(sequelize, DataTypes) {
 		Project.hasOne(models.ProjectUsers);
 
 	};
+
+
 
 	return Project;
 };

@@ -9,7 +9,7 @@ const sequelize = new Sequelize(config.db.postgres.name, config.db.postgres.user
       logging: sequelizeLogger
     }, {
       define: {
-        underscored: true
+        underscored: true,
       }
     });
 

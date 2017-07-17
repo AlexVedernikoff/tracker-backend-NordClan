@@ -10,13 +10,32 @@ exports.create = function(req, res, next){
 
 	if(!req.body.userId) return next(createError(400, 'userId need'));
 	if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
-	if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
+	if(+req.body.userId < 0) return next(createError(400, 'userId must be > 0'));
+
+	// удаляю исполнителя у задачи
+	if(+req.body.userId === 0) {
+        queries.task.findOneActiveTask(req.body.taskId)
+			.then(() => {
+                return models.TaskUsers.destroy({
+					where: {
+                        taskId: req.body.taskId,
+                        deletedAt: null
+					}
+				})
+					.then(()=>res.end())
+			})
+            .catch((err) => {
+                next(err);
+            });
+        return;
+	}
 
 
 	models.TaskUsers.beforeValidate((model, options) => {
 		model.authorId = req.user.id;
 	});
 
+    // ставлю исполнителя у задачи
 	Promise.all([
 		queries.user.findOneActiveUser(req.body.userId),
 		queries.task.findOneActiveTask(req.body.taskId)
@@ -31,7 +50,7 @@ exports.create = function(req, res, next){
 					let chain = Promise.resolve();
 
 					taskOldUser.forEach((oldUser) => {
-						if(oldUser.userId!=req.body.userId) {
+						if(oldUser.userId!==+req.body.userId) {
 							chain = chain.then(() => {
 								return oldUser.destroy();
 							})
@@ -53,7 +72,6 @@ exports.create = function(req, res, next){
 										id: user.id,
 										fullNameRu: user.fullNameRu,
 									};
-
 									res.end(JSON.stringify(responce));
 								});
 
@@ -63,26 +81,6 @@ exports.create = function(req, res, next){
 		.catch((err) => {
 			next(err);
 		});
-
-};
-
-exports.delete = function(req, res, next){
-	console.log(req.params.userId);
-	console.log(req.params.taskId);
-
-	models.TaskUsers.findOne({
-		where: {
-			userId: req.params.userId,
-			taskId: req.params.taskId,
-			deletedAt: null
-		}
-	})
-		.then((taskUsers) => {
-			if(!taskUsers) return next(createError(404));
-
-			return taskUsers.destroy()
-				.then(() => res.end())
-		})
 
 };
 

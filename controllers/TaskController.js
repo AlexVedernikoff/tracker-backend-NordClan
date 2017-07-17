@@ -201,13 +201,17 @@ exports.list = function(req, res, next){
 		}
 	}
 
-	if(req.query.statusId) {
-		where.statusId = req.query.statusId;
-	}
+    if(req.query.statusId) {
+        where.statusId = {
+            in: req.query.statusId.toString().split(',').map((el)=>el.trim())
+        }
+    }
 
-	if(req.query.projectId) {
-		where.projectId = req.query.projectId;
-	}
+    if(req.query.projectId) {
+        where.projectId = {
+            in: req.query.projectId.toString().split(',').map((el)=>el.trim())
+        }
+    }
 
 
 	if(req.query.sprintId) {
@@ -216,7 +220,9 @@ exports.list = function(req, res, next){
 				$eq: null
 			}
 		} else {
-			where.sprintId = req.query.sprintId;
+            where.sprintId = {
+                in: req.query.sprintId.toString().split(',').map((el)=>el.trim())
+            }
 		}
 	}
 

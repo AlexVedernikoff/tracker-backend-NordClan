@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: false,
 			validate: {
 				isInt: true,
-			}
+			},
 		},
 		userId : {
 			field: 'user_id',

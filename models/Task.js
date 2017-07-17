@@ -7,10 +7,7 @@ module.exports = function(sequelize, DataTypes) {
 			autoIncrement: true,
 			allowNull: false,
 			validate: {
-				is: ["^[0-9]+$",'i'],
-				// isInt: true,
-				// min: 0,
-				// max: 9
+				isInt: true,
 			}
 		},
 		name: {
@@ -163,6 +160,7 @@ module.exports = function(sequelize, DataTypes) {
 			as: 'performer',
 			through: {
 				model: models.TaskUsers,
+                unique: false,
 			},
 			foreignKey: 'task_id',
 		});

@@ -52,9 +52,7 @@ router.put('/task/:id', TaskController.update);
 router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
 router.put('/task-status/:id', TaskController.setStatus);
-
 router.post('/task-users', TaskUsersController.create);
-router.delete('/task-users/:taskId/:userId', TaskUsersController.delete);
 
 router.get('/tag/autocompliter/:taggable', TagController.autocompliter);
 router.post('/tag', TagController.create);

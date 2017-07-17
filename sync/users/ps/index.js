@@ -71,6 +71,7 @@ syncUsers = function() {
 					login: x.login,
 					firstNameRu: x.firstNameRu,
 					lastNameRu: x.lastNameRu,
+					fullNameRu:  x.firstNameRu + ' ' + x.lastNameRu,
 					firstNameEn: x.firstNameEn,
 					lastNameEn: x.lastNameEn,
 					emailPrimary :x.emailPrimary,

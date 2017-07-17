@@ -105,7 +105,7 @@ exports.update = function(req, res, next){
 			if(!project) { return next(createError(404)); }
 
 			// сброс портфеля
-			if (req.body.portfolioId == 0) {
+			if (+req.body.portfolioId === 0) {
 				req.body.portfolioId = null;
 				portfolioIdOld = project.portfolioId;
 			}
@@ -173,7 +173,9 @@ exports.list = function(req, res, next){
 		where.name = { $iLike: "%" + req.query.name + "%" };
 	}
 	if(req.query.statusId) {
-		where.statusId = req.query.statusId;
+		where.statusId = {
+        	in: req.query.statusId.toString().split(',').map((el)=>el.trim())
+		}
 	}
 
 	// вывод текущего спринта

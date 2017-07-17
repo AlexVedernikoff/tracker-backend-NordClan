@@ -846,6 +846,7 @@ module.exports = {
 					},
 					{
 						name: 'userId',
+						description: '0 для того чтобы урать текущего исполнителя',
 						type: 'integer',
 						in: 'formData',
 						required: true
@@ -854,28 +855,6 @@ module.exports = {
 				responses: responsesCodes
 			},
 		},
-		'/task-users/{taskId}/{userId}': {
-			delete: {
-				tags: ['Tasks'],
-				summary: 'Убрать исполнителя у проекта',
-				parameters: [
-					{
-						name: 'taskId',
-						type: 'integer',
-						in: 'path',
-						required: true
-					},
-					{
-						name: 'userId',
-						type: 'integer',
-						in: 'path',
-						required: true
-					},
-				],
-				responses: responsesCodes
-			},
-		},
-
 
 
 		'/tag': {
@@ -1051,6 +1030,11 @@ module.exports = {
 						type: 'integer',
 						in: 'query',
 						required: true
+					},
+					{
+						name: 'pageSize',
+						type: 'integer',
+						in: 'query',
 					},
 				],
 			},

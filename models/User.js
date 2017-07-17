@@ -43,14 +43,22 @@ module.exports = function(sequelize, DataTypes) {
 				len: [2, 100]
 			}
 		},
-		firstNameRu: {
-			field: 'first_name_ru',
-			type: DataTypes.STRING,
-			allowNull: true,
-			validate: {
-				len: [2, 100]
-			}
-		},
+        firstNameRu: {
+            field: 'first_name_ru',
+            type: DataTypes.STRING,
+            allowNull: true,
+            validate: {
+                len: [2, 100]
+            }
+        },
+        fullNameRu: {
+            field: 'full_name_ru',
+            type: DataTypes.STRING,
+            allowNull: true,
+            validate: {
+                len: [2, 200]
+            }
+        },
 		active: {
 			type: DataTypes.INTEGER,
 			allowNull: true,

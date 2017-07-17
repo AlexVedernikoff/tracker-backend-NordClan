@@ -22,7 +22,10 @@ exports.raed = function(req, res, next){
 
 			new UserController(req, res, next, req.params.id)
 				.sendUserInfo();
-		});
+		})
+        .catch((err) => {
+            next(err);
+        });
 };
 
 exports.autocomplete = function(req, res, next) {
@@ -31,23 +34,25 @@ exports.autocomplete = function(req, res, next) {
 	let result = [];
 
 	return models.User
-		.findAll({where: {
-			deletedAt: {
-				$eq: null
-			},
-			$or: [
-				{
-					firstNameRu: {
-						$iLike: '%' + req.query.userName + '%'
+		.findAll({
+			where: {
+				active: 1,
+				$or: [
+					{
+                        fullNameRu: {
+                            $iLike: '%' + req.query.userName.trim() + '%'
+                        }
 					},
-				},
-				{
-					lastNameRu: {
-						$iLike: '%' + req.query.userName + '%'
-					}
-				}
-			]
-		}, attributes: ['id', 'firstNameRu', 'lastNameRu']})
+					{
+                        fullNameRu: {
+                            $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                        }
+					},
+				],
+
+			},
+			limit: req.query.pageSize ? +req.query.pageSize : 10,
+			attributes: ['id', 'firstNameRu', 'lastNameRu']})
 		.then((users) => {
 
 			users.forEach((user) => {
@@ -55,6 +60,9 @@ exports.autocomplete = function(req, res, next) {
 			});
 			res.end(JSON.stringify(result));
 		})
+		.catch((err) => {
+            next(err);
+        });
 };
 
 
