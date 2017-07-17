@@ -112,14 +112,16 @@ module.exports = function(sequelize, DataTypes) {
                     return;
 				}
 
-                if(project.dataValues.deleted_at || project.dataValues.deleted_at === null)
+/*
+                if(project.dataValues && (project.dataValues.deleted_at || project.dataValues.deleted_at === null))
                     delete project.dataValues.deleted_at;
 
-                if(project.dataValues.created_at)
+                if(project.dataValues && project.dataValues.created_at)
                     delete project.dataValues.created_at;
 
-                if(project.dataValues.updated_at)
+                if(project.dataValues && project.dataValues.updated_at)
                     delete project.dataValues.updated_at;
+*/
 
 
 			}
