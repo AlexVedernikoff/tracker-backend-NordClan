@@ -34,8 +34,7 @@ exports.autocomplete = function(req, res, next) {
 	let result = [];
 
 	return models.User
-		.findAll({
-			where: {
+		.findAll({where: {
 				active: 1,
 				$or: [
 					{

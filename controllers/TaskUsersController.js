@@ -12,7 +12,6 @@ exports.create = function(req, res, next){
 	if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
 	if(+req.body.userId < 0) return next(createError(400, 'userId must be > 0'));
 
-	// удаляю исполнителя у задачи
 	if(+req.body.userId === 0) {
         queries.task.findOneActiveTask(req.body.taskId)
 			.then(() => {
@@ -35,7 +34,6 @@ exports.create = function(req, res, next){
 		model.authorId = req.user.id;
 	});
 
-    // ставлю исполнителя у задачи
 	Promise.all([
 		queries.user.findOneActiveUser(req.body.userId),
 		queries.task.findOneActiveTask(req.body.taskId)
