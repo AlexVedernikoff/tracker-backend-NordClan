@@ -30,7 +30,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'fields',
-						description: 'fields separated by ","',
+                        description: 'можно разделять через ","',
 						type: 'string',
 						in: 'query',
 					},
@@ -41,6 +41,7 @@ module.exports = {
 					},
 					{
 						name: 'statusId',
+                        description: 'можно разделять через ","',
 						type: 'integer',
 						in: 'query',
 					},
@@ -61,7 +62,7 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						description: 'tags separated by ","',
+                        description: 'можно разделять через ","',
 						in: 'query',
 					},
 					{
@@ -133,7 +134,7 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						description: 'tags separated by ","',
+                        description: 'можно разделять через ","',
 						in: 'formData',
 					}
 				],
@@ -178,11 +179,6 @@ module.exports = {
 					{
 						name: 'description',
 						type: 'string',
-						in: 'formData',
-					},
-					{
-						name: 'statusId',
-						type: 'integer',
 						in: 'formData',
 					},
 					{
@@ -265,7 +261,7 @@ module.exports = {
 					{
 						name: 'rolesIds',
 						type: 'string',
-						description: 'rolesId separated by ",". See project roles dictionary. Will replace rolesId',
+                        description: 'можно разделять через ",". Смотри словарь ролей. Новое значение затерет предыдушие роли пользователя',
 						in: 'formData',
 					},
 				],
@@ -316,7 +312,7 @@ module.exports = {
 			// 	parameters: [
 			// 		{
 			// 			name: 'fields',
-			// 			description: 'fields separated by ","',
+			//			description: 'можно разделять через ","',
 			// 			type: 'string',
 			// 			in: 'query',
 			// 		},
@@ -424,13 +420,14 @@ module.exports = {
 				parameters: [
 					{
 						name: 'fields',
-						description: 'fields separated by ","',
+						description: 'можно разделять через ","',
 						type: 'string',
 						in: 'query',
 					},
 					{
 						name: 'projectId',
 						type: 'integer',
+                        description: 'можно разделять через ","',
 						in: 'query',
 					},
 					{
@@ -441,6 +438,7 @@ module.exports = {
 					{
 						name: 'statusId',
 						type: 'integer',
+                        description: 'можно разделять через ","',
 						in: 'query',
 					},
 					{
@@ -551,11 +549,6 @@ module.exports = {
 						in: 'formData',
 					},
 					{
-						name: 'statusId',
-						type: 'integer',
-						in: 'formData',
-					},
-					{
 						name: 'allottedTime',
 						type: 'numeric',
 						in: 'formData',
@@ -608,7 +601,7 @@ module.exports = {
 				parameters: [
 					{
 						name: 'fields',
-						description: 'fields separated by ","',
+                        description: 'можно разделять через ","',
 						type: 'string',
 						in: 'query',
 					},
@@ -620,11 +613,13 @@ module.exports = {
 					{
 						name: 'statusId',
 						type: 'integer',
+                        description: 'можно разделять через ","',
 						in: 'query',
 					},
 					{
 						name: 'projectId',
 						type: 'integer',
+                        description: 'можно разделять через ","',
 						in: 'query',
 					},
 					{
@@ -635,7 +630,7 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						description: 'tags separated by ","',
+                        description: 'можно разделять через ","',
 						in: 'query',
 					},
 					{
@@ -712,7 +707,7 @@ module.exports = {
 					{
 						name: 'tags',
 						type: 'string',
-						description: 'tags separated by ","',
+                        description: 'можно разделять через ","',
 						in: 'formData',
 					}
 				],
@@ -771,11 +766,6 @@ module.exports = {
 					},
 					{
 						name: 'typeId',
-						type: 'integer',
-						in: 'formData',
-					},
-					{
-						name: 'statusId',
 						type: 'integer',
 						in: 'formData',
 					},
@@ -952,7 +942,7 @@ module.exports = {
 					},
 					{
 						name: 'tag',
-						description: 'tags separated by ","',
+                        description: 'можно разделять через ","',
 						type: 'string',
 						in: 'query',
 						required: true
