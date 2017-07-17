@@ -8,9 +8,6 @@ exports.create = function(req, res, next){
 	if(!Number.isInteger(+req.body.taskId)) return next(createError(400, 'taskId must be int'));
 	if(+req.body.taskId <= 0) return next(createError(400, 'taskId must be > 0'));
 
-	if(!req.body.userId) return next(createError(400, 'userId need'));
-	if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
-	if(+req.body.userId < 0) return next(createError(400, 'userId must be > 0'));
 
 	if(+req.body.userId === 0) {
         queries.task.findOneActiveTask(req.body.taskId)
@@ -28,6 +25,10 @@ exports.create = function(req, res, next){
             });
         return;
 	}
+
+    if(!req.body.userId) return next(createError(400, 'userId need'));
+    if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
+    if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
 
 
 	models.TaskUsers.beforeValidate((model, options) => {
