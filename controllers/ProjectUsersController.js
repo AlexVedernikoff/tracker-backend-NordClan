@@ -4,103 +4,103 @@ const models = require('../models');
 const queries = require('../models/queries');
 
 exports.create = function(req, res, next){
-	if(!req.body.projectId) return next(createError(400, 'projectId need'));
-	if(!Number.isInteger(+req.body.projectId)) return next(createError(400, 'projectId must be int'));
-	if(+req.body.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+  if(!req.body.projectId) return next(createError(400, 'projectId need'));
+  if(!Number.isInteger(+req.body.projectId)) return next(createError(400, 'projectId must be int'));
+  if(+req.body.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
-	if(!req.body.userId) return next(createError(400, 'userId need'));
-	if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
-	if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
+  if(!req.body.userId) return next(createError(400, 'userId need'));
+  if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
+  if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
 
-	let rolesIds;
-	let allowedRolesId;
+  let rolesIds;
+  let allowedRolesId;
 
-	if(req.body.rolesIds) {
-		rolesIds = req.body.rolesIds.split(',').map((el) => el.trim());
-		allowedRolesId = models.ProjectRolesDictionary.values.map((el) => el.id);
+  if(req.body.rolesIds) {
+    rolesIds = req.body.rolesIds.split(',').map((el) => el.trim());
+    allowedRolesId = models.ProjectRolesDictionary.values.map((el) => el.id);
 
-		rolesIds.forEach((roleId) => {
-			if(allowedRolesId.indexOf(+roleId) === -1) {
-				throw createError(400, 'roleId is invalid, see project roles dictionary');
-			}
-		});
-		rolesIds = JSON.stringify(_.uniq(rolesIds));
-	}
+    rolesIds.forEach((roleId) => {
+      if(allowedRolesId.indexOf(+roleId) === -1) {
+        throw createError(400, 'roleId is invalid, see project roles dictionary');
+      }
+    });
+    rolesIds = JSON.stringify(_.uniq(rolesIds));
+  }
 
-	models.ProjectUsers.beforeValidate((model, options) => {
-		model.authorId = req.user.id;
-	});
+  models.ProjectUsers.beforeValidate((model) => {
+    model.authorId = req.user.id;
+  });
 
-	Promise.all([
-		queries.user.findOneActiveUser(req.body.userId),
-		queries.project.findOneActiveProject(req.body.projectId)
-	])
-		.then(() => {
-			return models.ProjectUsers
-				.findOrCreate({where: {
-					projectId: req.body.projectId,
-					userId: req.body.userId,
-					deletedAt: null
-				}})
-				.spread((projectUser, created) => {
-					if(!rolesIds) return res.end();
+  Promise.all([
+    queries.user.findOneActiveUser(req.body.userId),
+    queries.project.findOneActiveProject(req.body.projectId)
+  ])
+    .then(() => {
+      return models.ProjectUsers
+        .findOrCreate({where: {
+          projectId: req.body.projectId,
+          userId: req.body.userId,
+          deletedAt: null
+        }})
+        .spread((projectUser) => {
+          if(!rolesIds) return res.end();
 
-					return projectUser.updateAttributes({rolesIds: rolesIds})
-						.then(() => {
-							return queries.projectUsers.getUsersByProject(req.body.projectId)
-								.then((users) => {
-									res.end(JSON.stringify(users));
-								});
-						});
-				})
+          return projectUser.updateAttributes({rolesIds: rolesIds})
+            .then(() => {
+              return queries.projectUsers.getUsersByProject(req.body.projectId)
+                .then((users) => {
+                  res.end(JSON.stringify(users));
+                });
+            });
+        });
 
-		})
-		.catch((err) => {
-			next(err);
-		});
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 
 exports.delete = function(req, res, next){
-	if(!req.params.projectId) return next(createError(400, 'projectId need'));
-	if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
-	if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+  if(!req.params.projectId) return next(createError(400, 'projectId need'));
+  if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
+  if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
-	if(!req.params.userId) return next(createError(400, 'userId need'));
-	if(!Number.isInteger(+req.params.userId)) return next(createError(400, 'userId must be int'));
-	if(+req.params.userId <= 0) return next(createError(400, 'userId must be > 0'));
+  if(!req.params.userId) return next(createError(400, 'userId need'));
+  if(!Number.isInteger(+req.params.userId)) return next(createError(400, 'userId must be int'));
+  if(+req.params.userId <= 0) return next(createError(400, 'userId must be > 0'));
 
-	models.ProjectUsers
-		.findOne({where: {
-			projectId: req.params.projectId,
-			userId: req.params.userId,
-			deletedAt: null
-		} })
-		.then((projectUser) => {
-			if(!projectUser) { return next(createError(404)); }
+  models.ProjectUsers
+    .findOne({where: {
+      projectId: req.params.projectId,
+      userId: req.params.userId,
+      deletedAt: null
+    } })
+    .then((projectUser) => {
+      if(!projectUser) { return next(createError(404)); }
 
-			return projectUser.destroy()
-				.then(()=>{
-					return queries.projectUsers.getUsersByProject(req.params.projectId)
-						.then((users) => {
-							res.end(JSON.stringify(users));
-						});
-				});
-		})
-		.catch((err) => {
-			next(err);
-		});
+      return projectUser.destroy()
+        .then(()=>{
+          return queries.projectUsers.getUsersByProject(req.params.projectId)
+            .then((users) => {
+              res.end(JSON.stringify(users));
+            });
+        });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 
 exports.list = function(req, res, next){
-	if(!req.params.projectId) return next(createError(400, 'projectId need'));
-	if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
-	if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+  if(!req.params.projectId) return next(createError(400, 'projectId need'));
+  if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
+  if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
-	queries.projectUsers.getUsersByProject(req.params.projectId)
-		.then((users) => {
-			res.end(JSON.stringify(users));
-		});
+  queries.projectUsers.getUsersByProject(req.params.projectId)
+    .then((users) => {
+      res.end(JSON.stringify(users));
+    });
 
 };

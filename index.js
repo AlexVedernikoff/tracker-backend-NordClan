@@ -18,44 +18,41 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/api/swagger/spec.js', function(req, res) {
-	res.send(require('./spec.js'));
+  res.send(require('./spec.js'));
 });
 
-
 app.use(swagger.init(app, {
-	apiVersion: '1.0',
-	swaggerVersion: '2.0',
-	swaggerURL: '/api/swagger',
-	swaggerUI: './public/swagger/',
-	basePath: '/api/swagger',
+  apiVersion: '1.0',
+  swaggerVersion: '2.0',
+  swaggerURL: '/api/swagger',
+  swaggerUI: './public/swagger/',
+  basePath: '/api/swagger',
 }));
 
-
 app.use(checkTokenMiddleWare);
-app.all('*', function(req, res, next){
-	res.setHeader('Content-Type', 'application/json');
-	res.setHeader('Cache-Control', 'no-cache');
 
-	res.setHeader('Access-Control-Allow-Credentials', true);
-	res.setHeader('Access-Control-Allow-Origin', req.headers.origin? req.headers.origin: '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
-	next();
+app.all('*', function(req, res, next){
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin? req.headers.origin: '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+  next();
 });
 
 app.use('/api', routes);
 app.use(errorHandler());
 
 sequelize
-	.authenticate()
+  .authenticate()
   .then(() => {
-		 console.log('Database connection has been established successfully.');
-	}, function (err) {
-		console.log('Unable to connect to the database:', err);
-	});
-
+    console.log('Database connection has been established successfully.');
+  }, function (err) {
+    console.log('Unable to connect to the database:', err);
+  });
 
 app.listen(config.port, () => {
-	console.log('listen ' + config.port );
+  console.log('listen ' + config.port );
 });
 
