@@ -101,6 +101,9 @@ exports.list = function(req, res, next){
   queries.projectUsers.getUsersByProject(req.params.projectId)
     .then((users) => {
       res.end(JSON.stringify(users));
+    })
+    .catch((err) => {
+      next(err);
     });
 
 };
