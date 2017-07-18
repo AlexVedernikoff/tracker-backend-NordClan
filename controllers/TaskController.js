@@ -218,6 +218,10 @@ exports.list = function(req, res, next){
         in: req.query.sprintId.toString().split(',').map((el)=>el.trim())
       };
     }
+  } else {
+    where.statusId = {
+      $notIn: [9], // По умолчанию показываю все не отмененные
+    };
   }
 
   Task
