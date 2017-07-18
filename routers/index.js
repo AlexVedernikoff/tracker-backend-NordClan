@@ -14,7 +14,6 @@ const TaskUsersController = require('../controllers/TaskUsersController');
 
 router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
-router.put('/auth/refresh', AuthController.refresh);
 
 router.get('/user/autocompleter', UserController.autocomplete);
 router.get('/user/me', UserController.me);

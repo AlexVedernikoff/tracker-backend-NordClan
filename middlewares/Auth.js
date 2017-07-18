@@ -6,16 +6,8 @@ const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
 
-exports.createJwtToken = createJwtToken;
 exports.checkTokenMiddleWare = checkTokenMiddleWare;
-
-function createJwtToken(user) {
-  const payload = {
-    user: user,
-    expires: moment().add(config.auth.accessTokenLifetime, 's')
-  };
-  return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
-}
+exports.createJwtToken = createJwtToken;
 
 function checkTokenMiddleWare(req, res, next) {
   let token, decoded, authorization;
@@ -67,4 +59,12 @@ function checkTokenMiddleWare(req, res, next) {
     })
     .catch((err) => next(err));
   
+}
+
+function createJwtToken(user) {
+  const payload = {
+    user: user,
+    expires: moment().add(config.auth.accessTokenLifetime, 's')
+  };
+  return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
 }
