@@ -102,8 +102,8 @@ function syncUsers() {
                   if(user) {
 
                     return new Promise(function(resolve, reject) {
-                      if(x.photo) {
-                        // Обрабатываю фотографии
+                      // Обрабатываю фотографии
+                      if(!user.photo && x.photo) {
                         gm(request(x.photo))
                           .size({ bufferStream: true }, function(err, size){
                             if(err) reject(err);
@@ -117,7 +117,7 @@ function syncUsers() {
                               }
                             }
 
-                            let photoPath = '/uploads/usersPhotos/' + user.id + '.jpg';
+                            const photoPath = '/uploads/usersPhotos/' + user.id + '.jpg';
                             this.write('./public' + photoPath, function (err) {
                               if (err) reject(err);
                               resolve(photoPath);
