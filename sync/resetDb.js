@@ -19,6 +19,13 @@ const Models  = [
   models.TaskStatusesDictionary,
 ];
 
+const dictionariesModels  = [
+  models.ProjectStatusesDictionary,
+  models.SprintStatusesDictionary,
+  models.TaskStatusesDictionary,
+  models.ProjectRolesDictionary,
+];
+
 
 (() => {
   let chain = Promise.resolve();
@@ -26,6 +33,16 @@ const Models  = [
     chain = chain
       .then(() => Model.sync({force: true}));
   });
+  
+  
+  dictionariesModels.forEach(function(model) {
+    chain = chain
+      .then(() => {
+        return model.destroy({where: {}})
+          .then(() => model.bulkCreate(model.values));
+      });
+  });
+  
   
   chain
     .then(() => {
