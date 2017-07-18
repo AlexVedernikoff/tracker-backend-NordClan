@@ -32,6 +32,15 @@ module.exports = function(sequelize, DataTypes) {
     {id: 8, name: 'Done'},
     {id: 9, name: 'Canceled'},
   ];
+  
+  TaskStatuses.associate = function(models) {
+    TaskStatuses.hasMany(models.Task, {
+      as: 'taskStatuses',
+      foreignKey: {
+        name: 'statusId',
+        field: 'status_id'
+      }});
+  };
 
   return TaskStatuses;
 };

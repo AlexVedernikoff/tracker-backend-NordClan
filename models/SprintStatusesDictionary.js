@@ -25,6 +25,15 @@ module.exports = function(sequelize, DataTypes) {
     {id: 1, name: 'Не в процессе'},
     {id: 2, name: 'В процессе'},
   ];
+  
+  SprintStatuses.associate = function(models) {
+    SprintStatuses.hasMany(models.Sprint, {
+      as: 'sprintStatuses',
+      foreignKey: {
+        name: 'statusId',
+        field: 'status_id'
+      }});
+  };
 
   return SprintStatuses;
 };

@@ -26,6 +26,15 @@ module.exports = function(sequelize, DataTypes) {
     {id: 2, name: 'Приостановлен'},
     {id: 3, name: 'Завершен'},
   ];
-
+  
+  ProjectStatuses.associate = function(models) {
+    ProjectStatuses.hasMany(models.Project, {
+      as: 'projectStatuses',
+      foreignKey: {
+        name: 'statusId',
+        field: 'status_id'
+      }});
+  };
+  
   return ProjectStatuses;
 };

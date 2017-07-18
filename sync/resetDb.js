@@ -4,7 +4,7 @@ const Models  = [
   // models.Portfolio,
   //models.Project,
   // models.Sprint,
-  // models.Task,
+  models.Task,
   // models.Tag,
   // models.ItemTag,
   //models.User,
@@ -13,9 +13,9 @@ const Models  = [
   // models.Token,
   // models.ProjectStatuses,
   // models.SprintStatuses,
-  // models.TaskStatuses,
+  models.TaskStatusesDictionary,
   //models.ProjectUsers,
-  models.TaskUsers,
+  //models.TaskUsers,
   //models.ProjectRolesDictionary,
 ];
 
