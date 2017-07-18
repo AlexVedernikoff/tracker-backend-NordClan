@@ -124,22 +124,10 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
-    createDate: {
-      field: 'create_date',
-      type: DataTypes.DATE,
-      allowNull: true,
-      validate: {
-        isDate: true
-      }
-    },
-    deleteDate: {
-      field: 'delete_date',
-      type: DataTypes.DATE,
-      allowNull: true,
-      validate: {
-        isDate: true
-      }
-    },
+    createdAt: {type: DataTypes.DATE, field: 'created_at'},
+    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
+    
     psId: {
       field: 'ps_id',
       allowNull: true,
@@ -148,7 +136,7 @@ module.exports = function(sequelize, DataTypes) {
 
 
   }, {
-    timestamps: true,
+    timestamps: false,
     paranoid: true,
     underscored: true,
     tableName: 'users',

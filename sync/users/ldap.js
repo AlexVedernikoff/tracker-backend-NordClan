@@ -1,5 +1,5 @@
 const ldap = require('ldapjs');
-const User = require('../../../models').User;
+const User = require('../../models').User;
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 // Синхронизация пользователей
@@ -19,7 +19,7 @@ module.exports = function() {
     });
   })
     .then(()=>{
-  	  return new Promise(function(resolve, reject) {
+      return new Promise(function(resolve, reject) {
 
         client.search('cn=People,dc=simbirsoft', opts, function(err, search) {
           if (err) reject();
@@ -31,9 +31,7 @@ module.exports = function() {
             if(!ldapUser.cn ||!ldapUser.uid || !ldapUser.mail || !ldapUser.sn || !ldapUser.givenName) {
               return ;
             }
-
-
-
+            
             User
               .findOne({
                 where: {
@@ -42,7 +40,7 @@ module.exports = function() {
               })
               .then(user => {
                 if(user) {
-                  user.updateAttributes({
+                  return user.updateAttributes({
                     ldapLogin: ldapUser.cn,
                     emailPrimary: ldapUser.mail,
                     lastNameRu: ldapUser.sn,
@@ -53,8 +51,8 @@ module.exports = function() {
                   });
 
                 } else {
-
-                  User.create({
+  
+                  return User.create({
                     ldapLogin: ldapUser.cn,
                     login: ldapUser.uid,
                     emailPrimary: ldapUser.mail,

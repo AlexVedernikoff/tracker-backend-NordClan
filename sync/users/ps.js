@@ -2,8 +2,8 @@ const request = require('request');
 const xml2json = require('xml2json');
 const moment = require('moment');
 const _ = require('underscore');
-const Department = require('../../../models').Department;
-const User = require('../../../models').User;
+const Department = require('../../models').Department;
+const User = require('../../models').User;
 const gm = require('gm');
 
 const baseUrl = 'http://ps.simbirsoft/default/rest/';
@@ -21,11 +21,11 @@ const departmentIDs = [
   ,'o2k187g0000lgoe24igg000000' // Bitrix
   ,'o2k187g0000lgoe4rp60000000' // Python
   ,'o2k187g0000lh1fp702g000000' // QA Automation
-  ,'o2k187g0000lgkho90fg000000' //  Ruby
-  ,'o2k187g0000lgkhmfg6g000000' // QA o2k187g0000lgkhmfg6g000000
-  ,'o2k187g0000lgoekeh9g000000' // Frontend/JS o2k187g0000lgoekeh9g000000
-  ,'o2k187g0000lh58rbh10000000' // Java o2k187g0000lh58rbh10000000
-  ,'o2k187g0000lgoe7gos0000000' // PHP o2k187g0000lgoe7gos0000000
+  ,'o2k187g0000lgkho90fg000000' // Ruby
+  ,'o2k187g0000lgkhmfg6g000000' // QA
+  ,'o2k187g0000lgoekeh9g000000' // Frontend/JS
+  ,'o2k187g0000lh58rbh10000000' // Java
+  ,'o2k187g0000lgoe7gos0000000' // PHP
 ];
 const jsonOpts = {
   object: true,
@@ -35,26 +35,19 @@ const jsonOpts = {
   trim: true,
   arrayNotation: false
 };
+
 module.exports = function() {
-
-  return new Promise((resolve, reject) => {
-    let promise = syncUsers();
-    promise.then(() => {
+  return syncUsers()
+    .then(() => {
       return syncDepartments();
+    })
+    .catch((err) => {
+      console.error(err);
     });
-    promise.then(() => {
-      resolve();
-    });
-    promise.catch((err) => {
-      reject(err);
-    });
-
-  });
-
 };
 
 
-syncUsers = function() {
+function syncUsers() {
   return new Promise(function(resolve, reject) {
 
     request.get({
@@ -64,8 +57,6 @@ syncUsers = function() {
       if (err) reject(err);
 
       let users = _.compact( xml2json.toJson(body, jsonOpts).users.user.map((x) => {
-
-
         return {
           psId: x.id,
           login: x.login,
@@ -84,13 +75,11 @@ syncUsers = function() {
           active: +!!x.active,
 
           birthDate: (!_.isEmpty(x.birthDate)) ? moment(x.birthDate, 'DD.MM.YYYY' ).format() : null,
-          deleteDate: (!_.isEmpty(x.deleteDate)) ? moment(x.deleteDate, 'DD.MM.YYYY HH:mm' ).format() : null,
-          createDate: (!_.isEmpty(x.createDate)) ? moment(x.createDate, 'DD.MM.YYYY HH:mm' ).format() : null,
+          createdAt: (!_.isEmpty(x.createDate)) ? moment(x.createDate, 'DD.MM.YYYY HH:mm' ).format() : null,
+          deletedAt: (!_.isEmpty(x.deleteDate)) ? moment(x.deleteDate, 'DD.MM.YYYY HH:mm' ).format() : null,
         };
-
-
       }));
-
+  
       resolve(users);
 
     });
@@ -112,7 +101,7 @@ syncUsers = function() {
                 .then(user => {
                   if(user) {
 
-                    let promise = new Promise(function(resolve, reject) {
+                    return new Promise(function(resolve, reject) {
                       if(x.photo) {
                         // Обрабатываю фотографии
                         gm(request(x.photo))
@@ -183,9 +172,9 @@ syncUsers = function() {
 
 
     });
-};
+}
 
-syncDepartments = function() {
+function syncDepartments() {
   return new Promise(function(resolve, reject) {
     request.get({
       url: baseUrl + 'groups',
@@ -258,7 +247,7 @@ syncDepartments = function() {
       return promise;
 
     });
-};
+}
 
 function extract(obj, prop) {
   if (!prop) {

@@ -16,14 +16,11 @@ module.exports = function(sequelize, DataTypes) {
       trim: true,
       allowNull: false,
       type: DataTypes.TEXT
-    },
-    createdAt: {type: DataTypes.DATE, field: 'created_at'},
-    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    }
   }, {
     underscored: true,
-    timestamps: true,
-    paranoid: true,
+    timestamps: false,
+    paranoid: false,
     tableName: 'departments'
   });
 
