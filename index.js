@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const sequelize = require('./orm');
 const errorHandler = require('./components/HttpError');
 const routes = require('./routers/index');
-const checkTokenMiddleWare = require('./components/Auth').checkTokenMiddleWare;
+const checkTokenMiddleWare = require('./middlewares/Auth').checkTokenMiddleWare;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());

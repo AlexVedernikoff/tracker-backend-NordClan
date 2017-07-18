@@ -1,9 +1,9 @@
 const createError = require('http-errors');
 const moment = require('moment');
 const jwt = require('jwt-simple');
-const User = require('../models').User;
-const UserTokens = require('../models').Token;
-const config = require('.././configs');
+const User = require('../models/index').User;
+const UserTokens = require('../models/index').Token;
+const config = require('../configs/index');
 const tokenSecret = 'token_s';
 
 exports.createJwtToken = createJwtToken;
@@ -42,31 +42,29 @@ function checkTokenMiddleWare(req, res, next) {
   User
     .findOne({
       where: {
-        login: decoded.user.login
+        login: decoded.user.login,
+        active: 1,
       },
-      attributes: ['id']
+      include: [
+        {
+          as: 'token',
+          model: UserTokens,
+          attributes: ['expires'],
+          required: true,
+          where: {
+            token: token,
+            expires: {
+              $gt: moment().format() // expires > now
+            }
+          }
+        }
+      ]
     })
     .then((user) => {
-      if(!user) return next(createError(401, 'No such user in the system'));
-
-      UserTokens
-        .findOne({
-          where: {
-            user_id: user.dataValues.id,
-            token: token
-          },
-          attributes: ['expires']
-        })
-        .then((token) => {
-          if (!token) return next(createError(401, 'No such access token in the system'));
-          if (moment().isAfter(token.expires)) return next(createError(401, 'Access token has expired'));
-          req.user = user;
-
-          return next();
-        })
-        .catch((err) => next(createError(err)));
-
+      if(!user) throw createError(401, 'No found user or access in the system. Or access token has expired');
+      req.user = user;
+      return next();
     })
-    .catch((err) => next(createError(err)));
+    .catch((err) => next(err));
   
 }

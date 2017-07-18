@@ -166,6 +166,7 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     User.hasMany(models.Token, {
+      as: 'token',
       foreignKey: {
         name: 'userId',
         field: 'user_id'
