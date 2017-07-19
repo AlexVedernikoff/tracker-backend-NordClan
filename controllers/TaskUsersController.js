@@ -61,7 +61,16 @@ exports.create = function(req, res, next){
             return models.TaskUsers.create({
               userId: req.body.userId,
               taskId: req.body.taskId
-            });
+            })
+              .then(() => {
+                return models.Task.update({
+                  statusId: req.body.statusId
+                }, {
+                  where: {
+                    id: req.body.taskId
+                  }
+                });
+              });
           })
             .then(() => {
               return queries.user.findOneActiveUser(req.body.userId, ['id', 'firstNameRu', 'lastNameRu'])
