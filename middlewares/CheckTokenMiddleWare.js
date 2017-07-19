@@ -6,10 +6,10 @@ const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
 
-exports.checkTokenMiddleWare = checkTokenMiddleWare;
+exports.checkToken = checkToken;
 exports.createJwtToken = createJwtToken;
 
-function checkTokenMiddleWare(req, res, next) {
+function checkToken(req, res, next) {
   let token, decoded, authorization;
 
   if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated

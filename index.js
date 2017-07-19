@@ -7,9 +7,9 @@ const expressValidator = require('express-validator');
 const path = require('path');
 const bodyParser = require('body-parser');
 const sequelize = require('./orm');
-const errorHandler = require('./components/HttpError');
 const routes = require('./routers/index');
-const checkTokenMiddleWare = require('./middlewares/Auth').checkTokenMiddleWare;
+const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
+const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
@@ -42,7 +42,7 @@ app.all('*', function(req, res, next){
 });
 
 app.use('/api', routes);
-app.use(errorHandler());
+app.use(errorHandlerMiddleWare);
 
 sequelize
   .authenticate()
