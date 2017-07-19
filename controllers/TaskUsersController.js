@@ -17,7 +17,18 @@ exports.create = function(req, res, next){
             deletedAt: null
           }
         })
-          .then(()=>res.end());
+          .then(()=>{
+            if(req.body.statusId) {
+              return models.Task.update({
+                statusId: req.body.statusId
+              }, {
+                where: {
+                  id: req.body.taskId
+                }
+              });
+            }
+          })
+          .then(() => res.end());
       })
       .catch((err) => {
         next(err);
