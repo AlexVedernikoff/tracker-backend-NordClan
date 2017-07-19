@@ -130,15 +130,16 @@ function syncUsers() {
                       .then((photoPath)=>{
                         if(photoPath) {
                           x.photo = photoPath;
-                          console.log(photoPath);
+                        } else {
+                          delete x.photo;
                         }
 
                       })
                       .catch((err)=>{
                         if(err) {
-                          x.photo = null;
                           console.error(err);
                         }
+                        delete x.photo;
                       })
                       .then(() => {
                         // Обновляю пользователя
