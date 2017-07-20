@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/api/swagger/spec.js', function(req, res) {
-  res.send(require('./spec.js'));
+  res.send(require('./swaggerSpec.js'));
 });
 
 app.use(swagger.init(app, {
