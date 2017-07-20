@@ -5,6 +5,7 @@ const Models  = [
   models.Project,
   models.Sprint,
   models.Task,
+  models.TaskTasks,
   models.Tag,
   models.ItemTag,
   models.User,

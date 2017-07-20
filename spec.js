@@ -856,6 +856,48 @@ module.exports = {
         responses: responsesCodes
       },
     },
+    '/task-links': {
+      post: {
+        tags: ['Tasks'],
+        summary: 'Присвязать к задаче другую задачу',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'linkedTaskId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/task-links/{taskId}': {
+      delete: {
+        tags: ['Tasks'],
+        summary: 'Отвязать от задачи другую задачу',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'linkedTaskId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
 
 
     '/tag': {

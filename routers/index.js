@@ -10,6 +10,7 @@ const UserController = require('../controllers/UserController');
 const DictionaryController = require('../controllers/DictionaryController');
 const ProjectUsersController = require('../controllers/ProjectUsersController');
 const TaskUsersController = require('../controllers/TaskUsersController');
+const TaskTasksController = require('../controllers/TaskTasksController');
 
 
 router.post('/auth/login', AuthController.login);
@@ -52,6 +53,8 @@ router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
 router.put('/task-status/:id', TaskController.setStatus);
 router.post('/task-users', TaskUsersController.create);
+router.post('/task-links/', TaskTasksController.create);
+router.delete('/task-links/:id', TaskTasksController.delete);
 
 router.get('/tag/autocompliter/:taggable', TagController.autocompliter);
 router.post('/tag', TagController.create);
