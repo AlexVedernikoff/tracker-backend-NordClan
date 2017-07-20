@@ -23,6 +23,11 @@ module.exports = function(err, req, res, next) {
     err.message = err.errors.map((el) => { return el.path + ' ( ' + el.message + ')'; }).join('. ');
   }
   
+  sendError(res, err);
+};
+
+
+function sendError(res, err) {
   let status = err.status || err.statusCode || 500;
   if (status < 400) status = 500;
   res.statusCode = status;
@@ -50,5 +55,4 @@ module.exports = function(err, req, res, next) {
   if (err.type) body.type = err.type;
   
   res.json(body);
-  
-};
+}
