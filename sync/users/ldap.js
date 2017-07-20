@@ -1,5 +1,5 @@
 const ldap = require('ldapjs');
-const User = require('../../models').User;
+const User = require('../../server/models').User;
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 // Синхронизация пользователей
