@@ -30,7 +30,7 @@ exports.getUsersByProject = function(projectId) {
         response.push({
           id: projectUser.user.id,
           fullNameRu: projectUser.user.fullNameRu,
-          rolesIds: rolesIds ? rolesIds.map((el) => +el) : [],
+          rolesIds: rolesIds ? rolesIds.map((el) => +el) : null,
         });
       });
 
