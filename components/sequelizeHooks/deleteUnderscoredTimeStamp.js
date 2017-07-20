@@ -1,8 +1,10 @@
 exports.deleteUnderscoredTimeStampsAttributes = function(model) {
-  if(Array.isArray(model)) {
-    findAllDeleteUnderscoredTimeStampsAttributes(model);
-  } else {
-    findDeleteUnderscoredTimeStampsAttributes(model);
+  if(model) {
+    if(Array.isArray(model)) {
+      findAllDeleteUnderscoredTimeStampsAttributes(model);
+    } else {
+      findDeleteUnderscoredTimeStampsAttributes(model);
+    }
   }
 };
 

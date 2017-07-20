@@ -5,7 +5,6 @@ const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next){
-
   Sprint.beforeValidate((model) => {
     model.authorId = req.user.id;
   });
@@ -25,6 +24,8 @@ exports.create = function(req, res, next){
 
 
 exports.read = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Sprint.findByPrimary(req.params.id)
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -38,6 +39,8 @@ exports.read = function(req, res, next){
 
 
 exports.update = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -58,6 +61,8 @@ exports.update = function(req, res, next){
 
 
 exports.delete = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -79,10 +84,17 @@ exports.delete = function(req, res, next){
 
 
 exports.list = function(req, res, next){
-
-  let where = {};
-  where.deletedAt = {$eq: null }; // IS NULL
-
+  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if(req.query.fields) {
+    req.query.fields = req.query.fields.split(',').map((el) => el.trim());
+    Sprint.checkAttributes(req.query.fields);
+  }
+  
+  let where = {
+    deletedAt: {$eq: null} // IS NULL
+  };
+  
   if(req.query.name) {
     where.name = {
       $iLike: '%' + req.query.name + '%'
@@ -101,10 +113,10 @@ exports.list = function(req, res, next){
     };
   }
 
-
+  
   Sprint
     .findAll({
-      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
+      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,

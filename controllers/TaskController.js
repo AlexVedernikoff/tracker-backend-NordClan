@@ -25,6 +25,8 @@ exports.create = function(req, res, next){
 
 
 exports.read = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Task.findByPrimary(req.params.id, {
     include: [
       {
@@ -86,6 +88,8 @@ exports.read = function(req, res, next){
 
 
 exports.update = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   let resultRespons = {};
 
   Task.findByPrimary(req.params.id, { attributes: ['id'] })
@@ -121,6 +125,8 @@ exports.update = function(req, res, next){
 
 
 exports.delete = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Task.findByPrimary(req.params.id, { attributes: ['id'] })
     .then((row) => {
       if(!row) { return next(createError(404)); }
@@ -141,9 +147,53 @@ exports.delete = function(req, res, next){
 
 
 exports.list = function(req, res, next){
-  let where = {};
-  where.deletedAt = {$eq: null }; // IS NULL
-
+  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if(req.query.fields) {
+    req.query.fields = req.query.fields.split(',').map((el) => el.trim());
+    Task.checkAttributes(req.query.fields);
+  }
+  
+  let where = {
+    deletedAt: {$eq: null} // IS NULL
+  };
+  
+  if(req.query.name) {
+    where.name = {
+      $iLike: '%' + req.query.name + '%'
+    };
+  }
+  
+  if(req.query.statusId) {
+    where.statusId = {
+      in: req.query.statusId.toString().split(',').map((el)=>el.trim())
+    };
+  }
+  
+  if(req.query.projectId) {
+    where.projectId = {
+      in: req.query.projectId.toString().split(',').map((el)=>el.trim())
+    };
+  }
+  
+  
+  if(req.query.sprintId) {
+    if(+req.query.sprintId === 0) {
+      where.sprintId = {
+        $eq: null
+      };
+    } else {
+      where.sprintId = {
+        in: req.query.sprintId.toString().split(',').map((el)=>el.trim())
+      };
+    }
+  } else {
+    where.statusId = {
+      $notIn: [9], // По умолчанию показываю все не отмененные
+    };
+  }
+  
+  
   let includePerformer = {
     as: 'performer',
     model: models.User,
@@ -189,44 +239,9 @@ exports.list = function(req, res, next){
     ],
   };
 
-  if(req.query.name) {
-    where.name = {
-      $iLike: '%' + req.query.name + '%'
-    };
-  }
-
-  if(req.query.statusId) {
-    where.statusId = {
-      in: req.query.statusId.toString().split(',').map((el)=>el.trim())
-    };
-  }
-
-  if(req.query.projectId) {
-    where.projectId = {
-      in: req.query.projectId.toString().split(',').map((el)=>el.trim())
-    };
-  }
-
-
-  if(req.query.sprintId) {
-    if(req.query.sprintId == 0) {
-      where.sprintId = {
-        $eq: null
-      };
-    } else {
-      where.sprintId = {
-        in: req.query.sprintId.toString().split(',').map((el)=>el.trim())
-      };
-    }
-  } else {
-    where.statusId = {
-      $notIn: [9], // По умолчанию показываю все не отмененные
-    };
-  }
-
   Task
     .findAll({
-      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
+      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       include: req.query.tags ? [includeForCount, includeForQuery , includePerformer, includeSprint] : [includeForQuery, includePerformer, includeSprint],
@@ -282,6 +297,11 @@ exports.list = function(req, res, next){
 
 
 exports.setStatus = function(req, res, next){
+  if(!req.params.id) return next(createError(400, 'id must be'));
+  if(req.params.id && !req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  if(!req.body.statusId) return next(createError(400, 'statusId must be'));
+  if(req.body.statusId && !req.body.statusId(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Task.build( {id: req.params.id, statusId: req.body.statusId}).validate({fields: ['id', 'statusId']})
     .then(validate => {
       if(validate) throw createError(validate);

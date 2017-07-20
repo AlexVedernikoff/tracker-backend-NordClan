@@ -1,4 +1,4 @@
-const ModelsHooks = require('../components/ModelsHooks');
+const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
 module.exports = function(sequelize, DataTypes) {
   const Portfolio = sequelize.define('Portfolio', {

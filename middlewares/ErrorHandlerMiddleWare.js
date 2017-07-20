@@ -13,6 +13,11 @@ module.exports = function(err, req, res, next) {
     err.status = 400;
   }
   
+  if(err instanceof Sequelize.Error) {
+    err.status = 400;
+  }
+  
+  
   doValidationErrorIfNeed();
   return sendError();
   

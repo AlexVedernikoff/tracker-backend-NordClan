@@ -1,35 +1,28 @@
 const createError = require('http-errors');
 const models = require('../models');
+const queries = require('../models/queries');
+
+const attribures = ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ];
 
 exports.me = function(req, res, next){
+  queries.user(req.user.id, attribures)
+  .then(() => {})
+  
   new UserController(req, res, next, req.user.id)
     .sendUserInfo();
 };
 
 exports.raed = function(req, res, next){
-  req.checkParams('id', 'id must be integer' ).isInt();
-  req
-    .getValidationResult()
-    .then((result) => {
-
-      if (!result.isEmpty()) {
-        let err = new Error();
-        err.statusCode = 400;
-        err.name = 'ValidationError';
-        err.message = { errors: result.array() };
-        return next(err);
-      }
-
-      new UserController(req, res, next, req.params.id)
-        .sendUserInfo();
-    })
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
+  new UserController(req, res, next, req.params.id)
+    .sendUserInfo()
     .catch((err) => {
       next(err);
     });
 };
 
 exports.autocomplete = function(req, res, next) {
-
   if(!req.query.userName) return next(createError(400, 'userName need'));
   let result = [];
 
@@ -67,9 +60,7 @@ exports.autocomplete = function(req, res, next) {
 };
 
 
-
 class UserController {
-
   constructor(req, res, next, userId) {
     this.req = req;
     this.res = res;
@@ -115,5 +106,4 @@ class UserController {
         this.next(createError(err));
       });
   }
-
 }

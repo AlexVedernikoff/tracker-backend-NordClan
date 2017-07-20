@@ -1,3 +1,4 @@
+const createError = require('http-errors');
 const fs        = require('fs');
 const path      = require('path');
 const Sequelize = require('sequelize');
@@ -13,6 +14,7 @@ fs
   .forEach(function(file) {
     let model = sequelize.import(path.join(__dirname, file));
     db[model.name] = model;
+    db[model.name].checkAttributes = checkAttributes.bind(db[model.name]);
   });
 
 
@@ -26,3 +28,11 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 module.exports = db;
+
+
+function checkAttributes(attribures) {
+  if(!Array.isArray(attribures)) attribures = [attribures];
+  attribures.forEach((el) => {
+    if(!(el in this.rawAttributes)) throw createError(400, 'Attribute "' + el + '" not found');
+  });
+}

@@ -11,7 +11,6 @@ const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next){
-
   Project.beforeValidate((model) => {
     model.authorId = req.user.id;
   });
@@ -32,6 +31,7 @@ exports.create = function(req, res, next){
 
 
 exports.read = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Project
     .findByPrimary(req.params.id, {
@@ -95,6 +95,8 @@ exports.read = function(req, res, next){
 
 
 exports.update = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   let resultRespons = {};
   let portfolioIdOld;
 
@@ -136,6 +138,8 @@ exports.update = function(req, res, next){
 
 
 exports.delete = function(req, res, next){
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  
   Project.findByPrimary(req.params.id, { attributes: ['id'] })
     .then((project) => {
       if(!project) { return next(createError(404)); }
@@ -154,15 +158,26 @@ exports.delete = function(req, res, next){
 
 
 exports.list = function(req, res, next){
-  let where = {};
+  if(req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
+  if(req.query.dateSprintEnd && !req.query.dateSprintEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
+  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if(req.query.fields) {
+    req.query.fields = req.query.fields.split(',').map((el) => el.trim());
+    Project.checkAttributes(req.query.fields);
+  }
+  
+  
   let resultProjects = {};
   let queryIncludes = [];
-
-  where.deletedAt = {$eq: null }; // IS NULL
+  let where = {
+    deletedAt: {$eq: null} // IS NULL
+  };
 
   if(req.query.name) {
     where.name = { $iLike: '%' + req.query.name + '%' };
   }
+  
   if(req.query.statusId) {
     where.statusId = {
       in: req.query.statusId.toString().split(',').map((el)=>el.trim())
@@ -214,9 +229,9 @@ exports.list = function(req, res, next){
   });
   
   // Фильтрация по дате
-  let queryFactStartDate = {};
-  let queryFactFinishDate = {};
-
+  const queryFactStartDate = {};
+  const queryFactFinishDate = {};
+  
   if(req.query.dateSprintBegin) {
     queryFactStartDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD'); // factStartDate >= queryBegin
     queryFactFinishDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD'); // factStartDate >= queryBegin
@@ -279,8 +294,8 @@ exports.list = function(req, res, next){
     .then(() => {
       return Project
         .findAll({
-          attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields.split(',').map((el) => el.trim()))) : '',
-          limit: req.query.pageSize ? +req.query.pageSize : 1000,
+          attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields)) : '',
+          limit: req.query.pageSize ? +req.query.pageSize : 100,
           offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: queryIncludes,
           where: where,
@@ -355,9 +370,10 @@ exports.list = function(req, res, next){
 
 
 exports.setStatus = function(req, res, next){
-  if(!req.params.id) return next(createError(400, 'projectId need'));
+  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if(!req.body.statusId) return next(createError(400, 'statusId need'));
   if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
+  
 
   const attributesForUpdate = {
     statusId: req.body.statusId,
