@@ -8,10 +8,17 @@ const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next){
+  if(req.body.tags) {
+    req.body.tags.split(',').map(el=>el.trim()).forEach(el => {
+      if(el.length < 2) throw createError(400, 'tag must be more then 2 chars');
+    });
+  }
+  
   Task.beforeValidate((model) => {
     model.authorId = req.user.id;
   });
-
+  
+  
   Task.create(req.body)
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags)

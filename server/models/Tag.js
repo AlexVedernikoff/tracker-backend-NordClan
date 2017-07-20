@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 50]
+        len: [2, 50]
       }
     }
   }, {
@@ -56,6 +56,14 @@ module.exports = function(sequelize, DataTypes) {
       },
       foreignKey: 'tag_id',
       constraints: false
+    });
+  
+    Tag.hasMany(models.ItemTag, {
+      as: 'itemTags',
+      foreignKey: {
+        name: 'tagId',
+        field: 'tag_id'
+      },
     });
 
   };

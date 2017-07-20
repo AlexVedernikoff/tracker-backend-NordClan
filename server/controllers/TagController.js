@@ -1,7 +1,6 @@
 const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
-const _ = require('underscore');
 const StringHelper = require('../components/StringHelper');
 
 exports.list = function(req, res, next){
@@ -57,7 +56,7 @@ exports.list = function(req, res, next){
 exports.create = function(req, res, next){
   req.checkBody('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
   req.checkBody('taggableId', 'taggableId must be int').isInt();
-  req.checkBody('tag', 'tab must be more then 2 chars').isLength({min: 2});
+  req.checkBody('tag', 'tag must be more then 2 chars').isLength({min: 2});
 
   req
     .getValidationResult()
@@ -91,7 +90,7 @@ exports.create = function(req, res, next){
 exports.delete = function(req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
   req.checkParams('id', 'taggableId must be int').isInt();
-  req.checkQuery('tag', 'tab must be more then 1 char').isLength({min: 1});
+  req.checkQuery('tag', 'tag must be more then 1 char').isLength({min: 1});
 
   req
     .getValidationResult()
@@ -163,7 +162,7 @@ exports.autocompliter = function(req, res, next){
   let resultResponse = [];
 
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task',  'project']);
-  req.checkQuery('tagName', 'tab must be more then 2 chars').isLength({min: 2});
+  req.checkQuery('tagName', 'tag must be more then 2 chars').isLength({min: 2});
   req
     .getValidationResult()
     .then((result) => {
@@ -176,30 +175,34 @@ exports.autocompliter = function(req, res, next){
         return next(err);
       }
 
-      models.ItemTag.findAll({
+      models.Tag.findAll({
+        distinct: 'name',
+        attributes: ['name'],
+        group: ['Tag.id', 'Tag.name'],
         where: {
-          taggable: req.params.taggable
+          name: {
+            $iLike: '%' + req.query.tagName + '%'
+          },
         },
         include: [
           {
-            as: 'tag',
-            model: models.Tag,
+            as: 'itemTags',
+            model: models.ItemTag,
+            attributes: [],
+            required: true,
             where: {
-              name: {
-                $iLike: '%' + req.query.tagName + '%'
-              },
-            }
+              taggable: req.params.taggable.trim()
+            },
           }
-        ]
-
+        ],
       })
-        .then((itemTags) => {
-          itemTags.forEach((itemTag) => {
-            resultResponse.push(itemTag.tag.name);
+        .then((tags)=>{
+          tags.forEach((tag) => {
+            resultResponse.push(tag.name);
           });
-
-          res.end(JSON.stringify(_.uniq(resultResponse)));
+          res.end(JSON.stringify(resultResponse));
         })
         .catch((err) => next(createError(err)));
+      
     });
 };

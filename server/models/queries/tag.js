@@ -40,6 +40,7 @@ exports.saveTagsForModel = function(Model, tagsString) {
   if(tagsString) {
     tags = tagsString.toString().split(',');
   }
+
   let chain = Promise.resolve();
 
   tags.forEach(function(itemTag) {
