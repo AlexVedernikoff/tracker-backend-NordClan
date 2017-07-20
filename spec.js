@@ -675,6 +675,11 @@ module.exports = {
             required: true
           },
           {
+            name: 'parentId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
             name: 'sprintId',
             type: 'integer',
             in: 'formData',

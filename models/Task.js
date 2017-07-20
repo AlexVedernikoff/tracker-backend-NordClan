@@ -67,14 +67,14 @@ module.exports = function(sequelize, DataTypes) {
         notEmpty: true, // не пустая строка
       }
     },
-    subTasks: {
-      field: 'sub_tasks',
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: null,
-      validate: {
-        notEmpty: true, // не пустая строка
-      }
-    },
+    // subTasks: {
+    //   field: 'sub_tasks',
+    //   type: DataTypes.ARRAY(DataTypes.INTEGER),
+    //   defaultValue: null,
+    //   validate: {
+    //     notEmpty: true, // не пустая строка
+    //   }
+    // },
     linkedTasks: {
       field: 'linked_tasks',
       type: DataTypes.ARRAY(DataTypes.INTEGER),
@@ -126,6 +126,14 @@ module.exports = function(sequelize, DataTypes) {
         name: 'parentId',
         field: 'parent_id'
       }});
+  
+    Task.hasMany(models.Task, {
+      as: 'subTasks',
+      foreignKey: {
+        name: 'parentId',
+        field: 'parent_id'
+      }
+    });
 
     Task.belongsTo(models.Sprint, {
       as: 'sprint',

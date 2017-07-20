@@ -52,6 +52,11 @@ exports.read = function(req, res, next){
         attributes: ['id', 'name']
       },
       {
+        as: 'subTasks',
+        model: models.Task,
+        attributes: ['id', 'name']
+      },
+      {
         as: 'sprint',
         model: models.Sprint,
         attributes: ['id', 'name']
