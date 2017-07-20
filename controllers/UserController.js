@@ -1,13 +1,7 @@
 const createError = require('http-errors');
 const models = require('../models');
-const queries = require('../models/queries');
-
-const attribures = ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ];
 
 exports.me = function(req, res, next){
-  queries.user(req.user.id, attribures)
-  .then(() => {})
-  
   new UserController(req, res, next, req.user.id)
     .sendUserInfo();
 };

@@ -201,7 +201,5 @@ exports.autocompliter = function(req, res, next){
           res.end(JSON.stringify(_.uniq(resultResponse)));
         })
         .catch((err) => next(createError(err)));
-
     });
-
 };

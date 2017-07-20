@@ -28,7 +28,7 @@ exports.create = function(req, res, next){
               });
             }
           })
-          .then(() => res.end());
+          .then(() => res.end(JSON.stringify({statusId: +req.body.statusId})));
       })
       .catch((err) => {
         next(err);
@@ -39,6 +39,8 @@ exports.create = function(req, res, next){
   if(!req.body.userId) return next(createError(400, 'userId need'));
   if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
   if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
+  let needCreateNewPerfomer = true;
+  let taskStatusId;
 
 
   models.TaskUsers.beforeValidate((model) => {
@@ -47,7 +49,10 @@ exports.create = function(req, res, next){
 
   Promise.all([
     queries.user.findOneActiveUser(req.body.userId),
-    queries.task.findOneActiveTask(req.body.taskId)
+    queries.task.findOneActiveTask(req.body.taskId, ['id', 'statusId'])
+      .then((model) => {
+        taskStatusId = model.statusId;
+      })
   ])
     .then(() => {
       return models.TaskUsers
@@ -64,35 +69,35 @@ exports.create = function(req, res, next){
                 return oldUser.destroy();
               });
             } else {
-              throw next(createError(409, 'userId already exist in TaskUsers'));
+              needCreateNewPerfomer = false;
             }
           });
 
-          return chain.then(() => {
-            return models.TaskUsers.create({
-              userId: req.body.userId,
-              taskId: req.body.taskId
-            })
-              .then(() => {
-                if(req.body.statusId) {
-                  return models.Task.update({
-                    statusId: req.body.statusId
-                  }, {
-                    where: {
-                      id: req.body.taskId
-                    }
-                  });
-                }
-
-              });
-          })
+          return chain
             .then(() => {
-              return queries.user.findOneActiveUser(req.body.userId, ['id', 'firstNameRu', 'lastNameRu'])
+              if(needCreateNewPerfomer) {
+                return models.TaskUsers.create({
+                  userId: req.body.userId,
+                  taskId: req.body.taskId
+                });
+              }
+            })
+            .then(() => {
+              if(req.body.statusId) {
+                return models.Task.update({
+                  statusId: req.body.statusId
+                }, {
+                  where: {
+                    id: req.body.taskId
+                  }
+                });
+              }
+            })
+            .then(() => {
+              return queries.user.findOneActiveUser(req.body.userId, ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'])
                 .then((user) => {
-                  const responce = {
-                    id: user.id,
-                    fullNameRu: user.fullNameRu,
-                  };
+                  const responce = user.dataValues;
+                  responce.statusId = req.body.statusId? +req.body.statusId : taskStatusId;
                   res.end(JSON.stringify(responce));
                 });
 
