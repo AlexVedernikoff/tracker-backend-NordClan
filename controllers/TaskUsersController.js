@@ -96,8 +96,10 @@ exports.create = function(req, res, next){
             .then(() => {
               return queries.user.findOneActiveUser(req.body.userId, ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'])
                 .then((user) => {
-                  const responce = user.dataValues;
-                  responce.statusId = req.body.statusId? +req.body.statusId : taskStatusId;
+                  const responce = {
+                    performer: user.dataValues,
+                    statusId: req.body.statusId? +req.body.statusId : taskStatusId
+                  };
                   res.end(JSON.stringify(responce));
                 });
 
