@@ -28,10 +28,8 @@ exports.getUsersByProject = function(projectId) {
       projectUsers.forEach((projectUser) => {
         const rolesIds = JSON.parse(projectUser.rolesIds);
         response.push({
-          user: {
-            id: projectUser.user.id,
-            fullNameRu: projectUser.user.fullNameRu,
-          },
+          id: projectUser.user.id,
+          fullNameRu: projectUser.user.fullNameRu,
           rolesIds: rolesIds ? rolesIds.map((el) => +el) : [],
         });
       });
