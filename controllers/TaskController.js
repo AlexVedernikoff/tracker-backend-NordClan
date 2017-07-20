@@ -57,6 +57,11 @@ exports.read = function(req, res, next){
         attributes: ['id', 'name']
       },
       {
+        as: 'linkedTasks',
+        model: models.Task,
+        attributes: ['id', 'name']
+      },
+      {
         as: 'sprint',
         model: models.Sprint,
         attributes: ['id', 'name']
@@ -73,7 +78,7 @@ exports.read = function(req, res, next){
     ]
   })
     .then((model) => {
-      if(!model) { return next(createError(404)); }
+      if(!model) return next(createError(404));
 
       if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
 
@@ -102,7 +107,7 @@ exports.update = function(req, res, next){
       if(!row) { return next(createError(404)); }
 
       // сброс задаче в бек лог
-      if(req.body.sprintId == 0) req.body.sprintId = null;
+      if(+req.body.sprintId === 0) req.body.sprintId = null;
 
 
       row.updateAttributes(req.body)
