@@ -26,6 +26,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     prefix: {
       type: DataTypes.STRING(8),
+      unique: true,
       trim: true,
       allowNull: true,
       validate: {
