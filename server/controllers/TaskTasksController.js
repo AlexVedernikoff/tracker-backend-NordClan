@@ -9,6 +9,9 @@ exports.create = function(req, res, next) {
   if(!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if(!req.body.linkedTaskId.match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
   
+  req.body.taskId = req.body.taskId.trim();
+  req.body.linkedTaskId = req.body.taskId.trim();
+  
   models.TaskTasks.findOrCreate({
     where: {
       taskId: req.body.taskId,
@@ -30,6 +33,9 @@ exports.delete = function(req, res, next) {
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if(!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if(!req.body.linkedTaskId.match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
+  
+  req.params.id = req.body.taskId.trim();
+  req.body.linkedTaskId = req.body.taskId.trim();
   
   models.TaskTasks.destroy({
     where: {
