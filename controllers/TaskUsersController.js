@@ -6,11 +6,13 @@ exports.create = function(req, res, next){
   if(!req.body.taskId) return next(createError(400, 'taskId need'));
   if(!Number.isInteger(+req.body.taskId)) return next(createError(400, 'taskId must be int'));
   if(+req.body.taskId <= 0) return next(createError(400, 'taskId must be > 0'));
-
+  
+  let taskStatusId;
 
   if(+req.body.userId === 0) {
-    queries.task.findOneActiveTask(req.body.taskId)
-      .then(() => {
+    queries.task.findOneActiveTask(req.body.taskId, ['id', 'statusId'])
+      .then((model) => {
+        taskStatusId = model.statusId;
         return models.TaskUsers.destroy({
           where: {
             taskId: req.body.taskId,
@@ -28,7 +30,10 @@ exports.create = function(req, res, next){
               });
             }
           })
-          .then(() => res.end(JSON.stringify({statusId: +req.body.statusId})));
+          .then(() => res.end(JSON.stringify({
+            statusId: req.body.statusId? +req.body.statusId : taskStatusId,
+            performer: null
+          })));
       })
       .catch((err) => {
         next(err);
@@ -40,7 +45,6 @@ exports.create = function(req, res, next){
   if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
   if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
   let needCreateNewPerfomer = true;
-  let taskStatusId;
 
 
   models.TaskUsers.beforeValidate((model) => {
