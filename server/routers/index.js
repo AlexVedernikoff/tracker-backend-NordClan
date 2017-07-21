@@ -11,6 +11,7 @@ const DictionaryController = require('../controllers/DictionaryController');
 const ProjectUsersController = require('../controllers/ProjectUsersController');
 const TaskUsersController = require('../controllers/TaskUsersController');
 const TaskTasksController = require('../controllers/TaskTasksController');
+const UploadController = require('../controllers/UploadController');
 
 
 router.post('/auth/login', AuthController.login);
@@ -36,8 +37,8 @@ router.put('/portfolio/:id', PortfolioController.update);
 // Отключил т.к. портфели выбираются или создаются при создании проекта. Остальное в системе не используется
 /* router.post('/portfolio', PortfolioController.create);
 router.get('/portfolio/:id', PortfolioController.read);
-router.delete('/portfolio/:id', PortfolioController.delete);
-router.get('/portfolio', PortfolioController.list); */
+router.delete('/portfolio/:id', PortfolioController.delete);*/
+router.get('/portfolio', PortfolioController.list);
 
 router.post('/sprint', SprintController.create);
 router.get('/sprint/:id', SprintController.read);
@@ -63,6 +64,8 @@ router.get('/tag/:taggable/:id', TagController.list);
 
 router.get('/dictionary/statuses/:entity', DictionaryController.statuses);
 router.get('/dictionary/project-roles', DictionaryController.projectRoles);
+
+router.post('/upload/:entity/:id',  UploadController.upload);
 
 
 

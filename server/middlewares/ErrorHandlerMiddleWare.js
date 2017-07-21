@@ -5,6 +5,15 @@ const production = process.env.NODE_ENV === 'production';
 
 module.exports = function(err, req, res, next) {
   
+  if (err.mapped) { // expressValidator
+    err.status = 400;
+    err.name = 'ValidationError';
+    err.message = {errors: err.array()};
+  }
+  // console.log(err);
+  // console.log(expressValidator);
+  // console.log(err instanceof expressValidator.getValidationResult);
+  
   if(err instanceof ldap.InvalidCredentialsError) {
     err.status = 404;
   }
