@@ -27,7 +27,7 @@ exports.run = function() {
     apiVersion: '1.0',
     swaggerVersion: '2.0',
     swaggerURL: '/api/swagger',
-    swaggerUI: '../public/swagger/',
+    swaggerUI: './public/swagger/',
     basePath: '/api/swagger',
   }));
   

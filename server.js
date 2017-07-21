@@ -1,2 +1,2 @@
-const server = require('./server/index');
-server.run();
+const simTrack = require('./server/index');
+simTrack.run();
