@@ -20,8 +20,10 @@ exports.getFilesByModel = function(modelFileName, modelId) {
   return models[modelFileName]
     .findAll({
       where: where,
-      attributes: models[modelFileName].defaultSelect
-      
+      attributes: models[modelFileName].defaultSelect,
+      order: [
+        ['createdAt', 'ASC']
+      ]
     })
     .then((models) => {
       models.forEach((model) => {

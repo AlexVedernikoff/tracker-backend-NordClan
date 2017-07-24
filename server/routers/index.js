@@ -65,8 +65,8 @@ router.get('/tag/:taggable/:id', TagController.list);
 router.get('/dictionary/statuses/:entity', DictionaryController.statuses);
 router.get('/dictionary/project-roles', DictionaryController.projectRoles);
 
-router.post('/upload/:entity/:id',  UploadController.upload);
-
+router.post('/upload/:entity/:entityId',  UploadController.upload);
+router.delete('/upload/:entity/:entityId/:attachmentId',  UploadController.delete);
 
 
 module.exports = router;

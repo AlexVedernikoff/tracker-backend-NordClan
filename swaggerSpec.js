@@ -1089,30 +1089,58 @@ module.exports = {
     '/upload/{entity}/{entityId}': {
       post: {
         tags: ['Upload'],
-        summary: 'Разгузка файлов',
+        summary: 'Загрузить файл и прикрепить его к сущности',
         consumes: ['multipart/form-data'],
         parameters: [
           {
             name: 'entity',
             type: 'integer',
             in: 'path',
-            //required: true
+            required: true
           },
           {
             name: 'entityId',
             type: 'integer',
             in: 'path',
-            //required: true
+            required: true
           },
           {
             name: 'file',
             type: 'file',
             in: 'formData',
-            //required: true
+            required: true
+          },
+        ]
+      },
+    },
+    '/upload/{entity}/{entityId}/{attachmentId}': {
+      delete: {
+        tags: ['Upload'],
+        summary: 'Удалить файл',
+        parameters: [
+          {
+            name: 'entity',
+            description: 'Имя сущности: \'task\', \'project\'',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'entityId',
+            description: 'Id сущности',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'attachmentId',
+            description: 'Id файла',
+            type: 'integer',
+            in: 'path',
+            required: true
           },
         ]
       }
-    
     }
 
 

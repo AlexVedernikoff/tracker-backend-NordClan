@@ -89,7 +89,10 @@ exports.read = function(req, res, next){
       {
         as: 'attachments',
         model: models.TaskAttachments,
-        attributes: models.TaskAttachments.defaultSelect
+        attributes: models.TaskAttachments.defaultSelect,
+        order: [
+          ['createdAt', 'ASC']
+        ]
       }
     ]
   })
@@ -275,7 +278,6 @@ exports.list = function(req, res, next){
       subQuery: true,
       order: [
         ['prioritiesId', 'ASC'],
-        ['createdAt', 'DESC'],
         ['name', 'ASC'],
       ],
     })

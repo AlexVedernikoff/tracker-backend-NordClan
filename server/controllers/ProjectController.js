@@ -78,7 +78,10 @@ exports.read = function(req, res, next){
         {
           as: 'attachments',
           model: models.ProjectAttachments,
-          attributes: models.ProjectAttachments.defaultSelect
+          attributes: models.ProjectAttachments.defaultSelect,
+          order: [
+            ['createdAt', 'ASC']
+          ]
         }
       ]
     })

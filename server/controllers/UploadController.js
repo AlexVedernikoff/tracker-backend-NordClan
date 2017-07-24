@@ -9,23 +9,57 @@ const stringHelper = require('../components/StringHelper');
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 1;
 
-
-exports.upload = function(req, res, next) {
+exports.delete = function(req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('id').trim();
   req.checkParams('entity', 'entity must be \'task\' or \'project\'' ).isIn(['task',  'project']);
-  req.checkParams('id', 'entityId must be int').isInt();
+  req.checkParams('entityId', 'entityId must be int').isInt();
+  req.checkParams('attachmentId', 'entityId must be int').isInt();
   req
     .getValidationResult()
-    .then((result) => {
-      if (!result.isEmpty()) return next(createError(400, result));
+    .then((validationResult) => {
+      if(!validationResult.isEmpty()) return next(createError(400, validationResult));
+      
+      const modelName = stringHelper.firstLetterUp(req.params.entity);
+      const modelFileName = modelName + 'Attachments';
+      
+      
+      models[modelFileName].destroy({
+        where: {
+          id: req.params.attachmentId
+        }
+      })
+        .then(()=>{
+          return queries.file.getFilesByModel(modelFileName, req.params.entityId)
+            .then((files) => {
+              res.end(JSON.stringify(files));
+            });
+        })
+        .catch((err) => next(createError(err)));
+  
+      
+      
+    });
+
+};
+
+exports.upload = function(req, res, next) {
+  req.sanitize('entity').trim();
+  req.sanitize('entityId').trim();
+  req.checkParams('entity', 'entity must be \'task\' or \'project\'' ).isIn(['task',  'project']);
+  req.checkParams('entityId', 'entityId must be int').isInt();
+  req
+    .getValidationResult()
+    .then((validationResult) => {
+      if(!validationResult.isEmpty()) return next(createError(400, validationResult));
+      
       const modelName = stringHelper.firstLetterUp(req.params.entity);
       const modelFileName = modelName + 'Attachments';
       let uploadDir =  '/uploads/' + req.params.entity + 'sAttachments/';
       
       
       models[modelName]
-        .findByPrimary(req.params.id, {
+        .findByPrimary(req.params.entityId, {
           attributes: ['id']
         })
         .then((model)=>{
@@ -39,11 +73,9 @@ exports.upload = function(req, res, next) {
           let previewPromise;
           let previewPath = null;
           
-          form.parse(req, function(err, fields, files) {
-            console.log(fields);
-            console.log(files);
+          form.parse(req, function(err) {
+            if(err) throw createError(err);
           });
-          form.encoding = 'utf-8';
           
           form
             .on('fileBegin', (name, file) => {
@@ -56,61 +88,57 @@ exports.upload = function(req, res, next) {
             })
             .on('end', () => {
               
-              // Превью у картинки
-              if(['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) {
-                previewPromise = new Promise(function (resolve, reject) {
-                  gm('./public/' + filePath)
-                    .size({}, function (err, size) {
-                      if (err) throw new Error('GraphicsMagick error');
-                      if (!err && size.width) {
-                        if (size.width >= size.height) {
-                          this.resize(null, 200);
-                        } else if (size.width < size.height) {
-                          this.resize(200, null);
+              if(file) {
+                // Превью у картинки
+                if(['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) {
+                  previewPromise = new Promise(function (resolve, reject) {
+                    gm('./public/' + filePath)
+                      .size({}, function (err, size) {
+                        if (err) throw new Error('GraphicsMagick error');
+                        if (!err && size.width) {
+                          if (size.width >= size.height) {
+                            this.resize(null, 200);
+                          } else if (size.width < size.height) {
+                            this.resize(200, null);
+                          }
                         }
-                      }
-                      let preview = uploadDir + '/200-' + file.name;
-                      this.write('./public/' + preview, function (err) {
-                        if (err) reject(err);
-                        previewPath = preview;
-                        resolve();
-                      });
-                    });
-                });
-              } else {
-                previewPromise = Promise.resolve();
-              }
-  
-              previewPromise
-                .then(()=>{
-                  models[modelFileName]
-                    .create({
-                      taskId: req.params.id,
-                      projectId: req.params.id,
-                      authorId: req.user.id,
-                      fileName: file.name,
-                      type: file.type.match(/^(.*)\//)[1],
-                      size: file.size,
-                      path: filePath,
-                      previewPath: previewPath,
-                    })
-                    .then(() => {
-                      return queries.file.getFilesByModel(modelFileName, req.params.id)
-                        .then((files) => {
-                          res.end(JSON.stringify(files));
+                        let preview = uploadDir + '/200-' + file.name;
+                        this.write('./public/' + preview, function (err) {
+                          if (err) reject(err);
+                          previewPath = preview;
+                          resolve();
                         });
-                    })
-                    .catch((err) => next(createError(err)));
-                });
+                      });
+                  });
+                } else {
+                  previewPromise = Promise.resolve();
+                }
+  
+                previewPromise
+                  .then(()=>{
+                    return models[modelFileName]
+                      .create({
+                        taskId: req.params.entityId,
+                        projectId: req.params.entityId,
+                        authorId: req.user.id,
+                        fileName: file.name,
+                        type: file.type.match(/^(.*)\//)[1],
+                        size: file.size,
+                        path: filePath,
+                        previewPath: previewPath,
+                      })
+                      .then(() => {
+                        return queries.file.getFilesByModel(modelFileName, req.params.entityId)
+                          .then((files) => {
+                            res.end(JSON.stringify(files));
+                          });
+                      });
+                  })
+                  .catch((err) => next(createError(err)));
+              } else {
+                res.end();
+              }
               
-
-              
-            })
-            .on('progress', function(bytesReceived, bytesExpected) {
-
-            })
-            .on('aborted', function() {
-            
             })
             .on('error', function(err) {
               next(err);
