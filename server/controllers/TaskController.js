@@ -330,18 +330,17 @@ exports.list = function(req, res, next){
 
 
 exports.setStatus = function(req, res, next){
-  if(!req.params.id) return next(createError(400, 'id must be'));
-  if(req.params.id && !req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  if(req.params.taskId && !req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if(!req.body.statusId) return next(createError(400, 'statusId must be'));
-  if(req.body.statusId && !req.body.statusId(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  if(req.body.statusId && !req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be int'));
   
-  Task.build( {id: req.params.id, statusId: req.body.statusId}).validate({fields: ['id', 'statusId']})
+  Task.build( {id: req.params.taskId, statusId: req.body.statusId}).validate({fields: ['id', 'statusId']})
     .then(validate => {
       if(validate) throw createError(validate);
     })
     .then(() => {
       return Task
-        .findByPrimary(req.params.id, { validate: true, attributes: ['id'] })
+        .findByPrimary(req.params.taskId, { validate: true, attributes: ['id'] })
         .then((task) => {
           if(!task) { return next(createError(404)); }
 
@@ -352,7 +351,7 @@ exports.setStatus = function(req, res, next){
             .then((model)=>{
               res.end(JSON.stringify({
                 id: model.id,
-                statusId: model.statusId
+                statusId: +model.statusId
               }));
             });
         });

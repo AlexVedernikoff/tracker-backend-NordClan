@@ -26,11 +26,11 @@ router.get('/project/:id', ProjectController.read);
 router.put('/project/:id', ProjectController.update);
 router.delete('/project/:id', ProjectController.delete);
 router.get('/project', ProjectController.list);
-router.put('/project-status/:id', ProjectController.setStatus);
+router.put('/project/:id/status', ProjectController.setStatus);
 
-router.post('/project-users', ProjectUsersController.create);
-router.get('/project-users/:projectId', ProjectUsersController.list);
-router.delete('/project-users/:projectId/:userId', ProjectUsersController.delete);
+router.post('/project/:projectId/users', ProjectUsersController.create);
+router.get('/project/:projectId/users', ProjectUsersController.list);
+router.delete('/project/:projectId/users/:userId', ProjectUsersController.delete);
 
 router.get('/portfolio', PortfolioController.list);
 router.put('/portfolio/:id', PortfolioController.update);
@@ -45,17 +45,17 @@ router.get('/sprint/:id', SprintController.read);
 router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
-router.put('/sprint-status/:id', SprintController.setStatus);
+router.put('/sprint/:id/status', SprintController.setStatus);
 
 router.post('/task', TaskController.create);
 router.get('/task/:id', TaskController.read);
 router.put('/task/:id', TaskController.update);
 router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
-router.put('/task-status/:id', TaskController.setStatus);
-router.post('/task-users', TaskUsersController.create);
-router.post('/task-links/', TaskTasksController.create);
-router.delete('/task-links/:id', TaskTasksController.delete);
+router.put('/task/:taskId/status', TaskController.setStatus);
+router.post('/task/:taskId/users', TaskUsersController.create);
+router.post('/task/:taskId/links/', TaskTasksController.create);
+router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
 router.get('/tag/autocompliter/:taggable', TagController.autocompliter);
 router.post('/tag', TagController.create);

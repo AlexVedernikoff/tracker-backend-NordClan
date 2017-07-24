@@ -219,7 +219,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/project-status/{projectId}': {
+    '/project/{projectId}/status': {
       put: {
         tags: ['Projects'],
         summary: 'Изменить статус конкретного проекта',
@@ -241,7 +241,7 @@ module.exports = {
       },
     },
 
-    '/project-users': {
+    '/project/{projectId}/users': {
       post: {
         tags: ['Projects'],
         summary: 'Привязать пользователя к конкретному проекту',
@@ -249,7 +249,7 @@ module.exports = {
           {
             name: 'projectId',
             type: 'integer',
-            in: 'formData',
+            in: 'path',
             required: true
           },
           {
@@ -267,8 +267,6 @@ module.exports = {
         ],
         responses: responsesCodes
       },
-    },
-    '/project-users/{projectId}': {
       get: {
         tags: ['Projects'],
         summary: 'Получить пользователей проекта с их ролями',
@@ -283,7 +281,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/project-users/{projectId}/{userId}': {
+    '/project/{projectId}/users/{userId}': {
       delete: {
         tags: ['Projects'],
         summary: 'Отвязать пользователя от конкретного проекта',
@@ -548,7 +546,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/sprint-status/{sprintId}': {
+    '/sprint/{sprintId}/status': {
       put: {
         tags: ['Sprints'],
         summary: 'Изменить статус конкретного спринта',
@@ -785,7 +783,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task-status/{taskId}': {
+    '/task/{taskId}/status': {
       put: {
         tags: ['Tasks'],
         summary: 'Изменить статус конкретной задачи',
@@ -806,7 +804,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task-users': {
+    '/task/{taskId}/users': {
       post: {
         tags: ['Tasks'],
         summary: 'Назначить исполнителем пользователя на проект',
@@ -814,7 +812,7 @@ module.exports = {
           {
             name: 'taskId',
             type: 'integer',
-            in: 'formData',
+            in: 'path',
             required: true
           },
           {
@@ -834,7 +832,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task-links': {
+    '/task/{taskId}/links': {
       post: {
         tags: ['Tasks'],
         summary: 'Присвязать к задаче другую задачу',
@@ -842,7 +840,7 @@ module.exports = {
           {
             name: 'taskId',
             type: 'integer',
-            in: 'formData',
+            in: 'path',
             required: true
           },
           {
@@ -855,7 +853,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task-links/{taskId}': {
+    '/task/{taskId}/links/{linkedTaskId}': {
       delete: {
         tags: ['Tasks'],
         summary: 'Отвязать от задачи другую задачу',
@@ -869,7 +867,7 @@ module.exports = {
           {
             name: 'linkedTaskId',
             type: 'integer',
-            in: 'formData',
+            in: 'path',
             required: true
           },
         ],

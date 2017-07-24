@@ -4,9 +4,9 @@ const models = require('../models');
 const queries = require('../models/queries');
 
 exports.create = function(req, res, next){
-  if(!req.body.projectId) return next(createError(400, 'projectId need'));
-  if(!Number.isInteger(+req.body.projectId)) return next(createError(400, 'projectId must be int'));
-  if(+req.body.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+  if(!req.params.projectId) return next(createError(400, 'projectId need'));
+  if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
+  if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
   if(!req.body.userId) return next(createError(400, 'userId need'));
   if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
@@ -33,12 +33,12 @@ exports.create = function(req, res, next){
 
   Promise.all([
     queries.user.findOneActiveUser(req.body.userId),
-    queries.project.findOneActiveProject(req.body.projectId)
+    queries.project.findOneActiveProject(req.params.projectId)
   ])
     .then(() => {
       return models.ProjectUsers
         .findOrCreate({where: {
-          projectId: req.body.projectId,
+          projectId: req.params.projectId,
           userId: req.body.userId,
           deletedAt: null
         }})
@@ -47,7 +47,7 @@ exports.create = function(req, res, next){
 
           return projectUser.updateAttributes({rolesIds: rolesIds})
             .then(() => {
-              return queries.projectUsers.getUsersByProject(req.body.projectId)
+              return queries.projectUsers.getUsersByProject(req.params.projectId)
                 .then((users) => {
                   res.end(JSON.stringify(users));
                 });

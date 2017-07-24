@@ -4,23 +4,23 @@ const queries = require('../models/queries');
 
 
 exports.create = function(req, res, next) {
-  if(!req.body.taskId) return next(createError(400, 'taskId must be not empty'));
-  if(!req.body.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
+  if(!req.params.taskId) return next(createError(400, 'taskId must be not empty'));
+  if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if(!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if(!req.body.linkedTaskId.match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
   
-  req.body.taskId = req.body.taskId.trim();
-  req.body.linkedTaskId = req.body.taskId.trim();
+  req.params.taskId = req.params.taskId.trim();
+  req.body.linkedTaskId = req.body.linkedTaskId.trim();
   
   models.TaskTasks.findOrCreate({
     where: {
-      taskId: req.body.taskId,
+      taskId: req.params.taskId,
       linkedTaskId: req.body.linkedTaskId
     },
     attributes: ['id']
   })
     .spread(() => {
-      return queries.taskTasks.findLinkedTasks(req.body.taskId);
+      return queries.taskTasks.findLinkedTasks(req.params.taskId);
     })
     .then((result) => {
       res.end(JSON.stringify(result));
@@ -30,21 +30,20 @@ exports.create = function(req, res, next) {
 
 
 exports.delete = function(req, res, next) {
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
-  if(!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
-  if(!req.body.linkedTaskId.match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
+  if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
+  if(!req.params.linkedTaskId.match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
   
-  req.params.id = req.body.taskId.trim();
-  req.body.linkedTaskId = req.body.taskId.trim();
+  req.params.taskId = req.params.taskId.trim();
+  req.params.linkedTaskId = req.params.linkedTaskId.trim();
   
   models.TaskTasks.destroy({
     where: {
-      taskId: req.params.id,
-      linkedTaskId: req.body.linkedTaskId
+      taskId: req.params.taskId,
+      linkedTaskId: req.params.linkedTaskId
     }
   })
     .then(() => {
-      return queries.taskTasks.findLinkedTasks(req.params.id);
+      return queries.taskTasks.findLinkedTasks(req.params.taskId);
     })
     .then((result) => {
       res.end(JSON.stringify(result));
