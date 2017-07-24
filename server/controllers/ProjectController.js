@@ -314,8 +314,8 @@ exports.list = function(req, res, next){
           include: queryIncludes,
           where: where,
           order: [
-            ['statusId', 'DESC'],
-            ['createdAt', 'DESC'],
+            ['statusId', 'ASC'],
+            ['createdAt', 'ASC'],
           ],
           subQuery: true,
         })
@@ -334,31 +334,19 @@ exports.list = function(req, res, next){
               if(projects) {
                 for(let key in projects) {
                   let row = projects[key].dataValues;
+                  
                   if(row.itemTag) row.tags = Object.keys(row.itemTag).map((k) => row.itemTag[k].tag.name); // Преобразую теги в массив
                   row.elemType = 'project';
                   delete row.itemTag;
-                  if(row.currentSprints && row.currentSprints[0]) {
+                  
+                  if(row.currentSprints && row.currentSprints[0]) { // преобразую спринты
                     row.currentSprints = [row.currentSprints[0]];
                   }
-
-
-                  if(row.portfolioId === null) {
-                    resultProjects['project-' + row.id] = row;
-                  } else {
-                    if(!resultProjects['portfolio-' + row.portfolioId]) {
-                      resultProjects['portfolio-' + row.portfolioId] = {
-                        elemType: 'portfolio',
-                        id: row.portfolioId,
-                        name: row.portfolio.name,
-                        data: []
-                      };
-                    }
-
-                    resultProjects['portfolio-' + row.portfolioId].data.push(row);
-
-                  }
-
+                  
+                  projects[key].dataValues = row;
                 }
+                
+                resultProjects = setProjectToPortfolios(projects);
               }
 
 
@@ -412,3 +400,31 @@ exports.setStatus = function(req, res, next){
       next(err);
     });
 };
+
+
+function setProjectToPortfolios(projects) {
+  const result = [];
+  
+  projects.forEach((project) => {
+    
+    if(project.portfolioId === null) {
+      result['project-' + project.id] = project;
+    } else {
+      if(!result['portfolio-' + project.portfolioId]) {
+        result['portfolio-' + project.portfolioId] = {
+          elemType: 'portfolio',
+          id: project.portfolioId,
+          name: project.portfolio.name,
+          data: []
+        };
+      }
+  
+      result['portfolio-' + project.portfolioId].data.push(project);
+    }
+    
+  });
+  
+  return result;
+
+  
+}
