@@ -70,7 +70,7 @@ module.exports = function(sequelize, DataTypes) {
     prioritiesId: {
       field: 'priorities_id',
       type: DataTypes.INTEGER,
-      defaultValue: null,
+      defaultValue: 3,
       validate: {
         isInt: true
       }

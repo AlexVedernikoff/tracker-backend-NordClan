@@ -91,10 +91,6 @@ exports.delete = function(req, res, next){
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  if(req.query.fields) {
-    req.query.fields = req.query.fields.split(',').map((el) => el.trim());
-    Portfolio.checkAttributes(req.query.fields);
-  }
   
   let where = {
     deletedAt: {$eq: null} // IS NULL
@@ -108,16 +104,20 @@ exports.list = function(req, res, next){
 
   Portfolio
     .findAll({
-      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
-      limit: req.query.pageSize ? +req.query.pageSize : 1000,
+      attributes: ['id','name'],
+      limit: req.query.pageSize ? +req.query.pageSize : 20,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
       subQuery: true,
+      order: [
+        ['name', 'ASC'],
+      ],
     })
     .then(projects => {
 
       return Portfolio
         .count({
+          where: where,
           group: ['Portfolio.id']
         })
         .then((count) => {
@@ -148,29 +148,3 @@ exports.list = function(req, res, next){
 
 };
 
-exports.autocomplete = function(req, res, next){
-  if(!req.query.portfolioName) return next(createError(400, 'portfolioName need'));
-  let responseObject = [];
-  Portfolio
-    .findAll({
-      attributes: ['id','name'],
-      where: {
-        name: {
-          $iLike: '%' + req.query.portfolioName + '%'
-        }
-      }
-    })
-    .then(portfolios => {
-      portfolios.forEach((portfolio) => {
-        responseObject.push({
-          id: portfolio.id,
-          name: portfolio.name
-        });
-      });
-
-      res.end(JSON.stringify(responseObject));
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
