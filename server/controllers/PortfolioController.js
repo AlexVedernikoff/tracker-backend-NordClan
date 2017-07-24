@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const _ = require('underscore');
 const Portfolio = require('../models').Portfolio;
 const Tag = require('../models').Tag;
+const models = require('../models');
 
 exports.create = function(req, res, next){
   Portfolio.beforeValidate((model) => {
@@ -109,6 +110,14 @@ exports.list = function(req, res, next){
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
       subQuery: true,
+      include: [
+        {
+          as: 'projects',
+          model: models.Project,
+          required: true,
+          attributes: [],
+        }
+      ],
       order: [
         ['name', 'ASC'],
       ],
@@ -118,6 +127,14 @@ exports.list = function(req, res, next){
       return Portfolio
         .count({
           where: where,
+          include: [
+            {
+              as: 'projects',
+              model: models.Project,
+              required: true,
+              attributes: [],
+            }
+          ],
           group: ['Portfolio.id']
         })
         .then((count) => {
