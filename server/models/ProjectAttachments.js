@@ -1,13 +1,15 @@
+const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
+
 module.exports = function(sequelize, DataTypes) {
-  const TaskFiles = sequelize.define('TaskFiles', {
+  const ProjectAttachments = sequelize.define('ProjectAttachments', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    taskId: {
-      field: 'task_id',
+    projectId: {
+      field: 'project_id',
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -21,6 +23,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       trim: true,
       allowNull: false
+    },
+    previewPath: {
+      type: DataTypes.STRING(255),
+      trim: true,
+      allowNull: true
     },
     authorId: {
       field: 'author_id',
@@ -37,13 +44,22 @@ module.exports = function(sequelize, DataTypes) {
       trim: true,
       allowNull: false
     },
+    createdAt: {type: DataTypes.DATE, field: 'created_at'},
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
   }, {
     underscored: true,
     timestamps: true,
-    paranoid: false,
-    tableName: 'task_files'
+    updatedAt: false,
+    paranoid: true,
+    tableName: 'project_attachments',
+    hooks: {
+      afterFind: function(model) {
+        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+      }
+    }
   });
   
+  ProjectAttachments.defaultSelect = ['id', 'fileName', 'path', 'previewPath', 'size', 'type'];
   
-  return TaskFiles;
+  return ProjectAttachments;
 };

@@ -18,8 +18,8 @@ const Models  = [
   models.ProjectStatusesDictionary,
   models.SprintStatusesDictionary,
   models.TaskStatusesDictionary,*/
-  models.ProjectFiles,
-  models.TaskFiles,
+  models.ProjectAttachments,
+  models.TaskAttachments,
 ];
 
 const dictionariesModels  = [

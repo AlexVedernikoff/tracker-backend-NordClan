@@ -74,6 +74,11 @@ exports.read = function(req, res, next){
             model: models.ProjectUsers,
             attributes: ['rolesIds']
           },
+        },
+        {
+          as: 'attachments',
+          model: models.ProjectAttachments,
+          attributes: models.ProjectAttachments.defaultSelect
         }
       ]
     })

@@ -81,6 +81,11 @@ exports.read = function(req, res, next){
           model: models.TaskUsers,
           attributes: []
         },
+      },
+      {
+        as: 'attachments',
+        model: models.TaskAttachments,
+        attributes: models.TaskAttachments.defaultSelect
       }
     ]
   })

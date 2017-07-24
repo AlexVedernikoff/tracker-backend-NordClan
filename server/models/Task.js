@@ -67,14 +67,6 @@ module.exports = function(sequelize, DataTypes) {
         notEmpty: true, // не пустая строка
       }
     },
-    /*    linkedTasks: {
-      field: 'linked_tasks',
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: null,
-      validate: {
-        notEmpty: true, // не пустая строка
-      }
-    },*/
     prioritiesId: {
       field: 'priorities_id',
       type: DataTypes.INTEGER,
@@ -178,6 +170,11 @@ module.exports = function(sequelize, DataTypes) {
         model: models.TaskUsers,
         unique: false,
       },
+      foreignKey: 'task_id',
+    });
+
+    Task.hasMany(models.TaskAttachments, {
+      as: 'attachments',
       foreignKey: 'task_id',
     });
 
