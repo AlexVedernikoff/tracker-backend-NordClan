@@ -306,34 +306,28 @@ module.exports = {
     },
 
     '/portfolio': {
-      // get: {
-      // 	tags: ['Portfolios'],
-      // 	summary: 'Получить все портфели',
-      // 	parameters: [
-      // 		{
-      // 			name: 'fields',
-      //			description: 'можно разделять через ","',
-      // 			type: 'string',
-      // 			in: 'query',
-      // 		},
-      // 		{
-      // 			name: 'name',
-      // 			type: 'string',
-      // 			in: 'query',
-      // 		},
-      // 		{
-      // 			name: 'pageSize',
-      // 			type: 'integer',
-      // 			in: 'query',
-      // 		},
-      // 		{
-      // 			name: 'currentPage',
-      // 			type: 'integer',
-      // 			in: 'query',
-      // 		}
-      // 	],
-      // 	responses: responsesCodes
-      // },
+      get: {
+        tags: ['Portfolios'],
+        summary: 'Получить все портфели',
+        parameters: [
+          {
+            name: 'name',
+            type: 'string',
+            in: 'query',
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query',
+          },
+          {
+            name: 'currentPage',
+            type: 'integer',
+            in: 'query',
+          }
+        ],
+        responses: responsesCodes
+      },
       // post: {
       // 	tags: ['Portfolios'],
       // 	summary: 'Создать портфель',
@@ -394,24 +388,8 @@ module.exports = {
       // 	responses: responsesCodes
       // },
     },
-    '/portfolio/autocompleter': {
-      get: {
-        tags: ['Portfolios'],
-        summary: '',
-        parameters: [
-          {
-            name: 'portfolioName',
-            type: 'integer',
-            in: 'query',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
 
-
-
+    
 
     '/sprint': {
       get: {
