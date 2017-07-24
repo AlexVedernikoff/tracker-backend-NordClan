@@ -66,6 +66,10 @@ exports.read = function(req, res, next){
       {
         as: 'linkedTasks',
         model: models.Task,
+        through: {
+          model: models.TaskTasks,
+          attributes: []
+        },
         attributes: ['id', 'name']
       },
       {
@@ -264,6 +268,11 @@ exports.list = function(req, res, next){
       include: req.query.tags ? [includeForCount, includeForQuery , includePerformer, includeSprint] : [includeForQuery, includePerformer, includeSprint],
       where: where,
       subQuery: true,
+      order: [
+        ['prioritiesId', 'ASC'],
+        ['createdAt', 'DESC'],
+        ['name', 'ASC'],
+      ],
     })
     .then(projects => {
 

@@ -67,18 +67,10 @@ module.exports = function(sequelize, DataTypes) {
         notEmpty: true, // не пустая строка
       }
     },
-    /*    linkedTasks: {
-      field: 'linked_tasks',
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: null,
-      validate: {
-        notEmpty: true, // не пустая строка
-      }
-    },*/
     prioritiesId: {
       field: 'priorities_id',
       type: DataTypes.INTEGER,
-      defaultValue: null,
+      defaultValue: 3,
       validate: {
         isInt: true
       }
