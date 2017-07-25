@@ -19,7 +19,7 @@ router.delete('/auth/logout', AuthController.logout);
 
 router.get('/user/autocompleter', UserController.autocomplete);
 router.get('/user/me', UserController.me);
-router.get('/user/:id', UserController.raed);
+router.get('/user/:id', UserController.read);
 
 router.get('/:taggable(project|task)/tag', TagController.autocompliter);
 router.post('/:taggable(project|task)/:taggableId/tag', TagController.create);

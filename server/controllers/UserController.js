@@ -6,51 +6,66 @@ exports.me = function(req, res, next){
     .sendUserInfo();
 };
 
-exports.raed = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
-  new UserController(req, res, next, req.params.id)
-    .sendUserInfo()
-    .catch((err) => {
-      next(err);
-    });
+exports.read = function(req, res, next){
+  req.sanitize('id').trim();
+  req.checkParams('id', 'id must be int').notEmpty().isInt();
+  req.getValidationResult()
+    .then((validationResult) => {
+      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+      
+      new UserController(req, res, next, req.params.id)
+        .sendUserInfo()
+        .catch((err) => {
+          next(err);
+        });
+      
+    })
+    .catch((err) => next(createError(err)));
 };
 
 exports.autocomplete = function(req, res, next) {
-  if(!req.query.userName) return next(createError(400, 'userName need'));
-  let result = [];
-
-  return models.User
-    .findAll({
-      where: {
-        active: 1,
-        $or: [
-          {
-            fullNameRu: {
-              $iLike: '%' + req.query.userName.trim() + '%'
-            }
-          },
-          {
-            fullNameRu: {
-              $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
-            }
-          },
-        ],
+  req.sanitize('userName').trim();
+  req.checkQuery('userName', 'userName must be not empty' ).notEmpty();
+  req.getValidationResult()
+    .then((validationResult) => {
+      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
   
-      },
-      limit: req.query.pageSize ? +req.query.pageSize : 10,
-      attributes: ['id', 'firstNameRu', 'lastNameRu']
+      let result = [];
+  
+      return models.User
+        .findAll({
+          where: {
+            active: 1,
+            $or: [
+              {
+                fullNameRu: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
+              },
+              {
+                fullNameRu: {
+                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                }
+              },
+            ],
+        
+          },
+          limit: req.query.pageSize ? +req.query.pageSize : 10,
+          attributes: ['id', 'firstNameRu', 'lastNameRu']
+        })
+        .then((users) => {
+      
+          users.forEach((user) => {
+            result.push({fullNameRu: user.fullNameRu, id: user.id});
+          });
+          res.end(JSON.stringify(result));
+        })
+        .catch((err) => {
+          next(err);
+        });
+      
     })
-    .then((users) => {
-
-      users.forEach((user) => {
-        result.push({fullNameRu: user.fullNameRu, id: user.id});
-      });
-      res.end(JSON.stringify(result));
-    })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(createError(err)));
 };
 
 
@@ -94,7 +109,6 @@ class UserController {
         }
 
         this.res.end(JSON.stringify(user.dataValues));
-
       })
       .catch((err) => {
         this.next(createError(err));
