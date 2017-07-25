@@ -12,18 +12,27 @@ exports.create = function(req, res, next) {
   req.params.taskId = req.params.taskId.trim();
   req.body.linkedTaskId = req.body.linkedTaskId.trim();
   
-  models.TaskTasks.findOrCreate({
-    where: {
-      taskId: req.params.taskId,
-      linkedTaskId: req.body.linkedTaskId
-    },
-    attributes: ['id']
-  })
-    .spread(() => {
-      return queries.taskTasks.findLinkedTasks(req.params.taskId);
+  Promise.all([
+    models.TaskTasks.findOrCreate({
+      where: {
+        taskId: req.params.taskId,
+        linkedTaskId: req.body.linkedTaskId
+      },
+      attributes: ['id']
+    }),
+    models.TaskTasks.findOrCreate({
+      where: {
+        taskId: req.body.linkedTaskId,
+        linkedTaskId: req.params.taskId
+      },
+      attributes: ['id']
     })
-    .then((result) => {
-      res.end(JSON.stringify(result));
+  ])
+    .then(() => {
+      return queries.taskTasks.findLinkedTasks(req.params.taskId)
+        .then((result) => {
+          res.end(JSON.stringify(result));
+        });
     })
     .catch((err)=>next(err));
 };
