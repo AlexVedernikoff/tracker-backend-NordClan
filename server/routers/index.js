@@ -21,6 +21,11 @@ router.get('/user/autocompleter', UserController.autocomplete);
 router.get('/user/me', UserController.me);
 router.get('/user/:id', UserController.raed);
 
+router.get('/:taggable(project|task)/tag', TagController.autocompliter);
+router.post('/:taggable(project|task)/:taggableId/tag', TagController.create);
+router.get('/:taggable(project|task)/:taggableId/tag', TagController.list);
+router.delete('/:taggable(project|task)/:taggableId/tag/:tag', TagController.delete);
+
 router.post('/project', ProjectController.create);
 router.get('/project/:id', ProjectController.read);
 router.put('/project/:id', ProjectController.update);
@@ -57,16 +62,12 @@ router.post('/task/:taskId/users', TaskUsersController.create);
 router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
-router.get('/tag/autocompliter/:taggable', TagController.autocompliter);
-router.post('/tag', TagController.create);
-router.delete('/tag/:taggable/:id', TagController.delete);
-router.get('/tag/:taggable/:id', TagController.list);
 
-router.get('/dictionary/statuses/:entity', DictionaryController.statuses);
+router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
 router.get('/dictionary/project-roles', DictionaryController.projectRoles);
 
-router.post('/upload/:entity/:entityId',  UploadController.upload);
-router.delete('/upload/:entity/:entityId/:attachmentId',  UploadController.delete);
+router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
+router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', UploadController.delete);
 
 
 module.exports = router;

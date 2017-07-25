@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const StringHelper = require('../components/StringHelper');
 const models = require('../models');
 
-exports.statuses = function(req, res, next){
+exports.status = function(req, res, next){
   if(!req.params.entity) return next(createError(400, 'entity need'));
   if(['project', 'sprint', 'task'].indexOf(req.params.entity) === -1) return next(createError(400, 'entity must be only \'project\', \'sprint\' or \'task\''));
   const modelName = StringHelper.firstLetterUp(req.params.entity) + 'StatusesDictionary';

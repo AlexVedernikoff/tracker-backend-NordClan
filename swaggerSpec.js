@@ -240,7 +240,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-
     '/project/{projectId}/users': {
       post: {
         tags: ['Projects'],
@@ -302,7 +301,138 @@ module.exports = {
         responses: responsesCodes
       },
     },
-
+    '/project/{projectId}/tag': {
+      post: {
+        tags: ['Projects'],
+        summary: 'Создать тег для конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'tag',
+            description: 'Тег',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить все теги для конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/project/{projectId}/tag/{tag}': {
+      delete: {
+        tags: ['Projects'],
+        summary: 'Удалить тег для конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'tag',
+            description: 'можно разделять через ","',
+            type: 'string',
+            in: 'path',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/project/tag': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Поиск тегов по всем проектам',
+        parameters: [
+          {
+            name: 'tagName',
+            description: 'Тег для поиска',
+            type: 'string',
+            in: 'query',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/project/status/dictionary': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Справочник статусов проектов',
+        responses: responsesCodes
+      },
+    },
+    '/project/roles/dictionary': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Справочник ролей пользователей для проекта',
+        responses: responsesCodes,
+      },
+    },
+    '/project/{projectId}/attachment': {
+      post: {
+        tags: ['Projects'],
+        summary: 'Загрузить файл и привязать его к конкретному проекту',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'file',
+            type: 'file',
+            in: 'formData',
+            required: true
+          },
+        ]
+      }
+    },
+    '/project/{projectId}/attachment/{attachmentId}': {
+      delete: {
+        tags: ['Projects'],
+        summary: 'Удалить файли отвязать его от конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'attachmentId',
+            description: 'Id файла',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ]
+      }
+    },
+    
+    
+    
+    
     '/portfolio': {
       get: {
         tags: ['Portfolios'],
@@ -386,7 +516,6 @@ module.exports = {
       // 	responses: responsesCodes
       // },
     },
-
     
 
     '/sprint': {
@@ -567,7 +696,13 @@ module.exports = {
         responses: responsesCodes
       },
     },
-
+    '/sprint/status/dictionary/': {
+      get: {
+        tags: ['Sprints'],
+        summary: 'Справочник статусов спринтов',
+        responses: responsesCodes
+      },
+    },
 
 
     '/task': {
@@ -874,25 +1009,16 @@ module.exports = {
         responses: responsesCodes
       },
     },
-
-
-    '/tag': {
+  
+    '/task/{taskId}/tag': {
       post: {
-        tags: ['Tag'],
-        summary: 'Создать тег для сущности',
+        tags: ['Tasks'],
+        summary: 'Создать тег для конкретной задачи',
         parameters: [
           {
-            name: 'taggable',
-            description: 'Имя сущности: \'task\', \'project\'',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'taggableId',
-            description: 'ID сущности',
+            name: 'taskId',
             type: 'integer',
-            in: 'formData',
+            in: 'path',
             required: true
           },
           {
@@ -905,19 +1031,47 @@ module.exports = {
         ],
         responses: responsesCodes
       },
-    },
-    '/tag/autocompliter/{taggable}': {
       get: {
-        tags: ['Tag'],
-        summary: 'Поиск тегов по типу сущности',
+        tags: ['Tasks'],
+        summary: 'Получить все теги для конкретной задачи',
         parameters: [
           {
-            name: 'taggable',
-            description: 'Имя сущности: \'task\', \'project\'',
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/task/{taskId}/tag/{tag}': {
+      delete: {
+        tags: ['Tasks'],
+        summary: 'Удалить тег для конкретной задачи',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'tag',
+            description: 'можно разделять через ","',
             type: 'string',
             in: 'path',
             required: true
           },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/task/tag/': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Поиск тегов по всем задачам',
+        parameters: [
           {
             name: 'tagName',
             description: 'Тег для поиска',
@@ -929,60 +1083,54 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/tag/{taggable}/{taggableId}': {
+    '/task/status/dictionary/': {
       get: {
-        tags: ['Tag'],
-        summary: 'Получить теги для сущности',
-        parameters: [
-          {
-            name: 'taggable',
-            description: 'Имя сущности: \'task\', \'project\'',
-            type: 'string',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'taggableId',
-            description: 'ID сущности',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-      delete: {
-        tags: ['Tag'],
-        summary: 'Удалить тег для сущности',
-        parameters: [
-          {
-            name: 'taggable',
-            description: 'Имя сущности: \'task\', \'project\'',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'taggableId',
-            description: 'ID сущности',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'tag',
-            description: 'можно разделять через ","',
-            type: 'string',
-            in: 'query',
-            required: true
-          },
-        ],
+        tags: ['Tasks'],
+        summary: 'Справочник статусов задач',
         responses: responsesCodes
       },
     },
-
-
-
+    '/task/{taskId}/attachment': {
+      post: {
+        tags: ['Tasks'],
+        summary: 'Загрузить файл и привязать его к конкретной задаче',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'file',
+            type: 'file',
+            in: 'formData',
+            required: true
+          },
+        ]
+      }
+    },
+    '/task/{taskId}/attachment/{attachmentId}': {
+      delete: {
+        tags: ['Tasks'],
+        summary: 'Удалить файли отвязать его от конкретной задаче',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'attachmentId',
+            description: 'Id файла',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ]
+      }
+    },
 
     '/auth/login': {
       post: {
@@ -1058,89 +1206,6 @@ module.exports = {
         ],
       },
     },
-
-    '/dictionary/statuses/{entity}': {
-      get: {
-        tags: ['Dictionary'],
-        summary: 'Справочник статусов',
-        responses: responsesCodes,
-        parameters: [
-          {
-            name: 'entity',
-            type: 'string',
-            description: 'Может принимать значения: \'task\', \'sprint\', \'project\'',
-            in: 'path',
-            required: true
-          },
-        ],
-      },
-    },
-
-    '/dictionary/project-roles': {
-      get: {
-        tags: ['Dictionary'],
-        summary: 'Справочник ролей пользователей для проекта',
-        responses: responsesCodes,
-      },
-    },
-  
-    '/upload/{entity}/{entityId}': {
-      post: {
-        tags: ['Upload'],
-        summary: 'Загрузить файл и прикрепить его к сущности',
-        consumes: ['multipart/form-data'],
-        parameters: [
-          {
-            name: 'entity',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'entityId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'file',
-            type: 'file',
-            in: 'formData',
-            required: true
-          },
-        ]
-      },
-    },
-    '/upload/{entity}/{entityId}/{attachmentId}': {
-      delete: {
-        tags: ['Upload'],
-        summary: 'Удалить файл',
-        parameters: [
-          {
-            name: 'entity',
-            description: 'Имя сущности: \'task\', \'project\'',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'entityId',
-            description: 'Id сущности',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'attachmentId',
-            description: 'Id файла',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-        ]
-      }
-    }
-
 
   },
   securityDefinitions: {
