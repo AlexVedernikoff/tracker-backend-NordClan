@@ -21,7 +21,7 @@ module.exports = {
     title: 'Sim-Track API',
     version: '1.0.0'
   },
-  basePath: '/api',
+  basePath: '/api/v1',
   paths: {
     '/project': {
       get: {
@@ -1067,29 +1067,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task/tag/': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Поиск тегов по всем задачам',
-        parameters: [
-          {
-            name: 'tagName',
-            description: 'Тег для поиска',
-            type: 'string',
-            in: 'query',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
-    '/task/status/dictionary/': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Справочник статусов задач',
-        responses: responsesCodes
-      },
-    },
     '/task/{taskId}/attachment': {
       post: {
         tags: ['Tasks'],
@@ -1131,6 +1108,30 @@ module.exports = {
         ]
       }
     },
+    '/task/tag/': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Поиск тегов по всем задачам',
+        parameters: [
+          {
+            name: 'tagName',
+            description: 'Тег для поиска',
+            type: 'string',
+            in: 'query',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/task/status/dictionary/': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Справочник статусов задач',
+        responses: responsesCodes
+      },
+    },
+    
 
     '/auth/login': {
       post: {

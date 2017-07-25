@@ -19,16 +19,16 @@ exports.run = function() {
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({extended: false}));
   
-  app.get('/api/swagger/spec.js', function(req, res) {
+  app.get('/api/v1/swagger/spec.js', function(req, res) {
     res.send(require('../swaggerSpec.js'));
   });
   
   app.use(swagger.init(app, {
     apiVersion: '1.0',
     swaggerVersion: '2.0',
-    swaggerURL: '/api/swagger',
+    swaggerURL: '/api/v1/swagger',
     swaggerUI: './public/swagger/',
-    basePath: '/api/swagger',
+    basePath: '/api/v1/swagger',
   }));
   
   app.use(checkTokenMiddleWare);
@@ -43,7 +43,7 @@ exports.run = function() {
     next();
   });
   
-  app.use('/api', routes);
+  app.use('/api/v1', routes);
   app.use(errorHandlerMiddleWare);
   
   sequelize
