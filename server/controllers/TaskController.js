@@ -229,8 +229,13 @@ exports.list = function(req, res, next){
     attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
     through: {
       model: models.TaskUsers,
-      attributes: []
+      attributes: [],
+      
     },
+    where: req.query.performerId ? {
+      id: req.query.performerId
+    } : {}
+
   };
 
   let includeSprint = {

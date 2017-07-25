@@ -739,6 +739,11 @@ module.exports = {
             in: 'query',
           },
           {
+            name: 'performerId',
+            type: 'integer',
+            in: 'query',
+          },
+          {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
