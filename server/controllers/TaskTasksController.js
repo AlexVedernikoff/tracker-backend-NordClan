@@ -45,12 +45,20 @@ exports.delete = function(req, res, next) {
   req.params.taskId = req.params.taskId.trim();
   req.params.linkedTaskId = req.params.linkedTaskId.trim();
   
-  models.TaskTasks.destroy({
-    where: {
-      taskId: req.params.taskId,
-      linkedTaskId: req.params.linkedTaskId
-    }
-  })
+  Promise.all([
+    models.TaskTasks.destroy({
+      where: {
+        taskId: req.params.taskId,
+        linkedTaskId: req.params.linkedTaskId
+      }
+    }),
+    models.TaskTasks.destroy({
+      where: {
+        taskId: req.params.linkedTaskId,
+        linkedTaskId: req.params.taskId
+      }
+    })
+  ])
     .then(() => {
       return queries.taskTasks.findLinkedTasks(req.params.taskId);
     })
