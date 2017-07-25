@@ -178,6 +178,7 @@ exports.delete = function(req, res, next){
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if(req.query.performerId && !req.query.performerId.match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
   if(req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Task.checkAttributes(req.query.fields);
