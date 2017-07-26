@@ -235,7 +235,7 @@ exports.list = function(req, res, next){
     },
     where: req.query.performerId ? {
       id: req.query.performerId
-    } : {}
+    } : null,
 
   };
   
@@ -293,7 +293,7 @@ exports.list = function(req, res, next){
   Task
     .findAll({
       attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
-      limit: req.query.pageSize ? +req.query.pageSize : 1000,
+      limit: req.query.pageSize ? +req.query.pageSize : 25,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       include: includeForSelect,
       where: where,

@@ -309,7 +309,7 @@ exports.list = function(req, res, next){
       return Project
         .findAll({
           attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields)) : '',
-          limit: req.query.pageSize ? +req.query.pageSize : 100,
+          limit: req.query.pageSize ? +req.query.pageSize : 25,
           offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: queryIncludes,
           where: where,

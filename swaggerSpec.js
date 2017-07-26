@@ -897,6 +897,12 @@ module.exports = {
             in: 'formData',
           },
           {
+            name: 'parentId',
+            description: '0 чтобы сбросить родительскую задачу',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
             name: 'prioritiesId',
             type: 'integer',
             in: 'formData',
