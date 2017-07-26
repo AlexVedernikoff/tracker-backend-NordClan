@@ -127,6 +127,7 @@ exports.update = function(req, res, next){
 
       // сброс задаче в бек лог
       if(+req.body.sprintId === 0) req.body.sprintId = null;
+      if(+req.body.parentId === 0) req.body.parentId = null;
 
 
       row.updateAttributes(req.body)
