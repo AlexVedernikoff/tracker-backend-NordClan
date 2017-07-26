@@ -271,7 +271,7 @@ exports.list = function(req, res, next){
     attributes: [],
     where: {
       name: {
-        $or: req.query.tags ? req.query.tags.split(',').map((el) => el.trim()) : [],
+        $or: req.query.tags ? req.query.tags.split(',').map((el) => el.trim().toLowerCase()) : [],
       },
     },
     through: {

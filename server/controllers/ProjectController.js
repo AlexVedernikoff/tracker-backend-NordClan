@@ -298,7 +298,7 @@ exports.list = function(req, res, next){
           .findAll({
             where: {
               name: {
-                $or: req.query.tags.split(',').map((el) => el.trim())
+                $or: req.query.tags.split(',').map((el) => el.trim().toLowerCase())
               }
             }
           });
