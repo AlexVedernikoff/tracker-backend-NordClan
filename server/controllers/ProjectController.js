@@ -359,7 +359,7 @@ exports.list = function(req, res, next){
 
 
               let responseObject = {
-                currentPage: req.query.currentPage ? +req.query.currentPage : 1,
+                currentPage: +req.query.currentPage,
                 pagesCount: Math.ceil(count / req.query.pageSize),
                 pageSize: req.query.pageSize,
                 rowsCountAll: count,

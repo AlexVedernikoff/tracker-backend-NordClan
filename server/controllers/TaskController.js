@@ -184,6 +184,12 @@ exports.list = function(req, res, next){
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Task.checkAttributes(req.query.fields);
   }
+  if(!req.query.pageSize) {
+    req.query.pageSize = 25;
+  }
+  if(!req.query.currentPage) {
+    req.query.currentPage = 1;
+  }
   
   let where = {
     deletedAt: {$eq: null} // IS NULL
@@ -293,8 +299,8 @@ exports.list = function(req, res, next){
   Task
     .findAll({
       attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
-      limit: req.query.pageSize ? +req.query.pageSize : 25,
-      offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
+      limit: req.query.pageSize,
+      offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       include: includeForSelect,
       where: where,
       subQuery: true,
@@ -329,9 +335,9 @@ exports.list = function(req, res, next){
             ) : [];
 
           let responseObject = {
-            currentPage: req.query.currentPage ? +req.query.currentPage : 1,
-            pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
-            pageSize: req.query.pageSize ? +req.query.pageSize : +count,
+            currentPage: +req.query.currentPage,
+            pagesCount: Math.ceil(count / req.query.pageSize),
+            pageSize: req.query.pageSize,
             rowsCountAll: count,
             rowsCountOnCurrentPage: projectsRows.length,
             data: projectsRows
