@@ -234,9 +234,9 @@ exports.list = function(req, res, next){
       attributes: [],
       
     },
-    where: req.query.performerId ? {
-      id: req.query.performerId
-    } : {}
+    // where: req.query.performerId ? {
+    //   id: req.query.performerId
+    // } : {}
 
   };
 

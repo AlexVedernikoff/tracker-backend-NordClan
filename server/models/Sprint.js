@@ -50,7 +50,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.FLOAT,
       defaultValue: null,
       validate: {
-        isNumeric: true
+        isFloat: true
       }
     },
     authorId: {

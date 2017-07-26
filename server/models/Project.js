@@ -56,7 +56,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.FLOAT,
       defaultValue: null,
       validate: {
-        isNumeric: true
+        isFloat: true
       }
     },
     riskBudget: {
@@ -64,7 +64,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.FLOAT,
       defaultValue: null,
       validate: {
-        isNumeric: true
+        isFloat: true
       }
     },
     attaches: {
