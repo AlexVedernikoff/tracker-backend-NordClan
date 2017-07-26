@@ -34,7 +34,7 @@ exports.getAllTagsByModel = function(modelName, modelId) {
     });
 };
 
-// Обработчик тегов при создании записи проекта, задачи, спринта
+// Обработчик тегов при создании записи проекта, задачи
 exports.saveTagsForModel = function(Model, tagsString) {
   let tags = [];
   if(tagsString) {
@@ -46,7 +46,7 @@ exports.saveTagsForModel = function(Model, tagsString) {
   tags.forEach(function(itemTag) {
     chain = chain.then(() => {
       return models.Tag
-        .findOrCreate({where: {name: itemTag.trim()}})
+        .findOrCreate({where: {name: itemTag.toString().trim().toLowerCase()}})
         .spread((tag) => {
           return Model
             .addTag(tag);
