@@ -177,13 +177,16 @@ exports.list = function(req, res, next){
   if(req.query.dateSprintEnd && !req.query.dateSprintEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if(req.query.portfolioId && !req.query.portfolioId.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
   if(req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Project.checkAttributes(req.query.fields);
   }
+  
   if(!req.query.pageSize) {
     req.query.pageSize = 25;
   }
+  
   if(!req.query.currentPage) {
     req.query.currentPage = 1;
   }
@@ -194,6 +197,11 @@ exports.list = function(req, res, next){
   let where = {
     deletedAt: {$eq: null} // IS NULL
   };
+  
+  
+  if(req.query.portfolioId) {
+    where.portfolioId = req.query.portfolioId;
+  }
 
   if(req.query.name) {
     where.name = { $iLike: '%' + req.query.name + '%' };
