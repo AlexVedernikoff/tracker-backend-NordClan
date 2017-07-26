@@ -99,6 +99,7 @@ exports.read = function(req, res, next){
       }
 
       if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
+      delete model.dataValues.portfolioId;
       res.end(JSON.stringify(model.dataValues));
     })
     .catch((err) => {
@@ -239,7 +240,7 @@ exports.list = function(req, res, next){
   queryIncludes.push({
     as: 'portfolio',
     model: Portfolio,
-    attributes: ['name']
+    attributes: ['id','name']
   });
   
   // Фильтрация по дате
@@ -338,6 +339,7 @@ exports.list = function(req, res, next){
                   if(row.itemTag) row.tags = Object.keys(row.itemTag).map((k) => row.itemTag[k].tag.name); // Преобразую теги в массив
                   row.elemType = 'project';
                   delete row.itemTag;
+                  delete row.portfolioId;
                   
                   if(row.currentSprints && row.currentSprints[0]) { // преобразую спринты
                     row.currentSprints = [row.currentSprints[0]];
@@ -407,19 +409,19 @@ function setProjectToPortfolios(projects) {
   
   projects.forEach((project) => {
     
-    if(project.portfolioId === null) {
+    if(project.portfolio === null) {
       result['project-' + project.id] = project;
     } else {
-      if(!result['portfolio-' + project.portfolioId]) {
-        result['portfolio-' + project.portfolioId] = {
+      if(!result['portfolio-' + project.portfolio.id]) {
+        result['portfolio-' + project.portfolio.id] = {
           elemType: 'portfolio',
-          id: project.portfolioId,
+          id: project.portfolio.id,
           name: project.portfolio.name,
           data: []
         };
       }
   
-      result['portfolio-' + project.portfolioId].data.push(project);
+      result['portfolio-' + project.portfolio.id].data.push(project);
     }
     
   });
