@@ -181,6 +181,12 @@ exports.list = function(req, res, next){
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Project.checkAttributes(req.query.fields);
   }
+  if(!req.query.pageSize) {
+    req.query.pageSize = 25;
+  }
+  if(!req.query.currentPage) {
+    req.query.currentPage = 1;
+  }
   
   
   let resultProjects = {};
@@ -310,8 +316,8 @@ exports.list = function(req, res, next){
       return Project
         .findAll({
           attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields)) : '',
-          limit: req.query.pageSize ? +req.query.pageSize : 25,
-          offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
+          limit: req.query.pageSize,
+          offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: queryIncludes,
           where: where,
           order: [
@@ -348,17 +354,17 @@ exports.list = function(req, res, next){
                   projects[key].dataValues = row;
                 }
                 
-                resultProjects = setProjectToPortfolios(projects);
+                resultProjects = projects;
               }
 
 
               let responseObject = {
                 currentPage: req.query.currentPage ? +req.query.currentPage : 1,
-                pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
-                pageSize: req.query.pageSize ? +req.query.pageSize : +count,
+                pagesCount: Math.ceil(count / req.query.pageSize),
+                pageSize: req.query.pageSize,
                 rowsCountAll: count,
                 rowsCountOnCurrentPage: projects.length,
-                data: Object.keys(resultProjects).map((k) => resultProjects[k])
+                data: resultProjects,
               };
               res.end(JSON.stringify(responseObject));
 
@@ -402,31 +408,3 @@ exports.setStatus = function(req, res, next){
       next(err);
     });
 };
-
-
-function setProjectToPortfolios(projects) {
-  const result = [];
-  
-  projects.forEach((project) => {
-    
-    if(project.portfolio === null) {
-      result['project-' + project.id] = project;
-    } else {
-      if(!result['portfolio-' + project.portfolio.id]) {
-        result['portfolio-' + project.portfolio.id] = {
-          elemType: 'portfolio',
-          id: project.portfolio.id,
-          name: project.portfolio.name,
-          data: []
-        };
-      }
-  
-      result['portfolio-' + project.portfolio.id].data.push(project);
-    }
-    
-  });
-  
-  return result;
-
-  
-}
