@@ -46,6 +46,11 @@ module.exports = {
             in: 'query',
           },
           {
+            name: 'portfolioId',
+            type: 'integer',
+            in: 'query',
+          },
+          {
             name: 'dateSprintBegin',
             description: 'yyyy-mm-dd',
             type: 'string',
