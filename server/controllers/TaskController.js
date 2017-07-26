@@ -224,8 +224,7 @@ exports.list = function(req, res, next){
     };
   }
   
-  
-  let includePerformer = {
+  const includePerformer = {
     as: 'performer',
     model: models.User,
     attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
@@ -234,19 +233,32 @@ exports.list = function(req, res, next){
       attributes: [],
       
     },
-    // where: req.query.performerId ? {
-    //   id: req.query.performerId
-    // } : {}
+    where: req.query.performerId ? {
+      id: req.query.performerId
+    } : {}
 
   };
-
-  let includeSprint = {
+  
+  const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
     attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
   };
-
-  let includeForCount = {
+  
+  const includeTagSelect = {
+    as: 'tags',
+    model: Tag,
+    attributes: ['name'],
+    through: {
+      model: ItemTag,
+      attributes: []
+    },
+    order: [
+      ['name', 'ASC'],
+    ],
+  };
+  
+  const includeTagConst = {
     model: Tag,
     as: 'tagForQuery',
     required: true,
@@ -261,26 +273,29 @@ exports.list = function(req, res, next){
       attributes: []
     }
   };
-
-  let includeForQuery = {
-    as: 'tags',
-    model: Tag,
-    attributes: ['name'],
-    through: {
-      model: ItemTag,
-      attributes: []
-    },
-    order: [
-      ['name', 'ASC'],
-    ],
-  };
-
+  
+  let includeForSelect = [];
+  includeForSelect.push(includePerformer);
+  includeForSelect.push(includeSprint);
+  includeForSelect.push(includeTagSelect);
+  if(req.query.tags) {
+    includeForSelect.push(includeTagConst);
+  }
+  
+  let includeForCount = [];
+  if(req.query.tags) {
+    includeForCount.push(includeTagConst);
+  }
+  if(req.query.performerId) {
+    includeForCount.push(includePerformer);
+  }
+  
   Task
     .findAll({
       attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-      include: req.query.tags ? [includeForCount, includeForQuery , includePerformer, includeSprint] : [includeForQuery, includePerformer, includeSprint],
+      include: includeForSelect,
       where: where,
       subQuery: true,
       order: [
@@ -293,7 +308,7 @@ exports.list = function(req, res, next){
       Task
         .count({
           where: where,
-          include: req.query.tags ? [includeForCount] : [],
+          include: includeForCount,
           group: ['Task.id']
         })
         .then((count) => {
