@@ -12,3 +12,7 @@ exports.status = function(req, res, next){
 exports.projectRoles = function(req, res){
   res.end(JSON.stringify(models.ProjectRolesDictionary.values));
 };
+
+exports.timesheetTypes = function(req, res){
+  res.end(JSON.stringify(models.TimesheetTypesDictionary.values));
+};

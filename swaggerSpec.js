@@ -477,17 +477,17 @@ module.exports = {
     },
     '/portfolio/{portfolioId}': {
       get: {
-      	tags: ['Portfolios'],
-      	summary: 'Получить конкретный портфель',
-      	parameters: [
-      		{
-      			name: 'portfolioId',
-      			type: 'integer',
-      			in: 'path',
-      			required: true
-      		},
-      	],
-      	responses: responsesCodes
+        tags: ['Portfolios'],
+        summary: 'Получить конкретный портфель',
+        parameters: [
+          {
+            name: 'portfolioId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ],
+        responses: responsesCodes
       },
       put: {
         tags: ['Portfolios'],
@@ -1282,7 +1282,13 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    
+    '/task/timesheet/types/dictionary': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Справочник типов записей тайм шитов',
+        responses: responsesCodes,
+      },
+    },
 
     '/auth/login': {
       post: {
