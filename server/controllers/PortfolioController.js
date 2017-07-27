@@ -25,15 +25,7 @@ exports.read = function(req, res, next){
 
   Portfolio
     .findByPrimary(req.params.id, {
-      include: [
-        {
-          model: Tag,
-          attributes: ['name'],
-          through: {
-            attributes: []
-          }
-        }
-      ]
+      attributes: ['id', 'name']
     })
     .then((portfolio) => {
       if(!portfolio) { return next(createError(404)); }
