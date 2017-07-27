@@ -1138,13 +1138,14 @@ module.exports = {
           {
             name: 'onDate',
             description: 'yyyy-mm-dd',
-            type: 'date',
+            type: 'string',
+            format: 'date',
             in: 'formData',
             required: true
           },
           {
             name: 'typeId',
-            description: 'Тип активности',
+            description: 'Тип активности (см. словарь)',
             type: 'integer',
             in: 'formData',
             required: true
@@ -1183,13 +1184,15 @@ module.exports = {
           {
             name: 'dateBegin',
             description: 'yyyy-mm-dd',
-            type: 'date',
+            type: 'string',
+            format: 'date',
             in: 'query',
           },
           {
             name: 'dateEnd',
             description: 'yyyy-mm-dd',
-            type: 'date',
+            type: 'string',
+            format: 'date',
             in: 'query',
           },
         ],
@@ -1216,19 +1219,21 @@ module.exports = {
           {
             name: 'onDate',
             description: 'yyyy-mm-dd',
-            type: 'date',
+            type: 'string',
+            format: 'date',
             in: 'formData',
           },
           {
             name: 'typeId',
-            description: 'Тип активности',
+            description: 'Тип активности (см. словарь)',
             type: 'integer',
             in: 'formData',
           },
           {
             name: 'spentTime',
             description: 'Потраченное время',
-            type: 'numeric',
+            type: 'number',
+            format: 'float',
             in: 'formData',
           },
           {
@@ -1285,7 +1290,7 @@ module.exports = {
     '/task/timesheet/types/dictionary': {
       get: {
         tags: ['Tasks'],
-        summary: 'Справочник типов записей тайм шитов',
+        summary: 'Справочник типов активности в тайм шитах',
         responses: responsesCodes,
       },
     },
