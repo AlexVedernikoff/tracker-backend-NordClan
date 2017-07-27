@@ -14,8 +14,11 @@ exports.create = function(req, res, next){
       req.body.taskId = req.params.taskId;
       return models.Timesheet.create(req.body);
     })
-    .then(()=>{
-      res.end();
+    .then((model) => {
+      return queries.timesheet.getTimesheet(model.id);
+    })
+    .then((model)=>{
+      res.end(JSON.stringify(model.dataValues));
     })
     .catch((err) => next(err));
 };
@@ -37,7 +40,6 @@ exports.update = function(req, res, next){
             if(req.body[key])
               result[key] = model.dataValues[key];
           });
-  
           res.end(JSON.stringify(result));
         });
     })
@@ -101,9 +103,32 @@ exports.list = function(req, res, next){
     attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment'],
     order: [
       ['createdAt', 'ASC']
-    ]
+    ],
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: true,
+        attributes: ['id', 'name'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: true,
+            attributes: ['id', 'name'],
+            paranoid: false,
+          }
+        ]
+      }
+    ],
   })
     .then((models) => {
+      // Преобразую результат
+      models.forEach(model => {
+        model.dataValues.project = model.dataValues.task.dataValues.project;
+        delete model.dataValues.task.dataValues.project;
+      });
       res.end(JSON.stringify(models));
     })
     .catch((err) => next(err));
