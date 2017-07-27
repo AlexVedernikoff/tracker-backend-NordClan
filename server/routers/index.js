@@ -72,7 +72,7 @@ router.get('/task/:taskId/timesheet', TimesheetController.list);
 
 
 router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
-router.get('/dictionary/project-roles', DictionaryController.projectRoles);
+router.get('/project/roles/dictionary', DictionaryController.projectRoles);
 
 router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
 router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', UploadController.delete);
