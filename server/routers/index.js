@@ -12,6 +12,7 @@ const ProjectUsersController = require('../controllers/ProjectUsersController');
 const TaskUsersController = require('../controllers/TaskUsersController');
 const TaskTasksController = require('../controllers/TaskTasksController');
 const UploadController = require('../controllers/UploadController');
+const TimesheetController = require('../controllers/TimesheetController');
 
 
 router.post('/auth/login', AuthController.login);
@@ -39,9 +40,9 @@ router.delete('/project/:projectId/users/:userId', ProjectUsersController.delete
 
 router.get('/portfolio', PortfolioController.list);
 router.put('/portfolio/:id', PortfolioController.update);
+router.get('/portfolio/:id', PortfolioController.read);
 // Отключил т.к. портфели выбираются или создаются при создании проекта. Остальное в системе не используется
 /* router.post('/portfolio', PortfolioController.create);
-router.get('/portfolio/:id', PortfolioController.read);
 router.delete('/portfolio/:id', PortfolioController.delete);
 */
 
@@ -62,12 +63,18 @@ router.post('/task/:taskId/users', TaskUsersController.create);
 router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
+// Timesheets
+router.post('/task/:taskId/timesheet', TimesheetController.create);
+router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update);
+router.delete('/task/:taskId/timesheet/:timesheetId', TimesheetController.delete);
+router.get('/task/:taskId/timesheet', TimesheetController.list);
+
+
 
 router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
 router.get('/dictionary/project-roles', DictionaryController.projectRoles);
 
 router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
 router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', UploadController.delete);
-
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const models = require('../server/models');
 
 const Models  = [
-  models.ProjectRolesDictionary,
+/*  models.ProjectRolesDictionary,
   models.ProjectStatusesDictionary,
   models.SprintStatusesDictionary,
   models.TaskStatusesDictionary,
@@ -21,14 +21,18 @@ const Models  = [
   models.User,
   models.Department,
   models.UserDepartments,
-  models.Token,
+  models.Token,*/
+  
+  models.TimesheetTypesDictionary,
+  models.Timesheet,
 ];
 
 const dictionariesModels  = [
-  models.ProjectStatusesDictionary,
-  models.SprintStatusesDictionary,
-  models.TaskStatusesDictionary,
-  models.ProjectRolesDictionary,
+  // models.ProjectStatusesDictionary,
+  // models.SprintStatusesDictionary,
+  // models.TaskStatusesDictionary,
+  // models.ProjectRolesDictionary,
+  models.TimesheetTypesDictionary,
 ];
 
 
@@ -40,13 +44,13 @@ const dictionariesModels  = [
   });
   
   
- dictionariesModels.forEach(function(model) {
+  dictionariesModels.forEach(function(model) {
     chain = chain
       .then(() => {
         return model.destroy({where: {}})
           .then(() => model.bulkCreate(model.values));
       });
-  });/* */
+  });
   
   
   chain

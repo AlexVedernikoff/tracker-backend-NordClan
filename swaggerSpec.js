@@ -476,19 +476,19 @@ module.exports = {
       // }
     },
     '/portfolio/{portfolioId}': {
-      // get: {
-      // 	tags: ['Portfolios'],
-      // 	summary: 'Получить конкретный портфель',
-      // 	parameters: [
-      // 		{
-      // 			name: 'portfolioId',
-      // 			type: 'integer',
-      // 			in: 'path',
-      // 			required: true
-      // 		},
-      // 	],
-      // 	responses: responsesCodes
-      // },
+      get: {
+      	tags: ['Portfolios'],
+      	summary: 'Получить конкретный портфель',
+      	parameters: [
+      		{
+      			name: 'portfolioId',
+      			type: 'integer',
+      			in: 'path',
+      			required: true
+      		},
+      	],
+      	responses: responsesCodes
+      },
       put: {
         tags: ['Portfolios'],
         summary: 'Изменить конкретный портфель',
@@ -1123,6 +1123,141 @@ module.exports = {
           },
         ]
       }
+    },
+    '/task/{taskId}/timesheet/': {
+      post: {
+        tags: ['Tasks'],
+        summary: 'Создать тайм шит для текущего пользователя',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'date',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'typeId',
+            description: 'Тип активности',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            description: 'Потраченное время',
+            type: 'numeric',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+      get: {
+        tags: ['Tasks'],
+        summary: 'Получить тайм шиты',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'userId',
+            type: 'integer',
+            in: 'query',
+          },
+          {
+            name: 'dateBegin',
+            description: 'yyyy-mm-dd',
+            type: 'date',
+            in: 'query',
+          },
+          {
+            name: 'dateEnd',
+            description: 'yyyy-mm-dd',
+            type: 'date',
+            in: 'query',
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/task/{taskId}/timesheet/{timesheetId}': {
+      put: {
+        tags: ['Tasks'],
+        summary: 'Изменить тайм шит для текущего пользователя',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'timesheetId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'date',
+            in: 'formData',
+          },
+          {
+            name: 'typeId',
+            description: 'Тип активности',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'spentTime',
+            description: 'Потраченное время',
+            type: 'numeric',
+            in: 'formData',
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData',
+          },
+        ],
+        responses: responsesCodes
+      },
+      delete: {
+        tags: ['Tasks'],
+        summary: 'Изменить тайм шит для текущего пользователя',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'timesheetId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
     },
     '/task/tag/': {
       get: {

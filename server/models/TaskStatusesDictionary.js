@@ -20,7 +20,17 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: false,
     tableName: 'task_statuses'
   });
-
+  
+  
+  TaskStatuses.associate = function(models) {
+    TaskStatuses.hasMany(models.Task, {
+      as: 'taskStatuses',
+      foreignKey: {
+        name: 'statusId',
+        field: 'status_id'
+      }});
+  };
+  
   TaskStatuses.values = [
     {id: 1, name: 'New'},
     {id: 2, name: 'Develop play'},
@@ -33,14 +43,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 9, name: 'Canceled'},
   ];
   
-  TaskStatuses.associate = function(models) {
-    TaskStatuses.hasMany(models.Task, {
-      as: 'taskStatuses',
-      foreignKey: {
-        name: 'statusId',
-        field: 'status_id'
-      }});
-  };
+  TaskStatuses.NOT_AVAILABLE_STATUSES = [8,9];
 
   return TaskStatuses;
 };

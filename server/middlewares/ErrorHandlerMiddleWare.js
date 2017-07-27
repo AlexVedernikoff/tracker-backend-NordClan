@@ -10,9 +10,6 @@ module.exports = function(err, req, res, next) {
     err.name = 'ValidationError';
     err.message = {errors: err.array()};
   }
-  // console.log(err);
-  // console.log(expressValidator);
-  // console.log(err instanceof expressValidator.getValidationResult);
   
   if(err instanceof ldap.InvalidCredentialsError) {
     err.status = 404;
@@ -22,9 +19,9 @@ module.exports = function(err, req, res, next) {
     err.status = 400;
   }
   
-  if(err instanceof Sequelize.Error) {
-    err.status = 400;
-  }
+  // if(err instanceof Sequelize.Error) {
+  //   err.status = 400;
+  // }
   
   if(err instanceof Sequelize.ValidationError) {
     err.status = 400;
