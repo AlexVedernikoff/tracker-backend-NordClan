@@ -154,6 +154,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     });
 
+    // Тут устанавливается CONSTRAINT item_tags_taggable_id_fkey а он нам не нужен, из-за него выходит баг
     Project.belongsToMany(models.Tag, {
       as: 'tags',
       through: {
