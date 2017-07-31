@@ -12,7 +12,7 @@ exports.canUserChangeTimesheet = function(userId, timesheetId) {
       where: {
         id: timesheetId,
       },
-      attributes: ['id'],
+      attributes: ['id', 'typeId', 'onDate'],
       include: [
         {
           as: 'task',

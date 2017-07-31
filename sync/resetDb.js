@@ -23,8 +23,9 @@ const Models  = [
   models.UserDepartments,
   models.Token,*/
   
-  models.TimesheetTypesDictionary,
-  models.Timesheet,
+  // models.TimesheetTypesDictionary,
+  // models.Timesheet,
+  models.ModelHistory,
 ];
 
 const dictionariesModels  = [
@@ -32,7 +33,7 @@ const dictionariesModels  = [
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
   // models.ProjectRolesDictionary,
-  models.TimesheetTypesDictionary,
+  //models.TimesheetTypesDictionary,
 ];
 
 

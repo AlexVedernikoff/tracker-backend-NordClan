@@ -32,6 +32,10 @@ exports.run = function() {
   }));
   
   app.use(checkTokenMiddleWare);
+  app.all('*', function(req, res, next){
+    sequelize.context = { user: req.user };
+    next();
+  });
   
   app.all('*', function(req, res, next){
     res.setHeader('Content-Type', 'application/json');

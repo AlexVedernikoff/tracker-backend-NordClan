@@ -1,4 +1,5 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
+const _ = require('underscore');
 
 module.exports = function(sequelize, DataTypes) {
   const Timesheet = sequelize.define('Timesheet', {

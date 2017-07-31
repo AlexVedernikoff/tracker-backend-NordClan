@@ -114,9 +114,10 @@ exports.update = function(req, res, next){
   
   let resultRespons = {};
   let portfolioIdOld;
-
+  let attributes = ['id', 'portfolioId'].concat(Object.keys(req.body));
+  
   Project
-    .findByPrimary(req.params.id, { attributes: ['id', 'portfolioId'] })
+    .findByPrimary(req.params.id, { attributes: attributes })
     .then((project) => {
       if(!project) { return next(createError(404)); }
 
@@ -163,7 +164,6 @@ exports.delete = function(req, res, next){
         .then(()=>{
           res.end();
         });
-      
     })
     .catch((err) => {
       next(err);

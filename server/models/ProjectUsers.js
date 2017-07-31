@@ -63,6 +63,8 @@ module.exports = function(sequelize, DataTypes) {
       }});
 
   };
+  
+  ProjectUsers.hasHistory();
 
   return ProjectUsers;
 };

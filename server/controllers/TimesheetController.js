@@ -28,11 +28,13 @@ exports.update = function(req, res, next){
   const currentUserId = req.user.id;
   const result = {};
   
+  //models.Timesheet.context = { user: req.user };
+  
   queries.timesheet
     .canUserChangeTimesheet(currentUserId, req.params.timesheetId)
     .then((model) => {
       if(!model) return next(createError(404, 'Timesheet not found'));
-  
+      
       return model
         .updateAttributes(req.body)
         .then((model)=>{

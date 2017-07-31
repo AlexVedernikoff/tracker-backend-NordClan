@@ -43,9 +43,12 @@ exports.create = function(req, res, next){
           deletedAt: null
         }})
         .spread((projectUser) => {
-          if(!rolesIds) return res.end();
-
-          return projectUser.updateAttributes({rolesIds: rolesIds})
+          return Promise.resolve()
+            .then(() => {
+              if(rolesIds) {
+                return projectUser.updateAttributes({rolesIds: rolesIds});
+              }
+            })
             .then(() => {
               return queries.projectUsers.getUsersByProject(req.params.projectId)
                 .then((users) => {

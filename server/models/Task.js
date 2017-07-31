@@ -179,6 +179,8 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
+  
+  Task.hasHistory();
 
   return Task;
 };
