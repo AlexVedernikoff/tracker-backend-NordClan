@@ -112,9 +112,9 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  let resultRespons = {};
+  const attributes = ['id', 'portfolioId'].concat(Object.keys(req.body));
+  const resultRespons = {};
   let portfolioIdOld;
-  let attributes = ['id', 'portfolioId'].concat(Object.keys(req.body));
   
   Project
     .findByPrimary(req.params.id, { attributes: attributes })
@@ -380,9 +380,7 @@ exports.list = function(req, res, next){
 
         });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(err => next(err));
 
 };
 

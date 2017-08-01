@@ -32,8 +32,9 @@ const dictionariesModels  = [
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
+  // models.TaskTypesDictionary,
   // models.ProjectRolesDictionary,
-  //models.TimesheetTypesDictionary,
+  // models.TimesheetTypesDictionary,
 ];
 
 

@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const Sequelize = require('sequelize');
 const _ = require('underscore');
 
+
 const commonExcludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
 
 module.exports = function(sequelize) {
@@ -44,9 +45,9 @@ module.exports = function(sequelize) {
   
   const afterHook = function(model) {
     const userId = model.$modelOptions.sequelize.context.user.id;
+    const modelName = model.$modelOptions.name.singular;
     let diffObj = {};
     let action;
-    console.log(model.$options.isNewRecord);
     
     if(model.$options.isNewRecord) {
       action = 'create';
@@ -55,7 +56,8 @@ module.exports = function(sequelize) {
       diffObj = diff(model.dataValues, model._previousDataValues);
     }
     
-
+    //console.dir(sequelize.models[modelName].attributes.sprintId.type.key);
+    
     
     if(model.$options.isNewRecord) {
       sequelize.models.ModelHistory.create({
@@ -71,16 +73,27 @@ module.exports = function(sequelize) {
       
       const arr = [];
       Object.keys(diffObj).forEach((key) => {
+        
+        let type = sequelize.models[modelName].attributes[key].type.key;
+        
+        console.log(type);
+        
         arr.push({
           entity: this.options.name.singular,
           entityId: model.id,
           userId: userId,
           action: action,
           field: key,
-          value: diffObj[key].newVal,
-          previousValue: diffObj[key].oldVal,
+          valueInt: (type === 'INTEGER') ? diffObj[key].newVal : null,
+          prevValueInt: (type === 'INTEGER') ? diffObj[key].oldVal : null,
+          valueStr: (type === 'STRING') ? diffObj[key].newVal : null,
+          prevValueStr: (type === 'STRING') ? diffObj[key].oldVal : null,
+          valueDate: (type === 'DATE') ? diffObj[key].newVal : null,
+          prevValueDate: (type === 'DATE') ? diffObj[key].oldVal : null,
         });
       });
+      
+      
   
       sequelize.models.ModelHistory.bulkCreate(arr)
         .catch((err) => {
@@ -94,8 +107,12 @@ module.exports = function(sequelize) {
 };
 
 function diff(newValue, oldValue) {
-  let dataValues = _.omit(newValue, commonExcludeFileds);
-  let _previousDataValues = _.omit(oldValue, commonExcludeFileds);
+  const dataValues = _.omit(newValue, commonExcludeFileds);
+  const _previousDataValues = _.omit(oldValue, commonExcludeFileds);
+  
+  console.log(dataValues);
+  console.log(_previousDataValues);
+  
   
   // Разница двух объектов
   const diffKeys = _.keys(_.omit(dataValues, (val,key) => {

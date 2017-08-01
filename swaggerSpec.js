@@ -1264,6 +1264,31 @@ module.exports = {
         responses: responsesCodes
       },
     },
+    '/task/{taskId}/history': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Получить историю сущности',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query',
+          },
+          {
+            name: 'currentPage',
+            type: 'integer',
+            in: 'query',
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
     '/task/tag/': {
       get: {
         tags: ['Tasks'],

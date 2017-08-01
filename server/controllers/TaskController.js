@@ -119,9 +119,10 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  let resultRespons = {};
+  const attributes = ['id'].concat(Object.keys(req.body));
+  const resultRespons = {};
 
-  Task.findByPrimary(req.params.id, { attributes: ['id'] })
+  Task.findByPrimary(req.params.id, { attributes: attributes })
     .then((row) => {
       if(!row) { return next(createError(404)); }
 
@@ -368,7 +369,7 @@ exports.setStatus = function(req, res, next){
     })
     .then(() => {
       return Task
-        .findByPrimary(req.params.taskId, { validate: true, attributes: ['id'] })
+        .findByPrimary(req.params.taskId, { validate: true, attributes: ['id' ,'statusId'] })
         .then((task) => {
           if(!task) { return next(createError(404)); }
 

@@ -60,13 +60,6 @@ module.exports = function(sequelize, DataTypes) {
         isFloat: true
       }
     },
-    attaches: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: null,
-      validate: {
-        notEmpty: true, // не пустая строка
-      }
-    },
     prioritiesId: {
       field: 'priorities_id',
       type: DataTypes.INTEGER,

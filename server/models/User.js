@@ -164,6 +164,8 @@ module.exports = function(sequelize, DataTypes) {
     User.hasOne(models.ProjectUsers);
 
   };
+  
+  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'];
 
   return User;
 };

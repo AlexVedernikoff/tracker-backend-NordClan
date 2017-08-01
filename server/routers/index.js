@@ -13,6 +13,7 @@ const TaskUsersController = require('../controllers/TaskUsersController');
 const TaskTasksController = require('../controllers/TaskTasksController');
 const UploadController = require('../controllers/UploadController');
 const TimesheetController = require('../controllers/TimesheetController');
+const ModelHistoryController = require('../controllers/ModelHistoryController');
 
 // Auth
 router.post('/auth/login', AuthController.login);
@@ -82,5 +83,9 @@ router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTyp
 // Attachments
 router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
 router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', UploadController.delete);
+
+// ModelHistory
+router.get('/:entity(project|task)/:entityId/history', ModelHistoryController.list);
+
 
 module.exports = router;
