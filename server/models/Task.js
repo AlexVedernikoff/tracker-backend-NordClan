@@ -104,6 +104,13 @@ module.exports = function(sequelize, DataTypes) {
         field: 'parent_id'
       }});
   
+    Task.belongsTo(models.User, {
+      as: 'author',
+      foreignKey: {
+        name: 'authorId',
+        field: 'author_id'
+      }});
+    
     Task.hasMany(models.Task, {
       as: 'subTasks',
       foreignKey: {

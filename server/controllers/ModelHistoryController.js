@@ -149,7 +149,6 @@ exports.list = function(req, res, next){
     .then((models) => {
   
       models.forEach(model => {
-        
         const messageWithUsedModels = messageHandler(model);
         
         result.push({

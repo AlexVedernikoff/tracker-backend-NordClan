@@ -59,6 +59,11 @@ exports.read = function(req, res, next){
         attributes: ['id', 'name']
       },
       {
+        as: 'author',
+        model: models.User,
+        attributes: models.User.defaultSelect
+      },
+      {
         as: 'subTasks',
         model: models.Task,
         attributes: ['id', 'name']
