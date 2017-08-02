@@ -14,8 +14,11 @@ exports.create = function(req, res, next){
 
   let rolesIds;
   let allowedRolesId;
-
-  if(req.body.rolesIds) {
+  
+  if(req.body.rolesIds && +req.body.rolesIds === 0) {
+    rolesIds = JSON.stringify([]);
+  
+  } else if(req.body.rolesIds) {
     rolesIds = req.body.rolesIds.split(',').map((el) => el.trim());
     allowedRolesId = models.ProjectRolesDictionary.values.map((el) => el.id);
 

@@ -201,8 +201,6 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
-  
-  Project.hasHistory();
 
   return Project;
 };

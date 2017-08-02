@@ -93,7 +93,7 @@ exports.read = function(req, res, next){
           model.users[key] = {
             id: user.id,
             fullNameRu: user.fullNameRu,
-            rolesIds: JSON.parse(user.projectUsers.rolesIds),
+            rolesIds: queries.projectUsers.getTransRolesToObject(JSON.parse(user.projectUsers.rolesIds)),
           };
         });
       }

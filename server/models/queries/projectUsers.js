@@ -2,6 +2,7 @@ const models = require('../');
 
 exports.name = 'projectUsers';
 
+exports.getTransRolesToObject = getTransRolesToObject;
 exports.getUsersByProject = function(projectId) {
   let response = [];
 
@@ -30,7 +31,7 @@ exports.getUsersByProject = function(projectId) {
         response.push({
           id: projectUser.user.id,
           fullNameRu: projectUser.user.fullNameRu,
-          rolesIds: rolesIds ? rolesIds.map((el) => +el) : null,
+          roles: getTransRolesToObject(rolesIds),
         });
       });
 
@@ -39,3 +40,16 @@ exports.getUsersByProject = function(projectId) {
 
 };
 
+  
+function getTransRolesToObject(rolesIds) {
+  const result = {};
+  if(rolesIds) rolesIds = rolesIds.map((el) => +el);
+  
+  models.ProjectRolesDictionary.values.forEach(el => {
+    result[el.code] = (rolesIds) ?
+      (rolesIds.indexOf(el.id) > -1)
+      : false;
+  });
+  
+  return result;
+};
