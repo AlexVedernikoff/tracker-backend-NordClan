@@ -107,7 +107,6 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false,
     });
     
-  
     ModelHistory.belongsTo(models.TaskTasks, {
       as: 'taskTasks',
       foreignKey: {
@@ -117,9 +116,17 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false,
     });
     
-    
     ModelHistory.belongsTo(models.ItemTag, {
       as: 'itemTag',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false,
+    });
+    
+    ModelHistory.belongsTo(models.TaskAttachments, {
+      as: 'taskAttachments',
       foreignKey: {
         name: 'entityId',
         field: 'entity_id'

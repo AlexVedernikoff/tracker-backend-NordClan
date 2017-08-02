@@ -114,7 +114,14 @@ exports.list = function(req, res, next){
             },
           ]
         },
-        
+        {
+          as: 'taskAttachments',
+          model: models.TaskAttachments,
+          where: Sequelize.literal('"ModelHistory"."entity" = \'TaskAttachment\'' ),
+          attributes: models.TaskAttachments.defaultSelect,
+          required: false,
+          paranoid: false,
+        },
 
       ],
       offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
@@ -186,6 +193,18 @@ function generateMessage(model) {
   if(model.entity === 'ItemTag' && model.action === 'update' && model.field !== null) {
     message = 'удалил(-а) тег';
     message += ` '${model.itemTag.tag.name}'`;
+    return message;
+  }
+  
+  if(model.entity === 'TaskAttachment' && model.action === 'create' && model.field === null) {
+    message = 'прикрепил(-а) файл';
+    message += ` '${model.taskAttachments.fileName}'`;
+    return message;
+  }
+  
+  if(model.entity === 'TaskAttachment' && model.action === 'update' && model.field !== null) {
+    message = 'удалил(-а) файл';
+    message += ` '${model.taskAttachments.fileName}'`;
     return message;
   }
   

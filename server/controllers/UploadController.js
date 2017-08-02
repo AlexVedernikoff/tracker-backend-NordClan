@@ -22,13 +22,12 @@ exports.delete = function(req, res, next) {
       
       const modelName = stringHelper.firstLetterUp(req.params.entity);
       const modelFileName = modelName + 'Attachments';
-      
-      
-      models[modelFileName].destroy({
-        where: {
-          id: req.params.attachmentId
-        }
-      })
+  
+      models[modelFileName]
+        .findByPrimary(req.params.attachmentId)
+        .then(model => {
+          if(model) return model.destroy();
+        })
         .then(()=>{
           return queries.file.getFilesByModel(modelFileName, req.params.entityId)
             .then((files) => {
@@ -36,9 +35,6 @@ exports.delete = function(req, res, next) {
             });
         })
         .catch((err) => next(createError(err)));
-  
-      
-      
     });
 
 };

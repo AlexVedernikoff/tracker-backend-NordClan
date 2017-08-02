@@ -27,12 +27,6 @@ module.exports = function(sequelize, DataTypes) {
       afterFind: function(model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       },
-      afterUpdate: function(model) {
-        console.log(model);
-      },
-      afterDestroy: function(model) {
-        console.log(model);
-      }
     }
   });
   

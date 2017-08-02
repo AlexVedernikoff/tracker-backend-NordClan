@@ -61,5 +61,7 @@ module.exports = function(sequelize, DataTypes) {
   
   TaskAttachments.defaultSelect = ['id', 'fileName', 'path', 'previewPath', 'size', 'type'];
   
+  TaskAttachments.hasHistory();
+  
   return TaskAttachments;
 };
