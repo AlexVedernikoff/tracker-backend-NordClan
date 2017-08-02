@@ -15,6 +15,12 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['name']
+      },
+    ],
     underscored: true,
     timestamps: false,
     paranoid: false,

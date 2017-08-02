@@ -33,7 +33,7 @@ exports.create = function(req, res, next){
         .then((model) => {
           if(!model) return next(createError(404, 'taggable model not found'));
 
-          return queries.tag.saveTagsForModel(model, req.body.tag)
+          return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable)
             .then(() => {
               return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id)
                 .then((tags) => {

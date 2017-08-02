@@ -24,7 +24,7 @@ exports.create = function(req, res, next){
   Project
     .create(req.body)
     .then((model) => {
-      return queries.tag.saveTagsForModel(model, req.body.tags)
+      return queries.tag.saveTagsForModel(model, req.body.tags, 'project')
         .then(() => {
           if(!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
         })

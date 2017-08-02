@@ -21,7 +21,7 @@ exports.create = function(req, res, next){
   
   Task.create(req.body)
     .then((model) => {
-      return queries.tag.saveTagsForModel(model, req.body.tags)
+      return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
         .then(() => res.end(JSON.stringify({id: model.id})));
     })
     .catch((err) => {

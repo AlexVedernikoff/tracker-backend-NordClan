@@ -117,6 +117,16 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false,
     });
     
+    
+    ModelHistory.belongsTo(models.ItemTag, {
+      as: 'itemTag',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false,
+    });
+    
   };
   
   return ModelHistory;

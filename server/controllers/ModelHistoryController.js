@@ -97,6 +97,23 @@ exports.list = function(req, res, next){
             },
           ]
         },
+        {
+          as: 'itemTag',
+          model: models.ItemTag,
+          where: Sequelize.literal('"ModelHistory"."entity" = \'ItemTag\'' ),
+          //attributes: [],
+          required: false,
+          paranoid: false,
+          include: [
+            {
+              as: 'tag',
+              model: models.Tag,
+              attributes: ['name'],
+              required: false,
+              paranoid: false,
+            },
+          ]
+        },
         
 
       ],
@@ -134,32 +151,44 @@ function generateMessage(model) {
     return message;
   }
   
-  if(model.action === 'create' && model.entity === 'TaskUser' && model.field === null) {
+  if( model.entity === 'TaskUser' && model.action === 'create' && model.field === null) {
     message = 'установил(-а) исполнителя ';
     message += model.performer.user.fullNameRu;
     
     return message;
   }
   
-  if(model.action === 'update' && model.entity === 'TaskUser' && model.field !== null) {
+  if(model.entity === 'TaskUser' && model.action === 'update' && model.field !== null) {
     message = 'убрал(-а) исполнителя ';
     message += model.performer.user.fullNameRu;
     
     return message;
   }
   
-  if(model.action === 'create' && model.entity === 'TaskTask' && model.field === null) {
+  if(model.entity === 'TaskTask' && model.action === 'create' && model.field === null) {
     message = 'создал(-а) связь с задачей';
     message += ` '${model.taskTasks.task.name}'`;
     return message;
   }
   
-  
-  if(model.action === 'update' && model.entity === 'TaskTask' && model.field !== null) {
+  if(model.entity === 'TaskTask' && model.action === 'update' && model.field !== null) {
     message = 'удалил(-а) связь с задачей';
     message += ` '${model.taskTasks.task.name}'`;
     return message;
   }
+  
+  if(model.entity === 'ItemTag' && model.action === 'create' && model.field === null) {
+    message = 'создал(-а) тег';
+    message += ` '${model.itemTag.tag.name}'`;
+    return message;
+  }
+  
+  if(model.entity === 'ItemTag' && model.action === 'update' && model.field !== null) {
+    message = 'удалил(-а) тег';
+    message += ` '${model.itemTag.tag.name}'`;
+    return message;
+  }
+  
   
   
   if(model.action === 'update') {

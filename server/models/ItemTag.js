@@ -25,6 +25,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: true,
     paranoid: true,
     updatedAt: false,
+    createdAt: false,
     tableName: 'item_tags'
   });
 
@@ -38,6 +39,8 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
+  
+  ItemTag.hasHistory();
 
   return ItemTag;
 };
