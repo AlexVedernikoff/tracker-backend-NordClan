@@ -58,6 +58,8 @@ module.exports = function(sequelize, DataTypes) {
       }});
 
   };
+  
+  TaskUsers.hasHistory();
 
   return TaskUsers;
 };

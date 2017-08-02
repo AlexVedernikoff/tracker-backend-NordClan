@@ -37,13 +37,32 @@ exports.list = function(req, res, next){
         {
           as: 'user',
           model: models.User,
-          attributes: models.User.defaultSelect
+          attributes: models.User.defaultSelect,
+          paranoid: false,
+          required: false,
         },
         {
           as: 'task',
           model: models.Task,
+          where: Sequelize.literal('"ModelHistory"."entity" = \'Task\'' ),
           attributes: ['name'],
+          paranoid: false,
           required: false,
+        },
+        {
+          as: 'taskTasks',
+          model: models.TaskTasks,
+          where: Sequelize.literal('"ModelHistory"."entity" = \'TaskTask\'' ),
+          //attributes: ['name'],
+          paranoid: false,
+          required: false,
+          include: [
+            {
+              as: 'task',
+              model: models.Task,
+              attributes: ['id', 'name'],
+            }
+          ]
         },
         {
           as: 'sprint',
@@ -61,20 +80,35 @@ exports.list = function(req, res, next){
           required: false,
           paranoid: false,
         },
+        {
+          as: 'performer',
+          model: models.TaskUsers,
+          where: Sequelize.literal('"ModelHistory"."entity" = \'TaskUser\'' ),
+          //attributes: [],
+          required: false,
+          paranoid: false,
+          include: [
+            {
+              as: 'user',
+              model: models.User,
+              attributes: models.User.defaultSelect,
+              required: false,
+              paranoid: false,
+            },
+          ]
+        },
         
 
       ],
       offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-      order: [['createdAt', 'ASC']],
+      order: [['createdAt', 'DESC']],
     })
     .then((models) => {
   
       models.forEach(model => {
         
-        console.log(model.sprint);
-        console.log(model.prevSprint);
-        
         result.push({
+          id: model.id,
           date: model.createdAt,
           message: generateMessage(model),
           //user: model.user
@@ -93,12 +127,40 @@ function generateMessage(model) {
   const values = getValues(model);
   
   
-  if(model.action === 'create') {
+  if(model.action === 'create' && model.entity === 'Task') {
     message = 'cоздал(-а)';
     message += ' ' + entityWord.create;
     message += ` '${model.task.name}'`;
     return message;
   }
+  
+  if(model.action === 'create' && model.entity === 'TaskUser' && model.field === null) {
+    message = 'установил(-а) исполнителя ';
+    message += model.performer.user.fullNameRu;
+    
+    return message;
+  }
+  
+  if(model.action === 'update' && model.entity === 'TaskUser' && model.field !== null) {
+    message = 'убрал(-а) исполнителя ';
+    message += model.performer.user.fullNameRu;
+    
+    return message;
+  }
+  
+  if(model.action === 'create' && model.entity === 'TaskTask' && model.field === null) {
+    message = 'создал(-а) связь с задачей';
+    message += ` '${model.taskTasks.task.name}'`;
+    return message;
+  }
+  
+  
+  if(model.action === 'update' && model.entity === 'TaskTask' && model.field !== null) {
+    message = 'удалил(-а) связь с задачей';
+    message += ` '${model.taskTasks.task.name}'`;
+    return message;
+  }
+  
   
   if(model.action === 'update') {
     if(values.value  === null && values.prevValue) {
@@ -108,20 +170,13 @@ function generateMessage(model) {
     }else {
       message = 'изменил(-а)';
     }
-    
-    // if(model.field === 'deletedAt') {
-    //   message = 'удалил(-а)';
-    // } else {
-    //   message = 'изменил(-а)';
-    // }
   }
 
   switch(model.field) {
   case 'statusId': message += ' статус'; break;
   case 'name': message += ' название'; break;
   case 'typeId': message += ' тип'; break;
-    case 'sprintId': message += ' спринт'; break;
-  //case 'projectId': message += ' проект'; break;
+  case 'sprintId': message += ' спринт'; break;
   case 'description': message += ' описание'; break;
   case 'prioritiesId': message += ' приоритет'; break;
   case 'plannedExecutionTime': message += ' планируемое время исполнения'; break;
@@ -149,15 +204,6 @@ function generateMessage(model) {
   }
   
   
-  // if(values.value && values.prevValue !== null)  {
-  //   message += ` с '${transformValue(model, values, 'prev')}' на `;
-  // } else if(values.prevValue !== null) {
-  //   message += ` с '${transformValue(model, values, 'prev')}'`;
-  // }
-  //
-  // if(values.value !== null)
-  //   message += ` на '${transformValue(model, values)}'`;
-  
   
   return message;
 }
@@ -174,7 +220,6 @@ function transformValue(model, values, prev = false) {
   case 'task_typeId': value = queries.dictionary.getName('TaskTypesDictionary', value); break;
   case 'task_sprintId': value = prev ? model.prevSprint.name : model.sprint.name; break;
   }
-
   
   
   return value;

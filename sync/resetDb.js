@@ -15,9 +15,7 @@ const Models  = [
   models.Project,
   models.Sprint,
   models.Task,
-  models.TaskTasks,
   models.Tag,
-  models.ItemTag,
   models.User,
   models.Department,
   models.UserDepartments,
@@ -26,6 +24,8 @@ const Models  = [
   // models.TimesheetTypesDictionary,
   // models.Timesheet,
   models.ModelHistory,
+  models.TaskTasks,
+  //models.ItemTag,
 ];
 
 const dictionariesModels  = [

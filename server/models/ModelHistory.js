@@ -98,7 +98,24 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false,
     });
     
+    ModelHistory.belongsTo(models.TaskUsers, {
+      as: 'performer',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false,
+    });
     
+  
+    ModelHistory.belongsTo(models.TaskTasks, {
+      as: 'taskTasks',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false,
+    });
     
   };
   

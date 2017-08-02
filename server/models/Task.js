@@ -116,7 +116,7 @@ module.exports = function(sequelize, DataTypes) {
       as: 'linkedTasks',
       through: {
         model: models.TaskTasks,
-        unique: true,
+        unique: false,
       },
       foreignKey: {
         name: 'taskId',

@@ -28,26 +28,31 @@ module.exports = function(sequelize) {
       this.addHook('afterDestroy', afterHook);
       
       // create association
-      this.hasMany(sequelize.models.ModelHistory, {
-        foreignKey: {
-          name: 'entityId',
-          field: 'entity_id'
-        },
-        constraints: false,
-        scope: {
-          entity: this.name
-        }
-      });
+      // this.hasMany(sequelize.models.ModelHistory, {
+      //   foreignKey: {
+      //     name: 'entityId',
+      //     field: 'entity_id'
+      //   },
+      //   constraints: false,
+      //   scope: {
+      //     entity: this.name
+      //   }
+      // });
+
       
       return this;
     },
   });
   
   const afterHook = function(model) {
+    console.log(model);
+    
     const userId = model.$modelOptions.sequelize.context.user.id;
-    const modelName = model.$modelOptions.name.singular;
+    const modelNamePlural = model.$modelOptions.name.plural;
+    const modelNameSingular = model.$modelOptions.name.singular;
     let diffObj = {};
     let action;
+    
     
     if(model.$options.isNewRecord) {
       action = 'create';
@@ -56,7 +61,6 @@ module.exports = function(sequelize) {
       diffObj = diff(model.dataValues, model._previousDataValues);
     }
     
-    //console.dir(sequelize.models[modelName].attributes.sprintId.type.key);
     
     
     if(model.$options.isNewRecord) {
@@ -65,6 +69,8 @@ module.exports = function(sequelize) {
         entityId: model.id,
         userId: userId,
         action: action,
+        // field: (model.linkedTaskId) ? 'linkedTaskId' : null,
+        // valueInt: (model.linkedTaskId) ? model.linkedTaskId : null,
       })
         .catch((err) => {
           if(err) throw createError(err);
@@ -73,10 +79,14 @@ module.exports = function(sequelize) {
       
       const arr = [];
       Object.keys(diffObj).forEach((key) => {
+        let type;
         
-        let type = sequelize.models[modelName].attributes[key].type.key;
+        if(sequelize.models[modelNamePlural]) {
+          type = sequelize.models[modelNamePlural].attributes[key].type.key;
+        } else {
+          type = sequelize.models[modelNameSingular].attributes[key].type.key;
+        }
         
-        console.log(type);
         
         arr.push({
           entity: this.options.name.singular,
@@ -110,8 +120,8 @@ function diff(newValue, oldValue) {
   const dataValues = _.omit(newValue, commonExcludeFileds);
   const _previousDataValues = _.omit(oldValue, commonExcludeFileds);
   
-  console.log(dataValues);
-  console.log(_previousDataValues);
+  // console.log(dataValues);
+  // console.log(_previousDataValues);
   
   
   // Разница двух объектов

@@ -44,12 +44,17 @@ exports.delete = function(req, res, next) {
   req.params.taskId = req.params.taskId.trim();
   
   Promise.all([
-    models.TaskTasks.destroy({
-      where: {
-        taskId: req.params.taskId,
-        linkedTaskId: req.params.linkedTaskId
-      }
-    }),
+    models.TaskTasks
+      .findOne({
+        where: {
+          taskId: req.params.taskId,
+          linkedTaskId: req.params.linkedTaskId
+        }
+      })
+      .then(model => {
+        if(model) return model.destroy();
+      })
+    ,
     models.TaskTasks.destroy({
       where: {
         taskId: req.params.linkedTaskId,
