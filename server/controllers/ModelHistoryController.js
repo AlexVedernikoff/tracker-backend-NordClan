@@ -6,7 +6,7 @@ const Sequelize = require('sequelize');
 const entityWord = {};
 let entity;
 
-// Контроллер настроен только под задачи
+// Контроллер настроен только под задачи и требудет дороботок под проекты
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
@@ -46,7 +46,7 @@ exports.list = function(req, res, next){
           as: 'parentTask',
           model: models.Task,
           where: Sequelize.literal('"ModelHistory"."field" = \'parentId\'' ),
-          attributes: ['id','name'],
+          attributes: ['id','name', 'deletedAt'],
           required: false,
           paranoid: false,
         },
@@ -54,7 +54,7 @@ exports.list = function(req, res, next){
           as: 'prevParentTask',
           model: models.Task,
           where: Sequelize.literal('"ModelHistory"."field" = \'parentId\'' ),
-          attributes: ['id','name'],
+          attributes: ['id','name', 'deletedAt'],
           required: false,
           paranoid: false,
         },
@@ -62,7 +62,7 @@ exports.list = function(req, res, next){
           as: 'sprint',
           model: models.Sprint,
           where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
-          attributes: ['name'],
+          attributes: ['id', 'name', 'deletedAt'],
           required: false,
           paranoid: false,
         },
@@ -70,7 +70,7 @@ exports.list = function(req, res, next){
           as: 'prevSprint',
           model: models.Sprint,
           where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
-          attributes: ['name'],
+          attributes: ['id', 'name', 'deletedAt'],
           required: false,
           paranoid: false,
         },
@@ -85,7 +85,7 @@ exports.list = function(req, res, next){
           as: 'task',
           model: models.Task,
           where: Sequelize.literal('"ModelHistory"."entity" = \'Task\'' ),
-          attributes: ['name'],
+          attributes: ['id','name', 'deletedAt'],
           paranoid: false,
           required: false,
         },
@@ -99,7 +99,7 @@ exports.list = function(req, res, next){
             {
               as: 'task',
               model: models.Task,
-              attributes: ['id', 'name'],
+              attributes: ['id', 'name', 'deletedAt'],
             }
           ]
         },
@@ -150,10 +150,13 @@ exports.list = function(req, res, next){
   
       models.forEach(model => {
         
+        const messageWithUsedModels = messageHandler(model);
+        
         result.push({
           id: model.id,
           date: model.createdAt,
-          message: generateMessage(model),
+          message: messageWithUsedModels.message,
+          entities: messageWithUsedModels.entities,
           user: model.user
         });
         
@@ -165,9 +168,11 @@ exports.list = function(req, res, next){
   
 };
 
-function generateMessage(model) {
+function messageHandler(model) {
+  const entities = {};
   let message = '';
   const values = getValues(model);
+  
   
   // Создал задачу
   if(model.action === 'create' && model.entity === 'Task') {
@@ -179,51 +184,55 @@ function generateMessage(model) {
   
   // Исполнители
   if( model.entity === 'TaskUser' && model.action === 'create' && model.field === null) {
-    message = 'установил(-а) исполнителя ';
-    message += model.performer.user.fullNameRu;
+    entities.performer = model.performer;
+    message = 'установил(-а) исполнителя {performer}';
     return message;
   }
   if(model.entity === 'TaskUser' && model.action === 'update' && model.field !== null) {
-    message = 'убрал(-а) исполнителя ';
-    message += model.performer.user.fullNameRu;
+    entities.performer = model.performer;
+    message = 'убрал(-а) исполнителя {performer}';
     return message;
   }
   
   // Связанные задачи
   if(model.entity === 'TaskTask' && model.action === 'create' && model.field === null) {
-    message = 'создал(-а) связь с задачей';
-    message += ` '${model.taskTasks.task.name}'`;
+    entities.linkedTask = model.taskTasks;
+    message = 'создал(-а) связь с задачей {linkedTask}';
     return message;
   }
   if(model.entity === 'TaskTask' && model.action === 'update' && model.field !== null) {
-    message = 'удалил(-а) связь с задачей';
-    message += ` '${model.taskTasks.task.name}'`;
+    entities.linkedTask = model.taskTasks;
+    message = 'удалил(-а) связь с задачей {linkedTask}';
     return message;
   }
   
   // Теги
   if(model.entity === 'ItemTag' && model.action === 'create' && model.field === null) {
-    message = 'создал(-а) тег';
-    message += ` '${model.itemTag.tag.name}'`;
+    message = `создал(-а) тег '${model.itemTag.tag.name}'`;
     return message;
   }
   if(model.entity === 'ItemTag' && model.action === 'update' && model.field !== null) {
-    message = 'удалил(-а) тег';
-    message += ` '${model.itemTag.tag.name}'`;
+    message = `удалил(-а) тег '${model.itemTag.tag.name}'`;
     return message;
   }
   
   // Файлы
   if(model.entity === 'TaskAttachment' && model.action === 'create' && model.field === null) {
-    message = 'прикрепил(-а) файл';
-    message += ` '${model.taskAttachments.fileName}'`;
+    entities.file = model.taskAttachments;
+    message = 'прикрепил(-а) файл {file}';
     return message;
   }
   if(model.entity === 'TaskAttachment' && model.action === 'update' && model.field !== null) {
-    message = 'удалил(-а) файл';
-    message += ` '${model.taskAttachments.fileName}'`;
+    entities.file = model.taskAttachments;
+    message = 'удалил(-а) файл {file}';
     return message;
   }
+  
+  if(model.sprint) entities.sprint = model.sprint;
+  if(model.prevSprint) entities.prevSprint = model.prevSprint;
+  if(model.parentTask) entities.parentTask = model.parentTask;
+  if(model.prevParentTask) entities.prevParentTask = model.prevParentTask;
+  
   
   
   
@@ -264,7 +273,10 @@ function generateMessage(model) {
     
   }
   
-  return message;
+  return {
+    message: message,
+    entities: entities,
+  };
 }
 
 
@@ -276,8 +288,8 @@ function transformValue(model, values, prev = false) {
   switch(entity + '_' + field) {
   case 'task_statusId': value = queries.dictionary.getName('TaskStatusesDictionary', value); break;
   case 'task_typeId': value = queries.dictionary.getName('TaskTypesDictionary', value); break;
-  case 'task_sprintId': value = prev ? model.prevSprint.name : model.sprint.name; break;
-  case 'task_parentId': value = prev ? model.prevParentTask.name : model.parentTask.name; break;
+  case 'task_sprintId': value = prev ? '{prevSprint}' : '{sprint}'; break;
+  case 'task_parentId': value = prev ? '{prevParentTask}' : '{parentTask}'; break;
   }
   
   return value;

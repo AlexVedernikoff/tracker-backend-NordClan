@@ -125,10 +125,10 @@ module.exports = function(sequelize, DataTypes) {
     ModelHistory.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
-        name: 'entityId',
-        field: 'entity_id'
+        name: 'taskId',
+        field: 'task_id'
       },
-      constraints: false,
+      constraints: true,
     });
     
     ModelHistory.belongsTo(models.TaskUsers, {
