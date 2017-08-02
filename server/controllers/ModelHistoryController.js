@@ -246,6 +246,7 @@ function generateMessage(model) {
   case 'description': message += ' описание'; break;
   case 'prioritiesId': message += ' приоритет'; break;
   case 'plannedExecutionTime': message += ' планируемое время исполнения'; break;
+  case 'factExecutionTime': message += ' фактическое время исполнения'; break;
   case 'parentId': message += ' родителя'; break;
   }
   
@@ -298,6 +299,9 @@ function getValues(model) {
   if(model.prevValueDate !== null) {
     result.prevValue = model.prevValueDate;
   }
+  if(model.prevValueFloat !== null) {
+    result.prevValue = model.prevValueFloat;
+  }
   
   if(model.valueInt !== null) {
     result.value = model.valueInt;
@@ -307,6 +311,9 @@ function getValues(model) {
   }
   if(model.valueDate !== null) {
     result.value = model.valueDate;
+  }
+  if(model.valueFloat !== null) {
+    result.value = model.valueFloat;
   }
   
   return result;

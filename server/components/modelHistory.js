@@ -1,29 +1,24 @@
 const createError = require('http-errors');
-const Sequelize = require('sequelize');
 const _ = require('underscore');
 
 const commonExcludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
 
 module.exports = function(sequelize) {
   
-  
   _.extend(sequelize.Model.prototype, {
     hasHistory: function() {
       this.revisionable = true;
-
       this.addHook('afterCreate', afterHook);
       this.addHook('afterUpdate', afterHook);
       this.addHook('afterDestroy', afterHook);
-      
-      
       return this;
     },
   });
   
   const afterHook = function(model) {
     const userId = model.$modelOptions.sequelize.context.user.id;
-    const modelNamePlural = model.$modelOptions.name.plural;
-    const modelNameSingular = model.$modelOptions.name.singular;
+    const modelNamePlural = this.options.name.plural;
+    const modelNameSingular = this.options.name.singular;
     let diffObj = {};
     let action;
     
@@ -62,7 +57,6 @@ module.exports = function(sequelize) {
           type = sequelize.models[modelNameSingular].attributes[key].type.key;
         }
         
-        
         arr.push({
           entity: this.options.name.singular,
           entityId: model.id,
@@ -76,36 +70,31 @@ module.exports = function(sequelize) {
           prevValueStr: (type === 'STRING') ? diffObj[key].oldVal : null,
           valueDate: (type === 'DATE') ? diffObj[key].newVal : null,
           prevValueDate: (type === 'DATE') ? diffObj[key].oldVal : null,
+          valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
+          prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
         });
       });
       
       
-  
       sequelize.models.ModelHistory.bulkCreate(arr)
         .catch((err) => {
           if(err) throw createError(err);
         });
-      
     }
-    
   };
-
 };
 
 function diff(newValue, oldValue) {
   const dataValues = _.omit(newValue, commonExcludeFileds);
   const _previousDataValues = _.omit(oldValue, commonExcludeFileds);
   
-  
   // Разница двух объектов
   const diffKeys = _.keys(_.omit(dataValues, (val,key) => {
     let newValue = val;
     let oldValue = _previousDataValues[key];
     
-    //console.log(newValue, oldValue);
-    if(newValue && newValue.toString().match(/^[0-9]+$/))  newValue = +newValue;
-    if(oldValue && oldValue.toString().match(/^[0-9]+$/))  oldValue = +oldValue;
-    //console.log(newValue, oldValue);
+    if(newValue && !isNaN(newValue))  newValue = +newValue;
+    if(oldValue && !isNaN(oldValue))  oldValue = +oldValue;
     
     return newValue === oldValue;
   }));

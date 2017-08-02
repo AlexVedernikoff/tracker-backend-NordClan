@@ -53,6 +53,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true
     },
+    valueFloat: {
+      field: 'value_float',
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    prevValueFloat: {
+      field: 'prev_value_float',
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
     action: {
       type: DataTypes.STRING(6),
       allowNull: false
