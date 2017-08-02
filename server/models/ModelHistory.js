@@ -15,6 +15,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    taskId: {
+      field: 'task_id',
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     field: {
       type: DataTypes.STRING,
       allowNull: true

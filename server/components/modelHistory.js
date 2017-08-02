@@ -2,7 +2,6 @@ const createError = require('http-errors');
 const Sequelize = require('sequelize');
 const _ = require('underscore');
 
-
 const commonExcludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
 
 module.exports = function(sequelize) {
@@ -11,34 +10,11 @@ module.exports = function(sequelize) {
   _.extend(sequelize.Model.prototype, {
     hasHistory: function() {
       this.revisionable = true;
-      //runMigration(this, sequelize);
 
-      
-      // this.attributes[options.revisionAttribute] = {
-      //   type: Sequelize.INTEGER,
-      //   defaultValue: 0
-      // };
-      //this.refreshAttributes();
-      
-      
-      // this.addHook('beforeCreate', beforeHook);
-      // this.addHook('beforeUpdate', beforeHook);
       this.addHook('afterCreate', afterHook);
       this.addHook('afterUpdate', afterHook);
       this.addHook('afterDestroy', afterHook);
       
-      // create association
-      // this.hasMany(sequelize.models.ModelHistory, {
-      //   foreignKey: {
-      //     name: 'entityId',
-      //     field: 'entity_id'
-      //   },
-      //   constraints: false,
-      //   scope: {
-      //     entity: this.name
-      //   }
-      // });
-
       
       return this;
     },
@@ -68,9 +44,8 @@ module.exports = function(sequelize) {
         entity: this.options.name.singular,
         entityId: model.id,
         userId: userId,
+        taskId: model.taskId ? model.taskId: null,
         action: action,
-        // field: (model.linkedTaskId) ? 'linkedTaskId' : null,
-        // valueInt: (model.linkedTaskId) ? model.linkedTaskId : null,
       })
         .catch((err) => {
           if(err) throw createError(err);
@@ -92,6 +67,7 @@ module.exports = function(sequelize) {
           entity: this.options.name.singular,
           entityId: model.id,
           userId: userId,
+          taskId: model.taskId ? model.taskId: null,
           action: action,
           field: key,
           valueInt: (type === 'INTEGER') ? diffObj[key].newVal : null,
@@ -120,9 +96,6 @@ function diff(newValue, oldValue) {
   const dataValues = _.omit(newValue, commonExcludeFileds);
   const _previousDataValues = _.omit(oldValue, commonExcludeFileds);
   
-  // console.log(dataValues);
-  // console.log(_previousDataValues);
-  
   
   // Разница двух объектов
   const diffKeys = _.keys(_.omit(dataValues, (val,key) => {
@@ -145,24 +118,4 @@ function diff(newValue, oldValue) {
     };
   });
   return diffObj;
-}
-
-function runMigration(ctx, sequelize) {
-  const tableName = ctx.getTableName();
-  sequelize.getQueryInterface()
-    .describeTable(tableName)
-    .then(function (attributes) {
-      if(!attributes) throw createError(500, 'can\'t describeTable');
-      
-      return sequelize.getQueryInterface().addColumn(tableName, 'revision', {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      }).then(function () {
-        return null;
-      });
-
-    })
-    .catch(function (err) {
-      throw createError(err);
-    });
 }

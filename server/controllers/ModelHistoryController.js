@@ -20,6 +20,10 @@ exports.list = function(req, res, next){
   
   entity = req.params.entity;
   
+  const where = {
+    taskId: entity === 'task' ? req.params.entityId : null,
+  };
+  
   if(req.params.entity === 'task') {
     entityWord.create = 'задачу';
     entityWord.update = 'задачи';
@@ -32,7 +36,10 @@ exports.list = function(req, res, next){
   
   models.ModelHistory
     .findAll({
+      where: where,
       limit: req.query.pageSize,
+      offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
+      order: [['createdAt', 'DESC']],
       include: [
         {
           as: 'user',
@@ -53,7 +60,6 @@ exports.list = function(req, res, next){
           as: 'taskTasks',
           model: models.TaskTasks,
           where: Sequelize.literal('"ModelHistory"."entity" = \'TaskTask\'' ),
-          //attributes: ['name'],
           paranoid: false,
           required: false,
           include: [
@@ -84,7 +90,7 @@ exports.list = function(req, res, next){
           as: 'performer',
           model: models.TaskUsers,
           where: Sequelize.literal('"ModelHistory"."entity" = \'TaskUser\'' ),
-          //attributes: [],
+          attributes: ['id', 'userId'],
           required: false,
           paranoid: false,
           include: [
@@ -122,10 +128,7 @@ exports.list = function(req, res, next){
           required: false,
           paranoid: false,
         },
-
       ],
-      offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-      order: [['createdAt', 'DESC']],
     })
     .then((models) => {
   
@@ -150,7 +153,7 @@ function generateMessage(model) {
   let message = '';
   const values = getValues(model);
   
-  
+  // Создал задачу
   if(model.action === 'create' && model.entity === 'Task') {
     message = 'cоздал(-а)';
     message += ' ' + entityWord.create;
@@ -158,50 +161,48 @@ function generateMessage(model) {
     return message;
   }
   
+  // Исполнители
   if( model.entity === 'TaskUser' && model.action === 'create' && model.field === null) {
     message = 'установил(-а) исполнителя ';
     message += model.performer.user.fullNameRu;
-    
     return message;
   }
-  
   if(model.entity === 'TaskUser' && model.action === 'update' && model.field !== null) {
     message = 'убрал(-а) исполнителя ';
     message += model.performer.user.fullNameRu;
-    
     return message;
   }
   
+  // Связанные задачи
   if(model.entity === 'TaskTask' && model.action === 'create' && model.field === null) {
     message = 'создал(-а) связь с задачей';
     message += ` '${model.taskTasks.task.name}'`;
     return message;
   }
-  
   if(model.entity === 'TaskTask' && model.action === 'update' && model.field !== null) {
     message = 'удалил(-а) связь с задачей';
     message += ` '${model.taskTasks.task.name}'`;
     return message;
   }
   
+  // Теги
   if(model.entity === 'ItemTag' && model.action === 'create' && model.field === null) {
     message = 'создал(-а) тег';
     message += ` '${model.itemTag.tag.name}'`;
     return message;
   }
-  
   if(model.entity === 'ItemTag' && model.action === 'update' && model.field !== null) {
     message = 'удалил(-а) тег';
     message += ` '${model.itemTag.tag.name}'`;
     return message;
   }
   
+  // Файлы
   if(model.entity === 'TaskAttachment' && model.action === 'create' && model.field === null) {
     message = 'прикрепил(-а) файл';
     message += ` '${model.taskAttachments.fileName}'`;
     return message;
   }
-  
   if(model.entity === 'TaskAttachment' && model.action === 'update' && model.field !== null) {
     message = 'удалил(-а) файл';
     message += ` '${model.taskAttachments.fileName}'`;
@@ -211,15 +212,16 @@ function generateMessage(model) {
   
   
   if(model.action === 'update') {
-    if(values.value  === null && values.prevValue) {
+    if(values.value  === null && values.prevValue) { // убрал
       message = 'убрал(-а)';
-    } else if (values.value  && values.prevValue === null) {
+    } else if (values.value  && values.prevValue === null) { // установил
       message = 'установил(-а)';
-    }else {
+    }else { // изменил
       message = 'изменил(-а)';
     }
   }
 
+  
   switch(model.field) {
   case 'statusId': message += ' статус'; break;
   case 'name': message += ' название'; break;
@@ -230,28 +232,19 @@ function generateMessage(model) {
   case 'plannedExecutionTime': message += ' планируемое время исполнения'; break;
   }
   
-  
-  
-  
   message += ' ' + entityWord.update;
   
   if(values.value  === null && values.prevValue) { // убрал
     message += ` '${transformValue(model, values, 'prev')}'`;
-    
   } else if (values.value  && values.prevValue === null) { // установил
     message += ` '${transformValue(model, values)}'`;
-  
   }else { // изменил
-  
     if(values.prevValue !== null)
       message += ` с '${transformValue(model, values, 'prev')}'`;
-  
     if(values.value !== null)
       message += ` на '${transformValue(model, values)}'`;
-  
+    
   }
-  
-  
   
   return message;
 }
@@ -262,13 +255,11 @@ function transformValue(model, values, prev = false) {
   const field = model.field;
   let value = prev ? values.prevValue : values.value;
   
-    
   switch(entity + '_' + field) {
   case 'task_statusId': value = queries.dictionary.getName('TaskStatusesDictionary', value); break;
   case 'task_typeId': value = queries.dictionary.getName('TaskTypesDictionary', value); break;
   case 'task_sprintId': value = prev ? model.prevSprint.name : model.sprint.name; break;
   }
-  
   
   return value;
 }
