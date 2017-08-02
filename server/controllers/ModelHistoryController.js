@@ -75,7 +75,7 @@ exports.list = function(req, res, next){
           paranoid: false,
         },
         {
-          as: 'user',
+          as: 'author',
           model: models.User,
           attributes: models.User.defaultSelect,
           paranoid: false,
@@ -157,7 +157,7 @@ exports.list = function(req, res, next){
           date: model.createdAt,
           message: messageWithUsedModels.message,
           entities: messageWithUsedModels.entities,
-          user: model.user
+          author: model.user
         });
         
       });

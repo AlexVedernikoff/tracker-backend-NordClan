@@ -114,7 +114,7 @@ module.exports = function(sequelize, DataTypes) {
     });
     
     ModelHistory.belongsTo(models.User, {
-      as: 'user',
+      as: 'author',
       foreignKey: {
         name: 'userId',
         field: 'user_id'
