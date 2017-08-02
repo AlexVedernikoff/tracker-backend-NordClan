@@ -77,7 +77,7 @@ exports.list = function(req, res, next){
         result.push({
           date: model.createdAt,
           message: generateMessage(model),
-          user: model.user
+          //user: model.user
         });
         
       });
@@ -90,6 +90,7 @@ exports.list = function(req, res, next){
 
 function generateMessage(model) {
   let message = '';
+  const values = getValues(model);
   
   
   if(model.action === 'create') {
@@ -100,38 +101,62 @@ function generateMessage(model) {
   }
   
   if(model.action === 'update') {
-    if(model.field === 'deletedAt') {
-      message = 'удалил(-а)';
-    } else {
+    if(values.value  === null && values.prevValue) {
+      message = 'убрал(-а)';
+    } else if (values.value  && values.prevValue === null) {
+      message = 'установил(-а)';
+    }else {
       message = 'изменил(-а)';
     }
+    
+    // if(model.field === 'deletedAt') {
+    //   message = 'удалил(-а)';
+    // } else {
+    //   message = 'изменил(-а)';
+    // }
   }
 
   switch(model.field) {
   case 'statusId': message += ' статус'; break;
   case 'name': message += ' название'; break;
   case 'typeId': message += ' тип'; break;
-  case 'sprintId': message += ' спринт'; break;
+    case 'sprintId': message += ' спринт'; break;
+  //case 'projectId': message += ' проект'; break;
   case 'description': message += ' описание'; break;
   case 'prioritiesId': message += ' приоритет'; break;
   case 'plannedExecutionTime': message += ' планируемое время исполнения'; break;
   }
   
-  const values = getValues(model);
   
   
   
   message += ' ' + entityWord.update;
   
-  if(values.prevValue !== null && values.prev) {
-    message += ` с '${transformValue(model, values, 'prev')}' на `;
-  } else if(values.prevValue !== null) {
-    message += ` с '${transformValue(model, values, 'prev')}'`;
+  if(values.value  === null && values.prevValue) { // убрал
+    message += ` '${transformValue(model, values, 'prev')}'`;
+    
+  } else if (values.value  && values.prevValue === null) { // установил
+    message += ` '${transformValue(model, values)}'`;
+  
+  }else { // изменил
+  
+    if(values.prevValue !== null)
+      message += ` с '${transformValue(model, values, 'prev')}'`;
+  
+    if(values.value !== null)
+      message += ` на '${transformValue(model, values)}'`;
+  
   }
   
   
-  if(values.value !== null)
-    message += ` на '${transformValue(model, values)}'`;
+  // if(values.value && values.prevValue !== null)  {
+  //   message += ` с '${transformValue(model, values, 'prev')}' на `;
+  // } else if(values.prevValue !== null) {
+  //   message += ` с '${transformValue(model, values, 'prev')}'`;
+  // }
+  //
+  // if(values.value !== null)
+  //   message += ` на '${transformValue(model, values)}'`;
   
   
   return message;
