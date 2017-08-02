@@ -6,6 +6,7 @@ const Sequelize = require('sequelize');
 const entityWord = {};
 let entity;
 
+// Контроллер настроен только под задачи
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
@@ -42,6 +43,38 @@ exports.list = function(req, res, next){
       order: [['createdAt', 'DESC']],
       include: [
         {
+          as: 'parentTask',
+          model: models.Task,
+          where: Sequelize.literal('"ModelHistory"."field" = \'parentId\'' ),
+          attributes: ['id','name'],
+          required: false,
+          paranoid: false,
+        },
+        {
+          as: 'prevParentTask',
+          model: models.Task,
+          where: Sequelize.literal('"ModelHistory"."field" = \'parentId\'' ),
+          attributes: ['id','name'],
+          required: false,
+          paranoid: false,
+        },
+        {
+          as: 'sprint',
+          model: models.Sprint,
+          where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
+          attributes: ['name'],
+          required: false,
+          paranoid: false,
+        },
+        {
+          as: 'prevSprint',
+          model: models.Sprint,
+          where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
+          attributes: ['name'],
+          required: false,
+          paranoid: false,
+        },
+        {
           as: 'user',
           model: models.User,
           attributes: models.User.defaultSelect,
@@ -71,22 +104,6 @@ exports.list = function(req, res, next){
           ]
         },
         {
-          as: 'sprint',
-          model: models.Sprint,
-          where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
-          attributes: ['name'],
-          required: false,
-          paranoid: false,
-        },
-        {
-          as: 'prevSprint',
-          model: models.Sprint,
-          where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
-          attributes: ['name'],
-          required: false,
-          paranoid: false,
-        },
-        {
           as: 'performer',
           model: models.TaskUsers,
           where: Sequelize.literal('"ModelHistory"."entity" = \'TaskUser\'' ),
@@ -107,7 +124,6 @@ exports.list = function(req, res, next){
           as: 'itemTag',
           model: models.ItemTag,
           where: Sequelize.literal('"ModelHistory"."entity" = \'ItemTag\'' ),
-          //attributes: [],
           required: false,
           paranoid: false,
           include: [
@@ -138,7 +154,7 @@ exports.list = function(req, res, next){
           id: model.id,
           date: model.createdAt,
           message: generateMessage(model),
-          //user: model.user
+          user: model.user
         });
         
       });
@@ -230,6 +246,7 @@ function generateMessage(model) {
   case 'description': message += ' описание'; break;
   case 'prioritiesId': message += ' приоритет'; break;
   case 'plannedExecutionTime': message += ' планируемое время исполнения'; break;
+  case 'parentId': message += ' родителя'; break;
   }
   
   message += ' ' + entityWord.update;
@@ -259,6 +276,7 @@ function transformValue(model, values, prev = false) {
   case 'task_statusId': value = queries.dictionary.getName('TaskStatusesDictionary', value); break;
   case 'task_typeId': value = queries.dictionary.getName('TaskTypesDictionary', value); break;
   case 'task_sprintId': value = prev ? model.prevSprint.name : model.sprint.name; break;
+  case 'task_parentId': value = prev ? model.prevParentTask.name : model.parentTask.name; break;
   }
   
   return value;

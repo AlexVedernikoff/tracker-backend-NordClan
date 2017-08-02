@@ -67,20 +67,20 @@ module.exports = function(sequelize, DataTypes) {
   });
   
   ModelHistory.associate = function(models) {
-    ModelHistory.belongsTo(models.User, {
-      as: 'user',
-      foreignKey: {
-        name: 'userId',
-        field: 'user_id'
-      },
-      constraints: true,
-    });
-  
     ModelHistory.belongsTo(models.Task, {
-      as: 'task',
+      as: 'parentTask',
       foreignKey: {
-        name: 'entityId',
-        field: 'entity_id'
+        name: 'valueInt',
+        field: 'value_int'
+      },
+      constraints: false,
+    });
+    
+    ModelHistory.belongsTo(models.Task, {
+      as: 'prevParentTask',
+      foreignKey: {
+        name: 'prevValueInt',
+        field: 'prev_value_int'
       },
       constraints: false,
     });
@@ -93,12 +93,30 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+  
     ModelHistory.belongsTo(models.Sprint, {
       as: 'prevSprint',
       foreignKey: {
         name: 'prevValueInt',
         field: 'prev_value_int'
+      },
+      constraints: false,
+    });
+    
+    ModelHistory.belongsTo(models.User, {
+      as: 'user',
+      foreignKey: {
+        name: 'userId',
+        field: 'user_id'
+      },
+      constraints: true,
+    });
+    
+    ModelHistory.belongsTo(models.Task, {
+      as: 'task',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
       },
       constraints: false,
     });

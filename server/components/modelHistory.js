@@ -21,8 +21,6 @@ module.exports = function(sequelize) {
   });
   
   const afterHook = function(model) {
-    console.log(model);
-    
     const userId = model.$modelOptions.sequelize.context.user.id;
     const modelNamePlural = model.$modelOptions.name.plural;
     const modelNameSingular = model.$modelOptions.name.singular;
@@ -37,6 +35,8 @@ module.exports = function(sequelize) {
       diffObj = diff(model.dataValues, model._previousDataValues);
     }
     
+    const taskId = model.taskId ? model.taskId :
+      this.options.name.singular === 'Task' ? model.id : null;
     
     
     if(model.$options.isNewRecord) {
@@ -44,7 +44,7 @@ module.exports = function(sequelize) {
         entity: this.options.name.singular,
         entityId: model.id,
         userId: userId,
-        taskId: model.taskId ? model.taskId: null,
+        taskId: taskId,
         action: action,
       })
         .catch((err) => {
@@ -67,7 +67,7 @@ module.exports = function(sequelize) {
           entity: this.options.name.singular,
           entityId: model.id,
           userId: userId,
-          taskId: model.taskId ? model.taskId: null,
+          taskId: taskId,
           action: action,
           field: key,
           valueInt: (type === 'INTEGER') ? diffObj[key].newVal : null,
