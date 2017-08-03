@@ -6,15 +6,23 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: false,
       allowNull: false
     },
-    name: {
+    code: {
       type: DataTypes.STRING(20),
       trim: true,
       allowNull: false,
-      validate: {
-        len: [1, 20]
-      }
+    },
+    name: {
+      type: DataTypes.STRING(30),
+      trim: true,
+      allowNull: false,
     },
   }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['code']
+      },
+    ],
     underscored: true,
     timestamps: false,
     paranoid: false,
