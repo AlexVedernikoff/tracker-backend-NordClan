@@ -132,8 +132,18 @@ exports.update = function(req, res, next){
       if(!row) { return next(createError(404)); }
 
       // сброс задаче в бек лог
-      if(+req.body.sprintId === 0) req.body.sprintId = null;
-      if(+req.body.parentId === 0) req.body.parentId = null;
+      if(+req.body.sprintId === 0) {
+        resultRespons.sprint = {
+          id: 0,
+          name: 'Backlog'
+        };
+        req.body.sprintId = null;
+      }
+      
+      if(+req.body.parentId === 0) {
+        resultRespons.parentTask = null;
+        req.body.parentId = null;
+      }
 
 
       row.updateAttributes(req.body)
@@ -164,7 +174,7 @@ exports.update = function(req, res, next){
               resultRespons.id = model.id;
               // Получаю измененные поля
               _.keys(model.dataValues).forEach((key) => {
-                if(req.body[key] !== null)
+                if(req.body[key])
                   resultRespons[key] = model.dataValues[key];
               });
   
