@@ -20,13 +20,16 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: false,
     tableName: 'project_roles'
   });
-
+  
   ProjectRoles.values = [
-    {id: 1, code: 'dev', name: 'Develop'},
-    {id: 2, code: 'back', name: 'Back'},
-    {id: 3, code: 'front', name: 'Front'},
-    {id: 4, code: 'review', name: 'Code Review'},
-    {id: 5, code: 'qa', name: 'QA'},
+    {id: 1, code: 'account', name: 'Account'},
+    {id: 2, code: 'pm', name: 'PM'},
+    {id: 3, code: 'ux', name: 'UX'},
+    {id: 4, code: 'analyst', name: 'Аналитик'},
+    {id: 5, code: 'back', name: 'Back'},
+    {id: 6, code: 'front', name: 'Front'},
+    {id: 7, code: 'mobile', name: 'Mobile'},
+    {id: 8, code: 'teamLead', name: 'TeamLead(Code review)'},
     {id: 10, code: 'unbillable', name: 'Unbillable'},
   ];
 
