@@ -17,7 +17,7 @@ exports.login = function(req, res, next){
       login: req.body.login,
       active: 1,
     },
-    attributes: User.defaultSelect,
+    attributes: User.defaultSelect.concat('ldapLogin'),
   })
     .then((user) => {
       if(!user) return createError(404, 'Invalid Login or Password');
@@ -44,7 +44,6 @@ exports.login = function(req, res, next){
 
       const token = Auth.createJwtToken({
         login: req.body.login,
-        //password: req.body.password
       });
 
       Token
