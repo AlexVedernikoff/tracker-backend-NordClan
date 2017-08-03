@@ -38,6 +38,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 6, code: 'front', name: 'Front'},
     {id: 7, code: 'mobile', name: 'Mobile'},
     {id: 8, code: 'teamLead', name: 'TeamLead(Code review)'},
+    {id: 9, code: 'qa', name: 'QA'},
     {id: 10, code: 'unbillable', name: 'Unbillable'},
   ];
 
