@@ -44,7 +44,7 @@ exports.login = function(req, res, next){
 
       const token = Auth.createJwtToken({
         login: req.body.login,
-        password: req.body.password
+        //password: req.body.password
       });
 
       Token

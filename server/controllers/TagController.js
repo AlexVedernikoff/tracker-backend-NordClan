@@ -4,6 +4,7 @@ const queries = require('../models/queries');
 const StringHelper = require('../components/StringHelper');
 
 exports.list = function(req, res, next){
+  
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   req

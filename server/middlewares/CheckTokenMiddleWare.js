@@ -37,6 +37,7 @@ function checkToken(req, res, next) {
         login: decoded.user.login,
         active: 1,
       },
+      attributes: User.defaultSelect,
       include: [
         {
           as: 'token',

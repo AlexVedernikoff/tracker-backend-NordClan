@@ -136,6 +136,12 @@ module.exports = function(sequelize, DataTypes) {
 
 
   }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['login']
+      },
+    ],
     timestamps: false,
     paranoid: true,
     underscored: true,
@@ -153,7 +159,7 @@ module.exports = function(sequelize, DataTypes) {
       through: models.UserDepartments
     });
 
-    User.hasMany(models.Token, {
+    User.hasOne(models.Token, {
       as: 'token',
       foreignKey: {
         name: 'userId',
