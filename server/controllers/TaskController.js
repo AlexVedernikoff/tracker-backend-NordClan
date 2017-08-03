@@ -138,15 +138,38 @@ exports.update = function(req, res, next){
 
       row.updateAttributes(req.body)
         .then((model)=>{
-
-          resultRespons.id = model.id;
-          // Получаю измененные поля
-          _.keys(model.dataValues).forEach((key) => {
-            if(req.body[key])
-              resultRespons[key] = model.dataValues[key];
-          });
-
-          res.end(JSON.stringify(resultRespons));
+        
+          return Promise.resolve()
+            .then(() => {
+              // Если хотим изменил спринт, присылаю его обратно
+              if(+req.body.sprintId > 0) {
+                return Task.findByPrimary(req.params.id, {
+                  attributes: ['id'],
+                  include: [
+                    {
+                      as: 'sprint',
+                      model: models.Sprint,
+                      attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+                    }
+                  ]
+                })
+                  .then(model => {
+                    resultRespons.sprint = model.sprint;
+                  });
+              }
+            })
+            .then(() => {
+  
+              resultRespons.id = model.id;
+              // Получаю измененные поля
+              _.keys(model.dataValues).forEach((key) => {
+                if(req.body[key])
+                  resultRespons[key] = model.dataValues[key];
+              });
+  
+              res.end(JSON.stringify(resultRespons));
+            
+            });
 
         })
         .catch((err) => {
