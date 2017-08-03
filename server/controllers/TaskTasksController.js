@@ -29,7 +29,7 @@ exports.create = function(req, res, next) {
     .then(() => {
       return queries.taskTasks.findLinkedTasks(req.params.taskId)
         .then((result) => {
-          res.end(JSON.stringify(result));
+          res.json(result);
         });
     })
     .catch((err)=>next(err));
@@ -66,7 +66,7 @@ exports.delete = function(req, res, next) {
       return queries.taskTasks.findLinkedTasks(req.params.taskId);
     })
     .then((result) => {
-      res.end(JSON.stringify(result));
+      res.json(result);
     })
     .catch((err)=>next(err));
 };

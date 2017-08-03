@@ -28,7 +28,7 @@ exports.create = function(req, res, next){
         .then(() => {
           if(!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
         })
-        .then(() => res.end(JSON.stringify({id: model.id})));
+        .then(() => res.json({id: model.id}));
     })
     .catch((err) => {
       next(err);
@@ -100,7 +100,7 @@ exports.read = function(req, res, next){
 
       if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
       delete model.dataValues.portfolioId;
-      res.end(JSON.stringify(model.dataValues));
+      res.json(model.dataValues);
     })
     .catch((err) => {
       next(err);
@@ -142,7 +142,7 @@ exports.update = function(req, res, next){
               resultRespons[key] = model.dataValues[key];
           });
 
-          res.end(JSON.stringify(resultRespons));
+          res.json(resultRespons);
         });
 
     })
@@ -374,7 +374,7 @@ exports.list = function(req, res, next){
                 rowsCountOnCurrentPage: projects.length,
                 data: resultProjects,
               };
-              res.end(JSON.stringify(responseObject));
+              res.json(responseObject);
 
             });
 
@@ -404,10 +404,10 @@ exports.setStatus = function(req, res, next){
       return project
         .updateAttributes(attributesForUpdate)
         .then((model)=>{
-          res.end(JSON.stringify({
+          res.json({
             id: model.id,
             statusId: model.statusId
-          }));
+          });
         });
     })
     .catch((err) => {

@@ -13,7 +13,7 @@ exports.list = function(req, res, next){
   
       return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId)
         .then((tags) => {
-          res.end(JSON.stringify(tags));
+          res.json(tags);
         });
     })
     .catch((err) => next(createError(err)));
@@ -37,7 +37,7 @@ exports.create = function(req, res, next){
             .then(() => {
               return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id)
                 .then((tags) => {
-                  res.end(JSON.stringify(tags));
+                  res.json(tags);
                 });
             });
         })
@@ -74,7 +74,7 @@ exports.delete = function(req, res, next){
   
                   return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId)
                     .then((tags) => {
-                      res.end(JSON.stringify(tags));
+                      res.json(tags);
                     });
                   
                 });
@@ -118,7 +118,7 @@ exports.autocompliter = function(req, res, next){
           tags.forEach((tag) => {
             resultResponse.push(tag.name);
           });
-          res.end(JSON.stringify(resultResponse));
+          res.json(resultResponse);
         });
       
     })

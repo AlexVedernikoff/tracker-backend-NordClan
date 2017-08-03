@@ -31,7 +31,7 @@ exports.delete = function(req, res, next) {
         .then(()=>{
           return queries.file.getFilesByModel(modelFileName, req.params.entityId)
             .then((files) => {
-              res.end(JSON.stringify(files));
+              res.json(files);
             });
         })
         .catch((err) => next(createError(err)));
@@ -126,7 +126,7 @@ exports.upload = function(req, res, next) {
                       .then(() => {
                         return queries.file.getFilesByModel(modelFileName, req.params.entityId)
                           .then((files) => {
-                            res.end(JSON.stringify(files));
+                            res.json(files);
                           });
                       });
                   })

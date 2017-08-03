@@ -18,7 +18,7 @@ exports.create = function(req, res, next){
       return queries.timesheet.getTimesheet(model.id);
     })
     .then((model)=>{
-      res.end(JSON.stringify(model.dataValues));
+      res.json(model.dataValues);
     })
     .catch((err) => next(err));
 };
@@ -42,7 +42,7 @@ exports.update = function(req, res, next){
             if(req.body[key])
               result[key] = model.dataValues[key];
           });
-          res.end(JSON.stringify(result));
+          res.json(result);
         });
     })
     .catch((err) => next(err));
@@ -131,7 +131,7 @@ exports.list = function(req, res, next){
         model.dataValues.project = model.dataValues.task.dataValues.project;
         delete model.dataValues.task.dataValues.project;
       });
-      res.end(JSON.stringify(models));
+      res.json(models);
     })
     .catch((err) => next(err));
 

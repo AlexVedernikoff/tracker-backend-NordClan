@@ -22,7 +22,7 @@ exports.create = function(req, res, next){
   Task.create(req.body)
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
-        .then(() => res.end(JSON.stringify({id: model.id})));
+        .then(() => res.json({id: model.id}));
     })
     .catch((err) => {
       next(err);
@@ -112,7 +112,7 @@ exports.read = function(req, res, next){
         model.dataValues.performer = null;
       }
 
-      res.end(JSON.stringify(model.dataValues));
+      res.json(model.dataValues);
     })
     .catch((err) => {
       next(err);
@@ -164,7 +164,7 @@ exports.update = function(req, res, next){
                   ]
                 })
                   .then(model => {
-                    resultRespons.sprint = model.sprint;
+                    if(model.sprint) resultRespons.sprint = model.sprint;
                   });
               }
               
@@ -178,7 +178,7 @@ exports.update = function(req, res, next){
                   resultRespons[key] = model.dataValues[key];
               });
   
-              res.end(JSON.stringify(resultRespons));
+              res.json(resultRespons);
             
             });
 
@@ -382,7 +382,7 @@ exports.list = function(req, res, next){
             rowsCountOnCurrentPage: projectsRows.length,
             data: projectsRows
           };
-          res.end(JSON.stringify(responseObject));
+          res.json(responseObject);
 
         })
         .catch((err) => {
@@ -417,10 +417,10 @@ exports.setStatus = function(req, res, next){
               statusId: req.body.statusId
             })
             .then((model)=>{
-              res.end(JSON.stringify({
+              res.json({
                 id: model.id,
                 statusId: +model.statusId
-              }));
+              });
             });
         });
     })

@@ -55,7 +55,7 @@ exports.create = function(req, res, next){
             .then(() => {
               return queries.projectUsers.getUsersByProject(req.params.projectId)
                 .then((users) => {
-                  res.end(JSON.stringify(users));
+                  res.json(users);
                 });
             });
         });
@@ -89,7 +89,7 @@ exports.delete = function(req, res, next){
         .then(()=>{
           return queries.projectUsers.getUsersByProject(req.params.projectId)
             .then((users) => {
-              res.end(JSON.stringify(users));
+              res.json(users);
             });
         });
     })
@@ -106,7 +106,7 @@ exports.list = function(req, res, next){
 
   queries.projectUsers.getUsersByProject(req.params.projectId)
     .then((users) => {
-      res.end(JSON.stringify(users));
+      res.json(users);
     })
     .catch((err) => {
       next(err);

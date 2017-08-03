@@ -17,7 +17,7 @@ exports.login = function(req, res, next){
       login: req.body.login,
       active: 1,
     },
-    attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ]
+    attributes: User.defaultSelect,
   })
     .then((user) => {
       if(!user) return createError(404, 'Invalid Login or Password');

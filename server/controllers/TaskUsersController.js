@@ -30,10 +30,10 @@ exports.create = function(req, res, next){
               });
             }
           })
-          .then(() => res.end(JSON.stringify({
+          .then(() => res.json({
             statusId: req.body.statusId? +req.body.statusId : taskStatusId,
             performer: null
-          })));
+          }));
       })
       .catch((err) => {
         next(err);
@@ -104,7 +104,7 @@ exports.create = function(req, res, next){
                     performer: user.dataValues,
                     statusId: req.body.statusId? +req.body.statusId : taskStatusId
                   };
-                  res.end(JSON.stringify(responce));
+                  res.json(responce);
                 });
 
             });
