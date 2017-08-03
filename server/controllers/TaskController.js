@@ -157,13 +157,14 @@ exports.update = function(req, res, next){
                     resultRespons.sprint = model.sprint;
                   });
               }
+              
             })
             .then(() => {
   
               resultRespons.id = model.id;
               // Получаю измененные поля
               _.keys(model.dataValues).forEach((key) => {
-                if(req.body[key])
+                if(req.body[key] !== null)
                   resultRespons[key] = model.dataValues[key];
               });
   
