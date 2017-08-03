@@ -50,6 +50,14 @@ exports.run = function() {
   app.use('/api/v1', routes);
   app.use(errorHandlerMiddleWare);
   
+  app.get('*', function(req, res){
+    res.json({
+      status: 404,
+      message: 'Endpoint not found',
+      name: 'NotFoundError'
+    });
+  });
+  
   sequelize
     .authenticate()
     .then(() => {
