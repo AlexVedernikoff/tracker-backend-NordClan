@@ -51,9 +51,9 @@ exports.run = function() {
   app.use(errorHandlerMiddleWare);
   
   app.get('*', function(req, res){
-    res.json({
+    res.status(404).json({
       status: 404,
-      message: 'Endpoint not found',
+      message: 'Page Not Found',
       name: 'NotFoundError'
     });
   });
@@ -62,8 +62,9 @@ exports.run = function() {
     .authenticate()
     .then(() => {
       console.log('Database connection has been established successfully.');
-    }, function (err) {
-      console.log('Unable to connect to the database:', err);
+    })
+    .catch((err) => {
+      console.error('Unable to connect to the database:', err);
     });
   
   app.listen(config.port, () => {
