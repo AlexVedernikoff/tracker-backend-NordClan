@@ -285,6 +285,12 @@ exports.list = function(req, res, next){
       $notIn: [9], // По умолчанию показываю все не отмененные
     };
   }
+
+  const includeAuthor = {
+    as: 'author',
+    model: models.User,
+    attributes: models.User.defaultSelect
+  };
   
   const includePerformer = {
     as: 'performer',
@@ -337,6 +343,7 @@ exports.list = function(req, res, next){
   };
   
   let includeForSelect = [];
+  includeForSelect.push(includeAuthor);
   includeForSelect.push(includePerformer);
   includeForSelect.push(includeSprint);
   includeForSelect.push(includeTagSelect);

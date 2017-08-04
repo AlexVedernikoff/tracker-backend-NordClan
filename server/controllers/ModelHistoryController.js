@@ -156,7 +156,7 @@ exports.list = function(req, res, next){
           date: model.createdAt,
           message: messageWithUsedModels.message,
           entities: messageWithUsedModels.entities,
-          author: model.user
+          author: model.author
         });
         
       });
