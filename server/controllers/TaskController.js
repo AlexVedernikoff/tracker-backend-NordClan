@@ -240,9 +240,13 @@ exports.list = function(req, res, next){
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Task.checkAttributes(req.query.fields);
   }
-  if(!req.query.pageSize) {
-    req.query.pageSize = 25;
+  
+  if(!req.query.pageSize && !req.query.projectId && !req.query.sprintId) {
+    req.query.pageSize = 100;
+  } else if(!req.query.pageSize && (req.query.projectId || req.query.sprintId)) {
+    req.query.pageSize = null;
   }
+  
   if(!req.query.currentPage) {
     req.query.currentPage = 1;
   }
@@ -368,6 +372,7 @@ exports.list = function(req, res, next){
       where: where,
       subQuery: false,
       order: [
+        // Первым вывожу текущий спринт, потом остальное
         [models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END')],
         [models.sequelize.literal('"sprint"."fact_start_date" ASC')],
         ['statusId', 'ASC'],
@@ -402,8 +407,8 @@ exports.list = function(req, res, next){
 
           let responseObject = {
             currentPage: +req.query.currentPage,
-            pagesCount: Math.ceil(count / req.query.pageSize),
-            pageSize: req.query.pageSize,
+            pagesCount: (req.query.pageSize) ? Math.ceil(count / req.query.pageSize) : 1,
+            pageSize: (req.query.pageSize) ? req.query.pageSize : count,
             rowsCountAll: count,
             rowsCountOnCurrentPage: projectsRows.length,
             data: projectsRows
