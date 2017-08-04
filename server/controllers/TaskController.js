@@ -363,6 +363,7 @@ exports.list = function(req, res, next){
       order: [
         [models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END')],
         [models.sequelize.literal('"sprint"."fact_start_date" ASC')],
+        ['statusId', 'ASC'],
         ['prioritiesId', 'ASC'],
         ['name', 'ASC'],
       ],
