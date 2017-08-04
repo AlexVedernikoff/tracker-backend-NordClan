@@ -187,12 +187,12 @@ function messageHandler(model) {
   
   // Исполнители
   if( model.entity === 'TaskUser' && model.action === 'create' && model.field === null) {
-    result.entities.performer = model.performer;
+    result.entities.performer = model.performer.user;
     result.message = 'установил(-а) исполнителя {performer}';
     return result;
   }
   if(model.entity === 'TaskUser' && model.action === 'update' && model.field !== null) {
-    result.entities.performer = model.performer;
+    result.entities.performer = model.performer.user;
     result.message = 'убрал(-а) исполнителя {performer}';
     return result;
   }
