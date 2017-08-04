@@ -826,16 +826,16 @@ module.exports = {
             in: 'formData',
           },
           {
-            name: 'linkedTasks',
-            type: 'string',
-            in: 'formData',
-          },
-          {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
             in: 'formData',
-          }
+          },
+          {
+            name: 'performerId',
+            type: 'integer',
+            in: 'formData',
+          },
         ],
         responses: responsesCodes
       }

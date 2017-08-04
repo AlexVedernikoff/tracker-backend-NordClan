@@ -22,6 +22,22 @@ exports.create = function(req, res, next){
   Task.create(req.body)
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
+        .then(() => {
+          
+          if(+req.body.performerId > 0 ) { // Если нам прислали вместе с задачей исполнителя
+            return Promise.all([
+              queries.user.findOneActiveUser(req.body.performerId),
+            ])
+              .then(() => {
+                return models.TaskUsers.create({
+                  userId: req.body.performerId,
+                  taskId: model.id,
+                  authorId: req.user.id
+                });
+              });
+          }
+        
+        })
         .then(() => res.json({id: model.id}));
     })
     .catch((err) => {
