@@ -151,6 +151,7 @@ exports.list = function(req, res, next){
       models.forEach(model => {
         const messageWithUsedModels = messageHandler(model);
         
+        
         result.push({
           id: model.id,
           date: model.createdAt,
@@ -168,69 +169,72 @@ exports.list = function(req, res, next){
 };
 
 function messageHandler(model) {
-  const entities = {};
   let message = '';
   const values = getValues(model);
+  const result  = {
+    message: '',
+    entities: {},
+  };
   
   
   // Создал задачу
   if(model.action === 'create' && model.entity === 'Task') {
-    message = 'cоздал(-а)';
-    message += ' ' + entityWord.create;
-    message += ` '${model.task.name}'`;
-    return message;
+    result.message = 'cоздал(-а)';
+    result.message += ' ' + entityWord.create;
+    result.message += ` '${model.task.name}'`;
+    return result;
   }
   
   // Исполнители
   if( model.entity === 'TaskUser' && model.action === 'create' && model.field === null) {
-    entities.performer = model.performer;
-    message = 'установил(-а) исполнителя {performer}';
-    return message;
+    result.entities.performer = model.performer;
+    result.message = 'установил(-а) исполнителя {performer}';
+    return result;
   }
   if(model.entity === 'TaskUser' && model.action === 'update' && model.field !== null) {
-    entities.performer = model.performer;
-    message = 'убрал(-а) исполнителя {performer}';
-    return message;
+    result.entities.performer = model.performer;
+    result.message = 'убрал(-а) исполнителя {performer}';
+    return result;
   }
   
   // Связанные задачи
   if(model.entity === 'TaskTask' && model.action === 'create' && model.field === null) {
-    entities.linkedTask = model.taskTasks;
-    message = 'создал(-а) связь с задачей {linkedTask}';
-    return message;
+    result.entities.linkedTask = model.taskTasks;
+    result.message = 'создал(-а) связь с задачей {linkedTask}';
+    return result;
   }
   if(model.entity === 'TaskTask' && model.action === 'update' && model.field !== null) {
-    entities.linkedTask = model.taskTasks;
-    message = 'удалил(-а) связь с задачей {linkedTask}';
-    return message;
+    result.entities.linkedTask = model.taskTasks;
+    result.message = 'удалил(-а) связь с задачей {linkedTask}';
+    return result;
   }
   
   // Теги
   if(model.entity === 'ItemTag' && model.action === 'create' && model.field === null) {
-    message = `создал(-а) тег '${model.itemTag.tag.name}'`;
-    return message;
+    result.message = `создал(-а) тег '${model.itemTag.tag.name}'`;
+    return result;
   }
   if(model.entity === 'ItemTag' && model.action === 'update' && model.field !== null) {
-    message = `удалил(-а) тег '${model.itemTag.tag.name}'`;
-    return message;
+    result.message = `удалил(-а) тег '${model.itemTag.tag.name}'`;
+    return result;
   }
   
   // Файлы
   if(model.entity === 'TaskAttachment' && model.action === 'create' && model.field === null) {
-    entities.file = model.taskAttachments;
-    message = 'прикрепил(-а) файл {file}';
-    return message;
+    result.entities.file = model.taskAttachments;
+    result.message = 'прикрепил(-а) файл {file}';
+    return result;
   }
   if(model.entity === 'TaskAttachment' && model.action === 'update' && model.field !== null) {
-    entities.file = model.taskAttachments;
-    message = 'удалил(-а) файл {file}';
-    return message;
+    result.entities.file = model.taskAttachments;
+    result.message = 'удалил(-а) файл {file}';
+    return result;
   }
   
-  if(model.sprint) entities.sprint = model.sprint;
-  if(model.prevSprint) entities.prevSprint = model.prevSprint;
-  if(model.parentTask) entities.parentTask = model.parentTask;
-  if(model.prevParentTask) entities.prevParentTask = model.prevParentTask;
+  if(model.sprint) result.entities.sprint = model.sprint;
+  if(model.prevSprint) result.entities.prevSprint = model.prevSprint;
+  if(model.parentTask) result.entities.parentTask = model.parentTask;
+  if(model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
   
   
   
@@ -272,10 +276,8 @@ function messageHandler(model) {
     
   }
   
-  return {
-    message: message,
-    entities: entities,
-  };
+  result.message = message;
+  return result;
 }
 
 
