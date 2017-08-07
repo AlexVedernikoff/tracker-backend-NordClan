@@ -68,6 +68,11 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true
       }
     },
+    performerId: {
+      field: 'performer_id',
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
@@ -164,13 +169,12 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false
     });
 
-    Task.belongsToMany(models.User, {
+    Task.belongsTo(models.User, {
       as: 'performer',
-      through: {
-        model: models.TaskUsers,
-        unique: false,
-      },
-      foreignKey: 'task_id',
+      foreignKey: {
+        name: 'performerId',
+        field: 'performer_id'
+      }
     });
 
     Task.hasMany(models.TaskAttachments, {

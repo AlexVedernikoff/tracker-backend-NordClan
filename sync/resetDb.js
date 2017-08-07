@@ -7,7 +7,6 @@ const Models  = [
   models.TaskStatusesDictionary,
   
   models.ProjectUsers,
-  models.TaskUsers,
   models.ProjectAttachments,
   models.TaskAttachments,
   
@@ -22,10 +21,11 @@ const Models  = [
   
   // models.TimesheetTypesDictionary,
   // models.Timesheet,
-  models.ModelHistory,
-  models.TaskTasks,
+  // models.ModelHistory,
+  // models.TaskTasks,
   models.ItemTag,
-  models.Tag,
+  // models.Tag,
+  //models.ProjectRolesDictionary,
 ];
 
 const dictionariesModels  = [
@@ -33,7 +33,7 @@ const dictionariesModels  = [
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
   // models.TaskTypesDictionary,
-  // models.ProjectRolesDictionary,
+  //models.ProjectRolesDictionary,
   // models.TimesheetTypesDictionary,
 ];
 

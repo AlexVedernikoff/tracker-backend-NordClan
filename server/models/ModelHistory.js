@@ -131,15 +131,26 @@ module.exports = function(sequelize, DataTypes) {
       constraints: true,
     });
     
-    ModelHistory.belongsTo(models.TaskUsers, {
+  
+    ModelHistory.belongsTo(models.User, {
       as: 'performer',
       foreignKey: {
-        name: 'entityId',
-        field: 'entity_id'
+        name: 'valueInt',
+        field: 'value_int'
       },
-      constraints: false,
+      constraints: true,
     });
     
+    ModelHistory.belongsTo(models.User, {
+      as: 'prevPerformer',
+      foreignKey: {
+        name: 'prevValueInt',
+        field: 'prev_value_int'
+      },
+      constraints: true,
+    });
+  
+  
     ModelHistory.belongsTo(models.TaskTasks, {
       as: 'taskTasks',
       foreignKey: {

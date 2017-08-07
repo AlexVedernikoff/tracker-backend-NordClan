@@ -25,30 +25,14 @@ exports.isPerformerOfTask = function(userId, taskId) {
       where: {
         id: taskId,
         deletedAt: null,
+        performerId: userId,
         statusId: {
           $notIn: models.TaskStatusesDictionary.NOT_AVAILABLE_STATUSES
         }
       },
-      include: [
-        {
-          as: 'performer',
-          model: models.User,
-          attributes: ['id', 'firstNameRu', 'lastNameRu'],
-          through: {
-            model: models.TaskUsers,
-            attributes: [],
-            paranoid: false
-
-          },
-          required: true,
-          where: {
-            id: userId,
-          },
-        },
-      ]
     })
     .then((model) => {
-      if(!model) throw createError(404, 'Task, or performer in task not found');
+      if(!model) throw createError(404, 'User can create/update time sheet');
       return model;
     });
 

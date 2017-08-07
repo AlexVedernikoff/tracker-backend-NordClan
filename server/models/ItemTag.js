@@ -21,6 +21,12 @@ module.exports = function(sequelize, DataTypes) {
       references: null
     }
   }, {
+    indexes: [
+      {
+        method: 'BTREE',
+        fields: ['tag_id']
+      }
+    ],
     underscored: true,
     timestamps: true,
     paranoid: true,

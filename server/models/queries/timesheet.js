@@ -22,25 +22,9 @@ exports.canUserChangeTimesheet = function(userId, timesheetId) {
           where: {
             statusId: {
               $notIn: models.TaskStatusesDictionary.NOT_AVAILABLE_STATUSES
-            }
-          },
-          include: [
-            {
-              as: 'performer',
-              model: models.User,
-              attributes: ['id', 'firstNameRu', 'lastNameRu'],
-              through: {
-                model: models.TaskUsers,
-                attributes: [],
-                paranoid: false
-              
-              },
-              required: true,
-              where: {
-                id: userId,
-              },
             },
-          ],
+            performerId: userId,
+          },
         }
       ],
     })

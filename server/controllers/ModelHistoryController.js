@@ -75,6 +75,22 @@ exports.list = function(req, res, next){
           paranoid: false,
         },
         {
+          as: 'performer',
+          model: models.User,
+          where: Sequelize.literal('"ModelHistory"."field" = \'performerId\'' ),
+          attributes: models.User.defaultSelect,
+          required: false,
+          paranoid: false,
+        },
+        {
+          as: 'prevPerformer',
+          model: models.User,
+          where: Sequelize.literal('"ModelHistory"."field" = \'performerId\'' ),
+          attributes: models.User.defaultSelect,
+          required: false,
+          paranoid: false,
+        },
+        {
           as: 'author',
           model: models.User,
           attributes: models.User.defaultSelect,
@@ -101,23 +117,6 @@ exports.list = function(req, res, next){
               model: models.Task,
               attributes: ['id', 'name', 'deletedAt'],
             }
-          ]
-        },
-        {
-          as: 'performer',
-          model: models.TaskUsers,
-          where: Sequelize.literal('"ModelHistory"."entity" = \'TaskUser\'' ),
-          attributes: ['id', 'userId'],
-          required: false,
-          paranoid: false,
-          include: [
-            {
-              as: 'user',
-              model: models.User,
-              attributes: models.User.defaultSelect,
-              required: false,
-              paranoid: false,
-            },
           ]
         },
         {
@@ -186,16 +185,23 @@ function messageHandler(model) {
   }
   
   // Исполнители
-  if( model.entity === 'TaskUser' && model.action === 'create' && model.field === null) {
-    result.entities.performer = model.performer.user;
+  if( model.entity === 'Task' && model.field === 'performerId' && values.value !== null && values.prevValue === null) {
+    result.entities.performer = model.performer;
     result.message = 'установил(-а) исполнителя {performer}';
     return result;
   }
-  if(model.entity === 'TaskUser' && model.action === 'update' && model.field !== null) {
-    result.entities.performer = model.performer.user;
-    result.message = 'убрал(-а) исполнителя {performer}';
+  if(model.entity === 'Task' && model.field === 'performerId' && values.value === null && values.prevValue !== null) {
+    result.entities.prevPerformer = model.prevPerformer;
+    result.message = 'убрал(-а) исполнителя {prevPerformer}';
     return result;
   }
+  if(model.entity === 'Task' && model.field === 'performerId' && values.value !== null && values.prevValue !== null) {
+    result.entities.prevPerformer = model.prevPerformer;
+    result.entities.performer = model.performer;
+    result.message = 'изменил(-а) исполнителя {prevPerformer} на {performer}';
+    return result;
+  }
+  
   
   // Связанные задачи
   if(model.entity === 'TaskTask' && model.action === 'create' && model.field === null) {

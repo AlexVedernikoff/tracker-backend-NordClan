@@ -18,26 +18,9 @@ exports.create = function(req, res, next){
     model.authorId = req.user.id;
   });
   
-  
   Task.create(req.body)
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
-        .then(() => {
-          
-          if(+req.body.performerId > 0 ) { // Если нам прислали вместе с задачей исполнителя
-            return Promise.all([
-              queries.user.findOneActiveUser(req.body.performerId),
-            ])
-              .then(() => {
-                return models.TaskUsers.create({
-                  userId: req.body.performerId,
-                  taskId: model.id,
-                  authorId: req.user.id
-                });
-              });
-          }
-        
-        })
         .then(() => res.json({id: model.id}));
     })
     .catch((err) => {
@@ -102,10 +85,6 @@ exports.read = function(req, res, next){
         as: 'performer',
         model: models.User,
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
-        through: {
-          model: models.TaskUsers,
-          attributes: []
-        },
       },
       {
         as: 'attachments',
@@ -119,14 +98,7 @@ exports.read = function(req, res, next){
   })
     .then((model) => {
       if(!model) return next(createError(404));
-
       if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
-
-      if(model.dataValues.performer[0]) {
-        model.dataValues.performer = model.dataValues.performer[0];
-      } else {
-        model.dataValues.performer = null;
-      }
 
       res.json(model.dataValues);
     })
@@ -235,7 +207,7 @@ exports.delete = function(req, res, next){
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  if(req.query.performerId && !req.query.performerId.match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
+  if(req.query.performerId && !req.query.performerId.toString().match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
   if(req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Task.checkAttributes(req.query.fields);
@@ -254,6 +226,10 @@ exports.list = function(req, res, next){
   let where = {
     deletedAt: {$eq: null} // IS NULL
   };
+  
+  if(+req.query.performerId) {
+    where.performerId = +req.query.performerId;
+  }
   
   if(req.query.name) {
     where.name = {
@@ -300,16 +276,7 @@ exports.list = function(req, res, next){
   const includePerformer = {
     as: 'performer',
     model: models.User,
-    attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
-    through: {
-      model: models.TaskUsers,
-      attributes: [],
-      
-    },
-    where: req.query.performerId ? {
-      id: req.query.performerId
-    } : null,
-
+    attributes: models.User.defaultSelect,
   };
   
   const includeSprint = {
@@ -393,18 +360,7 @@ exports.list = function(req, res, next){
 
           count = count.length;
 
-          let projectsRows = projects ?
-            projects.map(
-              item => {
-                if(item.dataValues.performer[0]) {
-                  item.dataValues.performer = item.dataValues.performer[0];
-                } else {
-                  item.dataValues.performer = null;
-                }
-                return item.dataValues;
-              }
-
-            ) : [];
+          let projectsRows = projects ? projects : [];
 
           let responseObject = {
             currentPage: +req.query.currentPage,
