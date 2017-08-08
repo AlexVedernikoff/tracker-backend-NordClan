@@ -43,6 +43,9 @@ module.exports = function(sequelize, DataTypes) {
     {id: 9, name: 'Canceled'},
   ];
   
+  
+  TaskStatuses.DONE_STATUS = 8;
+  TaskStatuses.CANCELED_STATUS = 9;
   TaskStatuses.NOT_AVAILABLE_STATUSES = [8,9];
 
   return TaskStatuses;

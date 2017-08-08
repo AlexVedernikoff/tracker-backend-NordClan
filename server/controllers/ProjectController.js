@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const moment = require('moment');
 const _ = require('underscore');
+const Sequelize = require('sequelize');
 const models = require('../models');
 const Project = require('../models').Project;
 const Tag = require('../models').Tag;
@@ -57,7 +58,18 @@ exports.read = function(req, res, next){
         {
           as: 'sprints',
           model: Sprint,
-          attributes: ['id', 'name', 'factStartDate', 'factFinishDate', 'statusId', 'allottedTime'],
+          attributes: ['id', 'name', 'factStartDate', 'factFinishDate', 'statusId', 'allottedTime',
+            [Sequelize.literal(`(SELECT count(*)
+                                FROM tasks as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.sprint_id = "sprints"."id"
+                                AND t.status_id <> ${models.TaskStatusesDictionary.CANCELED_STATUS})`), 'countAllTasks'], // Все задачи кроме отмененных
+            [Sequelize.literal(`(SELECT count(*)
+                                FROM tasks as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.sprint_id = "sprints"."id"
+                                AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS}`), 'countDoneTasks'] // Все сделанные задаче
+          ],
           order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
         },
         {
