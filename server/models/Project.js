@@ -143,8 +143,21 @@ module.exports = function(sequelize, DataTypes) {
         field: 'project_id'
       }});
 
+    // Бывае так что приходится исопльзовать 2 join на одну и тоже таблиц
+    // Для это использую itemTag и itemTagSelect
     Project.hasMany(models.ItemTag, {
       as: 'itemTag',
+      foreignKey: {
+        name: 'taggableId',
+        field: 'taggable_id'
+      },
+      scope: {
+        taggable: 'project'
+      }
+    });
+
+    Project.hasMany(models.ItemTag, {
+      as: 'itemTagSelect',
       foreignKey: {
         name: 'taggableId',
         field: 'taggable_id'

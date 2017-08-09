@@ -205,13 +205,11 @@ exports.list = function(req, res, next){
     req.query.currentPage = 1;
   }
   
-  
   let resultProjects = {};
-  let queryIncludes = [];
+  let include = [];
   let where = {
     deletedAt: {$eq: null} // IS NULL
   };
-  
   
   if(req.query.portfolioId) {
     where.portfolioId = req.query.portfolioId;
@@ -228,7 +226,7 @@ exports.list = function(req, res, next){
   }
 
   // вывод текущего спринта
-  queryIncludes.push({
+  include.push({
     as: 'currentSprints',
     model: Sprint,
     attributes: ['name', 'factStartDate', 'factFinishDate', 'id', 'projectId'],
@@ -250,9 +248,9 @@ exports.list = function(req, res, next){
   });
 
   // вывод тегов
-  queryIncludes.push({
+  include.push({
     model: ItemTag,
-    as: 'itemTag',
+    as: 'itemTagSelect',
     where: {
       taggable: 'project'
     },
@@ -265,7 +263,7 @@ exports.list = function(req, res, next){
   });
 
   // Порфтель
-  queryIncludes.push({
+  include.push({
     as: 'portfolio',
     model: Portfolio,
     attributes: ['id','name']
@@ -286,7 +284,7 @@ exports.list = function(req, res, next){
   }
 
   if(req.query.dateSprintBegin || req.query.dateSprintEnd) {
-    queryIncludes.push({
+    include.push({
       as: 'sprintForQuery',
       model: Sprint,
       attributes: [],
@@ -321,7 +319,7 @@ exports.list = function(req, res, next){
     // Включаем фильтрация по тегам в запрос
     .then((tags) => {
       if(tags) {
-        queryIncludes.push({
+        include.push({
           model: ItemTag,
           as: 'itemTag',
           required: true,
@@ -340,11 +338,11 @@ exports.list = function(req, res, next){
           attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields)) : '',
           limit: req.query.pageSize,
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-          include: queryIncludes,
+          include: include,
           where: where,
           order: [
             ['statusId', 'ASC'],
-            ['createdAt', 'ASC'],
+            ['name', 'ASC'],
           ],
           subQuery: true,
         })
@@ -352,7 +350,7 @@ exports.list = function(req, res, next){
 
           return Project
             .count({
-              include: queryIncludes,
+              include: include,
               where: where,
               group: ['Project.id']
             })
@@ -364,9 +362,9 @@ exports.list = function(req, res, next){
                 for(let key in projects) {
                   let row = projects[key].dataValues;
                   
-                  if(row.itemTag) row.tags = Object.keys(row.itemTag).map((k) => row.itemTag[k].tag.name); // Преобразую теги в массив
+                  if(row.itemTagSelect) row.tags = Object.keys(row.itemTagSelect).map((k) => row.itemTagSelect[k].tag.name); // Преобразую теги в массив
                   row.elemType = 'project';
-                  delete row.itemTag;
+                  delete row.itemTagSelect;
                   delete row.portfolioId;
                   
                   if(row.currentSprints && row.currentSprints[0]) { // преобразую спринты
