@@ -1,7 +1,9 @@
 const createError = require('http-errors');
 const _ = require('underscore');
 const Sprint = require('../models').Sprint;
+const models = require('../models');
 const queries = require('../models/queries');
+const Sequelize = require('sequelize');
 
 
 exports.create = function(req, res, next){
@@ -26,7 +28,22 @@ exports.create = function(req, res, next){
 exports.read = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  Sprint.findByPrimary(req.params.id)
+  Sprint.findByPrimary(req.params.id, {
+    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt', 'projectId', 'authorId',
+      [Sequelize.literal(`(SELECT count(*)
+                                FROM tasks as t
+                                WHERE t.project_id = "Sprint"."project_id"
+                                AND t.sprint_id = "Sprint"."id"
+                                AND t.deleted_at IS NULL
+                                AND t.status_id <> ${models.TaskStatusesDictionary.CANCELED_STATUS})`), 'countAllTasks'], // Все задачи кроме отмененных
+      [Sequelize.literal(`(SELECT count(*)
+                                FROM tasks as t
+                                WHERE t.project_id = "Sprint"."project_id"
+                                AND t.sprint_id = "Sprint"."id"
+                                AND t.deleted_at IS NULL
+                                AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
+    ]
+  })
     .then((model) => {
       if(!model) { return next(createError(404)); }
       res.end(JSON.stringify(model.dataValues));
