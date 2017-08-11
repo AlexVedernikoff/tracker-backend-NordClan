@@ -372,7 +372,7 @@ exports.list = function(req, res, next){
     .then(() => {
       return Task
         .findAll({
-          attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
+          attributes: req.query.fields ? _.union(['id','name','authorId', 'performerId'].concat(req.query.fields)) : '',
           limit: req.query.pageSize,
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: includeForSelect,
