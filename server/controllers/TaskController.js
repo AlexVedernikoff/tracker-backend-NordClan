@@ -5,6 +5,7 @@ const Task = require('../models').Task;
 const Tag = require('../models').Tag;
 const ItemTag = require('../models').ItemTag;
 const queries = require('../models/queries');
+const moment = require('moment');
 
 
 exports.create = function(req, res, next){
@@ -244,12 +245,15 @@ exports.list = function(req, res, next){
     };
   }
   
+  if(req.query.tags) {
+    req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
+  }
+  
   if(req.query.projectId) {
     where.projectId = {
       in: req.query.projectId.toString().split(',').map((el)=>el.trim())
     };
   }
-  
   
   if(req.query.sprintId) {
     if(+req.query.sprintId === 0) {
@@ -282,7 +286,7 @@ exports.list = function(req, res, next){
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
-    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime'],
   };
   
   const includeTagSelect = {
@@ -305,7 +309,7 @@ exports.list = function(req, res, next){
     attributes: [],
     where: {
       name: {
-        $or: req.query.tags ? req.query.tags.split(',').map((el) => el.trim().toLowerCase()) : [],
+        $or: req.query.tags,
       },
     },
     through: {
@@ -319,9 +323,6 @@ exports.list = function(req, res, next){
   includeForSelect.push(includePerformer);
   includeForSelect.push(includeSprint);
   includeForSelect.push(includeTagSelect);
-  if(req.query.tags) {
-    includeForSelect.push(includeTagConst);
-  }
   
   let includeForCount = [];
   if(req.query.tags) {
@@ -331,57 +332,105 @@ exports.list = function(req, res, next){
     includeForCount.push(includePerformer);
   }
   
-  Task
-    .findAll({
-      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
-      limit: req.query.pageSize,
-      offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-      include: includeForSelect,
-      where: where,
-      subQuery: false,
-      order: [
-        // Первым вывожу текущий спринт, потом остальное
-        [models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END')],
-        [models.sequelize.literal('"sprint"."fact_start_date" ASC')],
-        ['statusId', 'ASC'],
-        ['prioritiesId', 'ASC'],
-        ['name', 'ASC'],
-      ],
+  Promise.resolve()
+  // Фильтрация по тегам ищем id тегов
+    .then(() => {
+      if(req.query.tags)
+        return Tag
+          .findAll({
+            where: {
+              name: {
+                $in: req.query.tags
+              }
+            }
+          });
+      
+      return [];
     })
-    .then(projects => {
-
-      Task
-        .count({
-          where: where,
-          include: includeForCount,
-          group: ['Task.id']
-        })
-        .then((count) => {
-
-          count = count.length;
-
-          let projectsRows = projects ? projects : [];
-
-          let responseObject = {
-            currentPage: +req.query.currentPage,
-            pagesCount: (req.query.pageSize) ? Math.ceil(count / req.query.pageSize) : 1,
-            pageSize: (req.query.pageSize) ? req.query.pageSize : count,
-            rowsCountAll: count,
-            rowsCountOnCurrentPage: projectsRows.length,
-            data: projectsRows
-          };
-          res.json(responseObject);
-
-        })
-        .catch((err) => {
-          next(err);
+    // Включаем фильтрация по тегам в запрос
+    .then((tags) => {
+      tags.forEach(tag => {
+        includeForSelect.push({
+          association: Task.hasOne(models.ItemTag, {
+            as: 'itemTag' + tag.id,
+            foreignKey: {
+              name: 'taggableId',
+              field: 'taggable_id'
+            },
+            scope: {
+              taggable: 'task'
+            }
+          }),
+          attributes: [],
+          required: true,
+          where: {
+            tag_id: tag.id,
+          },
         });
-
-
+      });
+    })
+    .then(() => {
+      return Task
+        .findAll({
+          attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
+          limit: req.query.pageSize,
+          offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
+          include: includeForSelect,
+          where: where,
+          //subQuery: true,
+          order: [
+            // Первым вывожу текущий спринт, потом остальное
+            // Не работает в данной версии sequelize
+            // [models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END')],
+            // [models.sequelize.literal('"sprint"."fact_start_date" ASC')],
+            ['statusId', 'ASC'],
+            ['prioritiesId', 'ASC'],
+            ['name', 'ASC'],
+          ],
+        })
+        .then(projects => {
+    
+          return Task
+            .count({
+              where: where,
+              include: includeForCount,
+              group: ['Task.id']
+            })
+            .then((count) => {
+        
+              count = count.length;
+  
+              projects = _.sortBy(projects, (project) => {
+                if (project.sprint === null) return 999999999999999;
+                
+                const startDate = moment(project.sprint.factStartDate).format('X');
+                const finisDate = moment(project.sprint.factFinishDate).format('X');
+                const now = moment().format('X');
+                
+                if (startDate <= now && finisDate >= now ) return 1;
+                return startDate;
+              });
+              
+  
+              const responseObject = {
+                currentPage: +req.query.currentPage,
+                pagesCount: (req.query.pageSize) ? Math.ceil(count / req.query.pageSize) : 1,
+                pageSize: (req.query.pageSize) ? req.query.pageSize : count,
+                rowsCountAll: count,
+                rowsCountOnCurrentPage: projects.length,
+                data: projects
+              };
+              res.json(responseObject);
+        
+            });
+        });
     })
     .catch((err) => {
       next(err);
     });
+  
+  
+  
 };
 
 

@@ -205,7 +205,6 @@ exports.list = function(req, res, next){
     req.query.currentPage = 1;
   }
   
-  let resultProjects = {};
   let include = [];
   let where = {
     deletedAt: {$eq: null} // IS NULL
@@ -223,6 +222,10 @@ exports.list = function(req, res, next){
     where.statusId = {
       in: req.query.statusId.toString().split(',').map((el)=>el.trim())
     };
+  }
+  
+  if(req.query.tags) {
+    req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
   }
 
   // вывод текущего спринта
@@ -305,32 +308,39 @@ exports.list = function(req, res, next){
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
     .then(() => {
-      if(req.query.tags) {
+      if(req.query.tags)
         return Tag
           .findAll({
             where: {
               name: {
-                $or: req.query.tags.split(',').map((el) => el.trim().toLowerCase())
+                $in: req.query.tags
               }
             }
           });
-      }
+      
+      return [];
     })
     // Включаем фильтрация по тегам в запрос
     .then((tags) => {
-      if(tags) {
+      tags.forEach(tag => {
         include.push({
-          model: ItemTag,
-          as: 'itemTag',
-          required: true,
-          attributes: [],
-          where: {
-            tag_id: {
-              $or: tags.map(el => el.dataValues.id),
+          association: Project.hasOne(models.ItemTag, {
+            as: 'itemTag' + tag.id,
+            foreignKey: {
+              name: 'taggableId',
+              field: 'taggable_id'
             },
+            scope: {
+              taggable: 'project'
+            }
+          }),
+          attributes: [],
+          required: true,
+          where: {
+            tag_id: tag.id,
           },
         });
-      }
+      });
     })
     .then(() => {
       return Project
@@ -340,18 +350,18 @@ exports.list = function(req, res, next){
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: include,
           where: where,
+          subQuery: true,
           order: [
             ['statusId', 'ASC'],
             ['name', 'ASC'],
           ],
-          subQuery: true,
         })
         .then(projects => {
 
           return Project
             .count({
-              include: include,
               where: where,
+              include: include,
               group: ['Project.id']
             })
             .then((count) => {
@@ -374,9 +384,8 @@ exports.list = function(req, res, next){
                   projects[key].dataValues = row;
                 }
                 
-                resultProjects = projects;
               }
-
+              
 
               let responseObject = {
                 currentPage: +req.query.currentPage,
@@ -384,7 +393,7 @@ exports.list = function(req, res, next){
                 pageSize: req.query.pageSize,
                 rowsCountAll: count,
                 rowsCountOnCurrentPage: projects.length,
-                data: resultProjects,
+                data: projects,
               };
               res.json(responseObject);
 
