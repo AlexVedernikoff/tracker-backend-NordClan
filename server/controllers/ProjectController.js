@@ -237,7 +237,7 @@ exports.list = function(req, res, next){
     model: Sprint,
     attributes: ['name', 'factStartDate', 'factFinishDate', 'id', 'projectId'],
     order: [
-      ['factStartDate', 'DESC'],
+      ['factStartDate', 'ASC'],
     ],
     where: {
       factStartDate: {
