@@ -59,7 +59,10 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
+  Sprint.findByPrimary(req.params.id, {
+    attributes: ['id', 'projectId'],
+    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+  })
     .then((model) => {
       if(!model) { return next(createError(404)); }
 
@@ -182,7 +185,10 @@ exports.setStatus = function(req, res, next){
   if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
 
   Sprint
-    .findByPrimary(req.params.id, { attributes: ['id'] })
+    .findByPrimary(req.params.id, {
+      attributes: ['id'],
+      order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+    })
     .then((sprint) => {
       if(!sprint) { return next(createError(404)); }
 
