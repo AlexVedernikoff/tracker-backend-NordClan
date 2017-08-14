@@ -41,6 +41,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 7, name: 'QA stop'},
     {id: 8, name: 'Done'},
     {id: 9, name: 'Canceled'},
+    {id: 10, name: 'Closed'},
   ];
   
   
