@@ -43,7 +43,8 @@ exports.read = function(req, res, next){
   Project
     .findByPrimary(req.params.id, {
       order: [
-        [{model: models.Sprint, as: 'sprints'}, 'factStartDate', 'DESC']
+        [{model: models.Sprint, as: 'sprints'}, 'factStartDate', 'DESC'],
+        [{model: models.Sprint, as: 'sprints'}, 'name', 'ASC'],
       ],
       include: [
         {
@@ -75,7 +76,6 @@ exports.read = function(req, res, next){
                                 AND t.deleted_at IS NULL
                                 AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
           ],
-          order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
         },
         {
           as: 'portfolio',
