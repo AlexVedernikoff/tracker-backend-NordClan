@@ -43,7 +43,10 @@ exports.read = function(req, res, next){
                                 AND t.deleted_at IS NULL
                                 AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
     ],
-    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+    order: [
+      ['factStartDate', 'DESC'],
+      ['name', 'ASC']
+    ],
   })
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -61,7 +64,7 @@ exports.update = function(req, res, next){
   
   Sprint.findByPrimary(req.params.id, {
     attributes: ['id', 'projectId'],
-    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+    order: [['factStartDate', 'DESC'], ['name', 'ASC']],
   })
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -141,7 +144,7 @@ exports.list = function(req, res, next){
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
-      order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+      order: [['factStartDate', 'DESC'], ['name', 'ASC']],
     })
     .then(projects => {
 
@@ -187,7 +190,7 @@ exports.setStatus = function(req, res, next){
   Sprint
     .findByPrimary(req.params.id, {
       attributes: ['id'],
-      order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+      order: [['factStartDate', 'DESC'], ['name', 'ASC']],
     })
     .then((sprint) => {
       if(!sprint) { return next(createError(404)); }
