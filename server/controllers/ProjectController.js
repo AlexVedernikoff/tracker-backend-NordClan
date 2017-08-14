@@ -43,7 +43,7 @@ exports.read = function(req, res, next){
   Project
     .findByPrimary(req.params.id, {
       order: [
-        [{model: models.Sprint, as: 'sprints'}, 'factStartDate', 'DESC'],
+        [{model: models.Sprint, as: 'sprints'}, 'factStartDate', 'ASC'],
         [{model: models.Sprint, as: 'sprints'}, 'name', 'ASC'],
       ],
       include: [
