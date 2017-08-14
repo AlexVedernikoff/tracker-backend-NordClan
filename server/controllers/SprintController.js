@@ -43,7 +43,6 @@ exports.read = function(req, res, next){
                                 AND t.deleted_at IS NULL
                                 AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
     ],
-    ordr: [['factFinishDate', 'DESC'], ['name', 'ASC']],
     order: [
       ['factStartDate', 'DESC'],
       ['name', 'ASC']
@@ -64,7 +63,7 @@ exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
   Sprint.findByPrimary(req.params.id, {
-    order: [['actFinishDate', 'DESC'], ['name', 'ASC']],
+    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
   })
     .then((model) => {
       if(!model) { return next(createError(404)); }
