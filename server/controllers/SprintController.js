@@ -42,7 +42,8 @@ exports.read = function(req, res, next){
                                 AND t.sprint_id = "Sprint"."id"
                                 AND t.deleted_at IS NULL
                                 AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
-    ]
+    ],
+    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
   })
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -133,12 +134,25 @@ exports.list = function(req, res, next){
   
   Sprint
     .findAll({
-      attributes: req.query.fields ? _.union(['id','name'].concat(req.query.fields)) : '',
+      //Жестко задаю атрибуты для выборки
+      attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt', 'projectId', 'authorId',
+        [Sequelize.literal(`(SELECT count(*)
+                                FROM tasks as t
+                                WHERE t.project_id = "Sprint"."project_id"
+                                AND t.sprint_id = "Sprint"."id"
+                                AND t.deleted_at IS NULL
+                                AND t.status_id <> ${models.TaskStatusesDictionary.CANCELED_STATUS})`), 'countAllTasks'], // Все задачи кроме отмененных
+        [Sequelize.literal(`(SELECT count(*)
+                                FROM tasks as t
+                                WHERE t.project_id = "Sprint"."project_id"
+                                AND t.sprint_id = "Sprint"."id"
+                                AND t.deleted_at IS NULL
+                                AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
+      ],
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
       order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
-      subQuery: true,
     })
     .then(projects => {
 
