@@ -44,7 +44,7 @@ exports.read = function(req, res, next){
                                 AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
     ],
     order: [
-      ['factStartDate', 'DESC'],
+      ['factStartDate', 'ASC'],
       ['name', 'ASC']
     ],
   })
@@ -143,7 +143,7 @@ exports.list = function(req, res, next){
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
-      order: [['factStartDate', 'DESC'], ['name', 'ASC']],
+      order: [['factStartDate', 'ASC'], ['name', 'ASC']],
     })
     .then(projects => {
 
@@ -189,7 +189,7 @@ exports.setStatus = function(req, res, next){
   Sprint
     .findByPrimary(req.params.id, {
       attributes: ['id'],
-      order: [['factStartDate', 'DESC'], ['name', 'ASC']],
+      order: [['factStartDate', 'ASC'], ['name', 'ASC']],
     })
     .then((sprint) => {
       if(!sprint) { return next(createError(404)); }
