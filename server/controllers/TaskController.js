@@ -244,6 +244,12 @@ exports.list = function(req, res, next){
       in: req.query.statusId.toString().split(',').map((el)=>el.trim())
     };
   }
+
+  if(!req.query.statusId) {
+    where.statusId = {
+      $notIn: [9, 10], // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
+    };
+  }
   
   if(req.query.tags) {
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
@@ -265,10 +271,6 @@ exports.list = function(req, res, next){
         in: req.query.sprintId.toString().split(',').map((el)=>el.trim())
       };
     }
-  } else if (+req.query.statusId !== 0) {
-    where.statusId = {
-      $notIn: [9], // По умолчанию показываю все не отмененные
-    };
   }
 
   const includeAuthor = {
