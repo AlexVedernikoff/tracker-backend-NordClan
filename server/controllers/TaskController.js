@@ -113,12 +113,19 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  const attributes = ['id'].concat(Object.keys(req.body));
+  const attributes = ['id', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
 
   Task.findByPrimary(req.params.id, { attributes: attributes })
     .then((row) => {
-      if(!row) { return next(createError(404)); }
+      if(!row) return next(createError(404));
+
+      if(+row.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали
+        if(!req.body.statusId) return next(createError(400, 'Task is closed'));
+        req.body = {
+          statusId: req.body.statusId
+        };
+      }
 
       // сброс задаче в бек лог
       if(+req.body.sprintId === 0) {

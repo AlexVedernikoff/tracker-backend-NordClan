@@ -47,6 +47,7 @@ module.exports = function(sequelize, DataTypes) {
   
   TaskStatuses.DONE_STATUS = 8;
   TaskStatuses.CANCELED_STATUS = 9;
+  TaskStatuses.CLOSED_STATUS = 10;
   TaskStatuses.NOT_AVAILABLE_STATUSES = [8,9,10];
 
   return TaskStatuses;
