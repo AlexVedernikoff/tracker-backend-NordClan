@@ -48,7 +48,15 @@ module.exports = function(sequelize, DataTypes) {
   TaskStatuses.DONE_STATUS = 8;
   TaskStatuses.CANCELED_STATUS = 9;
   TaskStatuses.CLOSED_STATUS = 10;
-  TaskStatuses.NOT_AVAILABLE_STATUSES = [8,9,10];
+  TaskStatuses.NOT_AVAILABLE_STATUSES = [
+    TaskStatuses.DONE_STATUS,
+    TaskStatuses.CANCELED_STATUS,
+    TaskStatuses.CLOSED_STATUS
+  ];
+  TaskStatuses.DONE_STATUSES = [ // Готовые и закрытые задачи
+    TaskStatuses.DONE_STATUS,
+    TaskStatuses.CLOSED_STATUS
+  ];
 
   return TaskStatuses;
 };

@@ -41,7 +41,7 @@ exports.read = function(req, res, next){
                                 WHERE t.project_id = "Sprint"."project_id"
                                 AND t.sprint_id = "Sprint"."id"
                                 AND t.deleted_at IS NULL
-                                AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
+                                AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUSES})`), 'countDoneTasks'] // Все сделанные задаче
     ],
     order: [
       ['factStartDate', 'ASC'],
