@@ -45,6 +45,8 @@ exports.create = function(req, res, next){
       .then((model) => { taskModel = model; })
   ])
     .then(() => {
+      if(+taskModel.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) return next(createError(400, 'Task is closed'));
+
       const newAttribures = {};
       if(+req.body.userId > 0) newAttribures.performerId = +req.body.userId;
       if(+req.body.statusId > 0) newAttribures.statusId = +req.body.statusId;

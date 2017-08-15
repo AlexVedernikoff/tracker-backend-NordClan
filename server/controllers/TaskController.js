@@ -113,12 +113,19 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  const attributes = ['id'].concat(Object.keys(req.body));
+  const attributes = ['id', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
 
   Task.findByPrimary(req.params.id, { attributes: attributes })
     .then((row) => {
-      if(!row) { return next(createError(404)); }
+      if(!row) return next(createError(404));
+
+      if(+row.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали
+        if(!req.body.statusId) return next(createError(400, 'Task is closed'));
+        req.body = {
+          statusId: req.body.statusId
+        };
+      }
 
       // сброс задаче в бек лог
       if(+req.body.sprintId === 0) {
@@ -244,6 +251,12 @@ exports.list = function(req, res, next){
       in: req.query.statusId.toString().split(',').map((el)=>el.trim())
     };
   }
+
+  if(!req.query.statusId) {
+    where.statusId = {
+      $notIn: [9, 10], // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
+    };
+  }
   
   if(req.query.tags) {
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
@@ -265,10 +278,6 @@ exports.list = function(req, res, next){
         in: req.query.sprintId.toString().split(',').map((el)=>el.trim())
       };
     }
-  } else if (+req.query.statusId !== 0) {
-    where.statusId = {
-      $notIn: [9], // По умолчанию показываю все не отмененные
-    };
   }
 
   const includeAuthor = {

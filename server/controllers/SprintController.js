@@ -41,8 +41,13 @@ exports.read = function(req, res, next){
                                 WHERE t.project_id = "Sprint"."project_id"
                                 AND t.sprint_id = "Sprint"."id"
                                 AND t.deleted_at IS NULL
-                                AND t.status_id = ${models.TaskStatusesDictionary.DONE_STATUS})`), 'countDoneTasks'] // Все сделанные задаче
-    ]
+
+                                AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
+    ],
+    order: [
+      ['factStartDate', 'ASC'],
+      ['name', 'ASC']
+    ],
   })
     .then((model) => {
       if(!model) { return next(createError(404)); }
@@ -58,7 +63,10 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
+ 
+  Sprint.findByPrimary(req.params.id, {
+    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
+  })
     .then((model) => {
       if(!model) { return next(createError(404)); }
 
@@ -137,6 +145,7 @@ exports.list = function(req, res, next){
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
+
       order: [['factStartDate', 'ASC'], ['name', 'ASC']],
       subQuery: true,
     })
@@ -182,7 +191,11 @@ exports.setStatus = function(req, res, next){
   if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
 
   Sprint
-    .findByPrimary(req.params.id, { attributes: ['id'] })
+
+    .findByPrimary(req.params.id, {
+      attributes: ['id'],
+      order: [['factStartDate', 'ASC'], ['name', 'ASC']],
+    })
     .then((sprint) => {
       if(!sprint) { return next(createError(404)); }
 

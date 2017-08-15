@@ -36,7 +36,7 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: 0,
-        max: 9
+        max: 10
       }
     },
     description: {

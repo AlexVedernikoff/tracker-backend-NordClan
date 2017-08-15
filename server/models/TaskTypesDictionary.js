@@ -36,7 +36,5 @@ module.exports = function(sequelize, DataTypes) {
     {id: 2, name: 'Баг'},
   ];
   
-  TaskTypes.NOT_AVAILABLE_STATUSES = [8,9];
-  
   return TaskTypes;
 };

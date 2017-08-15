@@ -56,10 +56,11 @@ exports.upload = function(req, res, next) {
       
       models[modelName]
         .findByPrimary(req.params.entityId, {
-          attributes: ['id']
+          attributes: ['id', 'statusId']
         })
         .then((model)=>{
           if(!model) return next(createError(404, 'Entity model not found'));
+          if(model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') return next(createError(400, 'Task is closed'));
           
           const form = new formidable.IncomingForm();
           form.maxFieldsSize = maxFieldsSize;
