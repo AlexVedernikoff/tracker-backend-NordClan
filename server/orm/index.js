@@ -6,7 +6,12 @@ const sequelize = new Sequelize(config.db.postgres.name, config.db.postgres.user
   host: config.db.postgres.host,
   dialect: config.db.postgres.dialect,
   port:    config.db.postgres.port,
-  logging: sequelizeLogger
+  logging: sequelizeLogger,
+  pool: {
+    max: 30,
+    min: 0,
+    idle: 100000
+  },
 }, {
   define: {
     underscored: true,
