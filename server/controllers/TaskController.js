@@ -116,73 +116,74 @@ exports.update = function(req, res, next){
   const attributes = ['id', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
 
-  Task.findByPrimary(req.params.id, { attributes: attributes })
-    .then((row) => {
-      if(!row) return next(createError(404));
+  return models.sequelize.transaction(function (t) {
 
-      if(+row.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали
-        if(!req.body.statusId) return next(createError(400, 'Task is closed'));
-        req.body = {
-          statusId: req.body.statusId
-        };
-      }
+    return Task.findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
+      .then((row) => {
+        if(!row) return next(createError(404));
 
-      // сброс задаче в бек лог
-      if(+req.body.sprintId === 0) {
-        resultRespons.sprint = {
-          id: 0,
-          name: 'Backlog'
-        };
-        req.body.sprintId = null;
-      }
-      
-      if(+req.body.parentId === 0) {
-        resultRespons.parentTask = null;
-        req.body.parentId = null;
-      }
+        if(+row.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали
+          if(!req.body.statusId) return next(createError(400, 'Task is closed'));
+          req.body = {
+            statusId: req.body.statusId
+          };
+        }
+
+        // сброс задаче в бек лог
+        if(+req.body.sprintId === 0) {
+          resultRespons.sprint = {
+            id: 0,
+            name: 'Backlog'
+          };
+          req.body.sprintId = null;
+        }
+
+        if(+req.body.parentId === 0) {
+          resultRespons.parentTask = null;
+          req.body.parentId = null;
+        }
 
 
-      row.updateAttributes(req.body)
-        .then((model)=>{
-        
-          return Promise.resolve()
-            .then(() => {
-              // Если хотим изменил спринт, присылаю его обратно
-              if(+req.body.sprintId > 0) {
-                return Task.findByPrimary(req.params.id, {
-                  attributes: ['id'],
-                  include: [
-                    {
-                      as: 'sprint',
-                      model: models.Sprint,
-                      attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
-                    }
-                  ]
-                })
-                  .then(model => {
-                    if(model.sprint) resultRespons.sprint = model.sprint;
-                  });
-              }
-              
-            })
-            .then(() => {
-  
-              resultRespons.id = model.id;
-              // Получаю измененные поля
-              _.keys(model.dataValues).forEach((key) => {
-                if(req.body[key])
-                  resultRespons[key] = model.dataValues[key];
+        return row.updateAttributes(req.body, { transaction: t })
+          .then((model)=>{
+
+            return Promise.resolve()
+              .then(() => {
+                // Если хотели изменить спринт, присылаю его обратно
+                if(+req.body.sprintId > 0) {
+                  return Task.findByPrimary(req.params.id, {
+                    attributes: ['id'],
+                    transaction: t,
+                    include: [
+                      {
+                        as: 'sprint',
+                        model: models.Sprint,
+                        attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+                      }
+                    ]
+                  })
+                    .then(model => {
+                      if(model.sprint) resultRespons.sprint = model.sprint;
+                    });
+                }
+              })
+              .then(() => {
+
+                resultRespons.id = model.id;
+                // Получаю измененные поля
+                _.keys(model.dataValues).forEach((key) => {
+                  if(req.body[key])
+                    resultRespons[key] = model.dataValues[key];
+                });
+
+                res.json(resultRespons);
+
               });
-  
-              res.json(resultRespons);
-            
-            });
 
-        })
-        .catch((err) => {
-          next(err);
-        });
-    })
+          });
+      });
+
+  })
     .catch((err) => {
       next(err);
     });
@@ -216,8 +217,14 @@ exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
   if(req.query.performerId && !req.query.performerId.toString().match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
+
+  let prefixNeed = false;
+
   if(req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
+    if (req.query.fields.indexOf('prefix') !== -1) prefixNeed = true;
+    if (prefixNeed) req.query.fields.splice(req.query.fields.indexOf('prefix'), 1);
+
     Task.checkAttributes(req.query.fields);
   }
   
@@ -326,20 +333,25 @@ exports.list = function(req, res, next){
       attributes: []
     }
   };
-  
+
+  const includeProject = {
+    as: 'project',
+    model: models.Project,
+    attributes: ['prefix'],
+  };
+
+
   let includeForSelect = [];
   includeForSelect.push(includeAuthor);
   includeForSelect.push(includePerformer);
   includeForSelect.push(includeSprint);
   includeForSelect.push(includeTagSelect);
+  if(prefixNeed) includeForSelect.push(includeProject);
   
   let includeForCount = [];
-  if(req.query.tags) {
-    includeForCount.push(includeTagConst);
-  }
-  if(req.query.performerId) {
-    includeForCount.push(includePerformer);
-  }
+  if(req.query.tags) includeForCount.push(includeTagConst);
+  if(req.query.performerId)  includeForCount.push(includePerformer);
+
   
   Promise.resolve()
   // Фильтрация по тегам ищем id тегов
@@ -381,12 +393,11 @@ exports.list = function(req, res, next){
     .then(() => {
       return Task
         .findAll({
-          attributes: req.query.fields ? _.union(['id','name','authorId', 'performerId'].concat(req.query.fields)) : '',
+          attributes: req.query.fields ? _.union(['id','name','authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields)) : '',
           limit: req.query.pageSize,
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: includeForSelect,
           where: where,
-          //subQuery: true,
           order: [
             // Первым вывожу текущий спринт, потом остальное
             // Не работает в данной версии sequelize
@@ -397,7 +408,7 @@ exports.list = function(req, res, next){
             ['name', 'ASC'],
           ],
         })
-        .then(projects => {
+        .then(tasks => {
     
           return Task
             .count({
@@ -408,8 +419,15 @@ exports.list = function(req, res, next){
             .then((count) => {
         
               count = count.length;
-  
-              projects = _.sortBy(projects, (project) => {
+
+              if(prefixNeed) {
+                tasks.forEach((task) => {
+                  task.dataValues.prefix = `${task.project.prefix}-${task.id}`;
+                  delete task.dataValues.project;
+                });
+              }
+
+              tasks = _.sortBy(tasks, (project) => {
                 if (project.sprint === null) return 999999999999999;
                 
                 const startDate = moment(project.sprint.factStartDate).format('X');
@@ -426,8 +444,8 @@ exports.list = function(req, res, next){
                 pagesCount: (req.query.pageSize) ? Math.ceil(count / req.query.pageSize) : 1,
                 pageSize: (req.query.pageSize) ? req.query.pageSize : count,
                 rowsCountAll: count,
-                rowsCountOnCurrentPage: projects.length,
-                data: projects
+                rowsCountOnCurrentPage: tasks.length,
+                data: tasks
               };
               res.json(responseObject);
         
