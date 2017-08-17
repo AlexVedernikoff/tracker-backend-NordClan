@@ -194,7 +194,8 @@ exports.list = function(req, res, next){
   if(req.query.dateSprintEnd && !req.query.dateSprintEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  if(req.query.portfolioId && !req.query.portfolioId.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if(req.query.portfolioId && !req.query.portfolioId.match(/^\d+$/)) return next(createError(400, 'portfolioId must be int'));
+  if(req.query.performerId && !req.query.performerId.match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
   if(req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Project.checkAttributes(req.query.fields);
@@ -274,6 +275,17 @@ exports.list = function(req, res, next){
     model: Portfolio,
     attributes: ['id','name']
   });
+
+  // Фильтрация по исполнитею
+  if(req.query.performerId) {
+    include.push({
+      model: models.ProjectUsers,
+      attributes: [],
+      where: {
+        userId: req.query.performerId
+      }
+    });
+  }
   
   // Фильтрация по дате
   const queryFactStartDate = {};
@@ -376,7 +388,6 @@ exports.list = function(req, res, next){
                   let row = projects[key].dataValues;
                   
                   if(row.itemTagSelect) row.tags = Object.keys(row.itemTagSelect).map((k) => row.itemTagSelect[k].tag.name); // Преобразую теги в массив
-                  row.elemType = 'project';
                   delete row.itemTagSelect;
                   delete row.portfolioId;
                   

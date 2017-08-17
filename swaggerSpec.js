@@ -71,6 +71,11 @@ module.exports = {
             in: 'query',
           },
           {
+            name: 'performerId',
+            type: 'integer',
+            in: 'query',
+          },
+          {
             name: 'pageSize',
             type: 'integer',
             in: 'query',
