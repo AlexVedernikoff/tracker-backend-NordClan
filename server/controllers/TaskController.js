@@ -422,7 +422,7 @@ exports.list = function(req, res, next){
 
               if(prefixNeed) {
                 tasks.forEach((task) => {
-                  task.dataValues.prefix = `${task.project.prefix}-${task.id}`;
+                  task.dataValues.prefix = task.project.prefix;
                   delete task.dataValues.project;
                 });
               }
