@@ -31,7 +31,7 @@ exports.create = function(req, res, next) {
       })
     ])
       .then(() => {
-        return queries.taskTasks.findLinkedTasks(req.params.taskId)
+        return queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t)
           .then((result) => {
             res.json(result);
           });
@@ -60,7 +60,7 @@ exports.delete = function(req, res, next) {
           lock: 'UPDATE'
         })
         .then(model => {
-          if(model) return model.destroy();
+          if(model) return model.destroy({ transaction: t });
         })
       ,
       models.TaskTasks.destroy({
@@ -72,7 +72,7 @@ exports.delete = function(req, res, next) {
       })
     ])
       .then(() => {
-        return queries.taskTasks.findLinkedTasks(req.params.taskId);
+        return queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
       })
       .then((result) => {
         res.json(result);

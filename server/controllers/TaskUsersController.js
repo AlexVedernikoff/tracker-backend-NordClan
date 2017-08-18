@@ -43,7 +43,7 @@ exports.create = function(req, res, next){
   return models.sequelize.transaction(function (t) {
     return Promise.all([
       queries.user.findOneActiveUser(req.body.userId, models.User.defaultSelect, t)
-        .then((model) => { userModel  = model; }),
+        .then((model) => { userModel = model; }),
       queries.task.findOneActiveTask(req.params.taskId, ['id', 'statusId', 'performerId'], t)
         .then((model) => { taskModel = model; })
     ])

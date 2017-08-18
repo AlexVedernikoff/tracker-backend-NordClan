@@ -3,7 +3,7 @@ const models = require('../');
 exports.name = 'projectUsers';
 
 exports.getTransRolesToObject = getTransRolesToObject;
-exports.getUsersByProject = function(projectId) {
+exports.getUsersByProject = function(projectId, attributes = ['userId', 'rolesIds'],  t = null) {
   let response = [];
 
   return models.ProjectUsers
@@ -12,7 +12,8 @@ exports.getUsersByProject = function(projectId) {
         projectId: projectId,
         deletedAt: null
       },
-      attributes: ['userId', 'rolesIds'],
+      transaction: t,
+      attributes: attributes,
       include: [
         {
           as: 'user',

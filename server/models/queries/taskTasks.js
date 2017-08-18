@@ -2,13 +2,14 @@ const models = require('../');
 
 exports.name = 'taskTasks';
 
-exports.findLinkedTasks = function(taskId, attributes = ['id', 'name']) {
+exports.findLinkedTasks = function(taskId, attributes = ['id', 'name'], t = null) {
   let result = [];
   
   return models.TaskTasks.findAll({
     where: {
       taskId: taskId
     },
+    transaction: t,
     include: [
       {
         as: 'task',
