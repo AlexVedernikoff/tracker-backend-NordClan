@@ -132,37 +132,40 @@ exports.update = function(req, res, next){
   const attributes = ['id', 'portfolioId'].concat(Object.keys(req.body));
   const resultRespons = {};
   let portfolioIdOld;
-  
-  Project
-    .findByPrimary(req.params.id, { attributes: attributes })
-    .then((project) => {
-      if(!project) { return next(createError(404)); }
-
-      // сброс портфеля
-      if (+req.body.portfolioId === 0) {
-        req.body.portfolioId = null;
-        portfolioIdOld = project.portfolioId;
-      }
 
 
-      return project
-        .updateAttributes(req.body)
-        .then((model)=>{
+  return models.sequelize.transaction(function (t) {
+    return Project
+      .findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
+      .then((project) => {
+        if(!project) { return next(createError(404)); }
 
-          // Запускаю проверку портфеля на пустоту и его удаление
-          if(portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+        // сброс портфеля
+        if (+req.body.portfolioId === 0) {
+          req.body.portfolioId = null;
+          portfolioIdOld = project.portfolioId;
+        }
 
-          resultRespons.id = model.id;
-          // Получаю измененные поля
-          _.keys(model.dataValues).forEach((key) => {
-            if(req.body[key])
-              resultRespons[key] = model.dataValues[key];
+
+        return project
+          .updateAttributes(req.body, { transaction: t })
+          .then((model)=>{
+
+            // Запускаю проверку портфеля на пустоту и его удаление
+            if(portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+
+            resultRespons.id = model.id;
+            // Получаю измененные поля
+            _.keys(model.dataValues).forEach((key) => {
+              if(req.body[key])
+                resultRespons[key] = model.dataValues[key];
+            });
+
+            res.json(resultRespons);
           });
 
-          res.json(resultRespons);
-        });
-
-    })
+      });
+  })
     .catch((err) => {
       next(err);
     });
@@ -431,20 +434,23 @@ exports.setStatus = function(req, res, next){
     finishedAt: +req.body.statusId === 3 ? new Date() : null // Если проект завершен, то ставим finishedAt, иначе убираем
   };
 
-  Project
-    .findByPrimary(req.params.id, { attributes: ['id'] })
-    .then((project) => {
-      if(!project) throw createError(404);
 
-      return project
-        .updateAttributes(attributesForUpdate)
-        .then((model)=>{
-          res.json({
-            id: model.id,
-            statusId: model.statusId
+  return models.sequelize.transaction(function (t) {
+    return Project
+      .findByPrimary(req.params.id, { attributes: ['id'], transaction: t, lock: 'UPDATE' })
+      .then((project) => {
+        if(!project) throw createError(404);
+
+        return project
+          .updateAttributes(attributesForUpdate, { transaction: t })
+          .then((model)=>{
+            res.json({
+              id: model.id,
+              statusId: model.statusId
+            });
           });
-        });
-    })
+      });
+  })
     .catch((err) => {
       next(err);
     });
