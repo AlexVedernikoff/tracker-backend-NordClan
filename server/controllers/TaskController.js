@@ -116,7 +116,7 @@ exports.update = function(req, res, next){
   const attributes = ['id', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
 
-  return models.sequelize.transaction(function (t) {
+  return models.sequelize.transaction({ isolationLevel: models.Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED }, function (t) {
 
     return Task.findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
       .then((row) => {
@@ -182,7 +182,6 @@ exports.update = function(req, res, next){
 
           });
       });
-
   })
     .catch((err) => {
       next(err);
