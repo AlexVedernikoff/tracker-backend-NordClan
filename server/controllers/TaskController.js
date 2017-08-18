@@ -116,7 +116,7 @@ exports.update = function(req, res, next){
   const attributes = ['id', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
 
-  return models.sequelize.transaction({ isolationLevel: models.Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED }, function (t) {
+  return models.sequelize.transaction(function (t) {
 
     return Task.findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
       .then((row) => {
@@ -464,29 +464,30 @@ exports.setStatus = function(req, res, next){
   if(req.params.taskId && !req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if(!req.body.statusId) return next(createError(400, 'statusId must be'));
   if(req.body.statusId && !req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be int'));
-  
-  Task.build( {id: req.params.taskId, statusId: req.body.statusId}).validate({fields: ['id', 'statusId']})
-    .then(validate => {
-      if(validate) throw createError(validate);
-    })
-    .then(() => {
-      return Task
-        .findByPrimary(req.params.taskId, { validate: true, attributes: ['id' ,'statusId'] })
-        .then((task) => {
-          if(!task) { return next(createError(404)); }
 
-          return task
-            .updateAttributes({
-              statusId: req.body.statusId
-            })
-            .then((model)=>{
-              res.json({
-                id: model.id,
-                statusId: +model.statusId
+
+  return models.sequelize.transaction(function (t) {
+    return Task.build( {id: req.params.taskId, statusId: req.body.statusId}).validate({fields: ['id', 'statusId']})
+      .then(validate => {
+        if(validate) throw createError(validate);
+      })
+      .then(() => {
+        return Task
+          .findByPrimary(req.params.taskId, { attributes: ['id' ,'statusId'], transaction: t, lock: 'UPDATE' })
+          .then((task) => {
+            if(!task) { return next(createError(404)); }
+
+            return task
+              .updateAttributes({ statusId: req.body.statusId }, { transaction: t })
+              .then((model)=>{
+                res.json({
+                  id: model.id,
+                  statusId: +model.statusId
+                });
               });
-            });
-        });
-    })
+          });
+      });
+  })
     .catch((err) => {
       next(err);
     });
