@@ -39,26 +39,29 @@ exports.create = function(req, res, next){
     queries.project.findOneActiveProject(req.params.projectId)
   ])
     .then(() => {
-      return models.ProjectUsers
-        .findOrCreate({where: {
-          projectId: req.params.projectId,
-          userId: req.body.userId,
-          deletedAt: null
-        }})
-        .spread((projectUser) => {
-          return Promise.resolve()
-            .then(() => {
-              if(rolesIds) {
-                return projectUser.updateAttributes({rolesIds: rolesIds});
-              }
-            })
-            .then(() => {
-              return queries.projectUsers.getUsersByProject(req.params.projectId)
-                .then((users) => {
-                  res.json(users);
-                });
-            });
-        });
+
+      return models.sequelize.transaction(function (t) {
+        return models.ProjectUsers
+          .findOrCreate({where: {
+            projectId: req.params.projectId,
+            userId: req.body.userId,
+            deletedAt: null
+          }, transaction: t, lock: 'UPDATE'})
+          .spread((projectUser) => {
+            return Promise.resolve()
+              .then(() => {
+                if(rolesIds) {
+                  return projectUser.updateAttributes({rolesIds: rolesIds}, { transaction: t });
+                }
+              })
+              .then(() => {
+                return queries.projectUsers.getUsersByProject(req.params.projectId)
+                  .then((users) => {
+                    res.json(users);
+                  });
+              });
+          });
+      });
 
     })
     .catch((err) => {

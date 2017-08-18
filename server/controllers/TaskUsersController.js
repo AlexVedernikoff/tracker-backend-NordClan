@@ -12,53 +12,58 @@ exports.create = function(req, res, next){
 
   // Удаление исполнителя
   if(+req.body.userId === 0) {
-    queries.task.findOneActiveTask(req.params.taskId, ['id', 'statusId', 'performerId'])
-      .then((model) => {
-        const newAttribures = {};
-        newAttribures.performerId = null;
-        if(+req.body.statusId > 0) newAttribures.statusId = +req.body.statusId;
-        
-        return model.updateAttributes(newAttribures)
-          .then(() =>
-            res.json({
-              statusId: req.body.statusId? +req.body.statusId : model.statusId,
-              performer: null
-            })
-          );
-        
-      })
+
+    return models.sequelize.transaction(function (t) {
+      return queries.task.findOneActiveTask(req.params.taskId, ['id', 'statusId', 'performerId'], t)
+        .then((model) => {
+          const newAttribures = {};
+          newAttribures.performerId = null;
+          if(+req.body.statusId > 0) newAttribures.statusId = +req.body.statusId;
+
+          return model.updateAttributes(newAttribures, { transaction: t })
+            .then(() =>
+              res.json({
+                statusId: req.body.statusId? +req.body.statusId : model.statusId,
+                performer: null
+              })
+            );
+
+        });
+    })
       .catch((err) => {
         next(err);
       });
-    return;
   }
 
   if(!req.body.userId) return next(createError(400, 'userId need'));
   if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
   if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
-  
 
-  Promise.all([
-    queries.user.findOneActiveUser(req.body.userId, models.User.defaultSelect)
-      .then((model) => { userModel  = model; }),
-    queries.task.findOneActiveTask(req.params.taskId, ['id', 'statusId', 'performerId'])
-      .then((model) => { taskModel = model; })
-  ])
-    .then(() => {
-      if(+taskModel.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) return next(createError(400, 'Task is closed'));
 
-      const newAttribures = {};
-      if(+req.body.userId > 0) newAttribures.performerId = +req.body.userId;
-      if(+req.body.statusId > 0) newAttribures.statusId = +req.body.statusId;
-  
-      return taskModel.updateAttributes(newAttribures)
-        .then(() =>
-          res.json({
-            statusId: req.body.statusId? +req.body.statusId : taskModel.statusId,
-            performer: userModel
-          })
-        );
-    })
+  return models.sequelize.transaction(function (t) {
+    return Promise.all([
+      queries.user.findOneActiveUser(req.body.userId, models.User.defaultSelect, t)
+        .then((model) => { userModel  = model; }),
+      queries.task.findOneActiveTask(req.params.taskId, ['id', 'statusId', 'performerId'], t)
+        .then((model) => { taskModel = model; })
+    ])
+      .then(() => {
+        if(+taskModel.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) return next(createError(400, 'Task is closed'));
+
+        const newAttribures = {};
+        if(+req.body.userId > 0) newAttribures.performerId = +req.body.userId;
+        if(+req.body.statusId > 0) newAttribures.statusId = +req.body.statusId;
+
+        return taskModel.updateAttributes(newAttribures, { transaction: t })
+          .then(() =>
+            res.json({
+              statusId: req.body.statusId? +req.body.statusId : taskModel.statusId,
+              performer: userModel
+            })
+          );
+      });
+  })
+
     .catch((err) => {
       next(err);
     });

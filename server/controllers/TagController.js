@@ -72,12 +72,11 @@ exports.delete = function(req, res, next){
               return item
                 .destroy()
                 .then(() => {
-  
                   return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId)
                     .then((tags) => {
                       res.json(tags);
                     });
-                  
+
                 });
             });
         });
