@@ -50,10 +50,12 @@ exports.saveTagsForModel = function(Model, tagsString, taggable) {
         .findOrCreate({where: {name: itemTag.toString().trim().toLowerCase()} })
         .spread((tag) => {
           return models.ItemTag
-            .create({
-              tagId: tag.id,
-              taggableId: Model.id,
-              taggable: taggable
+            .findOrCreate({
+              where: {
+                tagId: tag.id,
+                taggableId: Model.id,
+                taggable: taggable
+              }
             });
         })
         .catch((err) => {
