@@ -1,2 +1,7 @@
 const simTrack = require('./server/index');
-simTrack.run();
+
+if(require.main === module){
+  simTrack.run();
+} else {
+  module.exports = simTrack;
+}
