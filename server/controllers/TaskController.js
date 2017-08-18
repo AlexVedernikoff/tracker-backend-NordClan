@@ -426,6 +426,7 @@ exports.list = function(req, res, next){
                 });
               }
 
+              // Исправить это в ближайшее время
               tasks = _.sortBy(tasks, (project) => {
                 if (project.sprint === null) return 999999999999999;
                 
