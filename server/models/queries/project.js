@@ -33,6 +33,8 @@ exports.savePortfolioToProject = function(projectModel, portfolioName, t = null)
       if(!portfolio) throw createError(500, 'Can not create Portfolio');
       return projectModel.updateAttributes({
         portfolioId: portfolio.id
+      }, {
+        transaction: t
       });
     });
 };

@@ -23,17 +23,17 @@ exports.create = function(req, res, next){
   });
 
 
-  return models.sequelize.transaction(function (t) {
-    return Project
-      .create(req.body, { transaction: t })
-      .then((model) => {
-        return queries.tag.saveTagsForModel(model, req.body.tags, 'project', t)
-          .then(() => {
-            if(!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName, t);
-          })
-          .then(() => res.json({id: model.id}));
-      });
-  })
+
+  Project
+    .create(req.body)
+    .then((model) => {
+
+      return queries.tag.saveTagsForModel(model, req.body.tags, 'project')
+        .then(() => {
+          if(!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
+        })
+        .then(() => res.json({id: model.id}));
+    })
     .catch((err) => {
       next(err);
     });
