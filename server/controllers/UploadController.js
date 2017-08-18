@@ -2,12 +2,13 @@ const createError = require('http-errors');
 const formidable = require('formidable');
 const gm = require('gm');
 const fs = require('fs');
+var path = require('path');
 const models = require('../models');
 const queries = require('../models/queries');
 const stringHelper = require('../components/StringHelper');
 
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
-const maxFields = 1;
+const maxFields = 10;
 
 exports.delete = function(req, res, next) {
   req.sanitize('entity').trim();
@@ -29,10 +30,10 @@ exports.delete = function(req, res, next) {
           if(model) return model.destroy();
         })
         .then(()=>{
-          return queries.file.getFilesByModel(modelFileName, req.params.entityId)
-            .then((files) => {
-              res.json(files);
-            });
+          return queries.file.getFilesByModel(modelFileName, req.params.entityId);
+        })
+        .then((files) => {
+          res.json(files);
         })
         .catch((err) => next(createError(err)));
     });
@@ -42,111 +43,83 @@ exports.delete = function(req, res, next) {
 exports.upload = function(req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('entityId').trim();
-  req.checkParams('entity', 'entity must be \'task\' or \'project\'' ).isIn(['task',  'project']);
+  req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req
     .getValidationResult()
     .then((validationResult) => {
-      if(!validationResult.isEmpty()) return next(createError(400, validationResult));
-      
+      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
       const modelName = stringHelper.firstLetterUp(req.params.entity);
       const modelFileName = modelName + 'Attachments';
-      let uploadDir =  '/uploads/' + req.params.entity + 'sAttachments/';
-      
-      
+
+
       models[modelName]
         .findByPrimary(req.params.entityId, {
           attributes: ['id', 'statusId']
         })
-        .then((model)=>{
-          if(!model) return next(createError(404, 'Entity model not found'));
-          if(model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') return next(createError(400, 'Task is closed'));
-          
+        .then((model) => {
+          if (!model) return next(createError(404, 'Entity model not found'));
+          if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') return next(createError(400, 'Task is closed'));
+
+          let uploadDir = getDir('/uploads/' + req.params.entity + 'sAttachments/', model.id);
+
           const form = new formidable.IncomingForm();
+          form.multiples = true;
           form.maxFieldsSize = maxFieldsSize;
           form.maxFields = maxFields;
-          let file;
-          let filePath;
-          let previewPromise;
-          let previewPath = null;
-          
-          form.parse(req, function(err) {
-            if(err) throw createError(err);
-          });
-          
-          form
-            .on('fileBegin', (name, file) => {
-              uploadDir = getDir(uploadDir, model.id);
-              filePath = uploadDir + '/' + file.name;
-              file.path = './public/' + filePath;
-            })
-            .on('file', (name, f) => {
-              file = f;
-            })
-            .on('end', () => {
-              
-              if(file) {
-                // Превью у картинки
-                if(['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) {
-                  previewPromise = new Promise(function (resolve, reject) {
-                    gm('./public/' + filePath)
-                      .size({}, function (err, size) {
-                        if (err) throw new Error('GraphicsMagick error');
-                        if (!err && size.width) {
-                          if (size.width >= size.height) {
-                            this.resize(null, 200);
-                          } else if (size.width < size.height) {
-                            this.resize(200, null);
-                          }
-                        }
-                        let preview = uploadDir + '/200-' + file.name;
-                        this.write('./public/' + preview, function (err) {
-                          if (err) reject(err);
-                          previewPath = preview;
-                          resolve();
-                        });
-                      });
-                  });
-                } else {
-                  previewPromise = Promise.resolve();
-                }
-  
-                previewPromise
-                  .then(()=>{
-                    return models[modelFileName]
-                      .create({
-                        taskId: req.params.entityId,
-                        projectId: req.params.entityId,
-                        authorId: req.user.id,
-                        fileName: file.name,
-                        type: file.type.match(/^(.*)\//)[1],
-                        size: file.size,
-                        path: filePath,
-                        previewPath: previewPath,
-                      })
-                      .then(() => {
-                        return queries.file.getFilesByModel(modelFileName, req.params.entityId)
-                          .then((files) => {
-                            res.json(files);
-                          });
-                      });
-                  })
-                  .catch((err) => next(createError(err)));
-              } else {
-                res.end();
-              }
-              
-            })
-            .on('error', function(err) {
-              next(err);
-            });
-          
-        })
-        .catch((err) => next(createError(err)));
-    });
-  
-};
+          form.uploadDir = path.join(__dirname, '../../public/' + uploadDir);
 
+          form.on('error', function (err) {
+            next(err);
+          });
+
+          form.on('end', function (err) {
+            if (err) return next(createError(err));
+            queries.file.getFilesByModel(modelFileName, req.params.entityId)
+              .then((files) => {
+                res.json(files);
+              })
+              .catch((err) => next(createError(err)));
+          });
+
+          form.on('file', function (field, file) {
+            let newPath = path.join(form.uploadDir, file.name);
+            fs.rename(file.path, newPath, () => {
+
+              let promise = Promise.resolve();
+
+              if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) {
+                promise = cropImage(file, uploadDir, newPath);
+              }
+
+              promise.then((previewPath) => {
+                return models[modelFileName]
+                  .create({
+                    taskId: req.params.entityId,
+                    projectId: req.params.entityId,
+                    authorId: req.user.id,
+                    fileName: file.name,
+                    type: file.type.match(/^(.*)\//)[1],
+                    size: file.size,
+                    path: newPath,
+                    previewPath: previewPath ? previewPath : null,
+                  });
+              })
+                .catch((err) => next(createError(err)));
+
+
+            });
+          });
+
+          form.parse(req, function (err) {
+            if (err) throw createError(err);
+          });
+
+        });
+
+    });
+};
 
 function getDir(uploadDir, modelId) {
   const randChar = classicRandom(3);
@@ -158,13 +131,11 @@ function getDir(uploadDir, modelId) {
   return path;
 }
 
-
 function createDirIfNotExist(dir) {
   if (!fs.existsSync('.' + dir)){
     fs.mkdirSync('.' + dir);
   }
 }
-
 
 function classicRandom(n){
   let result ='', abd ='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', aL = abd.length;
@@ -172,4 +143,25 @@ function classicRandom(n){
     result += abd[Math.random() * aL|0];
   
   return result;
+}
+
+function cropImage(file, uploadDir, newPath) {
+  return new Promise(function (resolve, reject) {
+    gm(newPath)
+      .size({}, function (err, size) {
+        if (err) throw new Error('GraphicsMagick error');
+        if (!err && size.width) {
+          if (size.width >= size.height) {
+            this.resize(null, 200);
+          } else if (size.width < size.height) {
+            this.resize(200, null);
+          }
+        }
+        let preview = uploadDir + '/200-' + file.name;
+        this.write('./public/' + preview, function (err) {
+          if (err) reject(err);
+          resolve(preview);
+        });
+      });
+  });
 }
