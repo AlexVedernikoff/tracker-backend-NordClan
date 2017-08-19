@@ -13,6 +13,7 @@ const TaskUsersController = require('../controllers/TaskUsersController');
 const TaskTasksController = require('../controllers/TaskTasksController');
 const UploadController = require('../controllers/UploadController');
 const TimesheetController = require('../controllers/TimesheetController');
+const CommentController = require('../controllers/TaskCommentController');
 const ModelHistoryController = require('../controllers/ModelHistoryController');
 
 // Auth
@@ -74,6 +75,12 @@ router.post('/task/:taskId/timesheet', TimesheetController.create);
 router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update);
 router.delete('/task/:taskId/timesheet/:timesheetId', TimesheetController.delete);
 router.get('/task/:taskId/timesheet', TimesheetController.list);
+
+// Comments
+router.post('/task/:taskId/comment', CommentController.create);
+router.put('/task/:taskId/comment/:commentId', CommentController.update);
+router.delete('/task/:taskId/comment/:commentId', CommentController.delete);
+router.get('/task/:taskId/comment', CommentController.list);
 
 // dictionaries
 router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
