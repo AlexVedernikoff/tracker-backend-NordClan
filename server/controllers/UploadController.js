@@ -102,7 +102,7 @@ exports.upload = function(req, res, next) {
                     fileName: file.name,
                     type: file.type.match(/^(.*)\//)[1],
                     size: file.size,
-                    path: newPath,
+                    path: uploadDir + '/' + file.name,
                     previewPath: previewPath ? previewPath : null,
                   });
               })
