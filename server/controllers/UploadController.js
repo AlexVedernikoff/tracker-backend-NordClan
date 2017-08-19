@@ -2,7 +2,8 @@ const createError = require('http-errors');
 const formidable = require('formidable');
 const gm = require('gm');
 const fs = require('fs');
-var path = require('path');
+const path = require('path');
+const mkdirp = require('mkdirp');
 const models = require('../models');
 const queries = require('../models/queries');
 const stringHelper = require('../components/StringHelper');
@@ -20,10 +21,10 @@ exports.delete = function(req, res, next) {
     .getValidationResult()
     .then((validationResult) => {
       if(!validationResult.isEmpty()) return next(createError(400, validationResult));
-      
+
       const modelName = stringHelper.firstLetterUp(req.params.entity);
       const modelFileName = modelName + 'Attachments';
-  
+
       models[modelFileName]
         .findByPrimary(req.params.attachmentId)
         .then(model => {
@@ -62,58 +63,63 @@ exports.upload = function(req, res, next) {
           if (!model) return next(createError(404, 'Entity model not found'));
           if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') return next(createError(400, 'Task is closed'));
 
-          let uploadDir = getDir('/uploads/' + req.params.entity + 'sAttachments/', model.id);
+          const uploadDir = '/uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' +  classicRandom(3);
+          const absoluteUploadDir = path.join(__dirname, '../../public/' + uploadDir);
 
-          const form = new formidable.IncomingForm();
-          form.multiples = true;
-          form.maxFieldsSize = maxFieldsSize;
-          form.maxFields = maxFields;
-          form.uploadDir = path.join(__dirname, '../../public/' + uploadDir);
+          mkdirp(absoluteUploadDir, (err) => {
+            if (err) return createError(err);
 
-          form.on('error', function (err) {
-            next(err);
-          });
+            const form = new formidable.IncomingForm();
+            form.multiples = true;
+            form.maxFieldsSize = maxFieldsSize;
+            form.maxFields = maxFields;
+            form.uploadDir = absoluteUploadDir;
 
-          form.on('end', function (err) {
-            if (err) return next(createError(err));
-            queries.file.getFilesByModel(modelFileName, req.params.entityId)
-              .then((files) => {
-                res.json(files);
-              })
-              .catch((err) => next(createError(err)));
-          });
-
-          form.on('file', function (field, file) {
-            let newPath = path.join(form.uploadDir, file.name);
-            fs.rename(file.path, newPath, () => {
-
-              let promise = Promise.resolve();
-
-              if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) {
-                promise = cropImage(file, uploadDir, newPath);
-              }
-
-              promise.then((previewPath) => {
-                return models[modelFileName]
-                  .create({
-                    taskId: req.params.entityId,
-                    projectId: req.params.entityId,
-                    authorId: req.user.id,
-                    fileName: file.name,
-                    type: file.type.match(/^(.*)\//)[1],
-                    size: file.size,
-                    path: uploadDir + '/' + file.name,
-                    previewPath: previewPath ? previewPath : null,
-                  });
-              })
-                .catch((err) => next(createError(err)));
-
-
+            form.on('error', function (err) {
+              next(err);
             });
-          });
 
-          form.parse(req, function (err) {
-            if (err) throw createError(err);
+            form.on('end', function (err) {
+              if (err) return next(createError(err));
+              queries.file.getFilesByModel(modelFileName, req.params.entityId)
+                .then((files) => {
+                  res.json(files);
+                })
+                .catch((err) => next(createError(err)));
+            });
+
+            form.on('file', function (field, file) {
+              let newPath = path.join(form.uploadDir, file.name);
+              return fs.rename(file.path, newPath, () => {
+
+                let promise = Promise.resolve();
+
+                if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) {
+                  promise = cropImage(file, uploadDir, newPath);
+                }
+
+                return promise.then((previewPath) => {
+                  return models[modelFileName]
+                    .create({
+                      taskId: req.params.entityId,
+                      projectId: req.params.entityId,
+                      authorId: req.user.id,
+                      fileName: file.name,
+                      type: file.type.match(/^(.*)\//)[1],
+                      size: file.size,
+                      path: uploadDir + '/' + file.name,
+                      previewPath: previewPath ? previewPath : null,
+                    });
+                })
+                  .catch((err) => next(createError(err)));
+
+              });
+            });
+
+            form.parse(req, function (err) {
+              if (err) throw createError(err);
+            });
+
           });
 
         });
@@ -121,27 +127,11 @@ exports.upload = function(req, res, next) {
     });
 };
 
-function getDir(uploadDir, modelId) {
-  const randChar = classicRandom(3);
-  let path =  uploadDir + modelId;
-  createDirIfNotExist('/public' + path);
-  path += '/' + randChar;
-  createDirIfNotExist('/public' + path);
-  
-  return path;
-}
-
-function createDirIfNotExist(dir) {
-  if (!fs.existsSync('.' + dir)){
-    fs.mkdirSync('.' + dir);
-  }
-}
-
 function classicRandom(n){
   let result ='', abd ='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', aL = abd.length;
   while(result.length < n)
     result += abd[Math.random() * aL|0];
-  
+
   return result;
 }
 
