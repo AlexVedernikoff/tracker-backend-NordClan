@@ -57,8 +57,6 @@ module.exports = function(sequelize) {
           type = sequelize.models[modelNameSingular].attributes[key].type.key;
         }
         
-        console.log(diffObj);
-        
         arr.push({
           entity: this.options.name.singular,
           entityId: model.id,

@@ -62,22 +62,21 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
- 
-  Sprint.findByPrimary(req.params.id, {
-    order: [['factFinishDate', 'DESC'], ['name', 'ASC']],
-  })
-    .then((model) => {
-      if(!model) { return next(createError(404)); }
 
-      return model.updateAttributes(req.body)
-        .then((model)=>{
-          return queries.sprint.allSprintsByProject(model.projectId)
-            .then((sprints) => {
-              res.end(JSON.stringify(sprints));
-            });
-        });
-    })
+  return models.sequelize.transaction(function (t) {
+    return Sprint.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if(!model) { return next(createError(404)); }
+
+        return model.updateAttributes(req.body, { transaction: t })
+          .then((model)=>{
+            return queries.sprint.allSprintsByProject(model.projectId)
+              .then((sprints) => {
+                res.end(JSON.stringify(sprints));
+              });
+          });
+      });
+  })
     .catch((err) => {
       next(err);
     });
@@ -190,26 +189,28 @@ exports.setStatus = function(req, res, next){
   if(!req.body.statusId) return next(createError(400, 'statusId need'));
   if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
 
-  Sprint
+  return models.sequelize.transaction(function (t) {
+    return Sprint
+      .findByPrimary(req.params.id, {
+        attributes: ['id'],
+        transaction: t,
+        lock: 'UPDATE'
+      })
+      .then((sprint) => {
+        if(!sprint) { return next(createError(404)); }
 
-    .findByPrimary(req.params.id, {
-      attributes: ['id'],
-      order: [['factStartDate', 'ASC'], ['name', 'ASC']],
-    })
-    .then((sprint) => {
-      if(!sprint) { return next(createError(404)); }
-
-      return sprint
-        .updateAttributes({
-          statusId: req.body.statusId
-        })
-        .then((model)=>{
-          res.end(JSON.stringify({
-            id: model.id,
-            statusId: model.statusId
-          }));
-        });
-    })
+        return sprint
+          .updateAttributes({
+            statusId: req.body.statusId
+          }, { transaction: t })
+          .then((model)=>{
+            res.end(JSON.stringify({
+              id: model.id,
+              statusId: model.statusId
+            }));
+          });
+      });
+  })
     .catch((err) => {
       next(err);
     });

@@ -7,8 +7,9 @@ const sequelize = new Sequelize(config.db.postgres.name, config.db.postgres.user
   dialect: config.db.postgres.dialect,
   port:    config.db.postgres.port,
   logging: sequelizeLogger,
+  isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED,
   pool: {
-    max: 30,
+    max: 30 * require('os').cpus().length,
     min: 0,
     idle: 100000
   },

@@ -3,10 +3,11 @@ const models = require('../');
 
 exports.name = 'tag';
 
-exports.getAllTagsByModel = function(modelName, modelId) {
+exports.getAllTagsByModel = function(modelName, modelId, t = null) {
   return models[modelName]
     .findByPrimary(modelId, {
       attributes: ['id'],
+      transaction: t,
       include: [
         {
           as: 'tags',
@@ -46,13 +47,15 @@ exports.saveTagsForModel = function(Model, tagsString, taggable) {
   tags.forEach(function(itemTag) {
     chain = chain.then(() => {
       return models.Tag
-        .findOrCreate({where: {name: itemTag.toString().trim().toLowerCase()}})
+        .findOrCreate({where: {name: itemTag.toString().trim().toLowerCase()} })
         .spread((tag) => {
           return models.ItemTag
-            .create({
-              tagId: tag.id,
-              taggableId: Model.id,
-              taggable: taggable
+            .findOrCreate({
+              where: {
+                tagId: tag.id,
+                taggableId: Model.id,
+                taggable: taggable
+              }
             });
         })
         .catch((err) => {

@@ -34,33 +34,36 @@ exports.create = function(req, res, next){
     model.authorId = req.user.id;
   });
 
-  Promise.all([
-    queries.user.findOneActiveUser(req.body.userId),
-    queries.project.findOneActiveProject(req.params.projectId)
-  ])
-    .then(() => {
-      return models.ProjectUsers
-        .findOrCreate({where: {
-          projectId: req.params.projectId,
-          userId: req.body.userId,
-          deletedAt: null
-        }})
-        .spread((projectUser) => {
-          return Promise.resolve()
-            .then(() => {
-              if(rolesIds) {
-                return projectUser.updateAttributes({rolesIds: rolesIds});
-              }
-            })
-            .then(() => {
-              return queries.projectUsers.getUsersByProject(req.params.projectId)
-                .then((users) => {
-                  res.json(users);
-                });
-            });
-        });
+  return models.sequelize.transaction(function (t) {
+    return Promise.all([
+      queries.user.findOneActiveUser(req.body.userId, ['id'], t),
+      queries.project.findOneActiveProject(req.params.projectId, ['id'], t)
+    ])
+      .then(() => {
 
-    })
+        return models.ProjectUsers
+          .findOrCreate({where: {
+            projectId: req.params.projectId,
+            userId: req.body.userId,
+            deletedAt: null
+          }, transaction: t, lock: 'UPDATE'})
+          .spread((projectUser) => {
+            return Promise.resolve()
+              .then(() => {
+                if(rolesIds) {
+                  return projectUser.updateAttributes({rolesIds: rolesIds}, { transaction: t });
+                }
+              })
+              .then(() => {
+                return queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t)
+                  .then((users) => {
+                    res.json(users);
+                  });
+              });
+          });
+
+      });
+  })
     .catch((err) => {
       next(err);
     });
@@ -76,23 +79,26 @@ exports.delete = function(req, res, next){
   if(!Number.isInteger(+req.params.userId)) return next(createError(400, 'userId must be int'));
   if(+req.params.userId <= 0) return next(createError(400, 'userId must be > 0'));
 
-  models.ProjectUsers
-    .findOne({where: {
-      projectId: req.params.projectId,
-      userId: req.params.userId,
-      deletedAt: null
-    } })
-    .then((projectUser) => {
-      if(!projectUser) { return next(createError(404)); }
 
-      return projectUser.destroy()
-        .then(()=>{
-          return queries.projectUsers.getUsersByProject(req.params.projectId)
-            .then((users) => {
-              res.json(users);
-            });
-        });
-    })
+  return models.sequelize.transaction(function (t) {
+    return models.ProjectUsers
+      .findOne({where: {
+        projectId: req.params.projectId,
+        userId: req.params.userId,
+        deletedAt: null
+      }, transaction: t, lock: 'UPDATE' })
+      .then((projectUser) => {
+        if(!projectUser) { return next(createError(404)); }
+
+        return projectUser.destroy({ transaction: t })
+          .then(()=>{
+            return queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t)
+              .then((users) => {
+                res.json(users);
+              });
+          });
+      });
+  })
     .catch((err) => {
       next(err);
     });

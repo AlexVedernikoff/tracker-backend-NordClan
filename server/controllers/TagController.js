@@ -29,20 +29,22 @@ exports.create = function(req, res, next){
     .then((validationResult) => {
       if(!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-      return models[StringHelper.firstLetterUp(req.params.taggable)]
-        .findByPrimary(req.params.taggableId, { attributes: ['id'] })
-        .then((model) => {
-          if(!model) return next(createError(404, 'taggable model not found'));
 
-          return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable)
-            .then(() => {
-              return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id)
-                .then((tags) => {
-                  res.json(tags);
-                });
-            });
-        })
-        .catch((err) => next(createError(err)));
+      return models.sequelize.transaction(function (t) {
+        return models[StringHelper.firstLetterUp(req.params.taggable)]
+          .findByPrimary(req.params.taggableId, { attributes: ['id'], transaction: t })
+          .then((model) => {
+            if(!model) return next(createError(404, 'taggable model not found'));
+
+            return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable)
+              .then(() => {
+                return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id, t)
+                  .then((tags) => {
+                    res.json(tags);
+                  });
+              });
+          });
+      });
     })
     .catch((err) => next(createError(err)));
 };
@@ -56,31 +58,34 @@ exports.delete = function(req, res, next){
     .then((validationResult) => {
       if(!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-      return models.Tag
-        .find({where: {name: req.params.tag.trim()}, attributes: ['id'] })
-        .then((tag) => {
-          if(!tag) return next(createError(404, 'tag not found'));
 
-          return models.ItemTag
-            .findOne({ where: {
-              tagId: tag.dataValues.id,
-              taggableId: req.params.taggableId,
-              taggable: req.params.taggable,
-            }})
-            .then((item) => {
-              if(!item) return next(createError(404, 'ItemTag not found'));
-              return item
-                .destroy()
-                .then(() => {
-  
-                  return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId)
-                    .then((tags) => {
-                      res.json(tags);
-                    });
-                  
-                });
-            });
-        });
+      return models.sequelize.transaction(function (t) {
+        return models.Tag
+          .find({where: {name: req.params.tag.trim()}, attributes: ['id'], transaction: t })
+          .then((tag) => {
+            if(!tag) return next(createError(404, 'tag not found'));
+
+            return models.ItemTag
+              .findOne({ where: {
+                tagId: tag.dataValues.id,
+                taggableId: req.params.taggableId,
+                taggable: req.params.taggable,
+              }, transaction: t, lock: 'UPDATE' })
+              .then((item) => {
+                if(!item) return next(createError(404, 'ItemTag not found'));
+                return item
+                  .destroy({transaction: t})
+                  .then(() => {
+                    return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId, t)
+                      .then((tags) => {
+                        res.json(tags);
+                      });
+
+                  });
+              });
+          });
+      });
+
     })
     .catch((err) => next(createError(err)));
 };
