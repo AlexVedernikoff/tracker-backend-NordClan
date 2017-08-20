@@ -397,15 +397,11 @@ exports.list = function(req, res, next){
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: includeForSelect,
           where: where,
-          order: [
-            // Первым вывожу текущий спринт, потом остальное
-            // Не работает в данной версии sequelize
-            // [models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END')],
-            // [models.sequelize.literal('"sprint"."fact_start_date" ASC')],
-            ['statusId', 'ASC'],
-            ['prioritiesId', 'ASC'],
-            ['name', 'ASC'],
-          ],
+          order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
+            + ', "sprint"."fact_start_date" ASC'
+            + ', "Task"."statusId" ASC'
+            + ', "Task"."prioritiesId" ASC'
+            + ', "Task"."name" ASC')
         })
         .then(tasks => {
     
@@ -425,19 +421,6 @@ exports.list = function(req, res, next){
                   delete task.dataValues.project;
                 });
               }
-
-              // Исправить это в ближайшее время
-              tasks = _.sortBy(tasks, (project) => {
-                if (project.sprint === null) return 999999999999999;
-                
-                const startDate = moment(project.sprint.factStartDate).format('X');
-                const finisDate = moment(project.sprint.factFinishDate).format('X');
-                const now = moment().format('X');
-                
-                if (startDate <= now && finisDate >= now ) return 1;
-                return startDate;
-              });
-              
   
               const responseObject = {
                 currentPage: +req.query.currentPage,
