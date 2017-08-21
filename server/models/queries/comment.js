@@ -25,7 +25,7 @@ exports.getCommentsByTask = function(taskId) {
         },
         {
           as: 'parentComment',
-          model: models.Project,
+          model: models.Comment,
           required: false,
           attributes: ['id', 'text'],
           paranoid: false,
@@ -33,7 +33,7 @@ exports.getCommentsByTask = function(taskId) {
             {
               as: 'author',
               model: models.User,
-              required: true,
+              required: false,
               attributes: ['id', 'lastNameRu', 'firstNameRu', 'active'],
               paranoid: false
             }
