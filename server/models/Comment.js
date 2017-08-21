@@ -41,6 +41,12 @@ module.exports = function(sequelize, DataTypes) {
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
   }, {
+    indexes: [
+      {
+        method: 'BTREE',
+        fields: ['task_id']
+      }
+    ],
     underscored: true,
     timestamps: true,
     paranoid: true,
@@ -84,7 +90,7 @@ module.exports = function(sequelize, DataTypes) {
     });
   };
 
-  Comment.defaultSelect = ['id', 'taskId', 'parentComment', 'author', 'text', 'createdAt', 'updatedAt'];
+  Comment.defaultSelect = ['id', 'taskId', 'parentId', 'authorId', 'text', 'createdAt', 'updatedAt'];
 
   return Comment;
 };
