@@ -14,7 +14,32 @@ exports.getCommentsByTask = function(taskId) {
       attributes: models.Comment.defaultSelect,
       order: [
         ['createdAt', 'ASC']
-      ]
+      ],
+      include: [
+        {
+          as: 'author',
+          model: models.User,
+          required: true,
+          attributes: ['id', 'lastNameRu', 'firstNameRu', 'active'],
+          paranoid: false
+        },
+        {
+          as: 'parentComment',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'text'],
+          paranoid: false,
+          include: [
+            {
+              as: 'author',
+              model: models.User,
+              required: true,
+              attributes: ['id', 'lastNameRu', 'firstNameRu', 'active'],
+              paranoid: false
+            }
+          ]
+        }
+      ],
     });
 };
 
