@@ -397,6 +397,7 @@ exports.list = function(req, res, next){
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: includeForSelect,
           where: where,
+          subQuery: true,
           order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
             + ', "sprint"."fact_start_date" ASC'
             + ', "Task"."statusId" ASC'
