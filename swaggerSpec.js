@@ -1129,6 +1129,90 @@ module.exports = {
         ]
       }
     },
+    '/task/{taskId}/comment': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Получить все комментарии к конкретной задаче',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ]
+      },
+      post: {
+        tags: ['Tasks'],
+        summary: 'Создать комментарий к конкретной задаче',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'parentId',
+            type: 'integer',
+            in: 'formData',
+            required: false
+          },
+          {
+            name: 'text',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+        ]
+      }
+    },
+    '/task/{taskId}/comment/{commentId}': {
+      put: {
+        tags: ['Tasks'],
+        summary: 'Обновить комментарий к задаче',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'commentId',
+            description: 'Id комментария',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'text',
+            type: 'string',
+            in: 'formData',
+            required: true
+          }
+        ]
+      },
+      delete: {
+        tags: ['Tasks'],
+        summary: 'Удалить комментарий к задаче',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'commentId',
+            description: 'Id комментария',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ]
+      }
+    },
     '/task/{taskId}/timesheet/': {
       post: {
         tags: ['Tasks'],

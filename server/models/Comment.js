@@ -86,7 +86,5 @@ module.exports = function(sequelize, DataTypes) {
 
   Comment.defaultSelect = ['id', 'taskId', 'parentComment', 'author', 'text', 'createdAt', 'updatedAt'];
 
-  Comment.hasHistory();
-
   return Comment;
 };

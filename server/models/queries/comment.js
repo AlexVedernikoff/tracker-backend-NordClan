@@ -3,7 +3,6 @@ const models = require('../');
 exports.name = 'comment';
 
 exports.getCommentsByTask = function(taskId) {
-  let result = [];
   const where = {
     deletedAt: null,
     taskId
@@ -16,12 +15,6 @@ exports.getCommentsByTask = function(taskId) {
       order: [
         ['createdAt', 'ASC']
       ]
-    })
-    .then((models) => {
-      models.forEach((model) => {
-        result.push(model.dataValues);
-      });
-      return result;
     });
 };
 
@@ -35,6 +28,5 @@ exports.getOne = function(id) {
     .findOne({
       where: where,
       attributes: models.Comment.defaultSelect
-    })
-    .then((model) => model.dataValues);
+    });
 };

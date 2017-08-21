@@ -49,8 +49,9 @@ exports.update = function(req, res, next){
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
       if(comment.dataValues.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
-      if(comment.dataValues.deletedAt) next(createError(404, 'Nothing to edit'));
+
       const { text } = req.body;
+
       return comment
         .updateAttributes({ text })
         .then((model)=>{
@@ -81,7 +82,6 @@ exports.delete = function(req, res, next){
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
       if(comment.dataValues.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
-      if(comment.dataValues.deletedAt) next(createError(404, 'Nothing to delete'));
 
       return comment.destroy();
     })
