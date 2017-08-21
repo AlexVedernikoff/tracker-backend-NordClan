@@ -48,14 +48,14 @@ exports.update = function(req, res, next){
     .then(([task, comment])=>{
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
-      if(comment.dataValues.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
+      if(comment.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
 
       const { text } = req.body;
 
       return comment
         .updateAttributes({ text })
         .then((model)=>{
-          res.json(model.dataValues);
+          res.json(model);
         });
     })
     .catch((err) => next(err));
@@ -81,7 +81,7 @@ exports.delete = function(req, res, next){
     .then(([task, comment])=>{
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
-      if(comment.dataValues.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
+      if(comment.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
 
       return comment.destroy();
     })
