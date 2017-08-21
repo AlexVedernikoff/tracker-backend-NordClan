@@ -20,7 +20,7 @@ exports.getCommentsByTask = function(taskId) {
           as: 'author',
           model: models.User,
           required: true,
-          attributes: ['id', 'lastNameRu', 'firstNameRu', 'active'],
+          attributes: ['id', 'lastNameRu', 'firstNameRu', 'active', 'photo'],
           paranoid: false
         },
         {
@@ -34,7 +34,7 @@ exports.getCommentsByTask = function(taskId) {
               as: 'author',
               model: models.User,
               required: false,
-              attributes: ['id', 'lastNameRu', 'firstNameRu', 'active'],
+              attributes: ['id', 'lastNameRu', 'firstNameRu', 'active', 'photo'],
               paranoid: false
             }
           ]
