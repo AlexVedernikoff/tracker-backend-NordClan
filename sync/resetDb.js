@@ -23,9 +23,10 @@ const Models  = [
   // models.Timesheet,
   // models.ModelHistory,
   // models.TaskTasks,
-  models.ItemTag,
+  //models.ItemTag,
   // models.Tag,
   //models.ProjectRolesDictionary,
+  models.Comment
 ];
 
 const dictionariesModels  = [
