@@ -33,7 +33,7 @@ exports.getCommentsByTask = function(taskId) {
             {
               as: 'author',
               model: models.User,
-              required: true,
+              required: false,
               attributes: ['id', 'lastNameRu', 'firstNameRu', 'active'],
               paranoid: false
             }
