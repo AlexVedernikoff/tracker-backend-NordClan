@@ -27,7 +27,7 @@ exports.getCommentsByTask = function(taskId) {
           as: 'parentComment',
           model: models.Comment,
           required: false,
-          attributes: ['id', 'text'],
+          attributes: ['id', 'text', 'updatedAt'],
           paranoid: false,
           include: [
             {
