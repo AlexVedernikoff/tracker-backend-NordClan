@@ -47,7 +47,7 @@ module.exports = function(sequelize, DataTypes) {
     plannedExecutionTime: {
       field: 'planned_execution_time',
       type: DataTypes.FLOAT,
-      defaultValue: null,
+      defaultValue: 0,
       validate: {
         isFloat: true
       }
@@ -55,7 +55,7 @@ module.exports = function(sequelize, DataTypes) {
     factExecutionTime: {
       field: 'fact_execution_time',
       type: DataTypes.FLOAT,
-      defaultValue: null,
+      defaultValue: 0,
       validate: {
         isFloat: true
       }
