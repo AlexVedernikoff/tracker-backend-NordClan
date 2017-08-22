@@ -113,6 +113,8 @@ module.exports = function(sequelize, DataTypes) {
 
   };
 
+  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime'];
+
   return Sprint;
 };
 

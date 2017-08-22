@@ -2,11 +2,22 @@ const models = require('../');
 
 exports.name = 'sprint';
 
-exports.allSprintsByProject = function(projectId) {
+exports.allSprintsByProject = function(projectId, attributes = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime'], t = null) {
 
   let result = [];
   return models.Sprint
-    .findAll({where: {projectId: projectId, deletedAt: null}, order: [['factStartDate', 'ASC'], ['name', 'ASC']], attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']})
+    .findAll({
+      attributes: attributes,
+      where: {
+        projectId: projectId,
+        deletedAt: null
+      },
+      order: [
+        ['factStartDate', 'ASC'],
+        ['name', 'ASC']
+      ],
+      transaction: t
+    })
     .then((model) => {
       model.forEach((elModel) => {
         result.push(elModel.dataValues);
