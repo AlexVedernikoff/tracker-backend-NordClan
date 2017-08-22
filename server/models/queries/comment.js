@@ -2,6 +2,32 @@ const models = require('../');
 
 exports.name = 'comment';
 
+const include = [
+  {
+    as: 'author',
+    model: models.User,
+    required: true,
+    attributes: models.User.defaultSelect,
+    paranoid: false
+  },
+  {
+    as: 'parentComment',
+    model: models.Comment,
+    required: false,
+    attributes: models.Comment.defaultSelect,
+    paranoid: false,
+    include: [
+      {
+        as: 'author',
+        model: models.User,
+        required: false,
+        attributes: models.User.defaultSelect,
+        paranoid: false
+      }
+    ]
+  }
+];
+
 exports.getCommentsByTask = function(taskId) {
   const where = {
     deletedAt: null,
@@ -15,31 +41,7 @@ exports.getCommentsByTask = function(taskId) {
       order: [
         ['createdAt', 'ASC']
       ],
-      include: [
-        {
-          as: 'author',
-          model: models.User,
-          required: true,
-          attributes: ['id', 'lastNameRu', 'firstNameRu', 'active', 'photo'],
-          paranoid: false
-        },
-        {
-          as: 'parentComment',
-          model: models.Comment,
-          required: false,
-          attributes: ['id', 'text', 'updatedAt'],
-          paranoid: false,
-          include: [
-            {
-              as: 'author',
-              model: models.User,
-              required: false,
-              attributes: ['id', 'lastNameRu', 'firstNameRu', 'active', 'photo'],
-              paranoid: false
-            }
-          ]
-        }
-      ],
+      include
     });
 };
 
@@ -52,6 +54,7 @@ exports.getOne = function(id) {
   return models.Comment
     .findOne({
       where: where,
-      attributes: models.Comment.defaultSelect
+      attributes: models.Comment.defaultSelect,
+      include
     });
 };
