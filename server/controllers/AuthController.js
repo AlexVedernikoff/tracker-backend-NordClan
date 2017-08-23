@@ -20,7 +20,7 @@ exports.login = function(req, res, next){
     attributes: User.defaultSelect.concat('ldapLogin'),
   })
     .then((user) => {
-      if(!user) return createError(404, 'Invalid Login or Password');
+      if(!user) return next(createError(404, 'Invalid Login or Password'));
   
       queries.token.deleteExpiredTokens(user);
       authLdap(user, req.body.password);

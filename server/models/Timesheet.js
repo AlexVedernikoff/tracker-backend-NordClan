@@ -47,7 +47,7 @@ module.exports = function (sequelize, DataTypes) {
       //   len: [1, 500]
       // }
     },
-    isBilible: {
+    isBillible: {
       field: 'is_billible',
       type: DataTypes.BOOLEAN,
       allowNull: false
@@ -131,8 +131,8 @@ module.exports = function (sequelize, DataTypes) {
     Timesheet.belongsTo(models.TimesheetStatusesDictionary, {
       as: 'timesheetStatus',
       foreignKey: {
-        name: 'status',
-        field: 'status',
+        name: 'statusId',
+        field: 'status_id',
         allowNull: false,
       }
     });

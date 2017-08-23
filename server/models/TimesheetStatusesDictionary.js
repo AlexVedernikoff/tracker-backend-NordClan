@@ -11,6 +11,19 @@ module.exports = function(sequelize, DataTypes) {
         trim: true,
         allowNull: false
       },
+      nameRu: {
+        field: 'name_ru',
+        type: DataTypes.STRING(15),
+        allowNull: false,
+        validate: {
+          len: [1, 15]
+        }
+      },
+      isBlocked: {
+        field: 'is_blocked',
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
     }, {
       underscored: true,
       timestamps: false,
@@ -19,13 +32,13 @@ module.exports = function(sequelize, DataTypes) {
     });
     
     TimesheetStatusesDictionary.values = [
-      {id: 1, name: ''},
-      {id: 2, name: ''},
-      {id: 3, name: ''},
-      {id: 4, name: ''},
-      {id: 5, name: ''},
-      {id: 6, name: ''},
+      {id: 1, name: 'inprogress', nameRu: 'В процессе', isBlocked: false},
+      {id: 2, name: 'rejected', nameRu: 'Отменено', isBlocked: false},
+      {id: 3, name: 'submitted', nameRu: 'Отправлено', isBlocked: true},
+      {id: 4, name: 'approved', nameRu: 'Согласовано', isBlocked: true}
     ];
+
+    TimesheetStatusesDictionary.NON_BLOCKED_IDS = [1, 2];
     
     return TimesheetStatusesDictionary;
   };

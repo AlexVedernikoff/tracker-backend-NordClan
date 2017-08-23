@@ -101,7 +101,7 @@ exports.list = function(req, res, next){
 
   models.Timesheet.findAll({
     where: where,
-    attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment'],
+    attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
     order: [
       ['createdAt', 'ASC']
     ],

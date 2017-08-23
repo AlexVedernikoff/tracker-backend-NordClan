@@ -1225,6 +1225,12 @@ module.exports = {
             required: true
           },
           {
+            name: 'sprintId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
             name: 'onDate',
             description: 'yyyy-mm-dd',
             type: 'string',
@@ -1249,6 +1255,30 @@ module.exports = {
           {
             name: 'comment',
             type: 'string',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
             in: 'formData',
             required: true
           },
@@ -1329,6 +1359,26 @@ module.exports = {
             name: 'comment',
             type: 'string',
             in: 'formData',
+          },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData'
           },
         ],
         responses: responsesCodes

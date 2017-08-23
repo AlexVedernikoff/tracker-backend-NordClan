@@ -4,6 +4,7 @@ const createError = require('http-errors');
 exports.name = 'timesheet';
 
 // проверка является ли исполнителем указанный пользователь
+// +  проверка на статус таймшита
 exports.canUserChangeTimesheet = function(userId, timesheetId) {
   
   return models.Timesheet
@@ -11,8 +12,9 @@ exports.canUserChangeTimesheet = function(userId, timesheetId) {
       required: true,
       where: {
         id: timesheetId,
+        statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS,
       },
-      attributes: ['id', 'typeId', 'onDate'],
+      attributes: ['id', 'typeId', 'onDate', 'statusId'],
       include: [
         {
           as: 'task',
@@ -43,7 +45,7 @@ exports.getTimesheet = function(timesheetId) {
       where: {
         id: timesheetId,
       },
-      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment'],
+      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId'],
       include: [
         {
           as: 'task',
