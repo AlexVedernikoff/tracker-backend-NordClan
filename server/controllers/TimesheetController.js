@@ -1,7 +1,38 @@
+'use strict'
+
 const createError = require('http-errors');
 const _ = require('underscore');
 const models = require('../models');
 const queries = require('../models/queries');
+
+
+
+async function getTracksOnOtherDay() {
+  
+  }
+
+async function getTracksOnPastDay() {
+
+}
+
+async function getTracksOnCurrentDay(userId, stages, dev ) {
+  // подтянуть таски + таймшиты на сегодня
+
+}
+
+exports.getTracks = async function(req, res, next){
+let result;
+  // если день не сегодня то идти по другому пути
+// params: user_id , stages [QA, CODEREVIEW, DEV], data)
+//stages брать из модели , там как константа будет
+if (/**/) {
+  result = await this.getTracksOnCurrentDay();
+} else if (/**/) {
+  result = await this.getTracksOnOtherDay();
+} else if (/**/)
+}
+
+
 
 exports.create = function(req, res, next){
   if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
