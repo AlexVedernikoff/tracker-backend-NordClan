@@ -1,43 +1,45 @@
 const models = require('../server/models');
 
 const Models  = [
-  // models.ProjectRolesDictionary,
-  // models.ProjectStatusesDictionary,
-  // models.SprintStatusesDictionary,
-  // models.TaskStatusesDictionary,
-  //models.TaskTypesDictionary,
-  // models.ProjectRolesDictionary,
-  //
-  // models.Portfolio,
-  // models.Project,
-  // models.Sprint,
-  // models.User,
-  // models.Task,
-  // models.Department,
-  // models.UserDepartments,
-  // models.Token,
-  //
-  // models.ProjectUsers,
-  // models.ProjectAttachments,
-  // models.TaskAttachments,
-  //
-  // models.TimesheetTypesDictionary,
-  // models.Timesheet,
-  // models.ModelHistory,
-  // models.TaskTasks,
-  //models.ItemTag,
-  // models.ItemTag,
-  // models.Tag,
-  //models.Comment
+  models.ProjectRolesDictionary,
+  models.ProjectStatusesDictionary,
+  models.SprintStatusesDictionary,
+  models.TaskStatusesDictionary,
+  models.TaskTypesDictionary,
+  models.ProjectRolesDictionary,
+  models.TimesheetStatusesDictionary,
+  
+  models.Portfolio,
+  models.Project,
+  models.Sprint,
+  models.User,
+  models.Task,
+  models.Department,
+  models.UserDepartments,
+  models.Token,
+  
+  models.ProjectUsers,
+  models.ProjectAttachments,
+  models.TaskAttachments,
+  
+  models.TimesheetTypesDictionary,
+  models.Timesheet,
+  models.ModelHistory,
+  models.TaskTasks,
+  models.ItemTag,
+  models.ItemTag,
+  models.Tag,
+  models.Comment
 ];
 
 const dictionariesModels  = [
-  // models.ProjectStatusesDictionary,
-  // models.SprintStatusesDictionary,
-  // models.TaskStatusesDictionary,
-  //models.TaskTypesDictionary,
-  // models.ProjectRolesDictionary,
-  // models.TimesheetTypesDictionary,
+  models.ProjectStatusesDictionary,
+  models.SprintStatusesDictionary,
+  models.TaskStatusesDictionary,
+  models.TaskTypesDictionary,
+  models.ProjectRolesDictionary,
+  models.TimesheetTypesDictionary,
+  models.TimesheetStatusesDictionary,
 ];
 
 
