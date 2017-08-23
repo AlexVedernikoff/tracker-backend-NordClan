@@ -67,13 +67,6 @@ module.exports = function(sequelize, DataTypes) {
         isFloat: true
       }
     },
-    attaches: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: null,
-      validate: {
-        notEmpty: true, // не пустая строка
-      }
-    },
     portfolioId: {
       field: 'portfolio_id',
       type: DataTypes.INTEGER,
@@ -86,11 +79,6 @@ module.exports = function(sequelize, DataTypes) {
       field: 'author_id',
       type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    finishedAt: {
-      field: 'finished_at',
-      type: DataTypes.DATE,
-      defaultValue: null,
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
@@ -212,6 +200,20 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
+
+  Project.defaultSelect = [
+    'id',
+    'name',
+    'description',
+    'prefix',
+    'statusId',
+    'notbillable',
+    'budget',
+    'riskBudget',
+    'portfolioId',
+    'authorId',
+    'createdAt'
+  ];
 
   return Project;
 };

@@ -317,6 +317,13 @@ exports.list = function(req, res, next){
       }
     });
   }
+
+  let attributes = Project.defaultSelect.concat([
+    [Sequelize.literal(`(SELECT count(t.*)
+                                FROM project_users as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.deleted_at IS NULL)`), 'usersCount'] // Кол-во активных участников в проекте
+  ]);
   
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
@@ -358,7 +365,7 @@ exports.list = function(req, res, next){
     .then(() => {
       return Project
         .findAll({
-          attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields)) : '',
+          attributes: req.query.fields ? _.union(attributes.concat(req.query.fields)) : attributes,
           limit: req.query.pageSize,
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: include,
