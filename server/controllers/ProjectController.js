@@ -132,7 +132,7 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  const attributes = ['id', 'portfolioId'].concat(Object.keys(req.body));
+  const attributes = ['id', 'portfolioId', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
   let portfolioIdOld;
 
@@ -216,9 +216,7 @@ exports.list = function(req, res, next){
   }
   
   let include = [];
-  let where = {
-    deletedAt: {$eq: null} // IS NULL
-  };
+  let where = {};
   
   if(req.query.portfolioId) {
     where.portfolioId = req.query.portfolioId;
@@ -322,7 +320,19 @@ exports.list = function(req, res, next){
     [Sequelize.literal(`(SELECT count(t.*)
                                 FROM project_users as t
                                 WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL)`), 'usersCount'] // Кол-во активных участников в проекте
+                                AND t.deleted_at IS NULL)`), 'usersCount'], // Кол-во активных участников в проекте
+    [Sequelize.literal(`(SELECT fact_start_date
+                                FROM sprints as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.deleted_at IS NULL 
+                                ORDER BY fact_start_date ASC
+                                LIMIT 1)`), 'dateStartFirstSprint'], // Дата начала превого спринта у проекта
+    [Sequelize.literal(`(SELECT fact_finish_date
+                                FROM sprints as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.deleted_at IS NULL 
+                                ORDER BY fact_start_date DESC
+                                LIMIT 1)`), 'dateFinishLastSprint'], // Дата завершения последнего спринта у проекта
   ]);
   
   Promise.resolve()
@@ -440,7 +450,7 @@ exports.setStatus = function(req, res, next){
 
   return models.sequelize.transaction(function (t) {
     return Project
-      .findByPrimary(req.params.id, { attributes: ['id'], transaction: t, lock: 'UPDATE' })
+      .findByPrimary(req.params.id, { attributes: ['id', 'statusId'], transaction: t, lock: 'UPDATE' })
       .then((project) => {
         if(!project) throw createError(404);
 

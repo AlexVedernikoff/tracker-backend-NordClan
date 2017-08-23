@@ -1,4 +1,5 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
+const ProjectHooks = require('../components/sequelizeHooks/project');
 
 module.exports = function(sequelize, DataTypes) {
   const Project = sequelize.define('Project', {
@@ -80,6 +81,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    completedAt: {
+      field: 'completed_at',
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
@@ -95,6 +101,11 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
+
+  Project.addHook('afterFind', ModelsHooks.deleteUnderscoredTimeStampsAttributes);
+
+  Project.addHook('beforeUpdate', ProjectHooks.setCompletedAtIfNeed);
+  Project.addHook('beforeCreate', ProjectHooks.setCompletedAtIfNeed);
 
   Project.associate = function(models) {
 
@@ -212,6 +223,7 @@ module.exports = function(sequelize, DataTypes) {
     'riskBudget',
     'portfolioId',
     'authorId',
+    'completedAt',
     'createdAt'
   ];
 
