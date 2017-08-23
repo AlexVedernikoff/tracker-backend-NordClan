@@ -35,5 +35,8 @@ module.exports = function(sequelize, DataTypes) {
       }});
   };
 
+  SprintStatuses.NOT_IN_PROCESS_STATUS = 1;
+  SprintStatuses.IN_PROCESS_STATUS = 2;
+
   return SprintStatuses;
 };

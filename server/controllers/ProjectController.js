@@ -242,22 +242,14 @@ exports.list = function(req, res, next){
   include.push({
     as: 'currentSprints',
     model: Sprint,
-    attributes: ['name', 'factStartDate', 'factFinishDate', 'id', 'projectId'],
-    order: [
-      ['factStartDate', 'ASC'],
-    ],
+    attributes: models.Sprint.defaultSelect,
     where: {
-      factStartDate: {
-        $lte: moment().format('YYYY-MM-DD') // factStartDate <= now
-      },
-      factFinishDate: {
-        $gte: moment().format('YYYY-MM-DD') // factFinishDate >= now
-      },
+      statusId: models.SprintStatusesDictionary.IN_PROCESS_STATUS,
       deletedAt: {
         $eq: null // IS NULL
       }
     },
-    separate: true
+    required: false,
   });
 
   // вывод тегов
@@ -267,12 +259,12 @@ exports.list = function(req, res, next){
     where: {
       taggable: 'project'
     },
-    separate: true,
     include: [{
       as: 'tag',
       model: Tag,
       attributes: ['name'],
     }],
+    required: false,
   });
 
   // Порфтель
@@ -375,6 +367,7 @@ exports.list = function(req, res, next){
           order: [
             ['statusId', 'ASC'],
             ['name', 'ASC'],
+            [{ as: 'currentSprints', model: Sprint }, 'factStartDate', 'ASC'],
           ],
         })
         .then(projects => {
