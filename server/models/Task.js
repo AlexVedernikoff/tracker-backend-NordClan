@@ -1,6 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Task = sequelize.define('Task', {
     id: {
       type: DataTypes.INTEGER,
@@ -32,12 +32,7 @@ module.exports = function(sequelize, DataTypes) {
       field: 'status_id',
       type: DataTypes.INTEGER,
       defaultValue: 1,
-      allowNull: false,
-      validate: {
-        isInt: true,
-        min: 0,
-        max: 10
-      }
+      allowNull: false
     },
     description: {
       trim: true,
@@ -78,44 +73,56 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    createdAt: {type: DataTypes.DATE, field: 'created_at'},
-    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    createdAt: { type: DataTypes.DATE, field: 'created_at' },
+    updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
+    deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
   }, {
-    timestamps: true,
-    paranoid: true,
-    underscored: true,
-    tableName: 'tasks',
-    hooks: {
-      afterFind: function(model) {
-        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      tableName: 'tasks',
+      hooks: {
+        afterFind: function (model) {
+          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+        }
       }
-    }
-  });
-  
-  Task.associate = function(models) {
+    });
+
+  Task.associate = function (models) {
     Task.belongsTo(models.Project, {
       as: 'project',
       foreignKey: {
         name: 'projectId',
         field: 'project_id',
         allowNull: false,
-      }});
+      }
+    });
+
+    Task.belongsTo(models.TaskStatusesDictionary, {
+      as: 'taskStatus',
+      foreignKey: {
+        name: 'statusId',
+        field: 'status_id',
+        allowNull: false,
+      }
+    });
 
     Task.belongsTo(models.Task, {
       as: 'parentTask',
       foreignKey: {
         name: 'parentId',
         field: 'parent_id'
-      }});
-  
+      }
+    });
+
     Task.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'authorId',
         field: 'author_id'
-      }});
-    
+      }
+    });
+
     Task.hasMany(models.Task, {
       as: 'subTasks',
       foreignKey: {
@@ -123,7 +130,7 @@ module.exports = function(sequelize, DataTypes) {
         field: 'parent_id'
       }
     });
-  
+
     Task.belongsToMany(models.Task, {
       as: 'linkedTasks',
       through: {
@@ -141,7 +148,8 @@ module.exports = function(sequelize, DataTypes) {
       foreignKey: {
         name: 'sprintId',
         field: 'sprint_id'
-      }});
+      }
+    });
 
     Task.belongsToMany(models.Tag, {
       as: 'tags',
@@ -183,7 +191,7 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
-  
+
   Task.hasHistory();
 
   return Task;

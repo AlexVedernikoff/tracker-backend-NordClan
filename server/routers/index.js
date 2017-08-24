@@ -15,6 +15,7 @@ const UploadController = require('../controllers/UploadController');
 const TimesheetController = require('../controllers/TimesheetController');
 const CommentController = require('../controllers/TaskCommentController');
 const ModelHistoryController = require('../controllers/ModelHistoryController');
+const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 
 // Auth
 router.post('/auth/login', AuthController.login);
@@ -75,6 +76,13 @@ router.post('/task/:taskId/timesheet', TimesheetController.create);
 router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update);
 router.delete('/task/:taskId/timesheet/:timesheetId', TimesheetController.delete);
 router.get('/task/:taskId/timesheet', TimesheetController.list);
+
+// TimesheetsDraft
+router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft);
+router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts);
+
+//getTracks
+router.get('/timesheet/tracks/:userId', TimesheetController.getTracks.bind(TimesheetController));
 
 // Comments
 router.post('/task/:taskId/comment', CommentController.create);

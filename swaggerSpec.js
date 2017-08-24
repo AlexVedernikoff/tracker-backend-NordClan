@@ -1534,6 +1534,111 @@ module.exports = {
       },
     },
 
+
+    '/task/{taskId}/timesheetDraft/': {
+      post: {
+        tags: ['TimesheetsDraft'],
+        summary: 'Создать драфт-таймшит для текущего пользователя',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'sprintId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'typeId',
+            description: 'Тип активности (см. словарь)',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            description: 'Потраченное время',
+            type: 'numeric',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      }
+    },
+
+    '/timesheet/tracks/{userId}': {
+      get: {
+        tags: ['Tracks'],
+        summary: 'Получить треки для текущего пользователя в конкретный день',
+        parameters: [
+          {
+            name: 'userId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
   },
   securityDefinitions: {
     apiKey: {
