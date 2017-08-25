@@ -85,10 +85,6 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
       invisible.push(ts);
     }
   });
-  Object.assign(result, { timesheets: { visible: visible, invisible: invisible } });
-
-  visible = [];
-  invisible = [];
 
   draftsheets.map(ds => {
     if (ds.isVisible) {
@@ -97,7 +93,7 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
       invisible.push(ds);
     }
   });
-  Object.assign(result, { draftsheets: { visible: visible, invisible: invisible } });
+  Object.assign(result, { visible: visible, invisible: invisible });
   return result;
 }
 
@@ -115,7 +111,7 @@ exports.getTracksOnOtherDay = async function (req, res, next) {
       invisible.push(ts);
     }
   });
-  Object.assign(result, { timesheets: { visible: visible, invisible: invisible } });
+  Object.assign(result,  { visible: visible, invisible: invisible });
   return result;
 }
 
@@ -134,44 +130,68 @@ exports.getTracks = async function (req, res, next) {
 
 exports.setTrackTimesheetTime = async function (req, res, next) {
   if (req.body.isDraft == "true") {
-    delete req.body.isDraft;
-    let tmp = {};
-    let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-    if (!draftsheet) return next(createError(404, 'Draftsheet not found'));
-    Object.assign(tmp, draftsheet[0]);
+    try {
+      delete req.body.isDraft;
+      let tmp = {};
+      let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+      if (!draftsheet) return next(createError(404, 'Draftsheet not found'));
+      Object.assign(tmp, draftsheet[0]);
 
-    let t = await Sequelize.transaction();
-    let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
-    delete tmp.id;
-    let createTs = await models.Timesheet.create(tmp, { transaction: t });
-    let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
-    let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-    await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
-    await t.commit();
+      let t = await Sequelize.transaction();
+      let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+      delete tmp.id;
+      let createTs = await models.Timesheet.create(tmp, { transaction: t });
+      let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
+      let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
+      await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+      await t.commit();
 
-    let result = await queries.timesheet.getTimesheet(createTs.dataValues.id);
-    res.json(result);
+      let result = await queries.timesheet.getTimesheet(createTs.dataValues.id);
+      res.json(result);
+    } catch (e) {
+      return next(createError(e));
+    }
+
   } else {
-    let tmp = {};
-    delete req.body.isDraft;
-    let timesheet = await this.getTimesheets(req, res, next);
-    if (!timesheet) return next(createError(404, 'Timesheet not found'));
-    Object.assign(tmp, timesheet[0]);
+    try {
+      let tmp = {};
+      delete req.body.isDraft;
+      let timesheet = await this.getTimesheets(req, res, next);
+      if (!timesheet) return next(createError(404, 'Timesheet not found'));
+      Object.assign(tmp, timesheet[0]);
 
-    let t = await Sequelize.transaction();
-    await models.Timesheet.update(req.body, { where: { id: tmp.id } });
-    let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-    let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-    await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
-    await t.commit();
+      let t = await Sequelize.transaction();
+      await models.Timesheet.update(req.body, { where: { id: tmp.id } });
+      let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+      let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
+      await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+      await t.commit();
 
-    let result = await queries.timesheet.getTimesheet(tmp.id);
-    res.json(result);
+      let result = await queries.timesheet.getTimesheet(tmp.id);
+      res.json(result);
+    } catch (e) {
+      return next(createError(e));
+    }
+
   }
 }
 
 
-exports.create = function (req, res, next) {
+///////////////////////
+
+exports.create = async function (req, res, next) {
+  if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
+  try {
+    await queries.task.isPerformerOfTask(req.user.id, req.params.taskId);
+    Object.assign(req.body, { userId: req.user.id, taskId: req.params.taskId });
+    let newsheet = await models.Timesheet.create(req.body);
+    let result = await queries.timesheet.getTimesheet(newsheet.id);
+    res.json(result);
+  } catch (e) {
+    next(err);
+  }
+
+  /*
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   const currentUserId = req.user.id;
 
@@ -188,7 +208,7 @@ exports.create = function (req, res, next) {
     .then((model) => {
       res.json(model.dataValues);
     })
-    .catch((err) => next(err));
+    .catch((err) => next(err));*/
 };
 
 exports.update = async function (req, res, next) {

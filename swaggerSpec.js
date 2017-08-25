@@ -1215,7 +1215,7 @@ module.exports = {
     },
     '/task/{taskId}/timesheet/': {
       post: {
-        tags: ['Tasks'],
+        tags: ['Timesheets'],
         summary: 'Создать тайм шит для текущего пользователя',
         parameters: [
           {
@@ -1286,7 +1286,7 @@ module.exports = {
         responses: responsesCodes
       },
       get: {
-        tags: ['Tasks'],
+        tags: ['Timesheets'],
         summary: 'Получить тайм шиты',
         parameters: [
           {
@@ -1320,7 +1320,7 @@ module.exports = {
     },
     '/task/{taskId}/timesheet/{timesheetId}': {
       put: {
-        tags: ['Tasks'],
+        tags: ['Timesheets'],
         summary: 'Изменить тайм шит для текущего пользователя',
         parameters: [
           {
@@ -1384,8 +1384,8 @@ module.exports = {
         responses: responsesCodes
       },
       delete: {
-        tags: ['Tasks'],
-        summary: 'Изменить тайм шит для текущего пользователя',
+        tags: ['Timesheets'],
+        summary: 'Удалить тайм шит для текущего пользователя',
         parameters: [
           {
             name: 'taskId',
