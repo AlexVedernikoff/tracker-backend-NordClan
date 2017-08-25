@@ -36,6 +36,7 @@ module.exports = function (sequelize, DataTypes) {
     spentTime: {
       field: 'spent_time',
       type: DataTypes.FLOAT,
+      defaultValue: 0,
       allowNull: false
     },
     comment: {

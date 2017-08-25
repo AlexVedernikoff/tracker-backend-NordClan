@@ -1538,7 +1538,7 @@ module.exports = {
     '/task/{taskId}/timesheetDraft/': {
       post: {
         tags: ['TimesheetsDraft'],
-        summary: 'Создать драфт-таймшит для текущего пользователя',
+        summary: 'Создать драфт-таймшит для пользователя',
         parameters: [
           {
             name: 'taskId',
@@ -1570,13 +1570,6 @@ module.exports = {
             name: 'typeId',
             description: 'Тип активности (см. словарь)',
             type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'spentTime',
-            description: 'Потраченное время',
-            type: 'numeric',
             in: 'formData',
             required: true
           },
@@ -1615,23 +1608,47 @@ module.exports = {
       }
     },
 
-    '/timesheet/tracks/{userId}': {
+    '/timesheet/tracks/': {
       get: {
         tags: ['Tracks'],
         summary: 'Получить треки для текущего пользователя в конкретный день',
         parameters: [
-          {
-            name: 'userId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
           {
             name: 'onDate',
             description: 'yyyy-mm-dd',
             type: 'string',
             format: 'date',
             in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
+
+
+    '/timesheet/{sheetId}/': {
+      post: {
+        tags: ['Tracks'],
+        summary: 'Проставление времени у таймшита в треке',
+        parameters: [
+          {
+            name: 'sheetId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isDraft',
+            type: 'boolean',
+            in: 'formData',
             required: true
           }
         ],

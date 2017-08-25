@@ -81,8 +81,9 @@ router.get('/task/:taskId/timesheet', TimesheetController.list);
 router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft);
 router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts);
 
-//getTracks
-router.get('/timesheet/tracks/:userId', TimesheetController.getTracks.bind(TimesheetController));
+//Tracks
+router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController));
+router.post('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
 
 // Comments
 router.post('/task/:taskId/comment', CommentController.create);

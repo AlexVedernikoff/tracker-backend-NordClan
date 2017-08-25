@@ -24,16 +24,19 @@ exports.createDraft = async function (req, res, next) {
 };
 
 exports.getDrafts = async function (req, res, next) {
+    let where = { userId: req.user.id };
+    if (req.query.onDate) {
+        let date = new Date(req.query.onDate);
+        Object.assign(where, { onDate: { $eq: date } });
+    }
+    if (req.params && req.params.sheetId) {
+        Object.assign(where, { id: { $eq: req.params.sheetId } });
+    }
     try {
         let date = new Date(req.query.onDate);
         let draftsheets = await models.TimesheetDraft.findAll({
-            where: {
-                userId: req.params.userId,
-                onDate: {
-                    $eq: date
-                }
-            },
-            attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible'],
+            where: where,
+            attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
             order: [
                 ['createdAt', 'ASC']
             ],
@@ -58,7 +61,7 @@ exports.getDrafts = async function (req, res, next) {
                             required: true,
                             attributes: ['id', 'name'],
                             paranoid: false,
-                          }
+                        }
                     ]
                 },
                 {
@@ -72,9 +75,8 @@ exports.getDrafts = async function (req, res, next) {
         });
         let result = [];
         draftsheets.map(ds => {
-            Object.assign(ds.dataValues, {project: ds.dataValues.task.dataValues.project});
+            Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: true });
             delete ds.dataValues.task.dataValues.project;
-            delete ds.dataValues.taskStatusId;
             result.push(ds.dataValues);
         });
         return result;

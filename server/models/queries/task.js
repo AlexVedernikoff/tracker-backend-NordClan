@@ -3,10 +3,10 @@ const createError = require('http-errors');
 
 exports.name = 'task';
 
-exports.findOneActiveTask = function(projectId, attributes = ['id'], t = null) {
+exports.findOneActiveTask = function(taskId, attributes = ['id', 'factExecutionTime'], t = null) {
   return models.Task
     .findOne({where: {
-      id: projectId,
+      id: taskId,
       deletedAt: null,
     }, attributes: attributes, transaction: t, lock: t ? 'UPDATE' : null})
     .then((model) => {
