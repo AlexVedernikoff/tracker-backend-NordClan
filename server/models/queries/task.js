@@ -18,7 +18,6 @@ exports.findOneActiveTask = function(taskId, attributes = ['id', 'factExecutionT
 
 // проверка является ли исполнителем указанный пользователь
 exports.isPerformerOfTask = function(userId, taskId) {
-
   return models.Task
     .findOne({
       attributes: ['id'],
@@ -33,6 +32,26 @@ exports.isPerformerOfTask = function(userId, taskId) {
     })
     .then((model) => {
       if(!model) throw createError(404, 'User can create/update time sheet');
+      return model;
+    });
+
+};
+
+
+// проверка можно ли создать/обновить таймшит на задачу
+exports.isCanCreateUpdateTimesheet = function(userId, taskId) {
+  return models.Task
+    .findOne({
+      attributes: ['id'],
+      where: {
+        id: taskId,
+        deletedAt: null,
+        performerId: userId,
+        statusId: models.TaskStatusesDictionary.CAN_UPDATE_TIMESHEETS_STATUSES
+      },
+    })
+    .then((model) => {
+      if(!model) throw createError(404, 'User can\'t create/update time sheet');
       return model;
     });
 

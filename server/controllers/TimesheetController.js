@@ -10,7 +10,10 @@ const Sequelize = require('../orm/index');
 
 exports.getTimesheets = async function (req, res, next) {
   try {
-    let where = { userId: req.user.id };
+    let where = {
+      userId: req.user.id,
+      deletedAt: null
+    };
     if (req.query.onDate) {
       let date = new Date(req.query.onDate);
       Object.assign(where, { onDate: { $eq: date } });
@@ -111,7 +114,7 @@ exports.getTracksOnOtherDay = async function (req, res, next) {
       invisible.push(ts);
     }
   });
-  Object.assign(result,  { visible: visible, invisible: invisible });
+  Object.assign(result, { visible: visible, invisible: invisible });
   return result;
 }
 
@@ -128,51 +131,60 @@ exports.getTracks = async function (req, res, next) {
   res.json(result);
 }
 
+exports.setDraftTimesheetTime = async function (req, res, next) {
+  try {
+    delete req.body.isDraft;
+    let tmp = {};
+    let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+    if (!draftsheet) return next(createError(404, 'Draftsheet not found'));
+    Object.assign(tmp, draftsheet[0]);
+
+    let t = await Sequelize.transaction();
+    let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+    delete tmp.id;
+    let createTs = await models.Timesheet.create(tmp, { transaction: t });
+    let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
+    let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
+    await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+    await t.commit();
+
+    let result = await queries.timesheet.getTimesheet(createTs.dataValues.id);
+    return result;
+  } catch (e) {
+    return next(createError(e));
+  }
+}
+
+exports.setTimesheetTime = async function (req, res, next) {
+  try {
+    let tmp = {};
+    delete req.body.isDraft;
+    let timesheet = await this.getTimesheets(req, res, next);
+    if (!timesheet) return next(createError(404, 'Timesheet not found'));
+    Object.assign(tmp, timesheet[0]);
+
+    let t = await Sequelize.transaction();
+    await models.Timesheet.update(req.body, { where: { id: tmp.id } });
+    let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+    let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
+    await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+    await t.commit();
+
+    let result = await queries.timesheet.getTimesheet(tmp.id);
+    return result;
+  } catch (e) {
+    return next(createError(e));
+  }
+}
+
 exports.setTrackTimesheetTime = async function (req, res, next) {
+  let result;
   if (req.body.isDraft == "true") {
-    try {
-      delete req.body.isDraft;
-      let tmp = {};
-      let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-      if (!draftsheet) return next(createError(404, 'Draftsheet not found'));
-      Object.assign(tmp, draftsheet[0]);
-
-      let t = await Sequelize.transaction();
-      let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
-      delete tmp.id;
-      let createTs = await models.Timesheet.create(tmp, { transaction: t });
-      let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
-      let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-      await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
-      await t.commit();
-
-      let result = await queries.timesheet.getTimesheet(createTs.dataValues.id);
-      res.json(result);
-    } catch (e) {
-      return next(createError(e));
-    }
-
+    result = await this.setDraftTimesheetTime(req, res, next);
+    res.json(result);
   } else {
-    try {
-      let tmp = {};
-      delete req.body.isDraft;
-      let timesheet = await this.getTimesheets(req, res, next);
-      if (!timesheet) return next(createError(404, 'Timesheet not found'));
-      Object.assign(tmp, timesheet[0]);
-
-      let t = await Sequelize.transaction();
-      await models.Timesheet.update(req.body, { where: { id: tmp.id } });
-      let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-      let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-      await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
-      await t.commit();
-
-      let result = await queries.timesheet.getTimesheet(tmp.id);
-      res.json(result);
-    } catch (e) {
-      return next(createError(e));
-    }
-
+    result = await this.setTimesheetTime(req, res, next);
+    res.json(result);
   }
 }
 
@@ -182,33 +194,14 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
 exports.create = async function (req, res, next) {
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   try {
-    await queries.task.isPerformerOfTask(req.user.id, req.params.taskId);
+    await queries.task.isCanCreateUpdateTimesheet(req.user.id, req.params.taskId);
     Object.assign(req.body, { userId: req.user.id, taskId: req.params.taskId });
     let newsheet = await models.Timesheet.create(req.body);
     let result = await queries.timesheet.getTimesheet(newsheet.id);
     res.json(result);
   } catch (e) {
-    next(err);
+    return next(e);
   }
-
-  /*
-  if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
-  const currentUserId = req.user.id;
-
-  queries.task
-    .isPerformerOfTask(currentUserId, req.params.taskId)
-    .then(() => {
-      req.body.userId = currentUserId;
-      req.body.taskId = req.params.taskId;
-      return models.Timesheet.create(req.body);
-    })
-    .then((model) => {
-      return queries.timesheet.getTimesheet(model.id);
-    })
-    .then((model) => {
-      res.json(model.dataValues);
-    })
-    .catch((err) => next(err));*/
 };
 
 exports.update = async function (req, res, next) {
@@ -219,34 +212,31 @@ exports.update = async function (req, res, next) {
     let result = await timesheetModel.updateAttributes(req.body);
     res.json(result);
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 
 
-exports.delete = function (req, res, next) {
+exports.delete = async function (req, res, next) {
   if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
-
-  queries.timesheet
-    .canUserChangeTimesheet(req.user.id, req.params.timesheetId)
-    .then((model) => {
-      if (!model) return next(createError(404, 'Timesheet not found'));
-      return model.destroy();
-    })
-    .then(() => {
-      res.end();
-    })
-    .catch((err) => next(err));
+  try {
+    let timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
+    if (!timesheetModel) return next(createError(404, 'Timesheet not found'));
+    await timesheetModel.destroy();
+    res.end();
+  } catch (e) {
+    return next(e);
+  }
 };
 
-exports.list = function (req, res, next) {
+exports.list = async function (req, res, next) {
   if (req.query.dateBegin && !req.query.dateBegin.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
   if (req.query.dateEnd && !req.query.dateEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
   if (req.params.taskId && !req.params.taskId.match(/^\d+$/)) return next(createError(400, 'taskId must be int'));
   if (req.query.userId && !req.query.userId.match(/^\d+$/)) return next(createError(400, 'userId must be int'));
 
 
-  const where = {
+  let where = {
     deletedAt: null
   };
 
@@ -265,48 +255,47 @@ exports.list = function (req, res, next) {
     };
 
     if (req.query.dateBegin) {
-      where.onDate.$and.$gte = req.query.dateBegin;
+      where.onDate.$and.$gte = new Date(req.query.dateBegin);
     }
 
     if (req.query.dateEnd) {
-      where.onDate.$and.$lte = req.query.dateEnd;
+      where.onDate.$and.$lte = new Date(req.query.dateEnd);
     }
   }
 
+  try {
+    let timesheets = await models.Timesheet.findAll({
+      where: where,
+      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+      order: [
+        ['createdAt', 'ASC']
+      ],
+      include: [
+        {
+          as: 'task',
+          model: models.Task,
+          required: true,
+          attributes: ['id', 'name'],
+          paranoid: false,
+          include: [
+            {
+              as: 'project',
+              model: models.Project,
+              required: true,
+              attributes: ['id', 'name'],
+              paranoid: false,
+            }
+          ]
+        }
+      ],
+    });
 
-  models.Timesheet.findAll({
-    where: where,
-    attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
-    order: [
-      ['createdAt', 'ASC']
-    ],
-    include: [
-      {
-        as: 'task',
-        model: models.Task,
-        required: true,
-        attributes: ['id', 'name'],
-        paranoid: false,
-        include: [
-          {
-            as: 'project',
-            model: models.Project,
-            required: true,
-            attributes: ['id', 'name'],
-            paranoid: false,
-          }
-        ]
-      }
-    ],
-  })
-    .then((models) => {
-      // Преобразую результат
-      models.forEach(model => {
-        model.dataValues.project = model.dataValues.task.dataValues.project;
-        delete model.dataValues.task.dataValues.project;
-      });
-      res.json(models);
-    })
-    .catch((err) => next(err));
-
+    timesheets.forEach(model => {
+      model.dataValues.project = model.dataValues.task.dataValues.project;
+      delete model.dataValues.task.dataValues.project;
+    });
+    res.json(timesheets);
+  } catch (e) {
+    return next(e);
+  }
 };
