@@ -8,10 +8,14 @@ const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
 
+
+/**
+ * Функция поиска таймшитов
+ */
 exports.getTimesheets = async function (req, res, next) {
   try {
     let where = {
-      userId: req.user.id,
+      userId: req.query.userId,
       deletedAt: null
     };
     if (req.query.onDate) {
@@ -20,6 +24,12 @@ exports.getTimesheets = async function (req, res, next) {
     }
     if (req.params && req.params.sheetId) {
       Object.assign(where, { id: { $eq: req.params.sheetId } });
+    }
+    if (req.query.taskId) {
+      Object.assign(where, { taskId: { $eq: req.query.taskId } });
+    }
+    if (req.query.taskStatusId) {
+      Object.assign(where, { taskStatusId: { $eq: req.query.taskStatusId } });
     }
 
     let timesheets = await models.Timesheet.findAll({
@@ -73,7 +83,9 @@ exports.getTimesheets = async function (req, res, next) {
   }
 }
 
-
+/**
+ * Функция составления треков на текущий день
+ */
 exports.getTracksOnCurrentDay = async function (req, res, next) {
   let result = {};
   let visible = [];
@@ -100,7 +112,9 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
   return result;
 }
 
-
+/**
+ *  Функция составления треков на не текущий день
+ */
 exports.getTracksOnOtherDay = async function (req, res, next) {
   let result = {};
   let visible = [];
@@ -118,30 +132,38 @@ exports.getTracksOnOtherDay = async function (req, res, next) {
   return result;
 }
 
-
+/**
+ *  Функция составления треков для трекера
+ */
 exports.getTracks = async function (req, res, next) {
   let now = new Date();
   let result;
   let today = moment(now).format('YYYY-MM-DD');
+  req.query.userId = req.user.id;
   if (moment(req.query.onDate).isSame(today)) {
     result = await this.getTracksOnCurrentDay(req, res, next);
   } else {
     result = await this.getTracksOnOtherDay(req, res, next);
   }
-  res.json(result);
+  res.json({ data: result, onDate: new Date(req.query.onDate) });
 }
 
+
+/**
+ * Функция поиска драфтшита его удаления и создание нового таймшита
+ */
 exports.setDraftTimesheetTime = async function (req, res, next) {
   try {
     delete req.body.isDraft;
     let tmp = {};
     let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-    if (!draftsheet) return next(createError(404, 'Draftsheet not found'));
+    if (!draftsheet || draftsheet.length == 0) return;
     Object.assign(tmp, draftsheet[0]);
 
     let t = await Sequelize.transaction();
     let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
+    Object.assign(tmp, { spentTime: req.body.spentTime });
     let createTs = await models.Timesheet.create(tmp, { transaction: t });
     let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
     let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
@@ -155,6 +177,9 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   }
 }
 
+/**
+ * Функция поиска и обновления таймшита
+ */
 exports.setTimesheetTime = async function (req, res, next) {
   try {
     let tmp = {};
@@ -177,8 +202,14 @@ exports.setTimesheetTime = async function (req, res, next) {
   }
 }
 
+
+/**
+ * Функция для проставления времени для таймшитов в трекере
+ */
+
 exports.setTrackTimesheetTime = async function (req, res, next) {
   let result;
+  req.query.userId = req.user.id;
   if (req.body.isDraft == "true") {
     result = await this.setDraftTimesheetTime(req, res, next);
     res.json(result);
@@ -190,6 +221,20 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
 
 
 ///////////////////////
+/**
+ * Функция для создания или обновления таймшитов в UI таблице таймшитов
+ */
+exports.createOrUpdateTimesheet = async function (req, res, next) {
+  req.query.onDate = req.body.onDate;
+  req.query.taskId = req.params.taskId;
+  req.query.userId = req.user.id;
+  req.query.taskStatusId = req.body.taskStatusId;
+  let result = await this.setDraftTimesheetTime(req, res, next);
+  if (!result) {
+    result = await this.setTimesheetTime(req, res, next);
+  }
+  res.json(result);
+}
 
 exports.create = async function (req, res, next) {
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));

@@ -7,12 +7,8 @@ const queries = require('../models/queries');
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
 /**
- * нужны драфты на сегодняшнее число поставленные на меня слепки
- * 
- * нужно апи для записи в слепок при смене у задачи исполнителя или стадии или и того и того
+ * Функция создания драфтшита
  */
-
-
 exports.createDraft = async function (req, res, next) {
     req.body.taskId = req.params.taskId;
     try {
@@ -23,8 +19,11 @@ exports.createDraft = async function (req, res, next) {
     }
 };
 
+/**
+ *  Функция поиска драфтшитов
+ */
 exports.getDrafts = async function (req, res, next) {
-    let where = { userId: req.user.id };
+    let where = { userId: req.query.userId };
     if (req.query.onDate) {
         let date = new Date(req.query.onDate);
         Object.assign(where, { onDate: { $eq: date } });
@@ -32,6 +31,12 @@ exports.getDrafts = async function (req, res, next) {
     if (req.params && req.params.sheetId) {
         Object.assign(where, { id: { $eq: req.params.sheetId } });
     }
+    if (req.query.taskId) {
+        Object.assign(where, { taskId: { $eq: req.query.taskId } });
+    }
+    if (req.query.taskStatusId) {
+        Object.assign(where, { taskStatusId: { $eq: req.query.taskStatusId } });
+      }
     try {
         let date = new Date(req.query.onDate);
         let draftsheets = await models.TimesheetDraft.findAll({

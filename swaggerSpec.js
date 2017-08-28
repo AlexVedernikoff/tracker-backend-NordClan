@@ -1627,6 +1627,44 @@ module.exports = {
     },
 
 
+    '/timesheet/{taskId}/setTime/': {
+      post: {
+        tags: ['Timesheets'],
+        summary: 'Заполнить таймшит в UI таблице таймшитов',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            type: 'number',
+            format: 'float',
+            in: 'formData',
+          },
+          {
+            name: 'taskStatusId',
+            type: 'number',
+            format: 'float',
+            in: 'formData',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
+
 
     '/timesheet/{sheetId}/': {
       post: {
