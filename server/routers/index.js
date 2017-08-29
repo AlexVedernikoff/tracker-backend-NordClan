@@ -75,7 +75,7 @@ router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 router.post('/task/:taskId/timesheet', TimesheetController.create);
 router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update);
 router.delete('/task/:taskId/timesheet/:timesheetId', TimesheetController.delete);
-router.get('/task/:taskId/timesheet', TimesheetController.list);
+router.get('/task/timesheet/getTimesheets', TimesheetController.list);
 router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController));
 
 // TimesheetsDraft

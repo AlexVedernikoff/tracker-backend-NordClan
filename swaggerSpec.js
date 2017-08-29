@@ -886,11 +886,6 @@ module.exports = {
             in: 'formData',
           },
           {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-          },
-          {
             name: 'plannedExecutionTime',
             type: 'numeric',
             in: 'formData',
@@ -1290,6 +1285,8 @@ module.exports = {
         ],
         responses: responsesCodes
       },
+    },
+    '/task/timesheet/getTimesheets': {
       get: {
         tags: ['Timesheets'],
         summary: 'Получить тайм шиты',
@@ -1297,13 +1294,13 @@ module.exports = {
           {
             name: 'taskId',
             type: 'integer',
-            in: 'path',
-            required: true
+            in: 'query'
           },
           {
             name: 'userId',
             type: 'integer',
             in: 'query',
+            required: true
           },
           {
             name: 'dateBegin',
@@ -1311,6 +1308,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
+            required: true
           },
           {
             name: 'dateEnd',
@@ -1318,6 +1316,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
+            required: true
           },
         ],
         responses: responsesCodes
