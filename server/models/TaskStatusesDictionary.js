@@ -58,6 +58,6 @@ module.exports = function(sequelize, DataTypes) {
     TaskStatuses.CLOSED_STATUS
   ];
   TaskStatuses.CAN_UPDATE_TIMESHEETS_STATUSES = [2, 3, 4, 5, 6, 7];
-
+  TaskStatuses.CAN_CREATE_DRAFTSHEET_STATUSES = [3, 5, 7];
   return TaskStatuses;
 };

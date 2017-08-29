@@ -89,6 +89,6 @@ exports.getDrafts = async function (req, res, next) {
         });
         return result;
     } catch (e) {
-        return next(createError(e));
+        throw createError(e);
     }
 };

@@ -152,7 +152,7 @@ exports.getTracks = async function (req, res, next) {
  *  Функция загрузки треков на неделю 
  */
 exports.getTracksByPeriod = async function(req, res, next) {
-
+  // считать таймшиты на каждый день недели
 }
 
 /**

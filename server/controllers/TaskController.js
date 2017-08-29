@@ -146,7 +146,9 @@ exports.update = function(req, res, next){
 
         return row.updateAttributes(req.body, { transaction: t })
           .then((model)=>{
-
+            if (req.body.statusId) {
+              // дергать мою апишку
+            }
             return Promise.resolve()
               .then(() => {
                 // Если хотели изменить спринт, присылаю его обратно

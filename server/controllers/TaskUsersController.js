@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('./TimesheetDraftController');
+const TimesheetController = require('./TimesheetController');
 
 exports.create = function (req, res, next) {
   if (!req.params.taskId) return next(createError(400, 'taskId need'));
@@ -57,37 +58,57 @@ exports.create = function (req, res, next) {
 
         return taskModel.updateAttributes(newAttribures, { transaction: t })
           .then(() => {
-            queries.task.findTaskWithUser(req.params.taskId, t)
-              .then((task) => {
-                queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
-                  .then((projectUserRoles) => {
-                   let isBillible = true;
-                    if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                    let now = new Date();
-                    now.setHours(0, 0, 0, 0);
-                    let timesheet = {
-                      sprintId: task.dataValues.sprintId,
-                      taskId: task.dataValues.id,
-                      userId: task.dataValues.performerId,
-                      onDate: now,
-                      typeId: 1,
-                      spentTime: 0,
-                      comment: '',
-                      isBillible: isBillible,
-                      userRoleId: projectUserRoles.join(','),
-                      taskStatusId: task.dataValues.statusId,
-                      statusId: 1,
-                      isVisible: true
-                    };
-                    Object.assign(req.body, timesheet);
-                    return TimesheetDraftController.createDraft(req, res, next, t, true)
-                      .then(() => {
-                        t.commit();
-                        res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel })
+            req.query.userId = req.body.userId;
+            req.query.taskId = req.params.taskId;
+            if (req.body.statusId) req.query.taskStatusId = req.body.statusId;
+            let timesheet;
+            let draftsheet;
+            return Promise.all([
+              TimesheetDraftController.getDrafts(req, res, next)
+                .then((result) => { draftsheet = result; }),
+              TimesheetController.getTimesheets(req, res, next)
+                .then((result) => { timesheet = result; })
+            ])
+              .then(() => {
+                if (draftsheet.length !== 0 || timesheet.length !== 0) {
+                  res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });
+                } else {
+                  if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))) {
+                    queries.task.findTaskWithUser(req.params.taskId, t)
+                      .then((task) => {
+                        queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
+                          .then((projectUserRoles) => {
+                            let isBillible = true;
+                            if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
+                            let now = new Date();
+                            now.setHours(0, 0, 0, 0);
+                            let timesheet = {
+                              sprintId: task.dataValues.sprintId,
+                              taskId: task.dataValues.id,
+                              userId: task.dataValues.performerId,
+                              onDate: now,
+                              typeId: 1,
+                              spentTime: 0,
+                              comment: '',
+                              isBillible: isBillible,
+                              userRoleId: projectUserRoles.join(','),
+                              taskStatusId: task.dataValues.statusId,
+                              statusId: 1,
+                              isVisible: true
+                            };
+                            Object.assign(req.body, timesheet);
+                            return TimesheetDraftController.createDraft(req, res, next, t, true)
+                              .then(() => {
+                                t.commit();
+                                res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });
+                              });
+                          });
                       });
-                  });
+                  } else {
+                    res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });
+                  }
+                }
               });
-            // тут по id задачи найти ее полностью и подтянуть перформера и пихнуть в реквест
           });
       });
   })
