@@ -148,6 +148,12 @@ exports.getTracks = async function (req, res, next) {
   res.json({ data: result, onDate: new Date(req.query.onDate) });
 }
 
+/**
+ *  Функция загрузки треков на неделю 
+ */
+exports.getTracksByPeriod = async function(req, res, next) {
+
+}
 
 /**
  * Функция поиска драфтшита его удаления и создание нового таймшита

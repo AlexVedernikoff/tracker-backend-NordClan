@@ -9,13 +9,16 @@ const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeS
 /**
  * Функция создания драфтшита
  */
-exports.createDraft = async function (req, res, next) {
-    req.body.taskId = req.params.taskId;
+exports.createDraft = async function (req, res, next, t = null, isContinue) {
+    if (req.params.taskId) req.body.taskId = req.params.taskId;
     try {
-        let draftsheetModel = await models.TimesheetDraft.create(req.body);
+        let draftsheetModel = await models.TimesheetDraft.create(req.body, { transaction: t });
+        if (isContinue) {
+            return draftsheetModel;
+        }
         res.json(draftsheetModel);
     } catch (e) {
-        return next(createError(e));
+        throw createError(e);
     }
 };
 

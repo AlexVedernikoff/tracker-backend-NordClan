@@ -3,21 +3,50 @@ const createError = require('http-errors');
 
 exports.name = 'task';
 
-exports.findOneActiveTask = function(taskId, attributes = ['id', 'factExecutionTime'], t = null) {
+exports.findOneActiveTask = function (taskId, attributes = ['id', 'factExecutionTime'], t = null) {
   return models.Task
-    .findOne({where: {
-      id: taskId,
-      deletedAt: null,
-    }, attributes: attributes, transaction: t, lock: t ? 'UPDATE' : null})
+    .findOne({
+      where: {
+        id: taskId,
+        deletedAt: null,
+      }, attributes: attributes, transaction: t, lock: t ? 'UPDATE' : null
+    })
     .then((model) => {
-      if(!model) throw createError(404, 'Task not found');
+      if (!model) throw createError(404, 'Task not found');
+      return model;
+    });
+
+};
+
+
+
+exports.findTaskWithUser = function (taskId, t = null) {
+  return models.Task
+    .findOne({
+      where: {
+        id: taskId,
+        deletedAt: null,
+      },
+      transaction: t,
+      lock: t ? 'UPDATE' : null,
+    /*  include: [
+        {
+          as: 'performer',
+          model: models.User,
+          required: true,
+          paranoid: false
+        }
+      ]*/
+    })
+    .then((model) => {
+      if (!model) throw createError(404, 'Task not found');
       return model;
     });
 
 };
 
 // проверка является ли исполнителем указанный пользователь
-exports.isPerformerOfTask = function(userId, taskId) {
+exports.isPerformerOfTask = function (userId, taskId) {
   return models.Task
     .findOne({
       attributes: ['id'],
@@ -31,7 +60,7 @@ exports.isPerformerOfTask = function(userId, taskId) {
       },
     })
     .then((model) => {
-      if(!model) throw createError(404, 'User can create/update time sheet');
+      if (!model) throw createError(404, 'User can create/update time sheet');
       return model;
     });
 
@@ -39,7 +68,7 @@ exports.isPerformerOfTask = function(userId, taskId) {
 
 
 // проверка можно ли создать/обновить таймшит на задачу
-exports.isCanCreateUpdateTimesheet = function(userId, taskId) {
+exports.isCanCreateUpdateTimesheet = function (userId, taskId) {
   return models.Task
     .findOne({
       attributes: ['id'],
@@ -51,7 +80,7 @@ exports.isCanCreateUpdateTimesheet = function(userId, taskId) {
       },
     })
     .then((model) => {
-      if(!model) throw createError(404, 'User can\'t create/update time sheet');
+      if (!model) throw createError(404, 'User can\'t create/update time sheet');
       return model;
     });
 

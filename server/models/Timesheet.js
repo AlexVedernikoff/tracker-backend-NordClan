@@ -54,7 +54,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     userRoleId: {
       field: 'user_role_id',
-      type: DataTypes.INTEGER,
+      type: DataTypes.TEXT,
       allowNull: false,
     },
     taskStatusId: {
