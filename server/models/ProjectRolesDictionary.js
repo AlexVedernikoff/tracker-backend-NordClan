@@ -41,6 +41,6 @@ module.exports = function(sequelize, DataTypes) {
     {id: 9, code: 'qa', name: 'QA'},
     {id: 10, code: 'unbillable', name: 'Unbillable'},
   ];
-
+  ProjectRoles.UNBILLABLE_ID = 10;
   return ProjectRoles;
 };

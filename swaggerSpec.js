@@ -1215,13 +1215,19 @@ module.exports = {
     },
     '/task/{taskId}/timesheet/': {
       post: {
-        tags: ['Tasks'],
+        tags: ['Timesheets'],
         summary: 'Создать тайм шит для текущего пользователя',
         parameters: [
           {
             name: 'taskId',
             type: 'integer',
             in: 'path',
+            required: true
+          },
+          {
+            name: 'sprintId',
+            type: 'integer',
+            in: 'formData',
             required: true
           },
           {
@@ -1252,23 +1258,49 @@ module.exports = {
             in: 'formData',
             required: true
           },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
         ],
         responses: responsesCodes
       },
+    },
+    '/task/timesheet/getTimesheets': {
       get: {
-        tags: ['Tasks'],
+        tags: ['Timesheets'],
         summary: 'Получить тайм шиты',
         parameters: [
           {
             name: 'taskId',
             type: 'integer',
-            in: 'path',
-            required: true
+            in: 'query'
           },
           {
             name: 'userId',
             type: 'integer',
             in: 'query',
+            required: true
           },
           {
             name: 'dateBegin',
@@ -1276,6 +1308,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
+            required: true
           },
           {
             name: 'dateEnd',
@@ -1283,6 +1316,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
+            required: true
           },
         ],
         responses: responsesCodes
@@ -1290,7 +1324,7 @@ module.exports = {
     },
     '/task/{taskId}/timesheet/{timesheetId}': {
       put: {
-        tags: ['Tasks'],
+        tags: ['Timesheets'],
         summary: 'Изменить тайм шит для текущего пользователя',
         parameters: [
           {
@@ -1330,12 +1364,32 @@ module.exports = {
             type: 'string',
             in: 'formData',
           },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData'
+          },
         ],
         responses: responsesCodes
       },
       delete: {
-        tags: ['Tasks'],
-        summary: 'Изменить тайм шит для текущего пользователя',
+        tags: ['Timesheets'],
+        summary: 'Удалить тайм шит для текущего пользователя',
         parameters: [
           {
             name: 'taskId',
@@ -1482,6 +1536,166 @@ module.exports = {
           },
         ],
       },
+    },
+
+
+    '/task/{taskId}/timesheetDraft/': {
+      post: {
+        tags: ['TimesheetsDraft'],
+        summary: 'Создать драфт-таймшит для пользователя',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'sprintId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'typeId',
+            description: 'Тип активности (см. словарь)',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      }
+    },
+
+    '/timesheet/tracks/': {
+      get: {
+        tags: ['Tracks'],
+        summary: 'Получить треки для текущего пользователя в конкретный день',
+        parameters: [
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
+
+    '/timesheet/{taskId}/setTime/': {
+      post: {
+        tags: ['Timesheets'],
+        summary: 'Заполнить таймшит в UI таблице таймшитов',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            type: 'number',
+            format: 'float',
+            in: 'formData',
+          },
+          {
+            name: 'taskStatusId',
+            type: 'number',
+            format: 'float',
+            in: 'formData',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
+
+
+    '/timesheet/{sheetId}/': {
+      post: {
+        tags: ['Tracks'],
+        summary: 'Проставление времени у таймшита в треке',
+        parameters: [
+          {
+            name: 'sheetId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isDraft',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
     },
 
   },

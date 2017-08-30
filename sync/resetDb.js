@@ -5,9 +5,10 @@ const Models  = [
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
-  //models.TaskTypesDictionary,
+  // models.TaskTypesDictionary,
   // models.ProjectRolesDictionary,
-  //
+  // models.TimesheetStatusesDictionary,
+  
   // models.Portfolio,
   // models.Project,
   // models.Sprint,
@@ -16,28 +17,30 @@ const Models  = [
   // models.Department,
   // models.UserDepartments,
   // models.Token,
-  //
+  
   // models.ProjectUsers,
   // models.ProjectAttachments,
   // models.TaskAttachments,
-  //
+  
   // models.TimesheetTypesDictionary,
   // models.Timesheet,
+  // models.TimesheetDraft,
   // models.ModelHistory,
   // models.TaskTasks,
-  //models.ItemTag,
+  // models.ItemTag,
   // models.ItemTag,
   // models.Tag,
-  //models.Comment
+  // models.Comment
 ];
 
 const dictionariesModels  = [
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
-  //models.TaskTypesDictionary,
+  // models.TaskTypesDictionary,
   // models.ProjectRolesDictionary,
   // models.TimesheetTypesDictionary,
+  // models.TimesheetStatusesDictionary,
 ];
 
 

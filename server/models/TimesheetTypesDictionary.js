@@ -8,7 +8,6 @@ module.exports = function(sequelize, DataTypes) {
     },
     name: {
       type: DataTypes.STRING(15),
-      trim: true,
       allowNull: false,
       validate: {
         len: [1, 15]
@@ -28,6 +27,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 4, name: 'Отпуск'},
     {id: 5, name: 'Совещание'},
     {id: 6, name: 'Обучение'},
+
   ];
   
   return TimesheetTypesDictionary;

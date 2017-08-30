@@ -22,14 +22,14 @@ module.exports = function(sequelize, DataTypes) {
   });
   
   
-  TaskStatuses.associate = function(models) {
+ /* TaskStatuses.associate = function(models) {
     TaskStatuses.hasMany(models.Task, {
       as: 'taskStatuses',
       foreignKey: {
         name: 'statusId',
         field: 'status_id'
       }});
-  };
+  };*/
   
   TaskStatuses.values = [
     {id: 1, name: 'New'},
@@ -57,6 +57,7 @@ module.exports = function(sequelize, DataTypes) {
     TaskStatuses.DONE_STATUS,
     TaskStatuses.CLOSED_STATUS
   ];
-
+  TaskStatuses.CAN_UPDATE_TIMESHEETS_STATUSES = [2, 3, 4, 5, 6, 7];
+  TaskStatuses.CAN_CREATE_DRAFTSHEET_STATUSES = [3, 5, 7];
   return TaskStatuses;
 };

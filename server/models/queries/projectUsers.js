@@ -3,7 +3,7 @@ const models = require('../');
 exports.name = 'projectUsers';
 
 exports.getTransRolesToObject = getTransRolesToObject;
-exports.getUsersByProject = function(projectId, attributes = ['userId', 'rolesIds'],  t = null) {
+exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesIds'], t = null) {
   let response = [];
 
   return models.ProjectUsers
@@ -22,8 +22,8 @@ exports.getUsersByProject = function(projectId, attributes = ['userId', 'rolesId
         }
       ],
       order: [
-        [{model: models.User, as: 'user'}, 'lastNameRu', 'ASC'],
-        [{model: models.User, as: 'user'}, 'firstNameRu', 'ASC']
+        [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
+        [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
       ]
     })
     .then((projectUsers) => {
@@ -41,16 +41,41 @@ exports.getUsersByProject = function(projectId, attributes = ['userId', 'rolesId
 
 };
 
-  
+
+exports.getUserRolesByProject = function (projectId, userId, t = null) {
+  let response = [];
+
+  return models.ProjectUsers
+    .findAll({
+      where: {
+        projectId: projectId,
+        userId: userId,
+        deletedAt: null
+      },
+      transaction: t
+    })
+    .then((projectUsers) => {
+      let rolesIds;
+      projectUsers.forEach((projectUser) => {
+        rolesIds = projectUser.dataValues.rolesIds.split(',');
+      });
+      return rolesIds;
+    });
+};
+
+
+
+
+
 function getTransRolesToObject(rolesIds) {
   const result = {};
-  if(rolesIds) rolesIds = rolesIds.map((el) => +el);
-  
+  if (rolesIds) rolesIds = rolesIds.map((el) => +el);
+
   models.ProjectRolesDictionary.values.forEach(el => {
     result[el.code] = (rolesIds) ?
       (rolesIds.indexOf(el.id) > -1)
       : false;
   });
-  
+
   return result;
 };

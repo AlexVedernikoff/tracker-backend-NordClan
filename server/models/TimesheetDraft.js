@@ -1,8 +1,7 @@
-const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 const _ = require('underscore');
 
 module.exports = function (sequelize, DataTypes) {
-  const Timesheet = sequelize.define('Timesheet', {
+  const TimesheetDraft = sequelize.define('TimesheetDraft', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -37,15 +36,13 @@ module.exports = function (sequelize, DataTypes) {
     spentTime: {
       field: 'spent_time',
       type: DataTypes.FLOAT,
+      defaultValue: 0,
       allowNull: false
     },
     comment: {
       type: DataTypes.TEXT,
       trim: true,
       allowNull: false,
-      // validate: {
-      //   len: [1, 500]
-      // }
     },
     isBillible: {
       field: 'is_billible',
@@ -73,23 +70,17 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: true
     },
-    createdAt: { type: DataTypes.DATE, field: 'created_at' },
-    updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-    deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+    createdAt: {type: DataTypes.DATE, field: 'created_at'},
+    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
-      underscored: true,
       timestamps: true,
       paranoid: true,
-      tableName: 'timesheets',
-      hooks: {
-        afterFind: function (model) {
-          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
-      }
+      tableName: 'timesheets_draft',
     });
 
-  Timesheet.associate = function (models) {
-    Timesheet.belongsTo(models.Task, {
+    TimesheetDraft.associate = function (models) {
+        TimesheetDraft.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
         name: 'taskId',
@@ -98,7 +89,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    Timesheet.belongsTo(models.User, {
+    TimesheetDraft.belongsTo(models.User, {
       as: 'user',
       foreignKey: {
         name: 'userId',
@@ -107,7 +98,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    Timesheet.belongsTo(models.TimesheetTypesDictionary, {
+    TimesheetDraft.belongsTo(models.TimesheetTypesDictionary, {
       as: 'type',
       foreignKey: {
         name: 'typeId',
@@ -116,7 +107,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    Timesheet.belongsTo(models.ProjectRolesDictionary, {
+    TimesheetDraft.belongsTo(models.ProjectRolesDictionary, {
       as: 'userRole',
       foreignKey: {
         name: 'userRoleId',
@@ -125,7 +116,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    Timesheet.belongsTo(models.TaskStatusesDictionary, {
+    TimesheetDraft.belongsTo(models.TaskStatusesDictionary, {
       as: 'taskStatus',
       foreignKey: {
         name: 'taskStatusId',
@@ -134,7 +125,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    Timesheet.belongsTo(models.TimesheetStatusesDictionary, {
+    TimesheetDraft.belongsTo(models.TimesheetStatusesDictionary, {
       as: 'timesheetStatus',
       foreignKey: {
         name: 'statusId',
@@ -145,5 +136,5 @@ module.exports = function (sequelize, DataTypes) {
 
   };
 
-  return Timesheet;
+  return TimesheetDraft;
 };
