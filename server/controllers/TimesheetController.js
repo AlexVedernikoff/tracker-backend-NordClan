@@ -19,7 +19,7 @@ exports.getTimesheets = async function (req, res, next) {
       deletedAt: null
     };
     if (req.query.onDate) {
-      let date = moment.utc(req.query.onDate);
+      let date = new Date(req.query.onDate);
       Object.assign(where, { onDate: { $eq: date } });
     }
     if (req.params && req.params.sheetId) {
