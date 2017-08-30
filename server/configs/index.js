@@ -8,7 +8,7 @@ module.exports = {
       dialect: 'postgres',
       name: 'sim-track',
       username: 'postgres',
-      password: '123456' //123456
+      password: '123456'
     }
   },
   ps: {

@@ -132,7 +132,7 @@ exports.read = function(req, res, next){
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   
-  const attributes = ['id', 'portfolioId'].concat(Object.keys(req.body));
+  const attributes = ['id', 'portfolioId', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
   let portfolioIdOld;
 
@@ -216,9 +216,7 @@ exports.list = function(req, res, next){
   }
   
   let include = [];
-  let where = {
-    deletedAt: {$eq: null} // IS NULL
-  };
+  let where = {};
   
   if(req.query.portfolioId) {
     where.portfolioId = req.query.portfolioId;
@@ -242,22 +240,14 @@ exports.list = function(req, res, next){
   include.push({
     as: 'currentSprints',
     model: Sprint,
-    attributes: ['name', 'factStartDate', 'factFinishDate', 'id', 'projectId'],
-    order: [
-      ['factStartDate', 'ASC'],
-    ],
+    attributes: models.Sprint.defaultSelect,
     where: {
-      factStartDate: {
-        $lte: moment().format('YYYY-MM-DD') // factStartDate <= now
-      },
-      factFinishDate: {
-        $gte: moment().format('YYYY-MM-DD') // factFinishDate >= now
-      },
+      statusId: models.SprintStatusesDictionary.IN_PROCESS_STATUS,
       deletedAt: {
         $eq: null // IS NULL
       }
     },
-    separate: true
+    required: false,
   });
 
   // вывод тегов
@@ -267,12 +257,12 @@ exports.list = function(req, res, next){
     where: {
       taggable: 'project'
     },
-    separate: true,
     include: [{
       as: 'tag',
       model: Tag,
       attributes: ['name'],
     }],
+    required: false,
   });
 
   // Порфтель
@@ -325,6 +315,25 @@ exports.list = function(req, res, next){
       }
     });
   }
+
+  let attributes = Project.defaultSelect.concat([
+    [Sequelize.literal(`(SELECT count(t.*)
+                                FROM project_users as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.deleted_at IS NULL)`), 'usersCount'], // Кол-во активных участников в проекте
+    [Sequelize.literal(`(SELECT fact_start_date
+                                FROM sprints as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.deleted_at IS NULL 
+                                ORDER BY fact_start_date ASC
+                                LIMIT 1)`), 'dateStartFirstSprint'], // Дата начала превого спринта у проекта
+    [Sequelize.literal(`(SELECT fact_finish_date
+                                FROM sprints as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.deleted_at IS NULL 
+                                ORDER BY fact_start_date DESC
+                                LIMIT 1)`), 'dateFinishLastSprint'], // Дата завершения последнего спринта у проекта
+  ]);
   
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
@@ -366,7 +375,7 @@ exports.list = function(req, res, next){
     .then(() => {
       return Project
         .findAll({
-          attributes: req.query.fields ? _.union(['id','portfolioId','name','statusId', 'createdAt'].concat(req.query.fields)) : '',
+          attributes: req.query.fields ? _.union(attributes.concat(req.query.fields)) : attributes,
           limit: req.query.pageSize,
           offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
           include: include,
@@ -375,6 +384,7 @@ exports.list = function(req, res, next){
           order: [
             ['statusId', 'ASC'],
             ['name', 'ASC'],
+            [{ as: 'currentSprints', model: Sprint }, 'factStartDate', 'ASC'],
           ],
         })
         .then(projects => {
@@ -440,7 +450,7 @@ exports.setStatus = function(req, res, next){
 
   return models.sequelize.transaction(function (t) {
     return Project
-      .findByPrimary(req.params.id, { attributes: ['id'], transaction: t, lock: 'UPDATE' })
+      .findByPrimary(req.params.id, { attributes: ['id', 'statusId'], transaction: t, lock: 'UPDATE' })
       .then((project) => {
         if(!project) throw createError(404);
 

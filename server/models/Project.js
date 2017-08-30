@@ -1,4 +1,5 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
+const ProjectHooks = require('../components/sequelizeHooks/project');
 
 module.exports = function(sequelize, DataTypes) {
   const Project = sequelize.define('Project', {
@@ -67,13 +68,6 @@ module.exports = function(sequelize, DataTypes) {
         isFloat: true
       }
     },
-    attaches: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: null,
-      validate: {
-        notEmpty: true, // не пустая строка
-      }
-    },
     portfolioId: {
       field: 'portfolio_id',
       type: DataTypes.INTEGER,
@@ -87,10 +81,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    finishedAt: {
-      field: 'finished_at',
+    completedAt: {
+      field: 'completed_at',
       type: DataTypes.DATE,
-      defaultValue: null,
+      allowNull: true,
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
@@ -107,6 +101,11 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
+
+  Project.addHook('afterFind', ModelsHooks.deleteUnderscoredTimeStampsAttributes);
+
+  Project.addHook('beforeUpdate', ProjectHooks.setCompletedAtIfNeed);
+  Project.addHook('beforeCreate', ProjectHooks.setCompletedAtIfNeed);
 
   Project.associate = function(models) {
 
@@ -212,6 +211,21 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
+
+  Project.defaultSelect = [
+    'id',
+    'name',
+    'description',
+    'prefix',
+    'statusId',
+    'notbillable',
+    'budget',
+    'riskBudget',
+    'portfolioId',
+    'authorId',
+    'completedAt',
+    'createdAt'
+  ];
 
   return Project;
 };
