@@ -87,7 +87,7 @@ exports.getTimesheets = async function (req, res, next) {
  * Функция составления треков на текущий день
  */
 exports.getTracksOnCurrentDay = async function (req, res, next) {
-  let result = {};
+  let result;
   let visible = [];
   let invisible = [];
   let timesheets = await this.getTimesheets(req, res, next);
@@ -108,7 +108,7 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
       invisible.push(ds);
     }
   });
-  Object.assign(result, { visible: visible, invisible: invisible });
+  result = {visible, invisible};
   return result;
 }
 
@@ -116,7 +116,7 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
  *  Функция составления треков на не текущий день
  */
 exports.getTracksOnOtherDay = async function (req, res, next) {
-  let result = {};
+  let result;
   let visible = [];
   let invisible = [];
   let timesheets = await this.getTimesheets(req, res, next);
@@ -128,7 +128,7 @@ exports.getTracksOnOtherDay = async function (req, res, next) {
       invisible.push(ts);
     }
   });
-  Object.assign(result, { visible: visible, invisible: invisible });
+  result = {visible, invisible};
   return result;
 }
 
@@ -225,8 +225,6 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
   }
 }
 
-
-///////////////////////
 /**
  * Функция для создания или обновления таймшитов в UI таблице таймшитов
  */
@@ -242,6 +240,9 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
   res.json(result);
 }
 
+/**
+ * @deprecated
+ */
 exports.create = async function (req, res, next) {
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   try {
