@@ -1216,7 +1216,7 @@ module.exports = {
     '/task/{taskId}/timesheet/': {
       post: {
         tags: ['Timesheets'],
-        summary: 'Создать тайм шит для текущего пользователя',
+        summary: 'Создать таймшит для текущего пользователя',
         parameters: [
           {
             name: 'taskId',
@@ -1266,7 +1266,8 @@ module.exports = {
           },
           {
             name: 'userRoleId',
-            type: 'integer',
+            description: 'Через запятую без пробелов перечислить id',
+            type: 'string',
             in: 'formData',
             required: true
           },
@@ -1289,7 +1290,7 @@ module.exports = {
     '/task/timesheet/getTimesheets': {
       get: {
         tags: ['Timesheets'],
-        summary: 'Получить тайм шиты',
+        summary: 'Получить таймшиты',
         parameters: [
           {
             name: 'taskId',
@@ -1325,7 +1326,7 @@ module.exports = {
     '/task/{taskId}/timesheet/{timesheetId}': {
       put: {
         tags: ['Timesheets'],
-        summary: 'Изменить тайм шит для текущего пользователя',
+        summary: 'Изменить таймшит для текущего пользователя',
         parameters: [
           {
             name: 'taskId',
@@ -1367,6 +1368,12 @@ module.exports = {
           {
             name: 'isBillible',
             type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            description: 'Определяет нахождение таймшита под катом или над катом',
             in: 'formData'
           },
           {

@@ -27,8 +27,8 @@ exports.create = function (req, res, next) {
               console.log(result);
               return TimesheetDraftController.createDraft(req, res, next)
                 .then(() => {
-                  res.json({ statusId: req.body.statusId ? +req.body.statusId : model.statusId, performer: null })
-                })
+                  res.json({ statusId: req.body.statusId ? +req.body.statusId : model.statusId, performer: null });
+                });
             });
         });
     })
@@ -71,9 +71,11 @@ exports.create = function (req, res, next) {
             ])
               .then(() => {
                 if (draftsheet.length !== 0 || timesheet.length !== 0) {
+                  t.commit();
                   res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });
                 } else {
-                  if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))) {
+                  if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId)) || 
+                    ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(taskModel.statusId))) {
                     queries.task.findTaskWithUser(req.params.taskId, t)
                       .then((task) => {
                         queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
@@ -105,6 +107,7 @@ exports.create = function (req, res, next) {
                           });
                       });
                   } else {
+                    t.commit();
                     res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });
                   }
                 }
@@ -113,7 +116,6 @@ exports.create = function (req, res, next) {
       });
   })
     .catch((err) => {
-      t.rollback();
       next(err);
     });
 
