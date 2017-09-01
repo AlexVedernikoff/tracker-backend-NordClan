@@ -81,7 +81,7 @@ exports.getTimesheets = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-}
+};
 
 /**
  * Функция составления треков на текущий день
@@ -110,7 +110,7 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
   });
   result = {visible, invisible};
   return result;
-}
+};
 
 /**
  *  Функция составления треков на не текущий день
@@ -130,7 +130,7 @@ exports.getTracksOnOtherDay = async function (req, res, next) {
   });
   result = {visible, invisible};
   return result;
-}
+};
 
 /**
  *  Функция составления треков для трекера
@@ -146,14 +146,14 @@ exports.getTracks = async function (req, res, next) {
     result = await this.getTracksOnOtherDay(req, res, next);
   }
   res.json({ data: result, onDate: new Date(req.query.onDate) });
-}
+};
 
 /**
  *  Функция загрузки треков на неделю 
  */
 exports.getTracksByPeriod = async function(req, res, next) {
   // считать таймшиты на каждый день недели
-}
+};
 
 /**
  * Функция поиска драфтшита его удаления и создание нового таймшита
@@ -167,7 +167,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     Object.assign(tmp, draftsheet[0]);
 
     let t = await Sequelize.transaction();
-    let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+    await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
     Object.assign(tmp, { spentTime: req.body.spentTime });
     let createTs = await models.Timesheet.create(tmp, { transaction: t });
@@ -181,7 +181,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-}
+};
 
 /**
  * Функция поиска и обновления таймшита
@@ -206,7 +206,7 @@ exports.setTimesheetTime = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-}
+};
 
 
 /**
@@ -216,14 +216,14 @@ exports.setTimesheetTime = async function (req, res, next) {
 exports.setTrackTimesheetTime = async function (req, res, next) {
   let result;
   req.query.userId = req.user.id;
-  if (req.body.isDraft == "true") {
+  if (req.body.isDraft == 'true') {
     result = await this.setDraftTimesheetTime(req, res, next);
     res.json(result);
   } else {
     result = await this.setTimesheetTime(req, res, next);
     res.json(result);
   }
-}
+};
 
 /**
  * Функция для создания или обновления таймшитов в UI таблице таймшитов
@@ -238,7 +238,7 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
     result = await this.setTimesheetTime(req, res, next);
   }
   res.json(result);
-}
+};
 
 /**
  * @deprecated

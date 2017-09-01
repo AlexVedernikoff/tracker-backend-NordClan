@@ -1619,6 +1619,29 @@ module.exports = {
       }
     },
 
+
+    '/timesheetDraft/{timesheetDraftId}/': {
+      put: {
+        tags: ['TimesheetsDraft'],
+        summary: 'Изменяет видимость драфтшита',
+        parameters: [
+          {
+            name: 'timesheetDraftId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      }
+    },
+
     '/timesheet/tracks/': {
       get: {
         tags: ['Tracks'],
