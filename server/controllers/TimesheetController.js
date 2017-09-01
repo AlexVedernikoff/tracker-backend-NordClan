@@ -7,7 +7,7 @@ const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
-
+const dateArray = require('moment-array-dates');
 
 /**
  * Функция поиска таймшитов
@@ -81,56 +81,30 @@ exports.getTimesheets = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-}
+};
 
 /**
  * Функция составления треков на текущий день
  */
 exports.getTracksOnCurrentDay = async function (req, res, next) {
   let result;
-  let visible = [];
-  let invisible = [];
-  let timesheets = await this.getTimesheets(req, res, next);
-  let draftsheets = await TimesheetDraftController.getDrafts(req, res, next);
-
-  timesheets.map(ts => {
-    if (ts.isVisible) {
-      visible.push(ts);
-    } else {
-      invisible.push(ts);
-    }
-  });
-
-  draftsheets.map(ds => {
-    if (ds.isVisible) {
-      visible.push(ds);
-    } else {
-      invisible.push(ds);
-    }
-  });
-  result = {visible, invisible};
+  let timesheets =  this.getTimesheets(req, res, next);
+  let draftsheets = TimesheetDraftController.getDrafts(req, res, next);
+  timesheets = await timesheets;
+  draftsheets = await draftsheets;
+  result = { tracks: [...timesheets, ...draftsheets] };
   return result;
-}
+};
 
 /**
  *  Функция составления треков на не текущий день
  */
 exports.getTracksOnOtherDay = async function (req, res, next) {
   let result;
-  let visible = [];
-  let invisible = [];
   let timesheets = await this.getTimesheets(req, res, next);
-
-  timesheets.map(ts => {
-    if (ts.isVisible) {
-      visible.push(ts);
-    } else {
-      invisible.push(ts);
-    }
-  });
-  result = {visible, invisible};
+  result = { tracks: timesheets };
   return result;
-}
+};
 
 /**
  *  Функция составления треков для трекера
@@ -145,15 +119,47 @@ exports.getTracks = async function (req, res, next) {
   } else {
     result = await this.getTracksOnOtherDay(req, res, next);
   }
-  res.json({ data: result, onDate: new Date(req.query.onDate) });
-}
+  // res.json({ data: result, onDate: new Date(req.query.onDate) });
+  return result;
+};
 
 /**
  *  Функция загрузки треков на неделю 
  */
-exports.getTracksByPeriod = async function(req, res, next) {
-  // считать таймшиты на каждый день недели
-}
+exports.getTracksAll = async function (req, res, next) {
+  const result = [];
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+  const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
+  await Promise.all(dateArr.map(async (onDate) => {
+    req.query.onDate = onDate;
+    let tracks =  await this.getTracks(req, res, next);
+    // пройти по трекам
+    const scales = {};
+    tracks.tracks.map(track => {
+      models.TimesheetTypesDictionary.values.map(value => {
+        if (track.typeId == value.id) {
+          if (scales.hasOwnProperty(value.id)) {
+            scales[value.id] = scales[value.id] + track.spentTime;
+          } else {
+            scales[value.id] = 0;
+            scales[value.id] = scales[value.id] + track.spentTime;
+          }
+        }
+      });
+    });
+    let sum = 0;
+    Object.keys(scales).map(key => {
+      sum += scales[key];
+    });
+    Object.assign(scales, {all: sum});
+    let tr = tracks.tracks;
+    result.push({[onDate]: { tracks: tr, scales}});
+    return;
+  }));
+
+  res.json(result);
+};
 
 /**
  * Функция поиска драфтшита его удаления и создание нового таймшита
@@ -167,7 +173,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     Object.assign(tmp, draftsheet[0]);
 
     let t = await Sequelize.transaction();
-    let deleted = await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+    await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
     Object.assign(tmp, { spentTime: req.body.spentTime });
     let createTs = await models.Timesheet.create(tmp, { transaction: t });
@@ -181,7 +187,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-}
+};
 
 /**
  * Функция поиска и обновления таймшита
@@ -206,7 +212,7 @@ exports.setTimesheetTime = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-}
+};
 
 
 /**
@@ -216,14 +222,14 @@ exports.setTimesheetTime = async function (req, res, next) {
 exports.setTrackTimesheetTime = async function (req, res, next) {
   let result;
   req.query.userId = req.user.id;
-  if (req.body.isDraft == "true") {
+  if (Boolean(req.body.isDraft) == true) {
     result = await this.setDraftTimesheetTime(req, res, next);
     res.json(result);
   } else {
     result = await this.setTimesheetTime(req, res, next);
     res.json(result);
   }
-}
+};
 
 /**
  * Функция для создания или обновления таймшитов в UI таблице таймшитов
@@ -238,7 +244,7 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
     result = await this.setTimesheetTime(req, res, next);
   }
   res.json(result);
-}
+};
 
 /**
  * @deprecated

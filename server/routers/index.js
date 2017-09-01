@@ -81,9 +81,11 @@ router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTim
 // TimesheetsDraft
 router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft);
 router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts);
+router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible);
 
 //Tracks
 router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController));
+router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
 router.post('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
 
 // Comments

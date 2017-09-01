@@ -1619,6 +1619,29 @@ module.exports = {
       }
     },
 
+
+    '/timesheetDraft/{timesheetDraftId}/': {
+      put: {
+        tags: ['TimesheetsDraft'],
+        summary: 'Изменяет видимость драфтшита',
+        parameters: [
+          {
+            name: 'timesheetDraftId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      }
+    },
+
     '/timesheet/tracks/': {
       get: {
         tags: ['Tracks'],
@@ -1626,6 +1649,32 @@ module.exports = {
         parameters: [
           {
             name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
+    '/timesheet/tracksAll/': {
+      get: {
+        tags: ['Tracks'],
+        summary: 'Получить треки для текущего пользователя на неделю',
+        parameters: [
+          {
+            name: 'startDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'endDate',
             description: 'yyyy-mm-dd',
             type: 'string',
             format: 'date',

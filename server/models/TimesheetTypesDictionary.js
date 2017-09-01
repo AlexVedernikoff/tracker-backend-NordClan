@@ -29,6 +29,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 6, name: 'Обучение'},
 
   ];
+  TimesheetTypesDictionary.VALUE = [1,3,4];
   
   return TimesheetTypesDictionary;
 };
