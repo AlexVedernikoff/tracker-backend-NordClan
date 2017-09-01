@@ -222,7 +222,7 @@ exports.setTimesheetTime = async function (req, res, next) {
 exports.setTrackTimesheetTime = async function (req, res, next) {
   let result;
   req.query.userId = req.user.id;
-  if (req.body.isDraft == 'true') {
+  if (Boolean(req.body.isDraft) == true) {
     result = await this.setDraftTimesheetTime(req, res, next);
     res.json(result);
   } else {
