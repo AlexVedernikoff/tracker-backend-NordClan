@@ -127,7 +127,7 @@ exports.getTracks = async function (req, res, next) {
  *  Функция загрузки треков на неделю 
  */
 exports.getTracksAll = async function (req, res, next) {
-  const result = [];
+  const result = {};
   const startDate = req.query.startDate;
   const endDate = req.query.endDate;
   const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
@@ -154,7 +154,7 @@ exports.getTracksAll = async function (req, res, next) {
     });
     Object.assign(scales, {all: sum});
     let tr = tracks.tracks;
-    result.push({[onDate]: { tracks: tr, scales}});
+    result[onDate] = { tracks: tr, scales};
     return;
   }));
 
