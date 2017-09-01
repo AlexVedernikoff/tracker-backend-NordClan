@@ -88,9 +88,10 @@ exports.getTimesheets = async function (req, res, next) {
  */
 exports.getTracksOnCurrentDay = async function (req, res, next) {
   let result;
-  let timesheets = await this.getTimesheets(req, res, next);
-  let draftsheets = await TimesheetDraftController.getDrafts(req, res, next);
-
+  let timesheets =  this.getTimesheets(req, res, next);
+  let draftsheets = TimesheetDraftController.getDrafts(req, res, next);
+  timesheets = await timesheets;
+  draftsheets = await draftsheets;
   result = { tracks: [...timesheets, ...draftsheets] };
   return result;
 };
@@ -130,19 +131,34 @@ exports.getTracksAll = async function (req, res, next) {
   const startDate = req.query.startDate;
   const endDate = req.query.endDate;
   const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
-  const promises = dateArr.map(async (onDate) => {
+  await Promise.all(dateArr.map(async (onDate) => {
     req.query.onDate = onDate;
     let tracks =  await this.getTracks(req, res, next);
-    result.push({onDate: tracks});
+    // пройти по трекам
+    const scales = {};
+    tracks.tracks.map(track => {
+      models.TimesheetTypesDictionary.values.map(value => {
+        if (track.typeId == value.id) {
+          if (scales.hasOwnProperty(value.id)) {
+            scales[value.id] = scales[value.id] + track.spentTime;
+          } else {
+            scales[value.id] = 0;
+            scales[value.id] = scales[value.id] + track.spentTime;
+          }
+        }
+      });
+    });
+    let sum = 0;
+    Object.keys(scales).map(key => {
+      sum += scales[key];
+    });
+    Object.assign(scales, {all: sum});
+    let tr = tracks.tracks;
+    result.push({[onDate]: { tracks: tr, scales}});
     return;
-  });
-  Promise.all(promises);
-  console.log(result);
+  }));
 
-  // обработать дни в промежутке.
-  // для каждого дня вызвать getTracks
-  // в промежутках между вызовами считать и генерить обьекты
-
+  res.json(result);
 };
 
 /**
