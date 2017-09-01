@@ -7,7 +7,7 @@ const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
-
+const dateArray = require('moment-array-dates');
 
 /**
  * Функция поиска таймшитов
@@ -88,27 +88,10 @@ exports.getTimesheets = async function (req, res, next) {
  */
 exports.getTracksOnCurrentDay = async function (req, res, next) {
   let result;
-  let visible = [];
-  let invisible = [];
   let timesheets = await this.getTimesheets(req, res, next);
   let draftsheets = await TimesheetDraftController.getDrafts(req, res, next);
 
-  timesheets.map(ts => {
-    if (ts.isVisible) {
-      visible.push(ts);
-    } else {
-      invisible.push(ts);
-    }
-  });
-
-  draftsheets.map(ds => {
-    if (ds.isVisible) {
-      visible.push(ds);
-    } else {
-      invisible.push(ds);
-    }
-  });
-  result = {visible, invisible};
+  result = { tracks: [...timesheets, ...draftsheets] };
   return result;
 };
 
@@ -117,18 +100,8 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
  */
 exports.getTracksOnOtherDay = async function (req, res, next) {
   let result;
-  let visible = [];
-  let invisible = [];
   let timesheets = await this.getTimesheets(req, res, next);
-
-  timesheets.map(ts => {
-    if (ts.isVisible) {
-      visible.push(ts);
-    } else {
-      invisible.push(ts);
-    }
-  });
-  result = {visible, invisible};
+  result = { tracks: timesheets };
   return result;
 };
 
@@ -145,14 +118,31 @@ exports.getTracks = async function (req, res, next) {
   } else {
     result = await this.getTracksOnOtherDay(req, res, next);
   }
-  res.json({ data: result, onDate: new Date(req.query.onDate) });
+  // res.json({ data: result, onDate: new Date(req.query.onDate) });
+  return result;
 };
 
 /**
  *  Функция загрузки треков на неделю 
  */
-exports.getTracksByPeriod = async function(req, res, next) {
-  // считать таймшиты на каждый день недели
+exports.getTracksAll = async function (req, res, next) {
+  const result = [];
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+  const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
+  const promises = dateArr.map(async (onDate) => {
+    req.query.onDate = onDate;
+    let tracks =  await this.getTracks(req, res, next);
+    result.push({onDate: tracks});
+    return;
+  });
+  Promise.all(promises);
+  console.log(result);
+
+  // обработать дни в промежутке.
+  // для каждого дня вызвать getTracks
+  // в промежутках между вызовами считать и генерить обьекты
+
 };
 
 /**

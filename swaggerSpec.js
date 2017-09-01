@@ -1660,6 +1660,32 @@ module.exports = {
       }
     },
 
+    '/timesheet/tracksAll/': {
+      get: {
+        tags: ['Tracks'],
+        summary: 'Получить треки для текущего пользователя на неделю',
+        parameters: [
+          {
+            name: 'startDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'endDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
 
     '/timesheet/{taskId}/setTime/': {
       post: {
