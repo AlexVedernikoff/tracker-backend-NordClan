@@ -1,4 +1,5 @@
 const _ = require('underscore');
+const moment = require('moment');
 
 module.exports = function (sequelize, DataTypes) {
   const TimesheetDraft = sequelize.define('TimesheetDraft', {
@@ -25,8 +26,11 @@ module.exports = function (sequelize, DataTypes) {
     },
     onDate: {
       field: 'on_date',
-      type: DataTypes.DATE,
-      allowNull: false
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      get: function() {
+        return moment.utc(this.getDataValue('onDate')).format('YYYY-MM-DD');
+      }
     },
     typeId: {
       field: 'type_id',
@@ -80,7 +84,7 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     TimesheetDraft.associate = function (models) {
-        TimesheetDraft.belongsTo(models.Task, {
+      TimesheetDraft.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
         name: 'taskId',
@@ -113,7 +117,8 @@ module.exports = function (sequelize, DataTypes) {
         name: 'userRoleId',
         field: 'user_role_id',
         allowNull: false,
-      }
+      },
+      constraints: false
     });
 
     TimesheetDraft.belongsTo(models.TaskStatusesDictionary, {

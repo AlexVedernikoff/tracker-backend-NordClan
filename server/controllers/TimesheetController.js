@@ -74,6 +74,7 @@ exports.getTimesheets = async function (req, res, next) {
     let result = [];
     timesheets.map(ds => {
       Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: false });
+      ds.dataValues.onDate =  ds.onDate;
       delete ds.dataValues.task.dataValues.project;
       result.push(ds.dataValues);
     });
@@ -176,6 +177,8 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
     Object.assign(tmp, { spentTime: req.body.spentTime });
+    console.log(tmp);
+
     let createTs = await models.Timesheet.create(tmp, { transaction: t });
     let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
     let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
@@ -204,7 +207,7 @@ exports.setTimesheetTime = async function (req, res, next) {
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
     let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
     let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-    await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+    await models.Task.update({ factExecutionTime: task.factExecutionTime + time }, { where: { id: task.id }, transaction: t });
     await t.commit();
 
     let result = await queries.timesheet.getTimesheet(tmp.id);
@@ -349,8 +352,8 @@ exports.list = async function (req, res, next) {
     });
 
     timesheets.forEach(model => {
-      model.dataValues.project = model.dataValues.task.dataValues.project;
-      delete model.dataValues.task.dataValues.project;
+      model.project = model.task.project;
+      delete model.task.project;
     });
     res.json(timesheets);
   } catch (e) {

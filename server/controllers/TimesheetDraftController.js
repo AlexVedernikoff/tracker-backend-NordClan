@@ -81,6 +81,7 @@ exports.getDrafts = async function (req, res, next) {
     let result = [];
     draftsheets.map(ds => {
       Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: true });
+      ds.dataValues.onDate =  ds.onDate;
       delete ds.dataValues.task.dataValues.project;
       result.push(ds.dataValues);
     });

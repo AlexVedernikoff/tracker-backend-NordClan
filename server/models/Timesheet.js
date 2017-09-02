@@ -1,5 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 const _ = require('underscore');
+const moment = require('moment');
 
 module.exports = function (sequelize, DataTypes) {
   const Timesheet = sequelize.define('Timesheet', {
@@ -26,8 +27,11 @@ module.exports = function (sequelize, DataTypes) {
     },
     onDate: {
       field: 'on_date',
-      type: DataTypes.DATE,
-      allowNull: false
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      get: function() {
+        return moment.utc(this.getDataValue('onDate')).format('YYYY-MM-DD');
+      }
     },
     typeId: {
       field: 'type_id',
@@ -77,16 +81,16 @@ module.exports = function (sequelize, DataTypes) {
     updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
     deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
   }, {
-      underscored: true,
-      timestamps: true,
-      paranoid: true,
-      tableName: 'timesheets',
-      hooks: {
-        afterFind: function (model) {
-          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
+    underscored: true,
+    timestamps: true,
+    paranoid: true,
+    tableName: 'timesheets',
+    hooks: {
+      afterFind: function (model) {
+        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
-    });
+    }
+  });
 
   Timesheet.associate = function (models) {
     Timesheet.belongsTo(models.Task, {
@@ -122,7 +126,8 @@ module.exports = function (sequelize, DataTypes) {
         name: 'userRoleId',
         field: 'user_role_id',
         allowNull: false,
-      }
+      },
+      constraints: false
     });
 
     Timesheet.belongsTo(models.TaskStatusesDictionary, {
