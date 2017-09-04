@@ -74,7 +74,7 @@ exports.create = function (req, res, next) {
                   t.commit();
                   res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });
                 } else {
-                  if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId)) || 
+                  if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId)) ||
                     ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(taskModel.statusId))) {
                     queries.task.findTaskWithUser(req.params.taskId, t)
                       .then((task) => {
@@ -113,6 +113,10 @@ exports.create = function (req, res, next) {
                 }
               });
           });
+      })
+      .catch((err) => {
+        t.rollback();
+        next(err);
       });
   })
     .catch((err) => {

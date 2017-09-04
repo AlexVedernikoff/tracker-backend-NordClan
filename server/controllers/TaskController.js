@@ -238,6 +238,10 @@ exports.update = function (req, res, next) {
               });
 
           });
+      })
+      .catch((err) => {
+        t.rollback();
+        next(err);
       });
   })
     .catch((err) => {
