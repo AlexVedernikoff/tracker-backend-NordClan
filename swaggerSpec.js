@@ -886,6 +886,11 @@ module.exports = {
             in: 'formData',
           },
           {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
             name: 'plannedExecutionTime',
             type: 'numeric',
             in: 'formData',

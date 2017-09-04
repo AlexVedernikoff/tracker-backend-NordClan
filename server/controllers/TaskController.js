@@ -162,7 +162,8 @@ exports.update = function (req, res, next) {
               ])
                 .then(() => {
                   if (draftsheet.length !== 0 || timesheet.length !== 0) {
-                    res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId });
+                    t.commit();
+                    res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
                   } else {
                     if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))) {
                       queries.task.findTaskWithUser(req.params.id, t)
@@ -197,6 +198,7 @@ exports.update = function (req, res, next) {
 
                         });
                     } else {
+                      t.commit();
                       res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId});
                     }
                   }
