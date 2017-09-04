@@ -172,8 +172,7 @@ exports.update = function (req, res, next) {
                             .then((projectUserRoles) => {
                               let isBillible = true;
                               if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                              let now = new Date();
-                              now.setHours(0, 0, 0, 0);
+                              let now = moment().format('YYYY-MM-DD'); 
                               let timesheet = {
                                 sprintId: task.dataValues.sprintId,
                                 taskId: task.dataValues.id,
@@ -192,14 +191,14 @@ exports.update = function (req, res, next) {
                               return TimesheetDraftController.createDraft(req, res, next, t, true)
                                 .then(() => {
                                   t.commit();
-                                  res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId });
+                                  res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
                                 });
                             });
 
                         });
                     } else {
                       t.commit();
-                      res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId});
+                      res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId});
                     }
                   }
                 });

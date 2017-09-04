@@ -3,7 +3,7 @@ module.exports = {
   port: process.env.PORT || 8080,
   db: {
     postgres: {
-      host: 'localhost',
+      host: 'sim-track.simbirsoft',
       port: 5432,
       dialect: 'postgres',
       name: 'sim-track',

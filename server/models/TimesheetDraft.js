@@ -11,8 +11,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     sprintId: {
       field: 'sprint_id',
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: DataTypes.INTEGER
     },
     taskId: {
       field: 'task_id',
@@ -78,13 +77,13 @@ module.exports = function (sequelize, DataTypes) {
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
-      timestamps: true,
-      paranoid: true,
-      tableName: 'timesheets_draft',
-    });
+    timestamps: true,
+    paranoid: true,
+    tableName: 'timesheets_draft',
+  });
 
-    TimesheetDraft.associate = function (models) {
-      TimesheetDraft.belongsTo(models.Task, {
+  TimesheetDraft.associate = function (models) {
+    TimesheetDraft.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
         name: 'taskId',

@@ -3,6 +3,7 @@ const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
+const moment = require('moment');
 
 exports.create = function (req, res, next) {
   if (!req.params.taskId) return next(createError(400, 'taskId need'));
@@ -82,8 +83,7 @@ exports.create = function (req, res, next) {
                           .then((projectUserRoles) => {
                             let isBillible = true;
                             if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                            let now = new Date();
-                            now.setHours(0, 0, 0, 0);
+                            let now = moment().format('YYYY-MM-DD'); 
                             let timesheet = {
                               sprintId: task.dataValues.sprintId,
                               taskId: task.dataValues.id,

@@ -8,7 +8,7 @@ exports.findOneActiveUser = function(userId, attributes = ['id'], t) {
     .findOne({where: {
       id: userId,
       active: 1,
-    }, attributes: attributes, transaction: t, lock: t ? 'UPDATE' : null})
+    }, attributes: attributes, transaction: t})
     .then((user) => {
       if(!user) throw createError(404, 'User not found');
       return user;
