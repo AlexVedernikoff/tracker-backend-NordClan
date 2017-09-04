@@ -12,8 +12,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     sprintId: {
       field: 'sprint_id',
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: DataTypes.INTEGER
     },
     taskId: {
       field: 'task_id',

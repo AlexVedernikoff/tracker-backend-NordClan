@@ -9,8 +9,7 @@ exports.findOneActiveTask = function (taskId, attributes = ['id', 'factExecution
       where: {
         id: taskId,
         deletedAt: null,
-      }, attributes: attributes, transaction: t, lock: t ? 'UPDATE' : null
-    })
+      }, attributes: attributes, transaction: t})
     .then((model) => {
       if (!model) throw createError(404, 'Task not found');
       return model;
