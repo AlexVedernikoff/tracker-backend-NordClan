@@ -1,4 +1,5 @@
 const ldap = require('ldapjs');
+const moment = require('moment');
 const User = require('../../server/models').User;
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
@@ -51,13 +52,14 @@ module.exports = function() {
                   });
 
                 } else {
-  
                   return User.create({
                     ldapLogin: ldapUser.cn,
                     login: ldapUser.uid,
                     emailPrimary: ldapUser.mail,
                     lastNameRu: ldapUser.sn,
                     firstNameRu: ldapUser.givenName,
+                    createdAt: moment().toISOString(),
+                    updatedAt: moment().toISOString(),
                   }, {
                     validate: false,
                     raw: true
@@ -69,18 +71,15 @@ module.exports = function() {
                 console.error(err);
               });
 
-
           });
 
 
           search.on('error', function(err) {
-            console.error('error: ' + (err));
             reject(err);
           });
 
           search.on('end', function() {
             client.unbind(function() {
-              console.log('Close ldap connection.');
               resolve(promises);
             });
           });
