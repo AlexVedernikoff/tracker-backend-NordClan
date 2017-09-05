@@ -83,7 +83,7 @@ exports.create = function (req, res, next) {
                           .then((projectUserRoles) => {
                             let isBillible = true;
                             if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                            let now = moment().format('YYYY-MM-DD'); 
+                            let now = moment().format('YYYY-MM-DD');
                             let timesheet = {
                               sprintId: task.dataValues.sprintId,
                               taskId: task.dataValues.id,
@@ -98,8 +98,10 @@ exports.create = function (req, res, next) {
                               statusId: 1,
                               isVisible: true
                             };
-                            Object.assign(req.body, timesheet);
-                            return TimesheetDraftController.createDraft(req, res, next, t, true)
+
+                            const reqForDraft = Object.assign({}, req);
+                            reqForDraft.body = Object.assign({}, reqForDraft.body, timesheet);
+                            return TimesheetDraftController.createDraft(reqForDraft, res, next, t, true)
                               .then(() => {
                                 t.commit();
                                 res.json({ statusId: req.body.statusId ? +req.body.statusId : taskModel.statusId, performer: userModel });

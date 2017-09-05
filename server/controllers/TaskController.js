@@ -187,8 +187,10 @@ exports.update = function (req, res, next) {
                                 statusId: 1,
                                 isVisible: true
                               };
-                              Object.assign(req.body, timesheet);
-                              return TimesheetDraftController.createDraft(req, res, next, t, true)
+
+                              const reqForDraft = Object.assign({}, req);
+                              reqForDraft.body = Object.assign({}, reqForDraft.body, timesheet);
+                              return TimesheetDraftController.createDraft(reqForDraft, res, next, t, true)
                                 .then(() => {
                                   t.commit();
                                   res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
