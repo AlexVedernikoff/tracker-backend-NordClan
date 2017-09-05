@@ -166,9 +166,9 @@ exports.update = function (req, res, next) {
                     res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
                   } else {
                     if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))) {
-                      queries.task.findTaskWithUser(req.params.id, t)
+                      return queries.task.findTaskWithUser(req.params.id, t)
                         .then((task) => {
-                          queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
+                          return queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
                             .then((projectUserRoles) => {
                               let isBillible = true;
                               if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
