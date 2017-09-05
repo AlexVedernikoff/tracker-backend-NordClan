@@ -234,6 +234,7 @@ exports.update = function (req, res, next) {
                     resultRespons[key] = model.dataValues[key];
                 });
 
+                t.commit();
                 res.json(resultRespons);
 
               });
