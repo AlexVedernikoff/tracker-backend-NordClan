@@ -13,6 +13,7 @@ module.exports = function (sequelize, DataTypes) {
     sprintId: {
       field: 'sprint_id',
       type: DataTypes.INTEGER,
+      allowNull: false,
     },
     taskId: {
       field: 'task_id',
