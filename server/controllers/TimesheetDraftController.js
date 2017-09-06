@@ -10,7 +10,7 @@ const queries = require('../models/queries');
 exports.createDraft = async function (req, res, next, t = null, isContinue) {
   if (req.params.taskId) req.body.taskId = req.params.taskId;
   try {
-    let draftsheetModel = await models.TimesheetDraft.create(req.body, { transaction: t });
+    const draftsheetModel = await models.TimesheetDraft.create(req.body, { transaction: t });
     if (isContinue) {
       return draftsheetModel;
     }
