@@ -1732,7 +1732,7 @@ module.exports = {
 
 
     '/timesheet/{sheetId}/': {
-      post: {
+      put: {
         tags: ['Tracks'],
         summary: 'Изменение возможной информации о треке',
         parameters: [
