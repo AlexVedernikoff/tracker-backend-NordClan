@@ -14,7 +14,7 @@ exports.findDraftSheet = async function(userId, draftsheetId) {
       id: draftsheetId,
       userId: userId
     },
-    attributes: ['id', 'typeId', 'onDate', 'statusId'],
+    attributes: ['id', 'typeId', 'onDate', 'statusId', 'comment', 'isVisible'],
   });
   if (!draftsheetModel) throw createError(404, 'User can\'t change draftsheet!');
   return draftsheetModel;

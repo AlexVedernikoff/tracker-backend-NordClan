@@ -34,7 +34,7 @@ exports.getTimesheets = async function (req, res, next) {
 
     let timesheets = await models.Timesheet.findAll({
       where: where,
-      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
       order: [
         ['createdAt', 'ASC']
       ],
@@ -176,13 +176,12 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     let t = await Sequelize.transaction();
     await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
-    Object.assign(tmp, { spentTime: req.body.spentTime });
-    console.log(tmp);
 
-    let createTs = await models.Timesheet.create(tmp, { transaction: t });
-    let task = await queries.task.findOneActiveTask(createTs.dataValues.taskId, ['id', 'factExecutionTime'], t);
+    let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
     let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
     await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+    Object.assign(tmp, { spentTime: req.body.spentTime });
+    let createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
 
     let result = await queries.timesheet.getTimesheet(createTs.dataValues.id);
@@ -226,10 +225,28 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
   let result;
   req.query.userId = req.user.id;
   if (Boolean(req.body.isDraft) == true) {
-    result = await this.setDraftTimesheetTime(req, res, next);
+    if (req.body.spentTime) {
+      result = await this.setDraftTimesheetTime(req, res, next);
+    }
+    if (req.body.comment || req.body.isVisible) {
+      let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+      let tmp = {};
+      Object.assign(tmp, draftsheet[0]);
+      await models.TimesheetDraft.update({comment: req.body.comment, isVisible: req.body.isVisible}, { where: { id: tmp.id }});
+      result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
+    }
     res.json(result);
   } else {
-    result = await this.setTimesheetTime(req, res, next);
+    if (req.body.spentTime) {
+      result = await this.setTimesheetTime(req, res, next);
+    }
+    if (req.body.comment || req.body.isVisible) {
+      let timesheet = await this.getTimesheets(req, res, next);
+      let tmp = {};
+      Object.assign(tmp, timesheet[0]);
+      await models.Timesheet.update({comment: req.body.comment, isVisible: req.body.isVisible}, { where: { id: tmp.id }});
+      result = await queries.timesheet.getTimesheet(tmp.id);
+    }
     res.json(result);
   }
 };

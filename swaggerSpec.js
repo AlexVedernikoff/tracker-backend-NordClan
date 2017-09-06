@@ -1734,7 +1734,7 @@ module.exports = {
     '/timesheet/{sheetId}/': {
       post: {
         tags: ['Tracks'],
-        summary: 'Проставление времени у таймшита в треке',
+        summary: 'Изменение возможной информации о треке',
         parameters: [
           {
             name: 'sheetId',
@@ -1745,14 +1745,23 @@ module.exports = {
           {
             name: 'spentTime',
             type: 'integer',
-            in: 'formData',
-            required: true
+            in: 'formData'
           },
           {
             name: 'isDraft',
             type: 'boolean',
             in: 'formData',
             required: true
+          },
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData'
           }
         ],
         responses: responsesCodes
