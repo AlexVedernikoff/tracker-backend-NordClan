@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     sprintId: {
       field: 'sprint_id',
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
     taskId: {
       field: 'task_id',
@@ -27,9 +27,7 @@ module.exports = function (sequelize, DataTypes) {
       field: 'on_date',
       type: DataTypes.DATEONLY,
       allowNull: false,
-      get: function() {
-        return moment.utc(this.getDataValue('onDate')).format('YYYY-MM-DD');
-      }
+
     },
     typeId: {
       field: 'type_id',

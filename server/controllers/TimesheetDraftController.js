@@ -41,7 +41,7 @@ exports.getDrafts = async function (req, res, next) {
   try {
     let draftsheets = await models.TimesheetDraft.findAll({
       where: where,
-      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
       order: [
         ['createdAt', 'ASC']
       ],
@@ -81,7 +81,6 @@ exports.getDrafts = async function (req, res, next) {
     let result = [];
     draftsheets.map(ds => {
       Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: true });
-      ds.dataValues.onDate =  ds.onDate;
       delete ds.dataValues.task.dataValues.project;
       result.push(ds.dataValues);
     });
