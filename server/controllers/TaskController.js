@@ -165,15 +165,23 @@ exports.update = function (req, res, next) {
                     t.commit();
                     res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
                   } else {
-                    if (req.body.statusId && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))) {
+                    if (
+                      req.body.statusId
+                      && (row.performerId || req.body.performerId)
+                      && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))
+                    ) {
                       return queries.task.findTaskWithUser(req.params.id, t)
                         .then((task) => {
+                          //console.log(task.performerId);
+
+                          //if(!task.performerId) return;
+
                           return queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
                             .then((projectUserRoles) => {
                               let isBillible = true;
                               if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                              let now = moment().format('YYYY-MM-DD'); 
-                              let timesheet = {
+                              const now = moment().format('YYYY-MM-DD');
+                              const timesheet = {
                                 sprintId: task.dataValues.sprintId,
                                 taskId: task.dataValues.id,
                                 userId: task.dataValues.performerId,
