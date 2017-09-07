@@ -24,17 +24,13 @@ exports.create = function (req, res, next) {
           if (+req.body.statusId > 0) newAttribures.statusId = +req.body.statusId;
 
           return model.updateAttributes(newAttribures, { transaction: t })
-            .then((result) => {
-              console.log(result);
-              return TimesheetDraftController.createDraft(req, res, next)
-                .then(() => {
-                  res.json({ statusId: req.body.statusId ? +req.body.statusId : model.statusId, performer: null });
-                });
+            .then(() => {
+              res.json({ statusId: req.body.statusId ? +req.body.statusId : model.statusId, performer: null });
             });
         });
     })
       .catch((err) => {
-        next(err);
+        next(createError(err));
       });
   }
 
@@ -83,8 +79,8 @@ exports.create = function (req, res, next) {
                           .then((projectUserRoles) => {
                             let isBillible = true;
                             if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                            let now = moment().format('YYYY-MM-DD');
-                            let timesheet = {
+                            const now = moment().format('YYYY-MM-DD');
+                            const timesheet = {
                               sprintId: task.dataValues.sprintId,
                               taskId: task.dataValues.id,
                               userId: task.dataValues.performerId,

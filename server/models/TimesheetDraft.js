@@ -1,5 +1,4 @@
 const _ = require('underscore');
-const moment = require('moment');
 
 module.exports = function (sequelize, DataTypes) {
   const TimesheetDraft = sequelize.define('TimesheetDraft', {
