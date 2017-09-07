@@ -172,7 +172,7 @@ exports.update = function (req, res, next) {
                     ) {
                       return queries.task.findTaskWithUser(req.params.id, t)
                         .then((task) => {
-
+                          
                           return queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
                             .then((projectUserRoles) => {
                               let isBillible = true;
