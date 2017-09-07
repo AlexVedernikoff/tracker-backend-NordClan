@@ -7,19 +7,22 @@ const queries = require('../models/queries');
 /**
  * Функция создания драфтшита
  */
-exports.createDraft = async function (req, res, next, t = null, isContinue) {
+exports.createDraft = function (req, res, next, t = null, isContinue) {
   if (req.body.id) delete req.body.id;
   if (req.params.taskId) req.body.taskId = req.params.taskId;
+  if (!req.body.sprintId && isContinue) return Promise.resolve();
+  if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) throw createError(400, 'sprintId must be int');
 
-  try {
-    const draftsheetModel = await models.TimesheetDraft.create(req.body, { transaction: t });
-    if (isContinue) {
-      return draftsheetModel;
-    }
-    res.json(draftsheetModel);
-  } catch (e) {
-    throw createError(e);
-  }
+  return models.TimesheetDraft.create(req.body, { transaction: t })
+    .then((draftsheetModel) => {
+      if (isContinue) return draftsheetModel;
+      res.json(draftsheetModel);
+    })
+    .catch((err) => {
+      console.log(createError(err));
+      throw createError(err);
+    });
+
 };
 
 /**
