@@ -172,14 +172,12 @@ exports.update = function (req, res, next) {
                     ) {
                       return queries.task.findTaskWithUser(req.params.id, t)
                         .then((task) => {
-                          //console.log(task.performerId);
-
-                          //if(!task.performerId) return;
 
                           return queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
                             .then((projectUserRoles) => {
                               let isBillible = true;
                               if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
+
                               const now = moment().format('YYYY-MM-DD');
                               const timesheet = {
                                 sprintId: task.dataValues.sprintId,
