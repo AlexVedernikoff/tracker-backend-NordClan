@@ -37,7 +37,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     spentTime: {
       field: 'spent_time',
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     comment: {

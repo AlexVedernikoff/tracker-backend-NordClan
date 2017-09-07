@@ -101,9 +101,9 @@ exports.read = function (req, res, next) {
   })
     .then((model) => {
       if (!model) return next(createError(404));
-      if (model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
+      if (model.tags) model.tags = Object.keys(model.tags).map((k) => model.tags[k].name); // Преобразую теги в массив
 
-      res.json(model.dataValues);
+      res.json(model);
     })
     .catch((err) => {
       next(err);
@@ -513,7 +513,9 @@ exports.list = function (req, res, next) {
 
 };
 
-
+/**
+ * @deprecated
+ */
 exports.setStatus = function (req, res, next) {
   if (req.params.taskId && !req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if (!req.body.statusId) return next(createError(400, 'statusId must be'));
