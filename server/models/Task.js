@@ -41,18 +41,24 @@ module.exports = function (sequelize, DataTypes) {
     },
     plannedExecutionTime: {
       field: 'planned_execution_time',
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(10,2),
       defaultValue: 0,
-      validate: {
+      isDecimal: {
         isFloat: true
+      },
+      get: function() {
+        return +this.getDataValue('plannedExecutionTime').toString();
       }
     },
     factExecutionTime: {
       field: 'fact_execution_time',
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(10,2),
       defaultValue: 0,
-      validate: {
+      isDecimal: {
         isFloat: true
+      },
+      get: function() {
+        return +this.getDataValue('factExecutionTime').toString();
       }
     },
     prioritiesId: {
@@ -77,16 +83,16 @@ module.exports = function (sequelize, DataTypes) {
     updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
     deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
   }, {
-      timestamps: true,
-      paranoid: true,
-      underscored: true,
-      tableName: 'tasks',
-      hooks: {
-        afterFind: function (model) {
-          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
+    timestamps: true,
+    paranoid: true,
+    underscored: true,
+    tableName: 'tasks',
+    hooks: {
+      afterFind: function (model) {
+        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
-    });
+    }
+  });
 
   Task.associate = function (models) {
     Task.belongsTo(models.Project, {

@@ -1,5 +1,3 @@
-'use strict';
-
 const createError = require('http-errors');
 const _ = require('underscore');
 const moment = require('moment');
@@ -120,7 +118,6 @@ exports.getTracks = async function (req, res, next) {
   } else {
     result = await this.getTracksOnOtherDay(req, res, next);
   }
-  // res.json({ data: result, onDate: new Date(req.query.onDate) });
   return result;
 };
 
@@ -141,17 +138,17 @@ exports.getTracksAll = async function (req, res, next) {
       models.TimesheetTypesDictionary.values.map(value => {
         if (track.typeId == value.id) {
           if (scales.hasOwnProperty(value.id)) {
-            scales[value.id] = scales[value.id] + track.spentTime;
+            scales[value.id] = +scales[value.id] + +track.spentTime;
           } else {
             scales[value.id] = 0;
-            scales[value.id] = scales[value.id] + track.spentTime;
+            scales[value.id] = +scales[value.id] + +track.spentTime;
           }
         }
       });
     });
     let sum = 0;
     Object.keys(scales).map(key => {
-      sum += scales[key];
+      sum += +scales[key];
     });
     Object.assign(scales, {all: sum});
     let tr = tracks.tracks;
@@ -169,23 +166,27 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   try {
     delete req.body.isDraft;
     let tmp = {};
-    let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-    if (!draftsheet || draftsheet.length == 0) return;
+    const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+    if (!draftsheet || draftsheet.length === 0) return;
     Object.assign(tmp, draftsheet[0]);
 
-    let t = await Sequelize.transaction();
+    const t = await Sequelize.transaction();
     await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
 
-    let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-    let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-    await models.Task.update({ factExecutionTime: task.dataValues.factExecutionTime + time }, { where: { id: task.dataValues.id }, transaction: t });
+    const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+    await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`) }, {
+      where: {
+        id: task.dataValues.id
+      },
+      transaction: t
+    });
+
     Object.assign(tmp, { spentTime: req.body.spentTime });
-    let createTs = await models.Timesheet.create(tmp, { transaction: t });
+    const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
 
-    let result = await queries.timesheet.getTimesheet(createTs.dataValues.id);
-    return result;
+    return await queries.timesheet.getTimesheet(createTs.dataValues.id);
   } catch (e) {
     return next(createError(e));
   }
@@ -195,6 +196,14 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
  * Функция поиска и обновления таймшита
  */
 exports.setTimesheetTime = async function (req, res, next) {
+  let t;
+
+  try {
+    t = await Sequelize.transaction();
+  } catch (e) {
+    next(createError(e));
+  }
+
   try {
     let tmp = {};
     delete req.body.isDraft;
@@ -202,17 +211,15 @@ exports.setTimesheetTime = async function (req, res, next) {
     if (!timesheet) return next(createError(404, 'Timesheet not found'));
     Object.assign(tmp, timesheet[0]);
 
-    let t = await Sequelize.transaction();
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
     let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-    let time = await parseInt(req.body.spentTime, 10) - tmp.spentTime;
-    await models.Task.update({ factExecutionTime: task.factExecutionTime + time }, { where: { id: task.id }, transaction: t });
+    await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
     await t.commit();
 
-    let result = await queries.timesheet.getTimesheet(tmp.id);
-    return result;
+    return await queries.timesheet.getTimesheet(tmp.id);
   } catch (e) {
-    return next(createError(e));
+    await t.rollback();
+    next(createError(e));
   }
 };
 
@@ -224,7 +231,7 @@ exports.setTimesheetTime = async function (req, res, next) {
 exports.setTrackTimesheetTime = async function (req, res, next) {
   let result;
   req.query.userId = req.user.id;
-  if (Boolean(req.body.isDraft) == true) {
+  if (Boolean(req.body.isDraft) === true) {
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
     }
