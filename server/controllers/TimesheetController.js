@@ -138,17 +138,17 @@ exports.getTracksAll = async function (req, res, next) {
       models.TimesheetTypesDictionary.values.map(value => {
         if (track.typeId == value.id) {
           if (scales.hasOwnProperty(value.id)) {
-            scales[value.id] = scales[value.id] + track.spentTime;
+            scales[value.id] = +scales[value.id] + +track.spentTime;
           } else {
             scales[value.id] = 0;
-            scales[value.id] = scales[value.id] + track.spentTime;
+            scales[value.id] = +scales[value.id] + +track.spentTime;
           }
         }
       });
     });
     let sum = 0;
     Object.keys(scales).map(key => {
-      sum += scales[key];
+      sum += +scales[key];
     });
     Object.assign(scales, {all: sum});
     let tr = tracks.tracks;
