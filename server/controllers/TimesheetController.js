@@ -131,7 +131,7 @@ exports.getTracksAll = async function (req, res, next) {
   const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
   await Promise.all(dateArr.map(async (onDate) => {
     req.query.onDate = onDate;
-    let tracks =  await this.getTracks(req, res, next);
+    const tracks =  await this.getTracks(req, res, next);
     // пройти по трекам
     const scales = {};
     tracks.tracks.map(track => {
@@ -235,23 +235,34 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
     }
-    if (req.body.comment || req.body.isVisible) {
-      let draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-      let tmp = {};
+    if (req.body.comment || 'isVisible' in req.body) {
+      const newDate = {};
+      if (req.body.comment) newDate.comment = req.body.comment;
+      if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
+
+      const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+      const tmp = {};
       Object.assign(tmp, draftsheet[0]);
-      await models.TimesheetDraft.update({comment: req.body.comment, isVisible: req.body.isVisible}, { where: { id: tmp.id }});
+      await models.TimesheetDraft.update(newDate, { where: { id: tmp.id }});
       result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
     }
     res.json(result);
   } else {
+    console.log(22);
+    console.log(req.body);
     if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     }
-    if (req.body.comment || req.body.isVisible) {
-      let timesheet = await this.getTimesheets(req, res, next);
-      let tmp = {};
+    if (req.body.comment || 'isVisible' in req.body) {
+      const newDate = {};
+      if (req.body.comment) newDate.comment = req.body.comment;
+      if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
+
+      const timesheet = await this.getTimesheets(req, res, next);
+      const tmp = {};
+
       Object.assign(tmp, timesheet[0]);
-      await models.Timesheet.update({comment: req.body.comment, isVisible: req.body.isVisible}, { where: { id: tmp.id }});
+      await models.Timesheet.update(newDate, { where: { id: tmp.id }});
       result = await queries.timesheet.getTimesheet(tmp.id);
     }
     res.json(result);
