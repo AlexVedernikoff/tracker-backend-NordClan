@@ -47,7 +47,7 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       },
       get: function() {
-        return +this.getDataValue('plannedExecutionTime').toString();
+        return +(''+this.getDataValue('plannedExecutionTime'));
       }
     },
     factExecutionTime: {
@@ -58,7 +58,7 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       },
       get: function() {
-        return +this.getDataValue('factExecutionTime').toString();
+        return +(''+this.getDataValue('factExecutionTime'));
       }
     },
     prioritiesId: {
