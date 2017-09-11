@@ -43,15 +43,24 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 
 
 ### DOCKER
+Для запуска полного стека:
+0. положите фронт рядом с беком (пример /projects/sim-track-front и /projects/sim-track-back, если названия папок другие проверьте правильность в docker-compose.yml раздел web volumes, он отвечает за хотрелоад)
+1. установить docker и docker-compose
+2. в папке фронтенда
+    `npm run docker`
+        
+3. в папке бекенда
 
-0. установить docker и docker-compose
+- `npm run docker`
+- `npm run docker:db`
+- `npm run compose:up`
 
-1. `npm run docker  #back`
-2. `npm run docker:db  #back`
-3. `npm run docker #front`
-4. `npm run compose:up`
+на localhost:8080 будет фронт
+на 8000 - бек
+на 5432 - база
 
-#####МАЛЕНЬКИЙ РЕФЕРЕНС
+
+##### МАЛЕНЬКИЙ РЕФЕРЕНС
 
 старт(build - обязательно собрать образы перед стартом, -d - запустить как демон)
 
@@ -76,14 +85,3 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 посмотреть все образы
 
         docker images
-        
-        
-Для запуска полного стека:
-- положите фронт рядом с беком (пример /projects/sim-track-front и /projects/sim-track-back)
-- в папке фронтенда
-
-        npm run docker
-        
-- в папке бекенда
-
-        docker-compose up
