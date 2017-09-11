@@ -4,7 +4,14 @@
   "description": "readme",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./server.js",
+    "docker": "docker build -t simtrackback .",
+    "docker:db": "docker build -t simtrackdb ./pg_db",
+    "compose:up:old": "docker-compose up --no-build --no-recreate -d",
+    "compose:up:new": "docker-compose up --build --recreate -d",
+    "compose:up": "docker-compose up -d",
+    "compose:stop": "docker-compose stop"
   },
   "repository": {
     "type": "git",

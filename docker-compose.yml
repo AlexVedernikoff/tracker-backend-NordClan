@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  db:
+    image: simtrackdb:latest
+    environment:
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: sim-track
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/lib/postgresql:/var/lib/postgresql
+    expose:
+      - "5432"
+
+  app:
+    image: simtrackback:latest
+    environment:
+      DATABASE_HOST: db
+    command: ["/app/wait-for.sh", "5", "npm", "start"]
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8080
+    expose:
+      - "8080"
+    depends_on:
+      - db
+    links:
+      - db
+
+  web:
+    image: simtrackfront:latest
+    environment:
+      API_ROOT: app
+      API_PORT: 8080
+    command: ["npm", "start"]
+    volumes:
+      - ./../sim-track-front:/app
+    ports:
+      - 8080:8080
+    links:
+      - app

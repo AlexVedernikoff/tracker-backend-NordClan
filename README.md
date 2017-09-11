@@ -42,3 +42,41 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 10. node server или pm2 start processes.json что бы запустить бек
 
 
+### DOCKER
+
+установить docker и docker-compose
+
+старт(build - обязательно собрать образы перед стартом, -d - запустить как демон)
+
+        docker-compose up [--build] [-d]
+
+стоп
+
+        docker-compose stop
+
+удаление сети и контейнеров после up
+
+        docker-compose down
+
+после stop(сеть не удалится)
+
+        docker-compose rm
+
+посмотреть поднятые контейнеры
+
+        docker ps
+
+посмотреть все образы
+
+        docker images
+        
+        
+Для запуска полного стека:
+- положите фронт рядом с беком (пример /projects/sim-track-front и /projects/sim-track-back)
+- в папке фронтенда
+
+        npm run docker
+        
+- в папке бекенда
+
+        docker-compose up
