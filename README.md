@@ -44,7 +44,14 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 
 ### DOCKER
 
-установить docker и docker-compose
+0. установить docker и docker-compose
+
+1. `npm run docker  #back`
+2. `npm run docker:db  #back`
+3. `npm run docker #front`
+4. `npm run compose:up`
+
+#####МАЛЕНЬКИЙ РЕФЕРЕНС
 
 старт(build - обязательно собрать образы перед стартом, -d - запустить как демон)
 
