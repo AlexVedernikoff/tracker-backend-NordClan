@@ -50,7 +50,12 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 
         npm run docker
         
-3. в папке бекенда
+3. в папке бекенда для накатки дампа положите свежий дамп dump.tar.gz
+в папку ./pg_db
+
+       npm run db:restore
+
+4. старт приложения с 0
 
         npm run init:app
 
@@ -58,14 +63,13 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 на 8000 - бек
 на 5432 - база
 
-4. для накатки дампа положите дамп dump.tar.gz
-в папку ./pg_db
-
-       npm run db:restore
-
 5. чтобы создать дамп из контейнера
 
        npm run db:dump
+
+6. restart трех контейнеров
+
+       npm run restart
 
 ##### МАЛЕНЬКИЙ РЕФЕРЕНС
 

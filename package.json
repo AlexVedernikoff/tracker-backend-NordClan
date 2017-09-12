@@ -12,7 +12,8 @@
     "compose:stop": "docker-compose stop",
     "init:app": "./init_backend.sh",
     "db:restore": "./pg_db/restore_dump.sh",
-    "db:dump": "./pg_db/base_dump.sh"
+    "db:dump": "./pg_db/base_dump.sh",
+    "restart": "./restart.sh"
   },
   "repository": {
     "type": "git",
