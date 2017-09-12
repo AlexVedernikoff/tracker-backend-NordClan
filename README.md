@@ -47,18 +47,29 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 0. положите фронт рядом с беком (пример /projects/sim-track-front и /projects/sim-track-back, если названия папок другие проверьте правильность в docker-compose.yml раздел web volumes, он отвечает за хотрелоад)
 1. установить docker и docker-compose
 2. в папке фронтенда
-    `npm run docker`
-        
-3. в папке бекенда
 
-- `npm run docker`
-- `npm run docker:db`
-- `npm run compose:up`
+        npm run docker
+        
+3. в папке бекенда для накатки дампа положите свежий дамп dump.tar.gz
+в папку ./pg_db
+
+       npm run db:restore
+
+4. старт приложения с 0
+
+        npm run init:app
 
 на localhost:8080 будет фронт
 на 8000 - бек
 на 5432 - база
 
+5. чтобы создать дамп из контейнера
+
+       npm run db:dump
+
+6. restart трех контейнеров
+
+       npm run restart
 
 ##### МАЛЕНЬКИЙ РЕФЕРЕНС
 
