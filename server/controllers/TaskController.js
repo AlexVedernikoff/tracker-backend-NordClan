@@ -116,6 +116,7 @@ exports.update = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   const attributes = ['id', 'statusId', 'performerId'].concat(Object.keys(req.body));
+  const now = moment().format('YYYY-MM-DD');
   const resultRespons = {};
 
   return models.sequelize.transaction().then(function (t) {
@@ -152,6 +153,7 @@ exports.update = function (req, res, next) {
               req.query.taskStatusId = req.body.statusId;
               req.query.userId = model.dataValues.performerId;
               req.query.taskId = model.dataValues.id;
+              req.query.onDate = now;
               let timesheet;
               let draftsheet;
               return Promise.all([
@@ -178,7 +180,6 @@ exports.update = function (req, res, next) {
                               let isBillible = true;
                               if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
 
-                              const now = moment().format('YYYY-MM-DD');
                               const timesheet = {
                                 sprintId: task.dataValues.sprintId,
                                 taskId: task.dataValues.id,

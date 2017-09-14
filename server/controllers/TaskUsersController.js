@@ -10,6 +10,7 @@ exports.create = function (req, res, next) {
   if (!Number.isInteger(+req.params.taskId)) return next(createError(400, 'taskId must be int'));
   if (+req.params.taskId <= 0) return next(createError(400, 'taskId must be > 0'));
 
+  const now = moment().format('YYYY-MM-DD');
   let taskModel;
   let userModel;
 
@@ -57,6 +58,7 @@ exports.create = function (req, res, next) {
           .then(() => {
             req.query.userId = req.body.userId;
             req.query.taskId = req.params.taskId;
+            req.query.onDate = now;
             if (req.body.statusId) req.query.taskStatusId = req.body.statusId;
             let timesheet;
             let draftsheet;
@@ -79,7 +81,6 @@ exports.create = function (req, res, next) {
                           .then((projectUserRoles) => {
                             let isBillible = true;
                             if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
-                            const now = moment().format('YYYY-MM-DD');
                             const timesheet = {
                               sprintId: task.dataValues.sprintId,
                               taskId: task.dataValues.id,

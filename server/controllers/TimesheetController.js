@@ -248,8 +248,6 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
     }
     res.json(result);
   } else {
-    console.log(22);
-    console.log(req.body);
     if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     }
