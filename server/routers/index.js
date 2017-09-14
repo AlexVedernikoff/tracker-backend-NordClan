@@ -72,10 +72,10 @@ router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
 // Timesheets
 router.post('/task/:taskId/timesheet', TimesheetController.create);
-router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update);
+router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update); // Deprecated
 router.delete('/task/:taskId/timesheet/:timesheetId', TimesheetController.delete);
 router.get('/task/timesheet/getTimesheets', TimesheetController.list);
-router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController));
+router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
 
 // TimesheetsDraft
 router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft);
