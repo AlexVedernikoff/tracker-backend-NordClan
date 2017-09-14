@@ -229,7 +229,7 @@ exports.setTimesheetTime = async function (req, res, next) {
  */
 
 exports.setTrackTimesheetTime = async function (req, res, next) {
-  if (req.body.spentTime && !req.body.spentTime.match(/^\d+$/)) return next(createError(400, 'spentTime must be int'));
+  if (req.body.spentTime && !(''+req.body.spentTime).match(/^\d+$/)) return next(createError(400, 'spentTime must be int'));
 
   let result;
   req.query.userId = req.user.id;
