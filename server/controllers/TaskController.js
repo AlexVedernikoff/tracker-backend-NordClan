@@ -514,38 +514,3 @@ exports.list = function (req, res, next) {
 
 };
 
-/**
- * @deprecated
- */
-exports.setStatus = function (req, res, next) {
-  if (req.params.taskId && !req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
-  if (!req.body.statusId) return next(createError(400, 'statusId must be'));
-  if (req.body.statusId && !req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be int'));
-
-
-  return models.sequelize.transaction(function (t) {
-    return Task.build({ id: req.params.taskId, statusId: req.body.statusId }).validate({ fields: ['id', 'statusId'] })
-      .then(validate => {
-        if (validate) throw createError(validate);
-      })
-      .then(() => {
-        return Task
-          .findByPrimary(req.params.taskId, { attributes: ['id', 'statusId'], transaction: t, lock: 'UPDATE' })
-          .then((task) => {
-            if (!task) { return next(createError(404)); }
-
-            return task
-              .updateAttributes({ statusId: req.body.statusId }, { transaction: t })
-              .then((model) => {
-                res.json({
-                  id: model.id,
-                  statusId: +model.statusId
-                });
-              });
-          });
-      });
-  })
-    .catch((err) => {
-      next(err);
-    });
-};

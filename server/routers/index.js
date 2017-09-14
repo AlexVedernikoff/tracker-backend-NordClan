@@ -66,7 +66,6 @@ router.get('/task/:id', TaskController.read);
 router.put('/task/:id', TaskController.update);
 router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
-router.put('/task/:taskId/status', TaskController.setStatus);
 router.post('/task/:taskId/users', TaskUsersController.create);
 router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
