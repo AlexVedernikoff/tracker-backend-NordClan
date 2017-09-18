@@ -1446,13 +1446,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task/timesheet/types/dictionary': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Справочник типов активности в тайм шитах',
-        responses: responsesCodes,
-      },
-    },
+
 
     '/auth/login': {
       post: {
@@ -1669,8 +1663,13 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
-
+    '/task/timesheet/types/dictionary': {
+      get: {
+        tags: ['Timesheets'],
+        summary: 'Справочник типов активности в тайм шитах',
+        responses: responsesCodes,
+      },
+    },
     '/timesheet/{taskId}/setTime/': {
       post: {
         tags: ['Timesheets'],
