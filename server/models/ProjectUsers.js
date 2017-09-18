@@ -1,3 +1,5 @@
+const hooks = require('../components/sequelizeHooks/draftMagicActivity');
+
 module.exports = function(sequelize, DataTypes) {
   const ProjectUsers = sequelize.define('ProjectUsers', {
     id: {
@@ -63,6 +65,8 @@ module.exports = function(sequelize, DataTypes) {
       }});
 
   };
+
+  ProjectUsers.addHook('afterCreate', 'createDraftMagicActivity', hooks.createDraftMagicActivity);
 
   return ProjectUsers;
 };
