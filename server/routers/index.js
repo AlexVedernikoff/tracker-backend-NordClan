@@ -38,7 +38,7 @@ router.get('/project/:id', ProjectController.read);
 router.put('/project/:id', ProjectController.update);
 router.delete('/project/:id', ProjectController.delete);
 router.get('/project', ProjectController.list);
-router.put('/project/:id/status', ProjectController.setStatus);
+router.put('/project/:id/status', ProjectController.setStatus);  // Deprecated
 router.post('/project/:projectId/users', ProjectUsersController.create);
 router.get('/project/:projectId/users', ProjectUsersController.list);
 router.delete('/project/:projectId/users/:userId', ProjectUsersController.delete);
@@ -58,7 +58,7 @@ router.get('/sprint/:id', SprintController.read);
 router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
-router.put('/sprint/:id/status', SprintController.setStatus);
+router.put('/sprint/:id/status', SprintController.setStatus);  // Deprecated
 
 // Tasks
 router.post('/task', TaskController.create);

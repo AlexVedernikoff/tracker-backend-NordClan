@@ -1,3 +1,5 @@
+/* Управление созданием и удалением магических активностей */
+
 
 exports.createDraftMagicActivity = (instance, options) => {
   const draftModel = instance.$modelOptions.sequelize.models.TimesheetDraft;
@@ -12,9 +14,6 @@ exports.createDraftMagicActivity = (instance, options) => {
     });
 
 };
-
-
-
 
 exports.destroyDraftMagicActivity = (instance, options) => {
   const draftModel = instance.$modelOptions.sequelize.models.TimesheetDraft;

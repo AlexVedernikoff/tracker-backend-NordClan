@@ -3,6 +3,7 @@
 const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
+const moment = require('moment');
 
 /**
  * Функция создания драфтшита
@@ -31,8 +32,14 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
 exports.getDrafts = async function (req, res, next) {
   let where = { userId: req.query.userId };
   if (req.query.onDate) {
-    let date = new Date(req.query.onDate);
-    Object.assign(where, { onDate: { $eq: date } });
+    let date = moment(req.query.onDate).format('YYYY-MM-DD');
+
+    Object.assign(where, { $or:
+      [
+        {onDate: { $eq: date }},
+        {onDate: { $eq: null }}
+      ]
+    });
   }
   if (req.params && req.params.sheetId) {
     Object.assign(where, { id: { $eq: req.params.sheetId } });
@@ -54,21 +61,21 @@ exports.getDrafts = async function (req, res, next) {
         {
           as: 'task',
           model: models.Task,
-          required: true,
+          required: false,
           attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
           paranoid: false,
           include: [
             {
               as: 'project',
               model: models.Project,
-              required: true,
+              required: false,
               attributes: ['id', 'name'],
               paranoid: false,
             },
             {
               as: 'taskStatus',
               model: models.TaskStatusesDictionary,
-              required: true,
+              required: false,
               attributes: ['id', 'name'],
               paranoid: false,
             }
@@ -77,7 +84,7 @@ exports.getDrafts = async function (req, res, next) {
         {
           as: 'taskStatus',
           model: models.TaskStatusesDictionary,
-          required: true,
+          required: false,
           attributes: ['id', 'name'],
           paranoid: false
         }
@@ -85,8 +92,10 @@ exports.getDrafts = async function (req, res, next) {
     });
     let result = [];
     draftsheets.map(ds => {
-      Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: true });
-      delete ds.dataValues.task.dataValues.project;
+      Object.assign(ds.dataValues, { project: ds.dataValues.task ? ds.dataValues.task.dataValues.project : null, isDraft: true });
+      if (ds.dataValues.task) delete ds.dataValues.task.dataValues.project;
+      if (!ds.onDate) ds.dataValues.onDate = moment().format('YYYY-MM-DD');
+
       result.push(ds.dataValues);
     });
     return result;

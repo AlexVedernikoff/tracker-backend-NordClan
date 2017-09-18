@@ -125,38 +125,43 @@ exports.getTracks = async function (req, res, next) {
  *  Функция загрузки треков на неделю 
  */
 exports.getTracksAll = async function (req, res, next) {
-  const result = {};
-  const startDate = req.query.startDate;
-  const endDate = req.query.endDate;
-  const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
-  await Promise.all(dateArr.map(async (onDate) => {
-    req.query.onDate = onDate;
-    const tracks =  await this.getTracks(req, res, next);
-    // пройти по трекам
-    const scales = {};
-    tracks.tracks.map(track => {
-      models.TimesheetTypesDictionary.values.map(value => {
-        if (track.typeId == value.id) {
-          if (scales.hasOwnProperty(value.id)) {
-            scales[value.id] = +scales[value.id] + +track.spentTime;
-          } else {
-            scales[value.id] = 0;
-            scales[value.id] = +scales[value.id] + +track.spentTime;
+  try {
+    const result = {};
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+    const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
+    await Promise.all(dateArr.map(async (onDate) => {
+      req.query.onDate = onDate;
+      const tracks =  await this.getTracks(req, res, next);
+      // пройти по трекам
+      const scales = {};
+      tracks.tracks.map(track => {
+        models.TimesheetTypesDictionary.values.map(value => {
+          if (track.typeId == value.id) {
+            if (scales.hasOwnProperty(value.id)) {
+              scales[value.id] = +scales[value.id] + +track.spentTime;
+            } else {
+              scales[value.id] = 0;
+              scales[value.id] = +scales[value.id] + +track.spentTime;
+            }
           }
-        }
+        });
       });
-    });
-    let sum = 0;
-    Object.keys(scales).map(key => {
-      sum += +scales[key];
-    });
-    Object.assign(scales, {all: sum});
-    let tr = tracks.tracks;
-    result[onDate] = { tracks: tr, scales};
-    return;
-  }));
+      let sum = 0;
+      Object.keys(scales).map(key => {
+        sum += +scales[key];
+      });
+      Object.assign(scales, {all: sum});
+      let tr = tracks.tracks;
+      result[onDate] = { tracks: tr, scales};
+      return;
+    }));
 
-  res.json(result);
+    res.json(result);
+  } catch (e) {
+    return next(createError(e));
+  }
+
 };
 
 /**
