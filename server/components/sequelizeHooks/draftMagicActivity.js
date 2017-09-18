@@ -1,31 +1,38 @@
-const moment = require('moment');
 
 exports.createDraftMagicActivity = (instance, options) => {
   const draftModel = instance.$modelOptions.sequelize.models.TimesheetDraft;
-
   const draftsObjects = generateDrafts(instance);
-  return draftModel.create(draftsObjects[0])
+
+  /*почему не работает bulkCreate, по этому Promise.all*/
+  return Promise.all(draftsObjects.map((el) => {
+    return draftModel.create(el, { transaction: options.transaction});
+  }))
     .catch((e)=>{
-      console.error(e);
       throw e;
     });
 
 };
 
-function generateDrafts(instance) {
-  const currentDate = moment().format('YYYY-MM-DD');
-  const magicActivities = instance.$modelOptions.sequelize.models.TimesheetTypesDictionary.magicActivities;
-  let result = [];
 
-  magicActivities.forEach((el) => {
-    result.push({
-      onDate: currentDate,
+
+
+exports.destroyDraftMagicActivity = (instance, options) => {
+  const draftModel = instance.$modelOptions.sequelize.models.TimesheetDraft;
+
+  return draftModel.destroy({
+    where: {
       projectId: instance.id,
       userId: instance.userId,
-      typeId: el,
-    });
+    },
   });
+};
 
-  return result;
+function generateDrafts(instance) {
+  const magicActivities = instance.$modelOptions.sequelize.models.TimesheetTypesDictionary.magicActivities;
 
+  return magicActivities.map((el) => ({
+    projectId: instance.id,
+    userId: instance.userId,
+    typeId: el,
+  }));
 }

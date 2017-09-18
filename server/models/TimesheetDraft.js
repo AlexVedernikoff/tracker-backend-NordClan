@@ -52,12 +52,12 @@ module.exports = function (sequelize, DataTypes) {
     isBillible: {
       field: 'is_billible',
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: true
     },
     userRoleId: {
       field: 'user_role_id',
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     taskStatusId: {
       type: DataTypes.INTEGER,

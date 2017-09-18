@@ -67,6 +67,7 @@ module.exports = function(sequelize, DataTypes) {
   };
 
   ProjectUsers.addHook('afterCreate', 'createDraftMagicActivity', hooks.createDraftMagicActivity);
+  ProjectUsers.addHook('afterDestroy', 'destroyDraftMagicActivity', hooks.destroyDraftMagicActivity);
 
   return ProjectUsers;
 };
