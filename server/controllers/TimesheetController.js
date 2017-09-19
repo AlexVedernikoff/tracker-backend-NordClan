@@ -168,6 +168,15 @@ exports.getTracksAll = async function (req, res, next) {
  * Функция поиска драфтшита его удаления и создание нового таймшита
  */
 exports.setDraftTimesheetTime = async function (req, res, next) {
+  let t;
+
+  try {
+    t = await Sequelize.transaction();
+  } catch (e) {
+    return next(createError(e));
+  }
+
+
   try {
     delete req.body.isDraft;
     let tmp = {};
@@ -179,13 +188,15 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
 
-    const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-    await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`) }, {
-      where: {
-        id: task.dataValues.id
-      },
-      transaction: t
-    });
+    if (tmp.taskId) {
+      const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`) }, {
+        where: {
+          id: task.dataValues.id
+        },
+        transaction: t
+      });
+    }
 
     Object.assign(tmp, { spentTime: req.body.spentTime });
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
@@ -193,6 +204,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
 
     return await queries.timesheet.getTimesheet(createTs.dataValues.id);
   } catch (e) {
+    await t.rollback();
     return next(createError(e));
   }
 };

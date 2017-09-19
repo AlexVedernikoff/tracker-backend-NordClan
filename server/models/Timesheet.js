@@ -13,12 +13,12 @@ module.exports = function (sequelize, DataTypes) {
     sprintId: {
       field: 'sprint_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     userId: {
       field: 'user_id',
@@ -56,17 +56,17 @@ module.exports = function (sequelize, DataTypes) {
     userRoleId: {
       field: 'user_role_id',
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',
-      allowNull: false,
+      allowNull: true,
     },
     statusId: {
       type: DataTypes.INTEGER,
       field: 'status_id',
-      allowNull: false,
+      allowNull: true,
     },
     isVisible: {
       field: 'is_visible',
