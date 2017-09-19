@@ -181,11 +181,10 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     delete req.body.isDraft;
     let tmp = {};
     const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-    if (!draftsheet || draftsheet.length === 0) return;
+    if (!draftsheet || draftsheet.length === 0) {await t.rollback(); return next(createError(404, 'Drafts not found'));}
     Object.assign(tmp, draftsheet[0]);
 
-    const t = await Sequelize.transaction();
-    await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     delete tmp.id;
 
     if (tmp.taskId) {
@@ -198,6 +197,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
       });
     }
 
+    tmp = await setAdditionalInfo(tmp);
     Object.assign(tmp, { spentTime: req.body.spentTime });
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
@@ -225,7 +225,7 @@ exports.setTimesheetTime = async function (req, res, next) {
     let tmp = {};
     delete req.body.isDraft;
     let timesheet = await this.getTimesheets(req, res, next);
-    if (!timesheet) return next(createError(404, 'Timesheet not found'));
+    if (_.isEmpty(timesheet)) return next(createError(404, 'Timesheet not found'));
     Object.assign(tmp, timesheet[0]);
 
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
@@ -253,8 +253,7 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
   if (Boolean(req.body.isDraft) === true) {
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
-    }
-    if (req.body.comment || 'isVisible' in req.body) {
+    } else if (req.body.comment || 'isVisible' in req.body) {
       const newDate = {};
       if (req.body.comment) newDate.comment = req.body.comment;
       if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
@@ -412,3 +411,25 @@ exports.list = async function (req, res, next) {
     return next(e);
   }
 };
+
+async function setAdditionalInfo(tmp) {
+  tmp.userRoleId = null;
+  tmp.isBillible = false;
+
+  if (tmp.projectId) {
+    const roles = await queries.projectUsers.getUserRolesByProject();
+
+    if (roles) {
+      tmp.isBillible = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      const index = roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      if (index > -1) roles.splice(index, 1);
+      tmp.userRoleId = roles;
+    }
+
+  }
+
+
+  console.log(tmp);
+
+  return tmp;
+}

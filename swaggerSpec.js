@@ -1718,7 +1718,11 @@ module.exports = {
             name: 'sheetId',
             type: 'integer',
             in: 'path',
-            required: true
+          },
+          {
+            name: 'typeId',
+            type: 'integer',
+            in: 'path',
           },
           {
             name: 'spentTime',

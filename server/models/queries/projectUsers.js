@@ -43,7 +43,6 @@ exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesI
 
 
 exports.getUserRolesByProject = function (projectId, userId, t = null) {
-  let response = [];
 
   return models.ProjectUsers
     .findAll({
@@ -65,8 +64,6 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 
 
 
-
-
 function getTransRolesToObject(rolesIds) {
   const result = {};
   if (rolesIds) rolesIds = rolesIds.map((el) => +el);
@@ -78,4 +75,4 @@ function getTransRolesToObject(rolesIds) {
   });
 
   return result;
-};
+}
