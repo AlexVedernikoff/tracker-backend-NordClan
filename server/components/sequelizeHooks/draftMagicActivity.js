@@ -20,7 +20,7 @@ exports.destroyDraftMagicActivity = (instance, options) => {
 
   return draftModel.destroy({
     where: {
-      projectId: instance.id,
+      projectId: instance.projectId,
       userId: instance.userId,
     },
   });
@@ -30,7 +30,7 @@ function generateDrafts(instance) {
   const magicActivities = instance.$modelOptions.sequelize.models.TimesheetTypesDictionary.magicActivities;
 
   return magicActivities.map((el) => ({
-    projectId: instance.id,
+    projectId: instance.projectId,
     userId: instance.userId,
     typeId: el,
   }));

@@ -87,14 +87,28 @@ exports.getDrafts = async function (req, res, next) {
           required: false,
           attributes: ['id', 'name'],
           paranoid: false
-        }
+        },
+        {
+          as: 'projectMaginActivity',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false,
+        },
       ]
     });
     let result = [];
     draftsheets.map(ds => {
-      Object.assign(ds.dataValues, { project: ds.dataValues.task ? ds.dataValues.task.dataValues.project : null, isDraft: true });
+      Object.assign(ds.dataValues, { project: ds.dataValues.task ? ds.dataValues.task.dataValues.project : null });
       if (ds.dataValues.task) delete ds.dataValues.task.dataValues.project;
       if (!ds.onDate) ds.dataValues.onDate = moment().format('YYYY-MM-DD');
+
+      if (ds.dataValues.projectMaginActivity) {
+        Object.assign(ds.dataValues, { project: ds.dataValues.projectMaginActivity.dataValues });
+        delete ds.dataValues.projectMaginActivity;
+      }
+
+      ds.dataValues.isDraft = true;
 
       result.push(ds.dataValues);
     });

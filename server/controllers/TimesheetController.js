@@ -5,7 +5,6 @@ const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
-const dateArray = require('moment-array-dates');
 
 /**
  * Функция поиска таймшитов
@@ -40,21 +39,21 @@ exports.getTimesheets = async function (req, res, next) {
         {
           as: 'task',
           model: models.Task,
-          required: true,
+          required: false,
           attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
           paranoid: false,
           include: [
             {
               as: 'project',
               model: models.Project,
-              required: true,
+              required: false,
               attributes: ['id', 'name'],
               paranoid: false,
             },
             {
               as: 'taskStatus',
               model: models.TaskStatusesDictionary,
-              required: true,
+              required: false,
               attributes: ['id', 'name'],
               paranoid: false,
             }
@@ -63,17 +62,34 @@ exports.getTimesheets = async function (req, res, next) {
         {
           as: 'taskStatus',
           model: models.TaskStatusesDictionary,
-          required: true,
+          required: false,
           attributes: ['id', 'name'],
           paranoid: false
-        }
+        },
+        {
+          as: 'projectMaginActivity',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false,
+        },
       ]
     });
     let result = [];
     timesheets.map(ds => {
-      Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: false });
+
+      if (ds.dataValues.task && ds.dataValues.task.dataValues.project) {
+        Object.assign(ds.dataValues, { project: ds.dataValues.task.dataValues.project, isDraft: false });
+        delete ds.dataValues.task.dataValues.project;
+      }
+
+      if (ds.dataValues.projectMaginActivity) {
+        Object.assign(ds.dataValues, { project: ds.dataValues.projectMaginActivity.dataValues, isDraft: false });
+        delete ds.dataValues.projectMaginActivity;
+      }
+
+
       ds.dataValues.onDate =  ds.onDate;
-      delete ds.dataValues.task.dataValues.project;
       result.push(ds.dataValues);
     });
     return result;
@@ -109,9 +125,8 @@ exports.getTracksOnOtherDay = async function (req, res, next) {
  *  Функция составления треков для трекера
  */
 exports.getTracks = async function (req, res, next) {
-  let now = new Date();
   let result;
-  let today = moment(now).format('YYYY-MM-DD');
+  const today = moment().format('YYYY-MM-DD');
   req.query.userId = req.user.id;
   if (moment(req.query.onDate).isSame(today)) {
     result = await this.getTracksOnCurrentDay(req, res, next);
@@ -125,11 +140,35 @@ exports.getTracks = async function (req, res, next) {
  *  Функция загрузки треков на неделю 
  */
 exports.getTracksAll = async function (req, res, next) {
+
+  function pushDates(difference, end, format) {
+    const arr = [];
+    for(let i = 0; i < difference; i++) {
+      arr.push(end.subtract(1, 'd').format(format));
+    }
+    return arr;
+  }
+
+
   try {
     const result = {};
-    const startDate = req.query.startDate;
-    const endDate = req.query.endDate;
-    const dateArr = dateArray.range(startDate, endDate, 'YYYY-MM-DD', true);
+
+    // Отрефакторить это
+    const dateFormat = 'YYYY-MM-DD';
+    let dates = [];
+    const start = moment(req.query.startDate);
+    const end = moment(req.query.endDate);
+
+    const difference = end.diff(start, 'days');
+
+    if (!start.isValid() || !end.isValid() || difference <= 0) {
+      throw Error("Invalid dates specified. Please check format and or make sure that the dates are different");
+    }
+    dates.push(end.format(dateFormat));
+
+    const dateArr = dates.concat(pushDates(difference, end, dateFormat));
+
+
     await Promise.all(dateArr.map(async (onDate) => {
       req.query.onDate = onDate;
       const tracks =  await this.getTracks(req, res, next);
@@ -180,13 +219,27 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   try {
     delete req.body.isDraft;
     let tmp = {};
-    const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-    if (!draftsheet || draftsheet.length === 0) {await t.rollback(); return next(createError(404, 'Drafts not found'));}
-    Object.assign(tmp, draftsheet[0]);
 
-    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+
+    if (req.params.sheetId) {
+      const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+      console.log(draftsheet);
+      if (!draftsheet || draftsheet.length === 0) {
+        await t.rollback();
+        return next(createError(404, 'Drafts not found'));
+      }
+      Object.assign(tmp, draftsheet[0]);
+
+
+    } else {
+      Object.assign(tmp, req.body);
+    }
+
+
     delete tmp.id;
-
+    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+      await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
+    }
     if (tmp.taskId) {
       const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`) }, {
@@ -197,7 +250,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
       });
     }
 
-    tmp = await setAdditionalInfo(tmp);
+    tmp = await setAdditionalInfo(tmp, req);
     Object.assign(tmp, { spentTime: req.body.spentTime });
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
@@ -268,8 +321,7 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
   } else {
     if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
-    }
-    if (req.body.comment || 'isVisible' in req.body) {
+    } else if (req.body.comment || 'isVisible' in req.body) {
       const newDate = {};
       if (req.body.comment) newDate.comment = req.body.comment;
       if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
@@ -412,7 +464,7 @@ exports.list = async function (req, res, next) {
   }
 };
 
-async function setAdditionalInfo(tmp) {
+async function setAdditionalInfo(tmp, req) {
   tmp.userRoleId = null;
   tmp.isBillible = false;
 
@@ -428,7 +480,16 @@ async function setAdditionalInfo(tmp) {
 
   }
 
+  if (!tmp.userId) {
+    tmp.userId = req.user.id;
+  }
 
+  if (!tmp.onDate) {
+    tmp.onDate = moment().format('YYYY-MM-DD');
+  }
+
+
+  console.log(1);
   console.log(tmp);
 
   return tmp;

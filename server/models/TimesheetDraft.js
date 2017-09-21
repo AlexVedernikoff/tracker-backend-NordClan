@@ -94,6 +94,15 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
+    TimesheetDraft.belongsTo(models.Project, {
+      as: 'projectMaginActivity',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id',
+        allowNull: true,
+      }
+    });
+
     TimesheetDraft.belongsTo(models.User, {
       as: 'user',
       foreignKey: {

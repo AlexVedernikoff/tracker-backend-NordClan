@@ -86,6 +86,7 @@ router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.update
 router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController));
 router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
 router.put('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.put('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
 
 // Comments
 router.post('/task/:taskId/comment', CommentController.create);

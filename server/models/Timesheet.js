@@ -43,7 +43,7 @@ module.exports = function (sequelize, DataTypes) {
     comment: {
       type: DataTypes.TEXT,
       trim: true,
-      allowNull: false,
+      allowNull: true,
       // validate: {
       //   len: [1, 500]
       // }
@@ -96,6 +96,15 @@ module.exports = function (sequelize, DataTypes) {
         name: 'taskId',
         field: 'task_id',
         allowNull: false,
+      }
+    });
+
+    Timesheet.belongsTo(models.Project, {
+      as: 'projectMaginActivity',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id',
+        allowNull: true,
       }
     });
 

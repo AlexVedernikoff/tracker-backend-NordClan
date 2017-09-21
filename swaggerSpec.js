@@ -1707,7 +1707,53 @@ module.exports = {
       }
     },
 
-
+    '/timesheet/': {
+      put: {
+        tags: ['Tracks'],
+        summary: 'Изменение возможной информации о треке',
+        parameters: [
+          {
+            name: 'sheetId',
+            type: 'integer',
+            in: 'path',
+          },
+          {
+            name: 'typeId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'spentTime',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'isDraft',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData'
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData'
+          },
+        ],
+        responses: responsesCodes
+      }
+    },
 
     '/timesheet/{sheetId}/': {
       put: {
