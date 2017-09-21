@@ -141,6 +141,7 @@ exports.getTracks = async function (req, res, next) {
  */
 exports.getTracksAll = async function (req, res, next) {
 
+  // Это безобразие с датами надо переписать
   function pushDates(difference, end, format) {
     const arr = [];
     for(let i = 0; i < difference; i++) {
@@ -154,6 +155,7 @@ exports.getTracksAll = async function (req, res, next) {
     const result = {};
 
     // Отрефакторить это
+    // Это безобразие с датами надо переписать
     const dateFormat = 'YYYY-MM-DD';
     let dates = [];
     const start = moment(req.query.startDate);
