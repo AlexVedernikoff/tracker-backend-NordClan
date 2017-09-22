@@ -225,7 +225,6 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
 
     if (req.params.sheetId) {
       const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-      console.log(draftsheet);
       if (!draftsheet || draftsheet.length === 0) {
         await t.rollback();
         return next(createError(404, 'Drafts not found'));
@@ -355,7 +354,7 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
 };
 
 /**
- * @deprecated
+ * @deprecated create
  */
 exports.create = async function (req, res, next) {
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
@@ -369,7 +368,9 @@ exports.create = async function (req, res, next) {
     return next(e);
   }
 };
-
+/**
+ * @deprecated update
+ */
 exports.update = async function (req, res, next) {
   if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
   try {
@@ -489,10 +490,6 @@ async function setAdditionalInfo(tmp, req) {
   if (!tmp.onDate) {
     tmp.onDate = moment().format('YYYY-MM-DD');
   }
-
-
-  console.log(1);
-  console.log(tmp);
 
   return tmp;
 }

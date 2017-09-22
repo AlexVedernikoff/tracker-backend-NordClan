@@ -1527,7 +1527,7 @@ module.exports = {
     '/task/{taskId}/timesheetDraft/': {
       post: {
         tags: ['TimesheetsDraft'],
-        summary: 'Создать драфт-таймшит для пользователя',
+        summary: 'Создать драфт-таймшит для пользователя (deprecated)',
         parameters: [
           {
             name: 'taskId',
@@ -1708,14 +1708,76 @@ module.exports = {
     },
 
     '/timesheet/': {
-      put: {
+      post: {
         tags: ['Tracks'],
-        summary: 'Изменение возможной информации о треке',
+        summary: 'Создание тш из драфта или напрямую',
+        description: 'Использовать для создания тш напряму или через драфт. Если через драфт, то указать sheetId и поле isDraft = true ',
         parameters: [
           {
             name: 'sheetId',
             type: 'integer',
             in: 'path',
+          },
+          {
+            name: 'isDraft',
+            type: 'boolean',
+            in: 'formData',
+          },
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'typeId',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'spentTime',
+            type: 'integer',
+            in: 'formData'
+          },
+
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData'
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData'
+          },
+        ],
+        responses: responsesCodes
+      },
+      put: {
+        tags: ['Tracks'],
+        summary: 'Изменение возможной информации о треке',
+        description: 'yyyy-mm-dd',
+        parameters: [
+          {
+            name: 'sheetId',
+            type: 'integer',
+            in: 'formData',
           },
           {
             name: 'typeId',
@@ -1768,7 +1830,7 @@ module.exports = {
           {
             name: 'typeId',
             type: 'integer',
-            in: 'path',
+            in: 'formData',
           },
           {
             name: 'spentTime',
