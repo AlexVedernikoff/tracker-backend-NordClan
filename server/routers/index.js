@@ -71,23 +71,14 @@ router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
 // Timesheets
-router.post('/task/:taskId/timesheet', TimesheetController.create);
-router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update); // Deprecated
-router.delete('/task/:taskId/timesheet/:timesheetId', TimesheetController.delete);
-router.get('/task/timesheet/getTimesheets', TimesheetController.list);
-router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
-
-// TimesheetsDraft
-router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft);
-router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts);
-router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible);
-
-//Tracks
-router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController));
-router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
-router.put('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
-router.put('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
 router.post('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
+router.get('/timesheet', TimesheetController.list);
+router.get('/task/timesheet/getTimesheets', TimesheetController.list);// Deprecated. но еще используется, аналог /timesheet
+router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible); // Deprecated. но еще используется
+router.put('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController)); // Deprecated. но еще используется
+router.put('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.delete('/timesheet/:timesheetId', TimesheetController.delete);
 
 // Comments
 router.post('/task/:taskId/comment', CommentController.create);
@@ -98,7 +89,8 @@ router.get('/task/:taskId/comment', CommentController.list);
 // dictionaries
 router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
 router.get('/project/roles/dictionary', DictionaryController.projectRoles);
-router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes);
+router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes);
+router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated
 
 // Attachments
 router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
@@ -107,5 +99,13 @@ router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', Uploa
 // ModelHistory
 router.get('/:entity(project|task)/:entityId/history', ModelHistoryController.list);
 
+// Deprecated
+router.post('/task/:taskId/timesheet', TimesheetController.create); // Deprecated
+router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update); // Deprecated
+router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
+router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController)); // Deprecated
+// TimesheetsDraft, системные?
+router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft); // Deprecated
+router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts); // Deprecated
 
 module.exports = router;

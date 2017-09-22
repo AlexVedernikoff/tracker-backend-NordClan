@@ -1197,207 +1197,6 @@ module.exports = {
         ]
       }
     },
-    '/task/{taskId}/timesheet/': {
-      post: {
-        tags: ['Timesheets'],
-        summary: 'Создать таймшит для текущего пользователя',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'sprintId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'onDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'typeId',
-            description: 'Тип активности (см. словарь)',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'spentTime',
-            description: 'Потраченное время',
-            type: 'numeric',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'comment',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'isBillible',
-            type: 'boolean',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'userRoleId',
-            description: 'Через запятую без пробелов перечислить id',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'taskStatusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
-    '/task/timesheet/getTimesheets': {
-      get: {
-        tags: ['Timesheets'],
-        summary: 'Получить таймшиты',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'query'
-          },
-          {
-            name: 'userId',
-            type: 'integer',
-            in: 'query',
-            required: true
-          },
-          {
-            name: 'dateBegin',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'query',
-            required: true
-          },
-          {
-            name: 'dateEnd',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'query',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
-    '/task/{taskId}/timesheet/{timesheetId}': {
-      put: {
-        tags: ['Timesheets'],
-        summary: 'Изменить таймшит для текущего пользователя',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'timesheetId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'onDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData',
-          },
-          {
-            name: 'typeId',
-            description: 'Тип активности (см. словарь)',
-            type: 'integer',
-            in: 'formData',
-          },
-          {
-            name: 'spentTime',
-            description: 'Потраченное время',
-            type: 'number',
-            format: 'float',
-            in: 'formData',
-          },
-          {
-            name: 'comment',
-            type: 'string',
-            in: 'formData',
-          },
-          {
-            name: 'isBillible',
-            type: 'boolean',
-            in: 'formData'
-          },
-          {
-            name: 'isVisible',
-            type: 'boolean',
-            description: 'Определяет нахождение таймшита под катом или над катом',
-            in: 'formData'
-          },
-          {
-            name: 'userRoleId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'taskStatusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData'
-          },
-        ],
-        responses: responsesCodes
-      },
-      delete: {
-        tags: ['Timesheets'],
-        summary: 'Удалить тайм шит для текущего пользователя',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'timesheetId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
     '/task/{taskId}/history': {
       get: {
         tags: ['Tasks'],
@@ -1524,9 +1323,9 @@ module.exports = {
     },
 
 
-    '/task/{taskId}/timesheetDraft/': {
+    /*'/task/{taskId}/timesheetDraft/': {
       post: {
-        tags: ['TimesheetsDraft'],
+        tags: ['Timesheets'],
         summary: 'Создать драфт-таймшит для пользователя (deprecated)',
         parameters: [
           {
@@ -1595,13 +1394,13 @@ module.exports = {
         ],
         responses: responsesCodes
       }
-    },
+    },*/
 
 
     '/timesheetDraft/{timesheetDraftId}/': {
       put: {
-        tags: ['TimesheetsDraft'],
-        summary: 'Изменяет видимость драфтшита',
+        tags: ['Timesheets'],
+        summary: 'Изменяет видимость драфтшита (deprecated, но еще используется)',
         parameters: [
           {
             name: 'timesheetDraftId',
@@ -1620,10 +1419,10 @@ module.exports = {
       }
     },
 
-    '/timesheet/tracks/': {
+    /*'/timesheet/tracks/': {
       get: {
-        tags: ['Tracks'],
-        summary: 'Получить треки для текущего пользователя в конкретный день',
+        tags: ['Timesheets'],
+        summary: 'Получить треки для текущего пользователя в конкретный день (deprecated)',
         parameters: [
           {
             name: 'onDate',
@@ -1636,12 +1435,12 @@ module.exports = {
         ],
         responses: responsesCodes
       }
-    },
+    },*/
 
     '/timesheet/tracksAll/': {
       get: {
-        tags: ['Tracks'],
-        summary: 'Получить треки для текущего пользователя на неделю',
+        tags: ['Timesheets'],
+        summary: 'Получить тш с драфтами для текущего пользователя',
         parameters: [
           {
             name: 'startDate',
@@ -1663,17 +1462,11 @@ module.exports = {
         responses: responsesCodes
       }
     },
-    '/task/timesheet/types/dictionary': {
-      get: {
-        tags: ['Timesheets'],
-        summary: 'Справочник типов активности в тайм шитах',
-        responses: responsesCodes,
-      },
-    },
+
     '/timesheet/{taskId}/setTime/': {
-      post: {
+      /*post: {
         tags: ['Timesheets'],
-        summary: 'Заполнить таймшит в UI таблице таймшитов',
+        summary: 'Заполнить таймшит в UI таблице таймшитов (depricated)',
         parameters: [
           {
             name: 'taskId',
@@ -1704,12 +1497,41 @@ module.exports = {
           }
         ],
         responses: responsesCodes
-      }
+      }*/
     },
 
     '/timesheet/': {
+      get: {
+        tags: ['Timesheets'],
+        summary: 'Получить таймшиты без драфтов',
+        parameters: [
+          {
+            name: 'userId',
+            type: 'integer',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'dateBegin',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'dateEnd',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
       post: {
-        tags: ['Tracks'],
+        tags: ['Timesheets'],
         summary: 'Создание тш из драфта или напрямую',
         description: 'Использовать для создания тш напряму или через драфт. Если через драфт, то указать sheetId и поле isDraft = true ',
         parameters: [
@@ -1770,8 +1592,8 @@ module.exports = {
         responses: responsesCodes
       },
       put: {
-        tags: ['Tracks'],
-        summary: 'Изменение возможной информации о треке',
+        tags: ['Timesheets'],
+        summary: 'Изменение информации таймшит или драфте',
         description: 'yyyy-mm-dd',
         parameters: [
           {
@@ -1819,8 +1641,8 @@ module.exports = {
 
     '/timesheet/{sheetId}/': {
       put: {
-        tags: ['Tracks'],
-        summary: 'Изменение возможной информации о треке',
+        tags: ['Timesheets'],
+        summary: 'Изменение информации таймшит или драфте (deprecated, но еще используется)',
         parameters: [
           {
             name: 'sheetId',
@@ -1856,6 +1678,172 @@ module.exports = {
         ],
         responses: responsesCodes
       }
+    },
+    /*'/task/{taskId}/timesheet/': {
+      post: {
+        tags: ['Timesheets'],
+        summary: 'Создать таймшит для текущего пользователя (deprecated)',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'sprintId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'typeId',
+            description: 'Тип активности (см. словарь)',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'spentTime',
+            description: 'Потраченное время',
+            type: 'numeric',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'userRoleId',
+            description: 'Через запятую без пробелов перечислить id',
+            type: 'string',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+    },*/
+    '/timesheet/{timesheetId}': {
+      /*put: {
+        tags: ['Timesheets'],
+        summary: 'Изменить таймшит для текущего пользователя (deprecated)',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'timesheetId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'onDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'formData',
+          },
+          {
+            name: 'typeId',
+            description: 'Тип активности (см. словарь)',
+            type: 'integer',
+            in: 'formData',
+          },
+          {
+            name: 'spentTime',
+            description: 'Потраченное время',
+            type: 'number',
+            format: 'float',
+            in: 'formData',
+          },
+          {
+            name: 'comment',
+            type: 'string',
+            in: 'formData',
+          },
+          {
+            name: 'isBillible',
+            type: 'boolean',
+            in: 'formData'
+          },
+          {
+            name: 'isVisible',
+            type: 'boolean',
+            description: 'Определяет нахождение таймшита под катом или над катом',
+            in: 'formData'
+          },
+          {
+            name: 'userRoleId',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'taskStatusId',
+            type: 'integer',
+            in: 'formData'
+          },
+          {
+            name: 'statusId',
+            type: 'integer',
+            in: 'formData'
+          },
+        ],
+        responses: responsesCodes
+      },*/
+      delete: {
+        tags: ['Timesheets'],
+        summary: 'Удалить таймшит для текущего пользователя',
+        parameters: [
+          {
+            name: 'timesheetId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+        ],
+        responses: responsesCodes
+      },
+      'timesheet/types/dictionary': {
+        get: {
+          tags: ['Timesheets'],
+          summary: 'Справочник типов активности в таймшитах',
+          responses: responsesCodes,
+        },
+      },
     },
 
   },

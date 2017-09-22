@@ -22,6 +22,12 @@ exports.getTimesheets = async function (req, res, next) {
     if (req.params && req.params.sheetId) {
       Object.assign(where, { id: { $eq: req.params.sheetId } });
     }
+    /*    if (req.query && req.query.sheetId) {
+      Object.assign(where, { id: { $eq: req.query.sheetId } });
+    }
+    if (req.body && req.body.sheetId) {
+      Object.assign(where, { id: { $eq: req.body.sheetId } });
+    }*/
     if (req.query.taskId) {
       Object.assign(where, { taskId: { $eq: req.query.taskId } });
     }
@@ -164,7 +170,7 @@ exports.getTracksAll = async function (req, res, next) {
     const difference = end.diff(start, 'days');
 
     if (!start.isValid() || !end.isValid() || difference <= 0) {
-      throw Error("Invalid dates specified. Please check format and or make sure that the dates are different");
+      throw Error('Invalid dates specified. Please check format and or make sure that the dates are different');
     }
     dates.push(end.format(dateFormat));
 
@@ -210,6 +216,7 @@ exports.getTracksAll = async function (req, res, next) {
  */
 exports.setDraftTimesheetTime = async function (req, res, next) {
   let t;
+  console.log('Функция поиска драфтшита его удаления и создание нового таймшита');
 
   try {
     t = await Sequelize.transaction();
@@ -267,6 +274,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
  * Функция поиска и обновления таймшита
  */
 exports.setTimesheetTime = async function (req, res, next) {
+  console.log('Функция поиска и обновления таймшита');
   let t;
 
   try {
@@ -281,10 +289,13 @@ exports.setTimesheetTime = async function (req, res, next) {
     let timesheet = await this.getTimesheets(req, res, next);
     if (_.isEmpty(timesheet)) return next(createError(404, 'Timesheet not found'));
     Object.assign(tmp, timesheet[0]);
-
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
-    let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-    await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
+
+    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+      let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
+    }
+
     await t.commit();
 
     return await queries.timesheet.getTimesheet(tmp.id);
@@ -300,11 +311,13 @@ exports.setTimesheetTime = async function (req, res, next) {
  */
 
 exports.setTrackTimesheetTime = async function (req, res, next) {
+
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
 
   let result;
   req.query.userId = req.user.id;
-  if (Boolean(req.body.isDraft) === true) {
+  if (req.body.isDraft == 'true') {
+    console.log('isDraft true');
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
     } else if (req.body.comment || 'isVisible' in req.body) {
@@ -320,6 +333,7 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
     }
     res.json(result);
   } else {
+    console.log('isDraft false');
     if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     } else if (req.body.comment || 'isVisible' in req.body) {
@@ -386,9 +400,9 @@ exports.update = async function (req, res, next) {
 
 exports.delete = async function (req, res, next) {
   if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
+
   try {
-    let timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
-    if (!timesheetModel) return next(createError(404, 'Timesheet not found'));
+    const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
     await timesheetModel.destroy();
     res.end();
   } catch (e) {

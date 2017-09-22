@@ -9,26 +9,11 @@ exports.canUserChangeTimesheet = function(userId, timesheetId) {
   
   return models.Timesheet
     .findOne({
-      required: true,
       where: {
         id: timesheetId,
         statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS,
       },
       attributes: ['id', 'typeId', 'onDate', 'statusId'],
-      include: [
-        {
-          as: 'task',
-          model: models.Task,
-          required: true,
-          attributes: [],
-          where: {
-            statusId: {
-              $notIn: models.TaskStatusesDictionary.NOT_AVAILABLE_STATUSES
-            },
-            performerId: userId,
-          },
-        }
-      ],
     })
     .then((model) => {
       if(!model) throw createError(404, 'User can\'t change timesheet');
