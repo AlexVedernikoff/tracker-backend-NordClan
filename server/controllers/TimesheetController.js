@@ -258,7 +258,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
       });
     }
 
-    tmp = await setAdditionalInfo(tmp, req);
+    tmp = await _setAdditionalInfo(tmp, req);
     Object.assign(tmp, { spentTime: req.body.spentTime });
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
@@ -269,6 +269,33 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     return next(createError(e));
   }
 };
+
+async function _setAdditionalInfo(tmp, req) {
+  tmp.userRoleId = null;
+  tmp.isBillible = false;
+
+  if (tmp.projectId) {
+    const roles = await queries.projectUsers.getUserRolesByProject();
+
+    if (roles) {
+      tmp.isBillible = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      const index = roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      if (index > -1) roles.splice(index, 1);
+      tmp.userRoleId = roles;
+    }
+
+  }
+
+  if (!tmp.userId) {
+    tmp.userId = req.user.id;
+  }
+
+  if (!tmp.onDate) {
+    tmp.onDate = moment().format('YYYY-MM-DD');
+  }
+
+  return tmp;
+}
 
 /**
  * Функция поиска и обновления таймшита
@@ -410,100 +437,90 @@ exports.delete = async function (req, res, next) {
   }
 };
 
-exports.list = async function (req, res, next) {
-  if (req.query.dateBegin && !req.query.dateBegin.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
-  if (req.query.dateEnd && !req.query.dateEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
-  //if (req.params.taskId && !req.params.taskId.match(/^\d+$/)) return next(createError(400, 'taskId must be int'));
-  if (req.query.userId && !req.query.userId.match(/^\d+$/)) return next(createError(400, 'userId must be int'));
-
-
-  let where = {
-    deletedAt: null
-  };
-
-  if (req.params.taskId) {
-    where.taskId = req.params.taskId;
-  }
-
-  if (req.query.userId) {
-    where.userId = req.query.userId;
-  }
-
-  if (req.query.dateBegin || req.query.dateEnd) {
-
-    where.onDate = {
-      $and: {}
-    };
-
-    if (req.query.dateBegin) {
-      where.onDate.$and.$gte = new Date(req.query.dateBegin);
-    }
-
-    if (req.query.dateEnd) {
-      where.onDate.$and.$lte = new Date(req.query.dateEnd);
-    }
-  }
-
+exports.actionList = async function (req, res, next) {
   try {
-    let timesheets = await models.Timesheet.findAll({
-      where: where,
-      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
-      order: [
-        ['createdAt', 'ASC']
-      ],
-      include: [
-        {
-          as: 'task',
-          model: models.Task,
-          required: true,
-          attributes: ['id', 'name'],
-          paranoid: false,
-          include: [
-            {
-              as: 'project',
-              model: models.Project,
-              required: true,
-              attributes: ['id', 'name'],
-              paranoid: false,
-            }
-          ]
-        }
-      ],
-    });
+    await _actionListReqValidate(req);
+    const where = await _actionListGetWhere(req);
+    const timesheets = await _actionListGetData(where);
+    res.json(_actionListTransformData(timesheets));
 
-    timesheets.forEach(model => {
-      model.project = model.task.project;
-      delete model.task.project;
-    });
-    res.json(timesheets);
   } catch (e) {
     return next(e);
   }
 };
 
-async function setAdditionalInfo(tmp, req) {
-  tmp.userRoleId = null;
-  tmp.isBillible = false;
+async function _actionListReqValidate(req) {
+  req.checkQuery('userId', 'userId must be int').isInt();
+  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
 
-  if (tmp.projectId) {
-    const roles = await queries.projectUsers.getUserRolesByProject();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) throw createError(400, validationResult);
+}
 
-    if (roles) {
-      tmp.isBillible = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
-      const index = roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
-      if (index > -1) roles.splice(index, 1);
-      tmp.userRoleId = roles;
+function _actionListGetWhere(req) {
+  return {
+    deletedAt: null,
+    userId: req.query.userId,
+    onDate: {
+      $and: {
+        $gte: new Date(req.query.dateBegin),
+        $lte: new Date(req.query.dateEnd),
+      }
+    }
+  };
+}
+
+async function _actionListGetData(where) {
+  return await models.Timesheet.findAll({
+    where: where,
+    attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+    order: [
+      ['createdAt', 'ASC']
+    ],
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false,
+          }
+        ]
+      },
+      {
+        as: 'projectMaginActivity',
+        model: models.Project,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false,
+      },
+    ],
+  });
+}
+
+function _actionListTransformData(timesheets) {
+
+  timesheets.forEach(model => {
+
+    if(model.task) {
+      model.project = model.task.project;
+      delete model.task.project;
     }
 
-  }
+    if (model.projectMaginActivity) {
+      model.project = model.projectMaginActivity;
+      delete model.projectMaginActivity;
+    }
 
-  if (!tmp.userId) {
-    tmp.userId = req.user.id;
-  }
+  });
 
-  if (!tmp.onDate) {
-    tmp.onDate = moment().format('YYYY-MM-DD');
-  }
-
-  return tmp;
+  return timesheets;
 }
