@@ -11,7 +11,8 @@ const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 exports.login = function(req, res, next){
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
-  
+  if (!req.headers.origin) return next(createError(401, 'header "origin" are required'));
+
   User.findOne({
     where: {
       login: req.body.login,
