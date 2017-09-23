@@ -344,7 +344,7 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
 
   let result;
   req.query.userId = req.user.id;
-  if (req.body.isDraft == 'true') {
+  if (''+req.body.isDraft == 'true') {
     console.log('isDraft true');
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
