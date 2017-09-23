@@ -10,8 +10,9 @@ const Sequelize = require('../orm/index');
  * Функция поиска таймшитов
  */
 exports.getTimesheets = async function (req, res, next) {
+  console.log('Функция поиска таймшитов (getTimesheets)');
   try {
-    let where = {
+    const where = {
       userId: req.query.userId,
       deletedAt: null
     };
@@ -22,6 +23,12 @@ exports.getTimesheets = async function (req, res, next) {
     if (req.params && req.params.sheetId) {
       Object.assign(where, { id: { $eq: req.params.sheetId } });
     }
+    if (req.query && req.query.sheetId) {
+      Object.assign(where, { id: { $eq: req.query.sheetId } });
+    }
+    if (req.body && req.body.sheetId) {
+      Object.assign(where, { id: { $eq: req.body.sheetId } });
+    }
     if (req.query.taskId) {
       Object.assign(where, { taskId: { $eq: req.query.taskId } });
     }
@@ -29,7 +36,7 @@ exports.getTimesheets = async function (req, res, next) {
       Object.assign(where, { taskStatusId: { $eq: req.query.taskStatusId } });
     }
 
-    let timesheets = await models.Timesheet.findAll({
+    const timesheets = await models.Timesheet.findAll({
       where: where,
       attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
       order: [
@@ -164,7 +171,7 @@ exports.getTracksAll = async function (req, res, next) {
     const difference = end.diff(start, 'days');
 
     if (!start.isValid() || !end.isValid() || difference <= 0) {
-      throw Error("Invalid dates specified. Please check format and or make sure that the dates are different");
+      throw Error('Invalid dates specified. Please check format and or make sure that the dates are different');
     }
     dates.push(end.format(dateFormat));
 
@@ -210,6 +217,7 @@ exports.getTracksAll = async function (req, res, next) {
  */
 exports.setDraftTimesheetTime = async function (req, res, next) {
   let t;
+  console.log('Функция поиска драфтшита его удаления и создание нового таймшита');
 
   try {
     t = await Sequelize.transaction();
@@ -251,7 +259,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
       });
     }
 
-    tmp = await setAdditionalInfo(tmp, req);
+    tmp = await _setAdditionalInfo(tmp, req);
     Object.assign(tmp, { spentTime: req.body.spentTime });
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
@@ -263,10 +271,38 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   }
 };
 
+async function _setAdditionalInfo(tmp, req) {
+  tmp.userRoleId = null;
+  tmp.isBillible = false;
+
+  if (tmp.projectId) {
+    const roles = await queries.projectUsers.getUserRolesByProject();
+
+    if (roles) {
+      tmp.isBillible = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      const index = roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      if (index > -1) roles.splice(index, 1);
+      tmp.userRoleId = roles;
+    }
+
+  }
+
+  if (!tmp.userId) {
+    tmp.userId = req.user.id;
+  }
+
+  if (!tmp.onDate) {
+    tmp.onDate = moment().format('YYYY-MM-DD');
+  }
+
+  return tmp;
+}
+
 /**
  * Функция поиска и обновления таймшита
  */
 exports.setTimesheetTime = async function (req, res, next) {
+  console.log('Функция поиска и обновления таймшита');
   let t;
 
   try {
@@ -281,10 +317,13 @@ exports.setTimesheetTime = async function (req, res, next) {
     let timesheet = await this.getTimesheets(req, res, next);
     if (_.isEmpty(timesheet)) return next(createError(404, 'Timesheet not found'));
     Object.assign(tmp, timesheet[0]);
-
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
-    let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
-    await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
+
+    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+      let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
+    }
+
     await t.commit();
 
     return await queries.timesheet.getTimesheet(tmp.id);
@@ -300,11 +339,13 @@ exports.setTimesheetTime = async function (req, res, next) {
  */
 
 exports.setTrackTimesheetTime = async function (req, res, next) {
+
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
 
   let result;
   req.query.userId = req.user.id;
-  if (Boolean(req.body.isDraft) === true) {
+  if (req.body.isDraft == 'true') {
+    console.log('isDraft true');
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
     } else if (req.body.comment || 'isVisible' in req.body) {
@@ -320,6 +361,7 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
     }
     res.json(result);
   } else {
+    console.log('isDraft false');
     if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     } else if (req.body.comment || 'isVisible' in req.body) {
@@ -386,9 +428,9 @@ exports.update = async function (req, res, next) {
 
 exports.delete = async function (req, res, next) {
   if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
+
   try {
-    let timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
-    if (!timesheetModel) return next(createError(404, 'Timesheet not found'));
+    const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
     await timesheetModel.destroy();
     res.end();
   } catch (e) {
@@ -396,100 +438,90 @@ exports.delete = async function (req, res, next) {
   }
 };
 
-exports.list = async function (req, res, next) {
-  if (req.query.dateBegin && !req.query.dateBegin.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
-  if (req.query.dateEnd && !req.query.dateEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
-  //if (req.params.taskId && !req.params.taskId.match(/^\d+$/)) return next(createError(400, 'taskId must be int'));
-  if (req.query.userId && !req.query.userId.match(/^\d+$/)) return next(createError(400, 'userId must be int'));
-
-
-  let where = {
-    deletedAt: null
-  };
-
-  if (req.params.taskId) {
-    where.taskId = req.params.taskId;
-  }
-
-  if (req.query.userId) {
-    where.userId = req.query.userId;
-  }
-
-  if (req.query.dateBegin || req.query.dateEnd) {
-
-    where.onDate = {
-      $and: {}
-    };
-
-    if (req.query.dateBegin) {
-      where.onDate.$and.$gte = new Date(req.query.dateBegin);
-    }
-
-    if (req.query.dateEnd) {
-      where.onDate.$and.$lte = new Date(req.query.dateEnd);
-    }
-  }
-
+exports.actionList = async function (req, res, next) {
   try {
-    let timesheets = await models.Timesheet.findAll({
-      where: where,
-      attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
-      order: [
-        ['createdAt', 'ASC']
-      ],
-      include: [
-        {
-          as: 'task',
-          model: models.Task,
-          required: true,
-          attributes: ['id', 'name'],
-          paranoid: false,
-          include: [
-            {
-              as: 'project',
-              model: models.Project,
-              required: true,
-              attributes: ['id', 'name'],
-              paranoid: false,
-            }
-          ]
-        }
-      ],
-    });
+    await _actionListReqValidate(req);
+    const where = await _actionListGetWhere(req);
+    const timesheets = await _actionListGetData(where);
+    res.json(_actionListTransformData(timesheets));
 
-    timesheets.forEach(model => {
-      model.project = model.task.project;
-      delete model.task.project;
-    });
-    res.json(timesheets);
   } catch (e) {
     return next(e);
   }
 };
 
-async function setAdditionalInfo(tmp, req) {
-  tmp.userRoleId = null;
-  tmp.isBillible = false;
+async function _actionListReqValidate(req) {
+  req.checkQuery('userId', 'userId must be int').isInt();
+  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
 
-  if (tmp.projectId) {
-    const roles = await queries.projectUsers.getUserRolesByProject();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) throw createError(400, validationResult);
+}
 
-    if (roles) {
-      tmp.isBillible = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
-      const index = roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
-      if (index > -1) roles.splice(index, 1);
-      tmp.userRoleId = roles;
+function _actionListGetWhere(req) {
+  return {
+    deletedAt: null,
+    userId: req.query.userId,
+    onDate: {
+      $and: {
+        $gte: new Date(req.query.dateBegin),
+        $lte: new Date(req.query.dateEnd),
+      }
+    }
+  };
+}
+
+async function _actionListGetData(where) {
+  return await models.Timesheet.findAll({
+    where: where,
+    attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+    order: [
+      ['createdAt', 'ASC']
+    ],
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false,
+          }
+        ]
+      },
+      {
+        as: 'projectMaginActivity',
+        model: models.Project,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false,
+      },
+    ],
+  });
+}
+
+function _actionListTransformData(timesheets) {
+
+  timesheets.forEach(model => {
+
+    if(model.task) {
+      model.project = model.task.project;
+      delete model.task.project;
     }
 
-  }
+    if (model.projectMaginActivity) {
+      model.project = model.projectMaginActivity;
+      delete model.projectMaginActivity;
+    }
 
-  if (!tmp.userId) {
-    tmp.userId = req.user.id;
-  }
+  });
 
-  if (!tmp.onDate) {
-    tmp.onDate = moment().format('YYYY-MM-DD');
-  }
-
-  return tmp;
+  return timesheets;
 }

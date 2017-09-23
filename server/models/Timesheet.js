@@ -67,6 +67,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       field: 'status_id',
       allowNull: true,
+      defaultValue: 1,
     },
     isVisible: {
       field: 'is_visible',
