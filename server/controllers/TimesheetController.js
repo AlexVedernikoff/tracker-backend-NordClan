@@ -10,8 +10,9 @@ const Sequelize = require('../orm/index');
  * Функция поиска таймшитов
  */
 exports.getTimesheets = async function (req, res, next) {
+  console.log('Функция поиска таймшитов (getTimesheets)');
   try {
-    let where = {
+    const where = {
       userId: req.query.userId,
       deletedAt: null
     };
@@ -22,12 +23,12 @@ exports.getTimesheets = async function (req, res, next) {
     if (req.params && req.params.sheetId) {
       Object.assign(where, { id: { $eq: req.params.sheetId } });
     }
-    /*    if (req.query && req.query.sheetId) {
+    if (req.query && req.query.sheetId) {
       Object.assign(where, { id: { $eq: req.query.sheetId } });
     }
     if (req.body && req.body.sheetId) {
       Object.assign(where, { id: { $eq: req.body.sheetId } });
-    }*/
+    }
     if (req.query.taskId) {
       Object.assign(where, { taskId: { $eq: req.query.taskId } });
     }
@@ -35,7 +36,7 @@ exports.getTimesheets = async function (req, res, next) {
       Object.assign(where, { taskStatusId: { $eq: req.query.taskStatusId } });
     }
 
-    let timesheets = await models.Timesheet.findAll({
+    const timesheets = await models.Timesheet.findAll({
       where: where,
       attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
       order: [

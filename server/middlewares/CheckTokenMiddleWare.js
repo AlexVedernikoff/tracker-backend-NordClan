@@ -22,7 +22,7 @@ function checkToken(req, res, next) {
 
 
   try {
-    authorization = req.cookies.authorization? req.cookies.authorization : req.cookies.authorization;
+    authorization = req.cookies.authorization? req.cookies.authorization : req.headers.authorization;
 
     token = authorization.split(' ')[1];
     decoded = jwt.decode(token, tokenSecret);

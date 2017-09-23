@@ -73,7 +73,7 @@ router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 // Timesheets
 router.post('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
 router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
-router.get('/timesheet', TimesheetController.actionList);
+router.get('/timesheet', TimesheetController.actionList); // Отреафкторил
 router.get('/task/timesheet/getTimesheets', TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
 router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible); // Deprecated. но еще используется
 router.put('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController)); // Deprecated. но еще используется
@@ -90,7 +90,7 @@ router.get('/task/:taskId/comment', CommentController.list);
 router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
 router.get('/project/roles/dictionary', DictionaryController.projectRoles);
 router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes);
-router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated
+router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 
 // Attachments
 router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
