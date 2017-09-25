@@ -100,8 +100,19 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
+    // Устроело, но используется
     Timesheet.belongsTo(models.Project, {
       as: 'projectMaginActivity',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id',
+        allowNull: true,
+      },
+      constraints: false
+    });
+
+    Timesheet.belongsTo(models.Project, {
+      as: 'project',
       foreignKey: {
         name: 'projectId',
         field: 'project_id',

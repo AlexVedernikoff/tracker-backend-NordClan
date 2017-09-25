@@ -1507,9 +1507,15 @@ module.exports = {
         parameters: [
           {
             name: 'userId',
+            description: 'Можно использовать либо userId из SimTrack',
             type: 'integer',
-            in: 'query',
-            required: true
+            in: 'query'
+          },
+          {
+            name: 'userPSId',
+            description: 'Либо userPSId id юзера из PS',
+            type: 'string',
+            in: 'query'
           },
           {
             name: 'dateBegin',

@@ -171,7 +171,7 @@ module.exports = function(sequelize, DataTypes) {
 
   };
   
-  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn', 'firstNameEn', 'skype',  'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'deletedAt'];
+  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn', 'firstNameEn', 'skype',  'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt'];
 
   return User;
 };

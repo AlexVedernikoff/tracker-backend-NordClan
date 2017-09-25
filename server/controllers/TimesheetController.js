@@ -441,8 +441,7 @@ exports.delete = async function (req, res, next) {
 exports.actionList = async function (req, res, next) {
   try {
     await _actionListReqValidate(req);
-    const where = await _actionListGetWhere(req);
-    const timesheets = await _actionListGetData(where);
+    const timesheets = await _actionListGetData(req);
     res.json(_actionListTransformData(timesheets));
 
   } catch (e) {
@@ -451,7 +450,16 @@ exports.actionList = async function (req, res, next) {
 };
 
 async function _actionListReqValidate(req) {
-  req.checkQuery('userId', 'userId must be int').isInt();
+  // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
+  if (req.query.userId) {
+    req.checkQuery('userId', 'userId must be int').isInt();
+  } else if(req.query.userPSId) {
+    req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+  } else {
+    req.checkQuery('userId', 'userId must be int').isInt();
+    req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+  }
+
   req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
 
@@ -459,10 +467,23 @@ async function _actionListReqValidate(req) {
   if (!validationResult.isEmpty()) throw createError(400, validationResult);
 }
 
+async function _actionListGetData(req) {
+  const where = await _actionListGetWhere(req);
+  const include = await _actionListGetInclude(req);
+
+  return await models.Timesheet.findAll({
+    where: where,
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+    order: [
+      ['createdAt', 'ASC']
+    ],
+    include: include,
+  });
+}
+
 function _actionListGetWhere(req) {
-  return {
+  const where = {
     deletedAt: null,
-    userId: req.query.userId,
     onDate: {
       $and: {
         $gte: new Date(req.query.dateBegin),
@@ -470,55 +491,66 @@ function _actionListGetWhere(req) {
       }
     }
   };
+
+  if (req.query.userId) {
+    where.userId = req.query.userId;
+  }
+
+  return where;
 }
 
-async function _actionListGetData(where) {
-  return await models.Timesheet.findAll({
-    where: where,
-    attributes: ['id', 'onDate', 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
-    order: [
-      ['createdAt', 'ASC']
-    ],
-    include: [
-      {
-        as: 'task',
-        model: models.Task,
-        required: false,
-        attributes: ['id', 'name'],
-        paranoid: false,
-        include: [
-          {
-            as: 'project',
-            model: models.Project,
-            required: false,
-            attributes: ['id', 'name'],
-            paranoid: false,
-          }
-        ]
-      },
-      {
-        as: 'projectMaginActivity',
-        model: models.Project,
-        required: false,
-        attributes: ['id', 'name'],
-        paranoid: false,
-      },
-    ],
-  });
+function _actionListGetInclude(req) {
+  const include = [
+    {
+      as: 'task',
+      model: models.Task,
+      required: false,
+      attributes: ['id', 'name'],
+      paranoid: false,
+      include: [
+        {
+          as: 'project',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false,
+        }
+      ]
+    },
+    {
+      as: 'project',
+      model: models.Project,
+      required: false,
+      attributes: ['id', 'name'],
+      paranoid: false,
+    },
+  ];
+
+  if (req.query.userPSId && !req.query.userId) {
+    include.push({
+      as: 'user',
+      model: models.User,
+      required: false,
+      attributes: [],
+      paranoid: false,
+      where: {
+        psId: req.query.userPSId
+      }
+    });
+  }
+
+  return include;
 }
+
 
 function _actionListTransformData(timesheets) {
 
   timesheets.forEach(model => {
 
-    if(model.task) {
-      model.project = model.task.project;
-      delete model.task.project;
-    }
-
-    if (model.projectMaginActivity) {
-      model.project = model.projectMaginActivity;
-      delete model.projectMaginActivity;
+    // переношу из задачи в корень объекта
+    if(model.task && !model.dataValues.project) {
+      model.dataValues.project = model.task.project.dataValues;
+      delete model.task.project.dataValues;
     }
 
   });
