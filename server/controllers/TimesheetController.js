@@ -333,8 +333,30 @@ exports.setTimesheetTime = async function (req, res, next) {
   }
 };
 
+exports.createTimesheetNoDraft = async function (req, res, next) {
+  let t;
 
-exports.create = async function (req, res, next) {
+  try {
+    t = await Sequelize.transaction();
+    const timesheetObj = req.body;
+    timesheetObj.userId = req.user.id;
+
+    if (timesheetObj.taskId && +timesheetObj.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+      const task = await queries.task.findOneActiveTask(timesheetObj.taskId, ['id', 'factExecutionTime'], t);
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${timesheetObj.spentTime})`)}, { where: { id: task.id }, transaction: t });
+    }
+
+    const timesheet = await models.Timesheet.create(req.body, { transaction: t});
+    await t.commit();
+    return await queries.timesheet.getTimesheet(timesheet.id);
+
+  } catch (e) {
+    await t.rollback();
+    throw createError(e);
+  }
+};
+
+exports.actionCreate = async function (req, res, next) {
 
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
 
@@ -359,18 +381,7 @@ exports.create = async function (req, res, next) {
   } else {
     console.log('isDraft false');
     if (!req.body.sheetId) {
-      try {
-        const timesheetObj = req.body;
-        timesheetObj.userId = req.user.id;
-        const timesheet = await models.Timesheet.create(req.body);
-        res.json(timesheet);
-
-      } catch (e) {
-        return next(createError(e));
-      }
-
-
-
+      result = await this.createTimesheetNoDraft(req, res, next);
 
     } else if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
@@ -440,13 +451,26 @@ exports.update = async function (req, res, next) {
 
 exports.delete = async function (req, res, next) {
   if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
+  let t;
+
 
   try {
+
+    t = await Sequelize.transaction();
     const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
-    await timesheetModel.destroy();
+
+    if (timesheetModel.taskId && +timesheetModel.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+      const task = await queries.task.findOneActiveTask(timesheetModel.taskId, ['id', 'factExecutionTime'], t);
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" - ${timesheetModel.spentTime}`)}, { where: { id: task.id }, transaction: t });
+    }
+
+    await timesheetModel.destroy({transaction: t});
+    t.commit();
     res.end();
+
   } catch (e) {
-    return next(e);
+    await t.rollback();
+    return next(createError(e));
   }
 };
 
