@@ -71,13 +71,13 @@ router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
 // Timesheets
-router.post('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.post('/timesheet/', TimesheetController.create.bind(TimesheetController));
 router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
 router.get('/timesheet', TimesheetController.actionList); // Отреафкторил
 router.get('/task/timesheet/getTimesheets', TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
 router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible); // Deprecated. но еще используется
-router.put('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController)); // Deprecated. но еще используется
-router.put('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.put('/timesheet/:sheetId/', TimesheetController.create.bind(TimesheetController)); // Deprecated. но еще используется
+router.put('/timesheet/', TimesheetController.create.bind(TimesheetController));
 router.delete('/timesheet/:timesheetId', TimesheetController.delete);
 
 // Comments

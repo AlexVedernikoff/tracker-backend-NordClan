@@ -334,11 +334,7 @@ exports.setTimesheetTime = async function (req, res, next) {
 };
 
 
-/**
- * Функция для проставления времени для таймшитов в трекере
- */
-
-exports.setTrackTimesheetTime = async function (req, res, next) {
+exports.create = async function (req, res, next) {
 
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
 
@@ -362,7 +358,21 @@ exports.setTrackTimesheetTime = async function (req, res, next) {
     res.json(result);
   } else {
     console.log('isDraft false');
-    if (req.body.spentTime) {
+    if (!req.body.sheetId) {
+      try {
+        const timesheetObj = req.body;
+        timesheetObj.userId = req.user.id;
+        const timesheet = await models.Timesheet.create(req.body);
+        res.json(timesheet);
+
+      } catch (e) {
+        return next(createError(e));
+      }
+
+
+
+
+    } else if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     } else if (req.body.comment || 'isVisible' in req.body) {
       const newDate = {};
@@ -398,6 +408,7 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
 /**
  * @deprecated create
  */
+/*
 exports.create = async function (req, res, next) {
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   try {
@@ -410,6 +421,7 @@ exports.create = async function (req, res, next) {
     return next(e);
   }
 };
+*/
 /**
  * @deprecated update
  */
