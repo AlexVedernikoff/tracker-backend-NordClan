@@ -13,7 +13,7 @@ exports.canUserChangeTimesheet = function(userId, timesheetId) {
         id: timesheetId,
         statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS,
       },
-      attributes: ['id', 'typeId', 'onDate', 'statusId'],
+      attributes: ['id', 'typeId', 'taskId', 'onDate', 'statusId', 'spentTime'],
     })
     .then((model) => {
       if(!model) throw createError(404, 'User can\'t change timesheet');
@@ -47,7 +47,14 @@ exports.getTimesheet = function(timesheetId) {
               paranoid: false,
             }
           ]
-        }
+        },
+        {
+          as: 'project',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false,
+        },
       ],
     })
     .then((model) => {

@@ -71,13 +71,13 @@ router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
 // Timesheets
-router.post('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.post('/timesheet/', TimesheetController.actionCreate.bind(TimesheetController));
 router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
-router.get('/timesheet', TimesheetController.actionList); // Отреафкторил
+router.get('/timesheet', TimesheetController.actionList);
 router.get('/task/timesheet/getTimesheets', TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
 router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible); // Deprecated. но еще используется
-router.put('/timesheet/:sheetId/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController)); // Deprecated. но еще используется
-router.put('/timesheet/', TimesheetController.setTrackTimesheetTime.bind(TimesheetController));
+router.put('/timesheet/:sheetId/', TimesheetController.actionCreate.bind(TimesheetController)); // Deprecated. но еще используется
+router.put('/timesheet/', TimesheetController.actionCreate.bind(TimesheetController));
 router.delete('/timesheet/:timesheetId', TimesheetController.delete);
 
 // Comments
@@ -100,7 +100,7 @@ router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', Uploa
 router.get('/:entity(project|task)/:entityId/history', ModelHistoryController.list);
 
 // Deprecated
-router.post('/task/:taskId/timesheet', TimesheetController.create); // Deprecated
+router.post('/task/:taskId/timesheet', TimesheetController.actionCreate); // Deprecated
 router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update); // Deprecated
 router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
 router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController)); // Deprecated

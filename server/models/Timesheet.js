@@ -1,6 +1,5 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
-const _ = require('underscore');
-const moment = require('moment');
+const beforeValidate = require('../components/sequelizeHooks/TemesheetBeforeValidate');
 
 module.exports = function (sequelize, DataTypes) {
   const Timesheet = sequelize.define('Timesheet', {
@@ -167,6 +166,9 @@ module.exports = function (sequelize, DataTypes) {
     });
 
   };
+
+  /* При создании тайм шита вставляем в запись недостающие данные */
+  Timesheet.addHook('beforeValidate', 'beforeValidate', beforeValidate.index);
 
   return Timesheet;
 };
