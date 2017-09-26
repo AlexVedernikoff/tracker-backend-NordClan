@@ -167,7 +167,7 @@ module.exports = function (sequelize, DataTypes) {
 
   };
 
-  /* Управление созданием и удалением магических активностей */
+  /* При создании тайм шита вставляем в запись недостающие данные */
   Timesheet.addHook('beforeValidate', 'beforeValidate', beforeValidate.index);
 
   return Timesheet;
