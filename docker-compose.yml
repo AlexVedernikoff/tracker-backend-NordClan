@@ -17,11 +17,11 @@ services:
     container_name: sim_back
     environment:
       DATABASE_HOST: db
-    command: ["/app/wait-for.sh", "15", "pm2-docker", "start", "--auto-exit", "--env", "production", "processes.json"]
+    command: ["/app/wait-for.sh", "15", "pm2-docker", "start", "--auto-exit", "--env", "development", "processes.json"]
     volumes:
       - .:/app
     ports:
-      - 8000:4000
+      - 8000:8080
     expose:
       - "8080"
     depends_on:
@@ -34,7 +34,7 @@ services:
     container_name: sim_front
     environment:
       API_ROOT: app
-      API_PORT: 4000
+      API_PORT: 8080
     command: ["npm", "start"]
     volumes:
       - ./../sim-track-front:/app

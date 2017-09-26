@@ -124,6 +124,11 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    globalRole: {
+      field: 'global_role',
+      type: DataTypes.ENUM(0, 1),
+      allowNull: true
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
@@ -171,7 +176,10 @@ module.exports = function(sequelize, DataTypes) {
 
   };
   
-  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn', 'firstNameEn', 'skype',  'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'deletedAt'];
+  User.defaultSelect = [
+    'id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn', 'firstNameEn', 'skype',
+    'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'globalRole', 'deletedAt'
+  ];
 
   return User;
 };
