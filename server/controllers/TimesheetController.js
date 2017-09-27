@@ -450,7 +450,7 @@ exports.update = async function (req, res, next) {
 
 
 exports.delete = async function (req, res, next) {
-  req.checkParams('timesheetId', 'userId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);
+  req.checkParams('timesheetId', 'timesheetId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) next(createError(400, validationResult));
 
