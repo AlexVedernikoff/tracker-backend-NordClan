@@ -1836,7 +1836,8 @@ module.exports = {
         parameters: [
           {
             name: 'timesheetId',
-            type: 'integer',
+            description: 'можно разделять через ","',
+            type: 'string',
             in: 'path',
             required: true
           },

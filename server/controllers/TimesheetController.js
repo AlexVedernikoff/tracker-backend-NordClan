@@ -450,21 +450,27 @@ exports.update = async function (req, res, next) {
 
 
 exports.delete = async function (req, res, next) {
-  if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
+  req.checkParams('timesheetId', 'userId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) next(createError(400, validationResult));
+
   let t;
 
-
   try {
-
+    const timesheetIds = req.params.timesheetId.split(',');
     t = await Sequelize.transaction();
-    const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
 
-    if (timesheetModel.taskId && +timesheetModel.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
-      const task = await queries.task.findOneActiveTask(timesheetModel.taskId, ['id', 'factExecutionTime'], t);
-      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" - ${timesheetModel.spentTime}`)}, { where: { id: task.id }, transaction: t });
-    }
+    await Promise.all(timesheetIds.map(async (id) => {
+      const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, id);
+      if (timesheetModel.taskId && +timesheetModel.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+        const task = await queries.task.findOneActiveTask(timesheetModel.taskId, ['id', 'factExecutionTime'], t);
+        await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" - ${timesheetModel.spentTime}`)}, { where: { id: task.id }, transaction: t });
+      }
 
-    await timesheetModel.destroy({transaction: t});
+      await timesheetModel.destroy({transaction: t});
+    }));
+
+
     t.commit();
     res.end();
 
