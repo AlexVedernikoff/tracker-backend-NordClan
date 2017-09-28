@@ -11,6 +11,7 @@ exports.canUserChangeTimesheet = function(userId, timesheetId) {
     .findOne({
       where: {
         id: timesheetId,
+        userId: userId,
         statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS,
       },
       attributes: ['id', 'typeId', 'taskId', 'onDate', 'statusId', 'spentTime'],
