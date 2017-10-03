@@ -114,7 +114,7 @@ exports.getTracksOnCurrentDay = async function (req, res, next) {
   let draftsheets = TimesheetDraftController.getDrafts(req, res, next);
   timesheets = await timesheets;
   draftsheets = await draftsheets;
-  result = { tracks: [...timesheets, ...draftsheets] };
+  result = { tracks: [...draftsheets, ...timesheets] };
   return result;
 };
 

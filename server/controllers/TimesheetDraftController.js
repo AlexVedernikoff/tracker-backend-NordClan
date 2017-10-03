@@ -36,8 +36,12 @@ exports.getDrafts = async function (req, res, next) {
 
     Object.assign(where, { $or:
       [
+        // Обычные драфты
         {onDate: { $eq: date }},
-        {onDate: { $eq: null }}
+        // Магические драфты
+        {onDate: { $eq: null }},
+        // Если задача все еще на тебе и есть драфт с таким статусом же как у задачи, то показываем драфт по этой задаче
+        models.sequelize.literal(`"task"."performer_id"  = ${req.query.userId} AND "task"."status_id" = "TimesheetDraft"."task_status_id"`)
       ]
     });
   }
