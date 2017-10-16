@@ -72,10 +72,12 @@ module.exports = function(sequelize) {
           prevValueDate: (type === 'DATE') ? diffObj[key].oldVal : null,
           valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
           prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
+          valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
+          prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null
         });
       });
-      
-      
+
+
       sequelize.models.ModelHistory.bulkCreate(arr)
         .catch((err) => {
           if(err) throw createError(err);
