@@ -385,10 +385,9 @@ exports.actionCreate = async function (req, res, next) {
 
     } else if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
-    } else if (req.body.comment || 'isVisible' in req.body) {
+    } else {
       const newDate = {};
-      if (req.body.comment) newDate.comment = req.body.comment;
-      if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
+      Object.assign(newDate, req.body);
 
       const timesheet = await this.getTimesheets(req, res, next);
       const tmp = {};
