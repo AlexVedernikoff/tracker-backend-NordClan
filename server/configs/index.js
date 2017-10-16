@@ -21,4 +21,8 @@ module.exports = {
   auth: {
     accessTokenLifetime: 60 * 60 * 24 * 7,
   },
+  systemAuth: {
+    systemLogin: 'MfwL;po}(u5Q',
+    accessTokenLifetime: 60 * 60 * 24 * 365 * 10,
+  },
 };

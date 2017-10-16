@@ -5,11 +5,9 @@ const User = require('../models/index').User;
 const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const tokenSecretSystem = 'wywirec.';
 
-exports.checkToken = checkToken;
-exports.createJwtToken = createJwtToken;
-
-function checkToken(req, res, next) {
+exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
 
   if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
@@ -61,12 +59,17 @@ function checkToken(req, res, next) {
     })
     .catch((err) => next(err));
   
-}
+};
 
-function createJwtToken(user) {
+exports.createJwtToken = function (user) {
   const payload = {
     user: user,
     expires: moment().add(config.auth.accessTokenLifetime, 's')
   };
   return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
-}
+};
+
+exports.createSystemJwtToken = function () {
+  const expires = moment().add(config.systemAuth.accessTokenLifetime, 's');
+  return {token: jwt.encode(expires, tokenSecretSystem, 'HS512'), expires: expires};
+};

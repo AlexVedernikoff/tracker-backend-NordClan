@@ -1239,6 +1239,11 @@ module.exports = {
             format: 'password',
             required: true
           },
+          {
+            name: 'isSystemUser',
+            type: 'boolean',
+            in: 'formData',
+          },
         ],
         responses: responsesCodes
       },
@@ -1247,6 +1252,13 @@ module.exports = {
       delete: {
         tags: ['Auth'],
         summary: 'Удалить токен из базы системы',
+        parameters: [
+          {
+            name: 'isSystemUser',
+            type: 'boolean',
+            in: 'formData',
+          },
+        ],
         responses: responsesCodes
       },
     },

@@ -17,7 +17,8 @@ const Models  = [
   // models.Department,
   // models.UserDepartments,
   // models.Token,
-  
+  models.SystemToken,
+
   // models.ProjectUsers,
   // models.ProjectAttachments,
   // models.TaskAttachments,

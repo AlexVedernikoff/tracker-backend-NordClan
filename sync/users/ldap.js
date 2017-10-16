@@ -1,7 +1,8 @@
 const ldap = require('ldapjs');
 const moment = require('moment');
 const User = require('../../server/models').User;
-const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
+const ldapUrl = 'ldap://auth-copy.simbirsoft:389//dc=simbirsoft';
+//const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 // Синхронизация пользователей
 module.exports = function() {

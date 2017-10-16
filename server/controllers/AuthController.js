@@ -4,14 +4,20 @@ const ldap = require('ldapjs');
 const Auth = require('../middlewares/CheckTokenMiddleWare');
 const User = require('../models').User;
 const Token = require('../models').Token;
+const SystemToken = require('../models').Token;
 const queries = require('../models/queries');
 const config = require('.././configs');
+const sha512 = require('js-sha512').sha512;
 
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
 exports.login = function(req, res, next){
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
   if (!req.headers.origin) return next(createError(401, 'header "origin" are required'));
+
+  if (isSystemUser(req)) { // String потому-что хочу что бы работало в сваггере тоже
+    return authSystemUser(req.body.login, req.body.password);
+  }
 
   User.findOne({
     where: {
@@ -41,7 +47,6 @@ exports.login = function(req, res, next){
         client.unbind();
         return next(createError(err));
       }
-      
 
       const token = Auth.createJwtToken({
         login: req.body.login,
@@ -62,7 +67,7 @@ exports.login = function(req, res, next){
           user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
           delete user.dataValues.ldapLogin;
 
-          res.status(200).json({
+          res.json({
             token: token.token,
             expire: token.expires,
             user: user.dataValues
@@ -72,10 +77,69 @@ exports.login = function(req, res, next){
 
     });
   }
+
+  function authSystemUser (user, password) {
+
+    if (
+      user !== 'SimTrackSystemUser'
+      || sha512(password + 'supaqem-') !== sha512(config.systemAuth.systemLogin + 'supaqem-')
+    ) return next(createError(404, 'Invalid Login or Password'));
+
+    const token = Auth.createSystemJwtToken(req.body.login);
+
+    SystemToken
+      .create({
+        token: token.token,
+        expires: token.expires.format()
+      })
+      .then(() => {
+        res.cookie('system-authorization', 'Basic ' + token.token, {
+          maxAge: config.auth.accessTokenLifetime * 1000,
+          domain: extractHostname(req.headers.origin),
+          httpOnly: true
+        });
+
+
+        res.json({
+          token: token.token,
+          expire: token.expires
+        });
+      })
+      .catch((err) => next(createError(err)));
+  }
 };
 
 
-exports.logout = function(req, res, next){
+exports.logout = function(req, res, next) {
+  if (isSystemUser(req)) { // String потому-что хочу что бы работало в сваггере тоже
+    return systemLogout(req, res, next);
+  }
+
+  userLogout(req, res, next);
+};
+
+function systemLogout (req, res, next) {
+  SystemToken
+    .destroy({
+      where: {
+        token: req.token
+      }
+    })
+    .then((row) => {
+      if(!row) return next(createError(404));
+
+      res.cookie('system-authorization', '', {
+        maxAge: 0,
+        domain: extractHostname(req.headers.origin),
+        httpOnly: true
+      });
+
+      res.sendStatus(200);
+    })
+    .catch((err) => next(createError(err)));
+}
+
+function userLogout (req, res, next) {
   Token.destroy({
     where: {
       user_id: req.user.id,
@@ -84,7 +148,7 @@ exports.logout = function(req, res, next){
   })
     .then((row) => {
       if(!row) return next(createError(404));
-      
+
       res.cookie('authorization', '', {
         maxAge: 0,
         domain: extractHostname(req.headers.origin),
@@ -96,9 +160,12 @@ exports.logout = function(req, res, next){
     .catch((err) => {
       next(err);
     });
+}
 
-};
 
+function isSystemUser(req) {
+  return (String(req.body.isSystemUser)  === 'true');
+}
 
 function extractHostname(url) {
   let hostname;

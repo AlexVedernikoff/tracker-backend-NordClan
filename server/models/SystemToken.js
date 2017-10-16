@@ -1,5 +1,5 @@
 module.exports = function(sequelize, DataTypes) {
-  const Token = sequelize.define('Token', {
+  return sequelize.define('SystemToken', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -18,16 +18,6 @@ module.exports = function(sequelize, DataTypes) {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'tokens'
+    tableName: 'system_tokens'
   });
-
-  Token.associate = function(models) {
-    Token.belongsTo(models.User, {foreignKey: {
-      name: 'userId',
-      field: 'user_id'
-    }});
-    
-  };
-
-  return Token;
 };
