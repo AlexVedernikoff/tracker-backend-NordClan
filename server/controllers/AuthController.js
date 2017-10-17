@@ -81,8 +81,8 @@ exports.login = function(req, res, next){
   function authSystemUser (user, password) {
 
     if (
-      user !== 'SimTrackSystemUser'
-      || sha512(password + 'supaqem-') !== sha512(config.systemAuth.systemLogin + 'supaqem-')
+      user !== config.systemAuth.login
+      || password !== config.systemAuth.password
     ) return next(createError(404, 'Invalid Login or Password'));
 
     const token = Auth.createSystemJwtToken(req.body.login);
@@ -130,7 +130,6 @@ function systemLogout (req, res, next) {
 
       res.cookie('system-authorization', '', {
         maxAge: 0,
-        domain: extractHostname(req.headers.origin),
         httpOnly: true
       });
 
