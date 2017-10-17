@@ -2,12 +2,12 @@ const createError = require('http-errors');
 const moment = require('moment');
 const ldap = require('ldapjs');
 const Auth = require('../middlewares/CheckTokenMiddleWare');
+const SystemAuth = require('../middlewares/CheckSystemTokenMiddleWare');
 const User = require('../models').User;
 const Token = require('../models').Token;
-const SystemToken = require('../models').Token;
+const SystemToken = require('../models').SystemToken;
 const queries = require('../models/queries');
 const config = require('.././configs');
-const sha512 = require('js-sha512').sha512;
 
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
@@ -85,7 +85,7 @@ exports.login = function(req, res, next){
       || password !== config.systemAuth.password
     ) return next(createError(404, 'Invalid Login or Password'));
 
-    const token = Auth.createSystemJwtToken(req.body.login);
+    const token = SystemAuth.createJwtToken(req.body.login);
 
     SystemToken
       .create({
@@ -114,7 +114,6 @@ exports.logout = function(req, res, next) {
   if (isSystemUser(req)) { // String потому-что хочу что бы работало в сваггере тоже
     return systemLogout(req, res, next);
   }
-
   userLogout(req, res, next);
 };
 

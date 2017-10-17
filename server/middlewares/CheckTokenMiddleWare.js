@@ -5,7 +5,6 @@ const User = require('../models/index').User;
 const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
-const tokenSecretSystem = 'wywirec.';
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -14,8 +13,11 @@ exports.checkToken = function (req, res, next) {
     return next();
   }
 
-  if (!doesAuthorizationExist(req)) throw createError(401, 'Need  authorization');
+  if (!doesAuthorizationExist(req)) throw createError(401, 'Need authorization');
 
+  if (isSystemUser(req)) {
+    return next();
+  }
 
   try {
     authorization = req.cookies.authorization? req.cookies.authorization : req.headers.authorization;
@@ -73,10 +75,11 @@ exports.createJwtToken = function (user) {
 };
 
 function doesAuthorizationExist(req) {
-  if (
-    (!req.headers['system-authorization'] && !req.cookies['system-authorization'])
-    &&
-    (!req.headers.authorization && !req.cookies.authorization)) {
-    return false;
-  }
+  return !!((req.headers['system-authorization'] || req.cookies['system-authorization'])
+    ||
+    (!req.headers.authorization || !req.cookies.authorization));
+}
+
+function isSystemUser(req) {
+  return (req.headers['system-authorization'] || req.cookies['system-authorization']);
 }
