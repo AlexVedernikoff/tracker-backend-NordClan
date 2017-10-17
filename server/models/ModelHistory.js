@@ -63,6 +63,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.FLOAT,
       allowNull: true
     },
+    valueText: {
+      field: 'value_text',
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    prevValueText: {
+      field: 'prev_value_text',
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     action: {
       type: DataTypes.STRING(6),
       allowNull: false
