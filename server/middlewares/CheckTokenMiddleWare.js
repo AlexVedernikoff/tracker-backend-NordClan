@@ -6,20 +6,18 @@ const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
 
-exports.checkToken = checkToken;
-exports.createJwtToken = createJwtToken;
-
-function checkToken(req, res, next) {
+exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
 
-  if (req.url.indexOf('auth/login') > -1){//potential defect /ffff/auth/loginfdfgdfd - is not validated
+  if (/\/auth\/login$/ui.test(req.url)){//potential defect /blabla/auth/login - is not validated
     return next();
   }
 
-  if (!req.headers.authorization && !req.cookies.authorization) {
-    return next(createError(401, 'Need  authorization'));
-  }
+  if (!doesAuthorizationExist(req)) throw createError(401, 'Need authorization');
 
+  if (isSystemUser(req)) {
+    return next();
+  }
 
   try {
     authorization = req.cookies.authorization? req.cookies.authorization : req.headers.authorization;
@@ -56,17 +54,32 @@ function checkToken(req, res, next) {
     })
     .then((user) => {
       if(!user) throw createError(401, 'No found user or access in the system. Or access token has expired');
+
+      /*
+      Тут нужно получение прав пользователя
+      */
+
       req.user = user;
       return next();
     })
     .catch((err) => next(err));
   
-}
+};
 
-function createJwtToken(user) {
+exports.createJwtToken = function (user) {
   const payload = {
     user: user,
     expires: moment().add(config.auth.accessTokenLifetime, 's')
   };
   return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
+};
+
+function doesAuthorizationExist(req) {
+  return ((req.headers['system-authorization'] || req.cookies['system-authorization'])
+    ||
+    (req.headers.authorization || req.cookies.authorization));
+}
+
+function isSystemUser(req) {
+  return (req.headers['system-authorization'] || req.cookies['system-authorization']);
 }
