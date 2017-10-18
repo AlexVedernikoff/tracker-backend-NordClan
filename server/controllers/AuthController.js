@@ -15,7 +15,7 @@ exports.login = function(req, res, next){
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
   if (!req.headers.origin) return next(createError(401, 'header "origin" are required'));
 
-  if (isSystemUser(req)) { // String потому-что хочу что бы работало в сваггере тоже
+  if (isSystemUser(req)) {
     return authSystemUser(req.body.login, req.body.password);
   }
 
@@ -111,7 +111,7 @@ exports.login = function(req, res, next){
 
 
 exports.logout = function(req, res, next) {
-  if (isSystemUser(req)) { // String потому-что хочу что бы работало в сваггере тоже
+  if (isSystemUser(req)) {
     return systemLogout(req, res, next);
   }
   userLogout(req, res, next);
@@ -162,7 +162,7 @@ function userLogout (req, res, next) {
 
 
 function isSystemUser(req) {
-  return (String(req.body.isSystemUser)  === 'true');
+  return (String(req.body.isSystemUser)  === 'true'); // String потому-что хочу что бы работало в сваггере тоже
 }
 
 function extractHostname(url) {
