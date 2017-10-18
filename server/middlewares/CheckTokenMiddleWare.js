@@ -75,9 +75,9 @@ exports.createJwtToken = function (user) {
 };
 
 function doesAuthorizationExist(req) {
-  return !!((req.headers['system-authorization'] || req.cookies['system-authorization'])
+  return ((req.headers['system-authorization'] || req.cookies['system-authorization'])
     ||
-    (!req.headers.authorization || !req.cookies.authorization));
+    (req.headers.authorization || req.cookies.authorization));
 }
 
 function isSystemUser(req) {
