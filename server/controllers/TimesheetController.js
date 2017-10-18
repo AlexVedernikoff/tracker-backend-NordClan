@@ -213,11 +213,11 @@ exports.getTracksAll = async function (req, res, next) {
 };
 
 /**
- * Функция поиска драфтшита его удаления и создание нового таймшита
+ * Функция поиска драфтшита его ?удаления и создание нового таймшита
  */
 exports.setDraftTimesheetTime = async function (req, res, next) {
   let t;
-  console.log('Функция поиска драфтшита его удаления и создание нового таймшита');
+  console.log('Функция поиска драфтшита его ?удаления и создание нового таймшита');
 
   try {
     t = await Sequelize.transaction();
@@ -274,6 +274,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
 async function _setAdditionalInfo(tmp, req) {
   tmp.userRoleId = null;
   tmp.isBillible = false;
+  tmp.onDate = moment().format('YYYY-MM-DD');
 
   if (tmp.projectId) {
     const roles = await queries.projectUsers.getUserRolesByProject();
@@ -291,9 +292,6 @@ async function _setAdditionalInfo(tmp, req) {
     tmp.userId = req.user.id;
   }
 
-  if (!tmp.onDate) {
-    tmp.onDate = moment().format('YYYY-MM-DD');
-  }
 
   return tmp;
 }
