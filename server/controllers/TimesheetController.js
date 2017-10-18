@@ -571,7 +571,7 @@ function _actionListGetInclude(req) {
     include.push({
       as: 'user',
       model: models.User,
-      required: false,
+      required: true,
       attributes: [],
       paranoid: false,
       where: {
