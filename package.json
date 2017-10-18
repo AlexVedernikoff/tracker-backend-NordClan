@@ -31,7 +31,6 @@
     "formidable": "^1.1.1",
     "gm": "^1.23.0",
     "http-errors": "^1.6.1",
-    "js-sha512": "0.5.0",
     "jwt-simple": "^0.5.1",
     "ldapjs": "^1.0.1",
     "mkdirp": "^0.5.1",
