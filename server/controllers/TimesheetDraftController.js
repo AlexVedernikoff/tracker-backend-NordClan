@@ -9,9 +9,9 @@ const moment = require('moment');
  * Функция создания драфтшита
  */
 exports.createDraft = function (req, res, next, t = null, isContinue) {
+  console.log('Функция создания драфтшита');
   if (req.body.id) delete req.body.id;
   if (req.params.taskId) req.body.taskId = req.params.taskId;
-  if (!req.body.sprintId && isContinue) return Promise.resolve();
   if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) throw createError(400, 'sprintId must be int');
 
   return models.TimesheetDraft.create(req.body, { transaction: t })
