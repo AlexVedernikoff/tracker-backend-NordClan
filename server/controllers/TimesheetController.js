@@ -413,23 +413,7 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
   res.json(result);
 };
 
-/**
- * @deprecated create
- */
-/*
-exports.create = async function (req, res, next) {
-  if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
-  try {
-    await queries.task.isCanCreateUpdateTimesheet(req.user.id, req.params.taskId);
-    Object.assign(req.body, { userId: req.user.id, taskId: req.params.taskId });
-    let newsheet = await models.Timesheet.create(req.body);
-    let result = await queries.timesheet.getTimesheet(newsheet.id);
-    res.json(result);
-  } catch (e) {
-    return next(e);
-  }
-};
-*/
+
 /**
  * @deprecated update
  */
