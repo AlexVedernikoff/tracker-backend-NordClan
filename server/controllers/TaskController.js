@@ -209,7 +209,7 @@ exports.update = async function (req, res, next) {
         typeId: 1,
         spentTime: 0,
         comment: '',
-        isBillible: Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1),
+        isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
         userRoleId: projectUserRoles.join(','),
         taskStatusId: task.dataValues.statusId,
         statusId: 1,
