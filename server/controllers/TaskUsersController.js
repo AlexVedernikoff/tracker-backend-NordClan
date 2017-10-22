@@ -5,6 +5,7 @@ const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
 const moment = require('moment');
 
+// Устаревший метод
 exports.create = function (req, res, next) {
   if (!req.params.taskId) return next(createError(400, 'taskId need'));
   if (!Number.isInteger(+req.params.taskId)) return next(createError(400, 'taskId must be int'));

@@ -128,8 +128,8 @@ exports.update = async function (req, res, next) {
     const taskId = req.params.id;
     let { body } = req;
     t = await models.sequelize.transaction();
-    let timesheet;
-    let draftsheet;
+    let timesheet = [];
+    let draftsheet = [];
 
 
     let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction: t, lock: 'UPDATE' });
@@ -141,6 +141,11 @@ exports.update = async function (req, res, next) {
       body = { statusId: body.statusId };
     }
 
+    // Удаление исполнителя
+    if (+body.userId === 0) {
+      resultResponse.performerId = null;
+      body.performerId = null;
+    }
 
     // сброс задаче в беклог
     if (+body.sprintId === 0) {
