@@ -209,7 +209,7 @@ exports.update = async function (req, res, next) {
         typeId: 1,
         spentTime: 0,
         comment: '',
-        isBillible: Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1),
+        isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
         userRoleId: projectUserRoles.join(','),
         taskStatusId: task.dataValues.statusId,
         statusId: 1,
@@ -225,11 +225,12 @@ exports.update = async function (req, res, next) {
       };
 
       await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
-
       t.commit();
+
       res.json({ statusId: body.statusId ? +body.statusId : task.statusId });
 
     } else {
+      t.commit();
 
       // Получаю измененные поля
       _.keys(task.dataValues).forEach((key) => {
@@ -239,7 +240,6 @@ exports.update = async function (req, res, next) {
 
       resultResponse.id = task.id;
       res.json(resultResponse);
-      t.commit();
     }
 
 

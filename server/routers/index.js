@@ -66,7 +66,7 @@ router.get('/task/:id', TaskController.read);
 router.put('/task/:id', TaskController.update);
 router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
-router.post('/task/:taskId/users', TaskUsersController.create);
+router.post('/task/:taskId/users', TaskUsersController.create); // Deprecated. но еще используется, аналог put /task/:id
 router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
