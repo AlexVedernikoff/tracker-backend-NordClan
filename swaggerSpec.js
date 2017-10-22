@@ -1442,7 +1442,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
     '/timesheet/{sheetId}/': {
       put: {
         tags: ['Timesheets'],
@@ -1500,41 +1499,55 @@ module.exports = {
       },
     },
 
-    '/project/status/dictionary': {
+
+
+
+    '/dictionary/project/status': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник статусов проектов',
         responses: responsesCodes
       },
     },
-    '/project/roles/Dictionary': {
+    '/dictionary/sprint/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник статусов спринтов',
+        responses: responsesCodes
+      },
+    },
+    '/dictionary/task/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник статусов задач',
+        responses: responsesCodes
+      },
+    },
+
+    '/dictionary/timesheet/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов активности в таймшитах',
+        responses: responsesCodes,
+      },
+    },
+    '/dictionary/project/roles': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник ролей пользователей для проекта',
         responses: responsesCodes,
       },
     },
-    'timesheet/types/dictionary': {
+    '/dictionary/timesheet/types': {
       get: {
-        tags: ['Timesheets'],
+        tags: ['Dictionary'],
         summary: 'Справочник типов активности в таймшитах',
         responses: responsesCodes,
       },
     },
-    '/sprint/status/dictionary/': {
-      get: {
-        tags: ['Sprints'],
-        summary: 'Справочник статусов спринтов',
-        responses: responsesCodes
-      },
-    },
-    '/task/status/dictionary/': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Справочник статусов задач',
-        responses: responsesCodes
-      },
-    },
+
+
+
 
   },
   securityDefinitions: {

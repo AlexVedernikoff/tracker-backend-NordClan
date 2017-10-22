@@ -85,10 +85,14 @@ router.put('/task/:taskId/comment/:commentId', CommentController.update);
 router.delete('/task/:taskId/comment/:commentId', CommentController.delete);
 router.get('/task/:taskId/comment', CommentController.list);
 
-// dictionaries
-router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
-router.get('/project/roles/dictionary', DictionaryController.projectRoles);
-router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes);
+// Dictionaries
+router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
+router.get('/dictionary/project/roles', DictionaryController.projectRoles);
+router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
+
+router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated
+router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated
+router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 
 // Attachments
