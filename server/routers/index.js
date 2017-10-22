@@ -58,7 +58,6 @@ router.get('/sprint/:id', SprintController.read);
 router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
-router.put('/sprint/:id/status', SprintController.setStatus);  // Deprecated
 
 // Tasks
 router.post('/task', TaskController.create);

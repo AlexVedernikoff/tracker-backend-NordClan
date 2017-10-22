@@ -638,27 +638,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/sprint/{sprintId}/status': {
-      put: {
-        tags: ['Sprints'],
-        summary: 'Изменить статус конкретного спринта',
-        parameters: [
-          {
-            name: 'sprintId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
     '/sprint/status/dictionary/': {
       get: {
         tags: ['Sprints'],
@@ -879,7 +858,13 @@ module.exports = {
             name: 'linkedTasks',
             type: 'string',
             in: 'formData',
-          }
+          },
+          {
+            name: 'performerId',
+            description: '0 для того чтобы урать текущего исполнителя',
+            type: 'integer',
+            in: 'formData',
+          },
         ],
         responses: responsesCodes
       },
@@ -897,31 +882,10 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task/{taskId}/status': {
-      put: {
-        tags: ['Tasks'],
-        summary: 'Изменить статус конкретной задачи',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
     '/task/{taskId}/users': {
       post: {
         tags: ['Tasks'],
-        summary: 'Назначить исполнителем пользователя на проект',
+        summary: 'Назначить исполнителем пользователя на проект (устаревший метод)',
         parameters: [
           {
             name: 'taskId',
