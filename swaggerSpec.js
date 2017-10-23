@@ -363,20 +363,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/project/status/dictionary': {
-      get: {
-        tags: ['Projects'],
-        summary: 'Справочник статусов проектов',
-        responses: responsesCodes
-      },
-    },
-    '/project/roles/dictionary': {
-      get: {
-        tags: ['Projects'],
-        summary: 'Справочник ролей пользователей для проекта',
-        responses: responsesCodes,
-      },
-    },
     '/project/{projectId}/attachment': {
       post: {
         tags: ['Projects'],
@@ -638,34 +624,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/sprint/{sprintId}/status': {
-      put: {
-        tags: ['Sprints'],
-        summary: 'Изменить статус конкретного спринта',
-        parameters: [
-          {
-            name: 'sprintId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
-    '/sprint/status/dictionary/': {
-      get: {
-        tags: ['Sprints'],
-        summary: 'Справочник статусов спринтов',
-        responses: responsesCodes
-      },
-    },
 
 
     '/task': {
@@ -879,7 +837,13 @@ module.exports = {
             name: 'linkedTasks',
             type: 'string',
             in: 'formData',
-          }
+          },
+          {
+            name: 'performerId',
+            description: '0 для того чтобы урать текущего исполнителя',
+            type: 'integer',
+            in: 'formData',
+          },
         ],
         responses: responsesCodes
       },
@@ -897,31 +861,10 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task/{taskId}/status': {
-      put: {
-        tags: ['Tasks'],
-        summary: 'Изменить статус конкретной задачи',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
     '/task/{taskId}/users': {
       post: {
         tags: ['Tasks'],
-        summary: 'Назначить исполнителем пользователя на проект',
+        summary: 'Назначить исполнителем пользователя на проект (устаревший метод)',
         parameters: [
           {
             name: 'taskId',
@@ -1212,13 +1155,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task/status/dictionary/': {
-      get: {
-        tags: ['Tasks'],
-        summary: 'Справочник статусов задач',
-        responses: responsesCodes
-      },
-    },
 
 
     '/auth/login': {
@@ -1506,7 +1442,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
     '/timesheet/{sheetId}/': {
       put: {
         tags: ['Timesheets'],
@@ -1562,14 +1497,57 @@ module.exports = {
         ],
         responses: responsesCodes
       },
-      'timesheet/types/dictionary': {
-        get: {
-          tags: ['Timesheets'],
-          summary: 'Справочник типов активности в таймшитах',
-          responses: responsesCodes,
-        },
+    },
+
+
+
+
+    '/dictionary/project/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник статусов проектов',
+        responses: responsesCodes
       },
     },
+    '/dictionary/sprint/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник статусов спринтов',
+        responses: responsesCodes
+      },
+    },
+    '/dictionary/task/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник статусов задач',
+        responses: responsesCodes
+      },
+    },
+
+    '/dictionary/timesheet/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов активности в таймшитах',
+        responses: responsesCodes,
+      },
+    },
+    '/dictionary/project/roles': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник ролей пользователей для проекта',
+        responses: responsesCodes,
+      },
+    },
+    '/dictionary/timesheet/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов активности в таймшитах',
+        responses: responsesCodes,
+      },
+    },
+
+
+
 
   },
   securityDefinitions: {

@@ -58,7 +58,6 @@ router.get('/sprint/:id', SprintController.read);
 router.put('/sprint/:id', SprintController.update);
 router.delete('/sprint/:id', SprintController.delete);
 router.get('/sprint', SprintController.list);
-router.put('/sprint/:id/status', SprintController.setStatus);  // Deprecated
 
 // Tasks
 router.post('/task', TaskController.create);
@@ -66,7 +65,7 @@ router.get('/task/:id', TaskController.read);
 router.put('/task/:id', TaskController.update);
 router.delete('/task/:id', TaskController.delete);
 router.get('/task', TaskController.list);
-router.post('/task/:taskId/users', TaskUsersController.create);
+router.post('/task/:taskId/users', TaskUsersController.create); // Deprecated. но еще используется, аналог put /task/:id
 router.post('/task/:taskId/links/', TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
 
@@ -86,10 +85,14 @@ router.put('/task/:taskId/comment/:commentId', CommentController.update);
 router.delete('/task/:taskId/comment/:commentId', CommentController.delete);
 router.get('/task/:taskId/comment', CommentController.list);
 
-// dictionaries
-router.get('/:entity(project|task|sprint)/status/dictionary/', DictionaryController.status);
-router.get('/project/roles/dictionary', DictionaryController.projectRoles);
-router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes);
+// Dictionaries
+router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
+router.get('/dictionary/project/roles', DictionaryController.projectRoles);
+router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
+
+router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated
+router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated
+router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 
 // Attachments

@@ -112,151 +112,146 @@ exports.read = function (req, res, next) {
 };
 
 
-exports.update = function (req, res, next) {
-  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.update = async function (req, res, next) {
+  'use strict';
+  let t;
 
-  const attributes = ['id', 'statusId', 'performerId'].concat(Object.keys(req.body));
-  const now = moment().format('YYYY-MM-DD');
-  const resultRespons = {};
-
-  return models.sequelize.transaction().then(function (t) {
-
-    return Task.findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
-      .then((row) => {
-        if (!row) return next(createError(404));
-
-        if (+row.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали
-          if (!req.body.statusId) return next(createError(400, 'Task is closed'));
-          req.body = {
-            statusId: req.body.statusId
-          };
-        }
-
-        // сброс задаче в бек лог
-        if (+req.body.sprintId === 0) {
-          resultRespons.sprint = {
-            id: 0,
-            name: 'Backlog'
-          };
-          req.body.sprintId = null;
-        }
-
-        if (+req.body.parentId === 0) {
-          resultRespons.parentTask = null;
-          req.body.parentId = null;
-        }
+  try {
+    req.checkParams('id', 'id must be int').isInt();
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) throw createError(400, validationResult);
 
 
-        return row.updateAttributes(req.body, { transaction: t })
-          .then((model) => {
-            if (req.body.statusId) {
-              req.query.taskStatusId = req.body.statusId;
-              req.query.userId = model.dataValues.performerId;
-              req.query.taskId = model.dataValues.id;
-              req.query.onDate = now;
-              let timesheet;
-              let draftsheet;
-              return Promise.all([
-                TimesheetDraftController.getDrafts(req, res, next)
-                  .then((result) => { draftsheet = result; }),
-                TimesheetController.getTimesheets(req, res, next)
-                  .then((result) => { timesheet = result; })
-              ])
-                .then(() => {
-                  if (draftsheet.length !== 0 || timesheet.length !== 0) {
-                    t.commit();
-                    res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
-                  } else {
-                    if (
-                      req.body.statusId
-                      && (row.performerId || req.body.performerId)
-                      && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId))
-                    ) {
-                      return queries.task.findTaskWithUser(req.params.id, t)
-                        .then((task) => {
-                          
-                          return queries.projectUsers.getUserRolesByProject(task.projectId, task.performerId, t)
-                            .then((projectUserRoles) => {
-                              let isBillible = true;
-                              if (~projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID)) isBillible = false;
+    const attributes = ['id', 'statusId', 'performerId'].concat(Object.keys(req.body));
+    const now = moment().format('YYYY-MM-DD');
+    const resultResponse = {};
+    const taskId = req.params.id;
+    let { body } = req;
+    t = await models.sequelize.transaction();
+    let timesheet = [];
+    let draftsheet = [];
 
-                              const timesheet = {
-                                sprintId: task.dataValues.sprintId,
-                                taskId: task.dataValues.id,
-                                userId: task.dataValues.performerId,
-                                onDate: now,
-                                typeId: 1,
-                                spentTime: 0,
-                                comment: '',
-                                isBillible: isBillible,
-                                userRoleId: projectUserRoles.join(','),
-                                taskStatusId: task.dataValues.statusId,
-                                statusId: 1,
-                                isVisible: true
-                              };
 
-                              const reqForDraft = Object.assign({}, req);
-                              reqForDraft.body = Object.assign({}, reqForDraft.body, timesheet);
-                              return TimesheetDraftController.createDraft(reqForDraft, res, next, t, true)
-                                .then(() => {
-                                  t.commit();
-                                  res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId });
-                                });
-                            });
+    let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction: t, lock: 'UPDATE' });
+    if (!task) return next(createError(404)) ;
 
-                        });
-                    } else {
-                      t.commit();
-                      res.json({ statusId: req.body.statusId ? +req.body.statusId : row.statusId});
-                    }
-                  }
-                });
-            }
-            return Promise.resolve()
-              .then(() => {
-                // Если хотели изменить спринт, присылаю его обратно
-                if (+req.body.sprintId > 0) {
-                  return Task.findByPrimary(req.params.id, {
-                    attributes: ['id'],
-                    transaction: t,
-                    include: [
-                      {
-                        as: 'sprint',
-                        model: models.Sprint,
-                        attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
-                      }
-                    ]
-                  })
-                    .then(model => {
-                      if (model.sprint) resultRespons.sprint = model.sprint;
-                    });
-                }
-              })
-              .then(() => {
 
-                resultRespons.id = model.id;
-                // Получаю измененные поля
-                _.keys(model.dataValues).forEach((key) => {
-                  if (req.body[key])
-                    resultRespons[key] = model.dataValues[key];
-                });
+    if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
+      if (!body.statusId) return next(createError(400, 'Task is closed'));
+      body = { statusId: body.statusId };
+    }
 
-                t.commit();
-                res.json(resultRespons);
+    // Удаление исполнителя
+    if (+body.userId === 0) {
+      resultResponse.performerId = null;
+      body.performerId = null;
+    }
 
-              });
+    // сброс задаче в беклог
+    if (+body.sprintId === 0) {
+      resultResponse.sprint = {
+        id: 0,
+        name: 'Backlog'
+      };
+      body.sprintId = null;
+    }
 
-          });
-      })
-      .catch((err) => {
-        t.rollback();
-        next(err);
+
+    // Обнуляю отца
+    if (+body.parentId === 0) {
+      resultResponse.parentTask = null;
+      body.parentId = null;
+    }
+
+
+    // Обновление задачи
+    task = await task.updateAttributes(body, { transaction: t });
+
+
+    // Если хотели изменить спринт, присылаю его обратно
+    if (+body.sprintId > 0) {
+      let task = await Task.findByPrimary(req.params.id, {
+        attributes: ['id'],
+        transaction: t,
+        include: [
+          {
+            as: 'sprint',
+            model: models.Sprint,
+            attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+          }
+        ]
       });
-  })
-    .catch((err) => {
-      next(err);
-    });
+      if (task.sprint) resultResponse.sprint = task.sprint;
+    }
 
+
+    // Вариант если мы передали статус задачи, то ищем если созданные драфты
+    if (body.statusId) {
+      // Не нравится мне этот кусок кода
+      req.query.taskStatusId = req.body.statusId;
+      req.query.userId = task.dataValues.performerId;
+      req.query.taskId = task.dataValues.id;
+      req.query.onDate = now;
+
+      await Promise.all([
+        TimesheetDraftController.getDrafts(req, res, next)
+          .then((result) => { draftsheet = result; }),
+        TimesheetController.getTimesheets(req, res, next)
+          .then((result) => { timesheet = result; })
+      ]);
+    }
+
+    if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
+      const taskWithUser = await queries.task.findTaskWithUser(req.params.id, t);
+      const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, t);
+
+
+      const timesheet = {
+        sprintId: task.dataValues.sprintId,
+        taskId: task.dataValues.id,
+        userId: task.dataValues.performerId,
+        onDate: now,
+        typeId: 1,
+        spentTime: 0,
+        comment: '',
+        isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
+        userRoleId: projectUserRoles.join(','),
+        taskStatusId: task.dataValues.statusId,
+        statusId: 1,
+        isVisible: true
+      };
+
+      const reqForDraft = {
+        ...req,
+        body: {
+          ...req.body,
+          ...timesheet
+        }
+      };
+
+      await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
+      t.commit();
+
+      res.json({ statusId: body.statusId ? +body.statusId : task.statusId });
+
+    } else {
+      t.commit();
+
+      // Получаю измененные поля
+      _.keys(task.dataValues).forEach((key) => {
+        if (body[key])
+          resultResponse[key] = task.dataValues[key];
+      });
+
+      resultResponse.id = task.id;
+      res.json(resultResponse);
+    }
+
+
+  } catch (e) {
+    if (t) await t.rollback();
+    return next(createError(e));
+  }
 };
 
 
@@ -509,8 +504,13 @@ exports.list = function (req, res, next) {
     .catch((err) => {
       next(err);
     });
-
-
-
 };
 
+function isNeedCreateDraft (options) {
+  const { body, task, draftsheet, timesheet} = options;
+
+  return !!((draftsheet.length === 0 && timesheet.length === 0)
+    && body.statusId
+    && (task.performerId || body.performerId)
+    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(body.statusId)));
+}
