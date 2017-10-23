@@ -182,36 +182,3 @@ exports.list = function(req, res, next){
       next(err);
     });
 };
-
-
-exports.setStatus = function(req, res, next){
-  if(!req.params.id) return next(createError(400, 'sprintId need'));
-  if(!req.body.statusId) return next(createError(400, 'statusId need'));
-  if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
-
-  return models.sequelize.transaction(function (t) {
-    return Sprint
-      .findByPrimary(req.params.id, {
-        attributes: ['id'],
-        transaction: t,
-        lock: 'UPDATE'
-      })
-      .then((sprint) => {
-        if(!sprint) { return next(createError(404)); }
-
-        return sprint
-          .updateAttributes({
-            statusId: req.body.statusId
-          }, { transaction: t })
-          .then((model)=>{
-            res.end(JSON.stringify({
-              id: model.id,
-              statusId: model.statusId
-            }));
-          });
-      });
-  })
-    .catch((err) => {
-      next(err);
-    });
-};

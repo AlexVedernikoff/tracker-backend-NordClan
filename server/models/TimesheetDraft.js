@@ -8,15 +8,20 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false
     },
+    projectId: {
+      field: 'project_id',
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     sprintId: {
       field: 'sprint_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     userId: {
       field: 'user_id',
@@ -26,8 +31,7 @@ module.exports = function (sequelize, DataTypes) {
     onDate: {
       field: 'on_date',
       type: DataTypes.DATEONLY,
-      allowNull: false,
-
+      allowNull: true,
     },
     typeId: {
       field: 'type_id',
@@ -43,27 +47,27 @@ module.exports = function (sequelize, DataTypes) {
     comment: {
       type: DataTypes.TEXT,
       trim: true,
-      allowNull: false,
+      allowNull: true,
     },
     isBillible: {
       field: 'is_billible',
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: true
     },
     userRoleId: {
       field: 'user_role_id',
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',
-      allowNull: false,
+      allowNull: true,
     },
     statusId: {
       type: DataTypes.INTEGER,
       field: 'status_id',
-      allowNull: false,
+      allowNull: true,
     },
     isVisible: {
       field: 'is_visible',
@@ -87,6 +91,15 @@ module.exports = function (sequelize, DataTypes) {
         name: 'taskId',
         field: 'task_id',
         allowNull: false,
+      }
+    });
+
+    TimesheetDraft.belongsTo(models.Project, {
+      as: 'projectMaginActivity',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id',
+        allowNull: true,
       }
     });
 

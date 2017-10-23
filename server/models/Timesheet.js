@@ -1,6 +1,5 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
-const _ = require('underscore');
-const moment = require('moment');
+const beforeValidate = require('../components/sequelizeHooks/TemesheetBeforeValidate');
 
 module.exports = function (sequelize, DataTypes) {
   const Timesheet = sequelize.define('Timesheet', {
@@ -13,12 +12,12 @@ module.exports = function (sequelize, DataTypes) {
     sprintId: {
       field: 'sprint_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     userId: {
       field: 'user_id',
@@ -43,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
     comment: {
       type: DataTypes.TEXT,
       trim: true,
-      allowNull: false,
+      allowNull: true,
       // validate: {
       //   len: [1, 500]
       // }
@@ -56,17 +55,18 @@ module.exports = function (sequelize, DataTypes) {
     userRoleId: {
       field: 'user_role_id',
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',
-      allowNull: false,
+      allowNull: true,
     },
     statusId: {
       type: DataTypes.INTEGER,
       field: 'status_id',
-      allowNull: false,
+      allowNull: true,
+      defaultValue: 1,
     },
     isVisible: {
       field: 'is_visible',
@@ -96,6 +96,26 @@ module.exports = function (sequelize, DataTypes) {
         name: 'taskId',
         field: 'task_id',
         allowNull: false,
+      }
+    });
+
+    // Устроело, но используется
+    Timesheet.belongsTo(models.Project, {
+      as: 'projectMaginActivity',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id',
+        allowNull: true,
+      },
+      constraints: false
+    });
+
+    Timesheet.belongsTo(models.Project, {
+      as: 'project',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id',
+        allowNull: true,
       }
     });
 
@@ -146,6 +166,9 @@ module.exports = function (sequelize, DataTypes) {
     });
 
   };
+
+  /* При создании тайм шита вставляем в запись недостающие данные */
+  Timesheet.addHook('beforeValidate', 'beforeValidate', beforeValidate.index);
 
   return Timesheet;
 };

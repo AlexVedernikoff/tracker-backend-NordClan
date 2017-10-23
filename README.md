@@ -105,3 +105,13 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 посмотреть все образы
 
         docker images
+
+## Прочее:
+### Настройки crontab на текущий момент
+Настройка синхронизации пользователей с LDAP и PS
+Настройка резервного копирования бд
+
+        0 12 * * * cd /var/www/back && /usr/local/bin/node /var/www/back/sync/users/index.js >/dev/null 2>&1
+        0 6 * * * pg_dump --no-password -U postgres -h localhost -F c -f /var/www/backupDb/backup-`date +\%d-\%m-\%y--\%H-\%M-\%S`.pgsql sim-track
+    
+Back up PostgreSQL databases using cron jobs https://www.a2hosting.com/kb/developer-corner/postgresql/postgresql-database-backups-using-cron-jobs

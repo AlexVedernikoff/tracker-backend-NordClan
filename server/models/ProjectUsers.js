@@ -1,3 +1,5 @@
+const hooks = require('../components/sequelizeHooks/draftMagicActivity');
+
 module.exports = function(sequelize, DataTypes) {
   const ProjectUsers = sequelize.define('ProjectUsers', {
     id: {
@@ -63,6 +65,10 @@ module.exports = function(sequelize, DataTypes) {
       }});
 
   };
+
+  /* Управление созданием и удалением магических активностей */
+  ProjectUsers.addHook('afterCreate', 'createDraftMagicActivity', hooks.createDraftMagicActivity);
+  ProjectUsers.addHook('afterDestroy', 'destroyDraftMagicActivity', hooks.destroyDraftMagicActivity);
 
   return ProjectUsers;
 };

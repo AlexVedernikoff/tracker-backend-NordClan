@@ -1,4 +1,4 @@
-FROM node:8.4
+FROM node:8.6
 RUN mkdir -p /app
 RUN npm install pm2 -g
 COPY . /app

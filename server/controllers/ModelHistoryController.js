@@ -321,7 +321,10 @@ function getValues(model) {
   if(model.prevValueFloat !== null) {
     result.prevValue = model.prevValueFloat;
   }
-  
+  if(model.prevValueText !== null) {
+    result.prevValue = model.prevValueText;
+  }
+
   if(model.valueInt !== null) {
     result.value = model.valueInt;
   }
@@ -334,6 +337,9 @@ function getValues(model) {
   if(model.valueFloat !== null) {
     result.value = model.valueFloat;
   }
-  
+  if(model.valueText !== null) {
+    result.value = model.valueText;
+  }
+
   return result;
 }

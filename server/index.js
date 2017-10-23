@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const sequelize = require('./orm');
 const routes = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
+const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 
 exports.run = function() {
@@ -30,8 +31,9 @@ exports.run = function() {
     swaggerUI: './public/swagger/',
     basePath: '/api/v1/swagger',
   }));
-  
+
   app.use(checkTokenMiddleWare);
+  app.use(checkSystemTokenMiddleWare);
   app.all('*', function(req, res, next){
     sequelize.context = { user: req.user };
     next();
