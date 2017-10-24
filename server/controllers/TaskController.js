@@ -133,11 +133,18 @@ exports.update = async function (req, res, next) {
 
 
     let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction: t, lock: 'UPDATE' });
-    if (!task) return next(createError(404)) ;
+    if (!task) {
+      t.rollback();
+      return next(createError(404))
+    };
+
 
 
     if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
-      if (!body.statusId) return next(createError(400, 'Task is closed'));
+      if (!body.statusId) {
+        t.rollback();
+        return next(createError(400, 'Task is closed'));
+      }
       body = { statusId: body.statusId };
     }
 
