@@ -8,25 +8,25 @@ const Models  = [
   // models.TaskTypesDictionary,
   // models.ProjectRolesDictionary,
   // models.TimesheetStatusesDictionary,
-  
+
   // models.Portfolio,
   // models.Project,
   // models.Sprint,
   // models.User,
-  // models.Task,
+  models.Task,
   // models.Department,
   // models.UserDepartments,
   // models.Token,
-  models.SystemToken,
+  // models.SystemToken,
 
   // models.ProjectUsers,
   // models.ProjectAttachments,
   // models.TaskAttachments,
-  
+
   // models.TimesheetTypesDictionary,
   // models.Timesheet,
   // models.TimesheetDraft,
-  // models.ModelHistory,
+  models.ModelHistory,
   // models.TaskTasks,
   // models.ItemTag,
   // models.ItemTag,

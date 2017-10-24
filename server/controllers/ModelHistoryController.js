@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
 const Sequelize = require('sequelize');
+// const ProjectHistoryService = require('../services/ProjectHistory');
 
 const entityWord = {};
 let entity;
@@ -10,21 +11,30 @@ let entity;
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  
+
   if(!req.query.pageSize) {
     req.query.pageSize = 25;
   }
-  
+
   if(!req.query.currentPage) {
     req.query.currentPage = 1;
   }
-  
+
   entity = req.params.entity;
-  
+
+  // if (entity == 'project') {
+  //   const projectId = req.params.entityId;
+  //   const pageSize = req.query.pageSize;
+  //   const currentPage = req.query.currentPage;
+  //   const projectHistory = ProjectHistoryService.get(projectId, pageSize, currentPage);
+
+  //   return res.json(projectHistory);
+  // }
+
   const where = {
     taskId: entity === 'task' ? req.params.entityId : null,
   };
-  
+
   if(req.params.entity === 'task') {
     entityWord.create = 'задачу';
     entityWord.update = 'задачи';
@@ -32,9 +42,9 @@ exports.list = function(req, res, next){
     entityWord.create = 'проект';
     entityWord.update = 'проекта';
   }
-  
+
   const result = [];
-  
+
   models.ModelHistory
     .findAll({
       where: where,
@@ -146,11 +156,11 @@ exports.list = function(req, res, next){
       ],
     })
     .then((models) => {
-  
+
       models.forEach(model => {
         const messageWithUsedModels = messageHandler(model);
-        
-        
+
+
         result.push({
           id: model.id,
           date: model.createdAt,
@@ -158,13 +168,13 @@ exports.list = function(req, res, next){
           entities: messageWithUsedModels.entities,
           author: model.author
         });
-        
+
       });
-      
+
       res.json(result);
     })
     .catch(err => next(err));
-  
+
 };
 
 function messageHandler(model) {
@@ -174,8 +184,8 @@ function messageHandler(model) {
     message: '',
     entities: {},
   };
-  
-  
+
+
   // Создал задачу
   if(model.action === 'create' && model.entity === 'Task') {
     result.message = 'cоздал(-а)';
@@ -183,7 +193,7 @@ function messageHandler(model) {
     result.message += ` '${model.task.name}'`;
     return result;
   }
-  
+
   // Исполнители
   if( model.entity === 'Task' && model.field === 'performerId' && values.value !== null && values.prevValue === null) {
     result.entities.performer = model.performer;
@@ -201,8 +211,8 @@ function messageHandler(model) {
     result.message = 'изменил(-а) исполнителя {prevPerformer} на {performer}';
     return result;
   }
-  
-  
+
+
   // Связанные задачи
   if(model.entity === 'TaskTask' && model.action === 'create' && model.field === null) {
     result.entities.linkedTask = model.taskTasks;
@@ -214,7 +224,7 @@ function messageHandler(model) {
     result.message = 'удалил(-а) связь с задачей {linkedTask}';
     return result;
   }
-  
+
   // Теги
   if(model.entity === 'ItemTag' && model.action === 'create' && model.field === null) {
     result.message = `создал(-а) тег '${model.itemTag.tag.name}'`;
@@ -224,7 +234,7 @@ function messageHandler(model) {
     result.message = `удалил(-а) тег '${model.itemTag.tag.name}'`;
     return result;
   }
-  
+
   // Файлы
   if(model.entity === 'TaskAttachment' && model.action === 'create' && model.field === null) {
     result.entities.file = model.taskAttachments;
@@ -236,15 +246,15 @@ function messageHandler(model) {
     result.message = 'удалил(-а) файл {file}';
     return result;
   }
-  
+
   if(model.sprint) result.entities.sprint = model.sprint;
   if(model.prevSprint) result.entities.prevSprint = model.prevSprint;
   if(model.parentTask) result.entities.parentTask = model.parentTask;
   if(model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
-  
-  
-  
-  
+
+
+
+
   if(model.action === 'update') {
     if(values.value  === null && values.prevValue) { // убрал
       message = 'убрал(-а)';
@@ -255,7 +265,7 @@ function messageHandler(model) {
     }
   }
 
-  
+
   switch(model.field) {
   case 'statusId': message += ' статус'; break;
   case 'name': message += ' название'; break;
@@ -267,9 +277,9 @@ function messageHandler(model) {
   case 'factExecutionTime': message += ' фактическое время исполнения'; break;
   case 'parentId': message += ' родителя'; break;
   }
-  
+
   message += ' ' + entityWord.update;
-  
+
   if(values.value  === null && values.prevValue) { // убрал
     message += ` '${transformValue(model, values, 'prev')}'`;
   } else if (values.value  && values.prevValue === null) { // установил
@@ -279,9 +289,9 @@ function messageHandler(model) {
       message += ` с '${transformValue(model, values, 'prev')}'`;
     if(values.value !== null)
       message += ` на '${transformValue(model, values)}'`;
-    
+
   }
-  
+
   result.message = message;
   return result;
 }
@@ -291,14 +301,14 @@ function messageHandler(model) {
 function transformValue(model, values, prev = false) {
   const field = model.field;
   let value = prev ? values.prevValue : values.value;
-  
+
   switch(entity + '_' + field) {
   case 'task_statusId': value = queries.dictionary.getName('TaskStatusesDictionary', value); break;
   case 'task_typeId': value = queries.dictionary.getName('TaskTypesDictionary', value); break;
   case 'task_sprintId': value = prev ? '{prevSprint}' : '{sprint}'; break;
   case 'task_parentId': value = prev ? '{prevParentTask}' : '{parentTask}'; break;
   }
-  
+
   return value;
 }
 
@@ -308,7 +318,7 @@ function getValues(model) {
     prevValue: null,
     value: null,
   };
-  
+
   if(model.prevValueInt !== null) {
     result.prevValue = model.prevValueInt;
   }

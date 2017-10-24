@@ -85,7 +85,7 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: false,
     tableName: 'model_histories'
   });
-  
+
   ModelHistory.associate = function(models) {
     ModelHistory.belongsTo(models.Task, {
       as: 'parentTask',
@@ -95,7 +95,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+
     ModelHistory.belongsTo(models.Task, {
       as: 'prevParentTask',
       foreignKey: {
@@ -104,7 +104,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-  
+
     ModelHistory.belongsTo(models.Sprint, {
       as: 'sprint',
       foreignKey: {
@@ -113,7 +113,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-  
+
     ModelHistory.belongsTo(models.Sprint, {
       as: 'prevSprint',
       foreignKey: {
@@ -122,7 +122,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+
     ModelHistory.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
@@ -131,7 +131,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-    
+
     ModelHistory.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
@@ -140,8 +140,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-    
-  
+
+
     ModelHistory.belongsTo(models.User, {
       as: 'performer',
       foreignKey: {
@@ -150,7 +150,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-    
+
     ModelHistory.belongsTo(models.User, {
       as: 'prevPerformer',
       foreignKey: {
@@ -159,8 +159,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-  
-  
+
+
     ModelHistory.belongsTo(models.TaskTasks, {
       as: 'taskTasks',
       foreignKey: {
@@ -169,7 +169,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+
     ModelHistory.belongsTo(models.ItemTag, {
       as: 'itemTag',
       foreignKey: {
@@ -178,7 +178,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+
     ModelHistory.belongsTo(models.TaskAttachments, {
       as: 'taskAttachments',
       foreignKey: {
@@ -187,8 +187,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+
   };
-  
+
   return ModelHistory;
 };

@@ -137,6 +137,14 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
+    Task.hasMany(models.ModelHistory, {
+      as: 'modelHistory',
+      foreignKey: {
+        name: 'parentId',
+        field: 'parent_id'
+      }
+    });
+
     Task.belongsToMany(models.Task, {
       as: 'linkedTasks',
       through: {
