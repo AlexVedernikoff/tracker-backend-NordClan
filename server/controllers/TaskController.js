@@ -136,7 +136,7 @@ exports.update = async function (req, res, next) {
     if (!task) {
       t.rollback();
       return next(createError(404))
-    };
+    }
 
 
     if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
@@ -148,9 +148,15 @@ exports.update = async function (req, res, next) {
     }
 
     // Удаление исполнителя
-    if (+body.userId === 0) {
+    if (+body.performerId === 0) {
       resultResponse.performerId = null;
+      resultResponse.performer = null;
       body.performerId = null;
+    }
+
+    // Получение исполнителя
+    if (+body.performerId > 0) {
+      resultResponse.performer = await models.User.findByPrimary(body.performerId, { attributes: models.User.defaultSelect, transaction: t });
     }
 
     // сброс задаче в беклог
@@ -236,12 +242,15 @@ exports.update = async function (req, res, next) {
       };
 
       await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
-      t.commit();
 
-      res.json({ statusId: body.statusId ? +body.statusId : task.statusId });
+
+      res.json({
+        ...resultResponse,
+        statusId: body.statusId ? +body.statusId : task.statusId
+      });
+      t.commit();
 
     } else {
-      t.commit();
 
       // Получаю измененные поля
       _.keys(task.dataValues).forEach((key) => {
@@ -251,6 +260,7 @@ exports.update = async function (req, res, next) {
 
       resultResponse.id = task.id;
       res.json(resultResponse);
+      t.commit();
     }
 
 

@@ -861,34 +861,6 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    '/task/{taskId}/users': {
-      post: {
-        tags: ['Tasks'],
-        summary: 'Назначить исполнителем пользователя на проект (устаревший метод)',
-        parameters: [
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'userId',
-            description: '0 для того чтобы урать текущего исполнителя',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            description: 'Можно также изменить статус задачи',
-            in: 'formData',
-          },
-        ],
-        responses: responsesCodes
-      },
-    },
     '/task/{taskId}/links': {
       post: {
         tags: ['Tasks'],
