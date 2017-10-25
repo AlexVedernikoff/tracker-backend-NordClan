@@ -16,7 +16,7 @@ services:
     build: .
     container_name: sim_back
     environment:
-      DATABASE_HOST: sim_db
+      DATABASE_HOST: db
     command: ["/app/wait-for.sh", "15", "pm2-docker", "start", "--auto-exit", "--env", "development", "processes.json"]
     volumes:
       - .:/app
@@ -30,7 +30,7 @@ services:
       - db
 
   web:
-    build: .
+    build: ./../sim-track
     container_name: sim_front
     environment:
       API_ROOT: app
