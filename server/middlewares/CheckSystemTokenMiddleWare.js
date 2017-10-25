@@ -7,7 +7,7 @@ const tokenSecretSystem = 'wywirec.';
 
 exports.checkToken = function (req, res, next) {
   let systemToken, decoded, authorization;
-  req.systemUser = false;
+  req.isSystemUser = false;
 
   if (/\/auth\/login$/ui.test(req.url)){//potential defect /blabla/auth/login - is not validated
     return next();
@@ -37,7 +37,7 @@ exports.checkToken = function (req, res, next) {
     .then((row) => {
       if(!row) throw createError(404, 'No found system access token or access token has expired');
 
-      req.systemUser = true;
+      req.isSystemUser = true;
       return next();
     })
     .catch((err) => next(createError(err)));

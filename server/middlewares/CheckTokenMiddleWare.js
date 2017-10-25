@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const moment = require('moment');
 const jwt = require('jwt-simple');
 const User = require('../models/index').User;
+const ProjectUsers = require('../models/index').ProjectUsers;
 const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
@@ -49,15 +50,17 @@ exports.checkToken = function (req, res, next) {
               $gt: moment().format() // expires > now
             }
           }
+        },
+        {
+          as: 'projects',
+          model: ProjectUsers,
+          attributes: ['projectId', 'rolesIds', 'authorId'],
+          required: false,
         }
       ]
     })
     .then((user) => {
       if(!user) throw createError(401, 'No found user or access in the system. Or access token has expired');
-
-      /*
-      Тут нужно получение прав пользователя
-      */
 
       req.user = user;
       return next();

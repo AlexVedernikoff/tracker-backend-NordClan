@@ -172,7 +172,12 @@ module.exports = function(sequelize, DataTypes) {
       }
     });
 
-    User.hasOne(models.ProjectUsers);
+    User.hasMany(models.ProjectUsers, {
+      as: 'projects',
+      foreignKey: {
+        name: 'userId',
+        field: 'user_id'
+      }});
 
   };
   
