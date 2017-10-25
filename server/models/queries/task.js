@@ -28,14 +28,6 @@ exports.findTaskWithUser = function (taskId, t = null) {
       },
       transaction: t,
       lock: t ? 'UPDATE' : null,
-    /*  include: [
-        {
-          as: 'performer',
-          model: models.User,
-          required: true,
-          paranoid: false
-        }
-      ]*/
     })
     .then((model) => {
       if (!model) throw createError(404, 'Task not found');
