@@ -14,7 +14,7 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
   if (req.params.taskId) req.body.taskId = req.params.taskId;
   if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) throw createError(400, 'sprintId must be int');
 
-  return models.TimesheetDraft.create(req.body, { transaction: t })
+  return models.TimesheetDraft.create(req.body, { returning: false, transaction: t })
     .then((draftsheetModel) => {
       if (isContinue) return draftsheetModel;
       res.json(draftsheetModel);
