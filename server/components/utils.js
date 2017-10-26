@@ -1,5 +1,4 @@
 const _ = require('underscore');
-// const commonExcludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
 
 exports.diffBetweenObjects = function(firstObject, secondObject, excludeFields) {
   const first = exclude(firstObject, excludeFields);
