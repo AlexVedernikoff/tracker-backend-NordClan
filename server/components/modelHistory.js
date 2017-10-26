@@ -1,112 +1,79 @@
 const createError = require('http-errors');
 const _ = require('underscore');
+const { diffBetweenObjects } = require('./utils');
 
-const commonExcludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
+const excludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
 
 module.exports = function(sequelize) {
-  
   _.extend(sequelize.Model.prototype, {
     hasHistory: function() {
       this.revisionable = true;
-      this.addHook('afterCreate', afterHook);
-      this.addHook('afterUpdate', afterHook);
-      this.addHook('afterDestroy', afterHook);
+      this.addHook('afterCreate', onCreate);
+      this.addHook('afterUpdate', onUpdate);
       return this;
     },
   });
-  
-  const afterHook = function(model) {
+
+  function onCreate(model) {
     const userId = model.$modelOptions.sequelize.context.user.id;
-    const modelNamePlural = this.options.name.plural;
-    const modelNameSingular = this.options.name.singular;
-    let diffObj = {};
-    let action;
-    
-    
-    if(model.$options.isNewRecord) {
-      action = 'create';
-    } else {
-      action = 'update';
-      diffObj = diff(model.dataValues, model._previousDataValues);
-    }
-    
     const taskId = model.taskId ? model.taskId :
       this.options.name.singular === 'Task' ? model.id : null;
-    
-    
-    if(model.$options.isNewRecord) {
-      sequelize.models.ModelHistory.create({
-        entity: this.options.name.singular,
+
+    sequelize.models.ModelHistory.create({
+      entity: this.options.name.singular,
+      entityId: model.id,
+      userId: userId,
+      taskId: taskId,
+      action: 'create',
+    }).catch((err) => {
+      createError(err);
+    });
+  }
+
+  function onUpdate(model) {
+    const diffObj = diffBetweenObjects(model.dataValues, model._previousDataValues, excludeFileds);
+    if(_.isEmpty(diffObj)) return;
+
+    const userId = model.$modelOptions.sequelize.context.user.id;
+    const modelNameForm = sequelize.models[this.options.name.plural] ||
+      sequelize.models[this.options.name.singular];
+
+    const entity = this.options.name.singular;
+    const taskId = getTaskId(model, this.options);
+    const histories = getHistories(diffObj, model, modelNameForm , userId, taskId, entity);
+    sequelize.models.ModelHistory.bulkCreate(histories)
+      .catch((err) => {
+        if(err) throw createError(err);
+      });
+  }
+
+  function getTaskId(model, options) {
+    return model.taskId ? model.taskId :
+      options.name.singular === 'Task' ? model.id : null;
+  }
+
+  function getHistories(diffObj, model, modelNameForm, userId, taskId, entity) {
+    return Object.keys(diffObj).map((key) => {
+      const type = modelNameForm.attributes[key].type.key;
+
+      return {
+        entity: entity,
         entityId: model.id,
         userId: userId,
         taskId: taskId,
-        action: action,
-      })
-        .catch((err) => {
-          if(err) throw createError(err);
-        });
-    } else if(!_.isEmpty(diffObj)) {
-      
-      const arr = [];
-      Object.keys(diffObj).forEach((key) => {
-        let type;
-        
-        if(sequelize.models[modelNamePlural]) {
-          type = sequelize.models[modelNamePlural].attributes[key].type.key;
-        } else {
-          type = sequelize.models[modelNameSingular].attributes[key].type.key;
-        }
-        
-        arr.push({
-          entity: this.options.name.singular,
-          entityId: model.id,
-          userId: userId,
-          taskId: taskId,
-          action: action,
-          field: key,
-          valueInt: (type === 'INTEGER') ? diffObj[key].newVal : null,
-          prevValueInt: (type === 'INTEGER') ? diffObj[key].oldVal : null,
-          valueStr: (type === 'STRING') ? diffObj[key].newVal : null,
-          prevValueStr: (type === 'STRING') ? diffObj[key].oldVal : null,
-          valueDate: (type === 'DATE') ? diffObj[key].newVal : null,
-          prevValueDate: (type === 'DATE') ? diffObj[key].oldVal : null,
-          valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
-          prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
-          valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
-          prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null
-        });
-      });
-
-
-      sequelize.models.ModelHistory.bulkCreate(arr)
-        .catch((err) => {
-          if(err) throw createError(err);
-        });
-    }
-  };
+        action: 'update',
+        field: key,
+        valueInt: (type === 'INTEGER') ? diffObj[key].newVal : null,
+        prevValueInt: (type === 'INTEGER') ? diffObj[key].oldVal : null,
+        valueStr: (type === 'STRING') ? diffObj[key].newVal : null,
+        prevValueStr: (type === 'STRING') ? diffObj[key].oldVal : null,
+        valueDate: (type === 'DATE') ? diffObj[key].newVal : null,
+        prevValueDate: (type === 'DATE') ? diffObj[key].oldVal : null,
+        valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
+        prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
+        valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
+        prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null
+      };
+    });
+  }
 };
-
-function diff(newValue, oldValue) {
-  const dataValues = _.omit(newValue, commonExcludeFileds);
-  const _previousDataValues = _.omit(oldValue, commonExcludeFileds);
-  
-  // Разница двух объектов
-  const diffKeys = _.keys(_.omit(dataValues, (val,key) => {
-    let newValue = val;
-    let oldValue = _previousDataValues[key];
-    
-    if(newValue && !isNaN(newValue))  newValue = +newValue;
-    if(oldValue && !isNaN(oldValue))  oldValue = +oldValue;
-    
-    return newValue === oldValue;
-  }));
-  
-  const diffObj = {};
-  diffKeys.forEach((key) => {
-    diffObj[key] = {
-      newVal: dataValues[key],
-      oldVal: _previousDataValues[key],
-    };
-  });
-  return diffObj;
-}
