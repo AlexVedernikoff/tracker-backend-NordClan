@@ -10,7 +10,7 @@ module.exports = function(sequelize) {
       this.revisionable = true;
       this.addHook('afterCreate', onCreate);
       this.addHook('afterUpdate', onUpdate);
-      this.addHook('afterDelete', onUpdate);
+      this.addHook('afterDestroy', onUpdate);
       return this;
     },
   });
