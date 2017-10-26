@@ -15,6 +15,7 @@ const TimesheetController = require('../controllers/TimesheetController');
 const CommentController = require('../controllers/TaskCommentController');
 const ModelHistoryController = require('../controllers/ModelHistoryController');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
+const AccessControll;
 
 // Auth
 router.post('/auth/login', AuthController.login);
@@ -32,7 +33,7 @@ router.get('/:taggable(project|task)/:taggableId/tag', TagController.list);
 router.delete('/:taggable(project|task)/:taggableId/tag/:tag', TagController.delete);
 
 // Projects
-router.post('/project', ProjectController.create);
+router.post('/project', AccessControll.can('project', 'create'), ProjectController.create);
 router.get('/project/:id', ProjectController.read);
 router.put('/project/:id', ProjectController.update);
 router.delete('/project/:id', ProjectController.delete);
