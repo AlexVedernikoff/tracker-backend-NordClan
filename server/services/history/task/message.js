@@ -13,7 +13,7 @@ const ACTIONS = {
 };
 
 function getAction(changedProperty) {
-  if (!changedProperty.value && changedProperty.preValue) {
+  if (!changedProperty.value && changedProperty.prevValue) {
     return ACTIONS.DELETE;
   } else if (changedProperty.value && !changedProperty.prevValue) {
     return ACTIONS.SET;
@@ -26,9 +26,9 @@ function getAction(changedProperty) {
 
 exports.getAnswer = function (model) {
   const changedProperty = getChangedProperty(model);
-  const messageHandlers = declarativeHandlers(model, changedProperty);
+  const messageHandlers = declarativeHandlers();
   const messageHandler = messageHandlers.filter(handler => {
-    return handler.statement(model);
+    return handler.statement(model, changedProperty);
   })[0];
 
   const answer = messageHandler ?
@@ -51,21 +51,6 @@ function getChangedProperty(model) {
     prevValue: model[`prevValue${currentType}`] || null,
     value: model[`value${currentType}`] || null
   };
-}
-
-function transformValue(model, changedProperty, hasPrevChangedProperty = false) {
-  const currentValue = hasPrevChangedProperty ?
-    changedProperty.prevValue :
-    changedProperty.value;
-
-  const changedValue = {
-    statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue),
-    typeId: queries.dictionary.getName('TaskTypesDictionary', currentValue),
-    sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
-    parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
-  };
-
-  return changedValue[model.field] || currentValue;
 }
 
 //TODO refactoring
@@ -118,8 +103,22 @@ function generativeAnswer(model, values) {
   return result;
 }
 
-function declarativeHandlers(model, values) {
-  const action = getAction(values);
+function transformValue(model, changedProperty, hasPrevChangedProperty = false) {
+  const currentValue = hasPrevChangedProperty ?
+    changedProperty.prevValue :
+    changedProperty.value;
+
+  const changedValue = {
+    statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue),
+    typeId: queries.dictionary.getName('TaskTypesDictionary', currentValue),
+    sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
+    parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
+  };
+
+  return changedValue[model.field] || currentValue;
+}
+
+function declarativeHandlers() {
   return [
     {
       name: 'create Task',
@@ -135,8 +134,8 @@ function declarativeHandlers(model, values) {
     },
     {
       name: 'set performer',
-      statement: (model) => {
-        return model.entity === 'Task' && model.field === 'performerId' && action === ACTIONS.SET;
+      statement: (model, values) => {
+        return model.entity === 'Task' && model.field === 'performerId' && getAction(values) === ACTIONS.SET;
       },
       answer: (model) => {
         return {
@@ -149,22 +148,22 @@ function declarativeHandlers(model, values) {
     },
     {
       name: 'delete performer',
-      statement: (model) => {
-        return model.entity === 'Task' && model.field === 'performerId' && action === ACTIONS.DELETE;
+      statement: (model, values) => {
+        return model.entity === 'Task' && model.field === 'performerId' && getAction(values) === ACTIONS.DELETE;
       },
       answer: (model) => {
         return {
           message: 'убрал(-а) исполнителя {prevPerformer}',
           entities: {
-            performer: model.performer
+            prevPerformer: model.prevPerformer
           },
         };
       }
     },
     {
       name: 'change performer',
-      statement: (model) => {
-        model.entity === 'Task' && model.field === 'performerId' && action === ACTIONS.CHANGE;
+      statement: (model, values) => {
+        return model.entity === 'Task' && model.field === 'performerId' && getAction(values) === ACTIONS.CHANGE;
       },
       answer: (model) => {
         return {

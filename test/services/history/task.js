@@ -52,8 +52,8 @@ describe('TaskHistory', () => {
         action: 'update',
         field: 'statusId',
         entity: 'Task',
-        valueStr: 2,
-        prevValueStr: 1
+        valueInt: 2,
+        prevValueInt: 1
       };
 
       const actual = getAnswer(historyModel);
@@ -78,6 +78,60 @@ describe('TaskHistory', () => {
       const expected = {
         message: 'изменил(-а) описание задачи с \'а\' на \'б\'',
         entities: {}
+      };
+
+      expect(expected).to.deep.equal(actual);
+    });
+
+    it('should return correct message on change performer', () => {
+      const performer = {
+        name: 'Вася'
+      };
+      const prevPerformer = {
+        name: 'Петя'
+      };
+
+      const historyModel = {
+        action: 'update',
+        field: 'performerId',
+        entity: 'Task',
+        valueInt: 1,
+        prevValueInt: 2,
+        performer,
+        prevPerformer
+      };
+
+      const actual = getAnswer(historyModel);
+      const expected = {
+        message: 'изменил(-а) исполнителя {prevPerformer} на {performer}',
+        entities: {
+          performer,
+          prevPerformer
+        }
+      };
+
+      expect(expected).to.deep.equal(actual);
+    });
+
+    it('should return correct message on delete performer', () => {
+      const prevPerformer = {
+        name: 'Петя'
+      };
+
+      const historyModel = {
+        action: 'update',
+        field: 'performerId',
+        entity: 'Task',
+        prevValueInt: 2,
+        prevPerformer
+      };
+
+      const actual = getAnswer(historyModel);
+      const expected = {
+        message: 'убрал(-а) исполнителя {prevPerformer}',
+        entities: {
+          prevPerformer
+        }
       };
 
       expect(expected).to.deep.equal(actual);
