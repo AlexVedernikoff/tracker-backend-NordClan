@@ -12,149 +12,112 @@ const ACTIONS = {
   CREATE: 'CREATE'
 };
 
-function getAction(values) {
-  if (!values.value && values.preValue) {
+function getAction(changedProperty) {
+  if (!changedProperty.value && changedProperty.preValue) {
     return ACTIONS.DELETE;
-  } else if (values.value && values.prevValue) {
+  } else if (changedProperty.value && !changedProperty.prevValue) {
     return ACTIONS.SET;
-  } else if (!values.value && !values.prevValue) {
+  } else if (!changedProperty.value && !changedProperty.prevValue) {
     return ACTIONS.CREATE;
-  } else if (values.value && values.prevValue) {
+  } else if (changedProperty.value && changedProperty.prevValue) {
     return ACTIONS.CHANGE;
   }
 }
 
 exports.getAnswer = function (model) {
-  const values = getValues(model);
-  const initState  = {
-    message: '',
-    entities: {},
-  };
-
-  const messageHandlers = getAllHandlers(model, values);
+  const changedProperty = getChangedProperty(model);
+  const messageHandlers = declarativeHandlers(model, changedProperty);
   const messageHandler = messageHandlers.filter(handler => {
     return handler.statement(model);
   })[0];
 
-  const answer = messageHandler ? messageHandler.answer(model) : initState;
+  const answer = messageHandler ?
+    messageHandler.answer(model) :
+    generativeAnswer(model, changedProperty);
+
   return {
-    message: addPropertyDiff(answer.message, model, values),
+    message: answer.message,
     entities: answer.entities
   };
 };
 
-function getValues(model) {
+function getChangedProperty(model) {
   const types = ['Int', 'Str', 'Date', 'Float', 'Text'];
   const currentType = types.filter(type => {
-    return model[`value${type}`] && model[`prevValue${type}`];
-  });
+    return model[`value${type}`] || model[`prevValue${type}`];
+  })[0];
 
   return {
-    prevValue: model[`prevValue${currentType}`],
-    value: model[`value${currentType}`]
+    prevValue: model[`prevValue${currentType}`] || null,
+    value: model[`value${currentType}`] || null
   };
 }
 
-function getAllHandlers(model, values) {
-  return [
-    ...declarativeHandlers(model, values),
-    ...generativeHandlers(model, values)
-  ];
-}
+function transformValue(model, changedProperty, hasPrevChangedProperty = false) {
+  const currentValue = hasPrevChangedProperty ?
+    changedProperty.prevValue :
+    changedProperty.value;
 
-function addPropertyDiff(message, model, values) {
-  const properties = {
-    entity: {
-      statusId: ' статус',
-      name: ' название',
-      typeId: ' тип',
-      sprintId: ' спринт',
-      description: ' описание',
-      prioritiesId: ' приоритет',
-      plannedExecutionTime: ' планируемое время исполнения',
-      factExecutionTime: ' фактическое время исполнения',
-      parentId: ' родителя'
-    },
-    changedValues: [
-      {
-        statement: ACTIONS.SET,
-        message: ` '${transformValue(model, values, 'prev')}'`
-      },
-      {
-        statement: ACTIONS.DELETE,
-        message: ` '${transformValue(model, values)}'`
-      },
-      {
-        statement: ACTIONS.CHANGE,
-        message: ` с '${transformValue(model, values, 'prev')}'`
-      },
-      {
-        statement: ACTIONS.CHANGE,
-        message: ` на '${transformValue(model, values)}'`
-      }
-    ]
+  const changedValue = {
+    statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue),
+    typeId: queries.dictionary.getName('TaskTypesDictionary', currentValue),
+    sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
+    parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
   };
 
-  const action = getAction(values);
-  const entity = properties.entity[model.field];
-  const diff = properties.changedValues
-    .filter(value => {
-      return value.statement === action;
-    })
-    .map(value => {
-      return value.message;
-    })
-    .join(' ');
-
-  const suffix = `${entity} ${entityWord.update} ${diff}`;
-  return diff ? `${message} ${suffix}` : message;
+  return changedValue[model.field] || currentValue;
 }
 
-function transformValue(model, values, prev = false) {
-  const value = prev ? values.prevValue : values.value;
-
-  const valueTypes = {
-    statusId: queries.dictionary.getName('TaskStatusesDictionary', value),
-    typeId: queries.dictionary.getName('TaskTypesDictionary', value),
-    sprintId: prev ? '{prevSprint}' : '{sprint}',
-    parentId: prev ? '{prevParentTask}' : '{parentTask}'
+//TODO refactoring
+function generativeAnswer(model, values) {
+  let result = {
+    message: '',
+    entities: {}
   };
 
-  return valueTypes[model.field];
-}
+  if(model.sprint) result.entities.sprint = model.sprint;
+  if(model.prevSprint) result.entities.prevSprint = model.prevSprint;
+  if(model.parentTask) result.entities.parentTask = model.parentTask;
+  if(model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
 
-function generativeHandlers(model, values) {
-  const messages = {
-    update: {
-      DELETE: 'убрал(-а)',
-      SET: 'установил(-а)',
-      CHANGE: 'изменил(-а)'
+  if(model.action === 'update') {
+    if(values.value  === null && values.prevValue) { // убрал
+      result.message = 'убрал(-а)';
+    } else if (values.value  && values.prevValue === null) { // установил
+      result.message = 'установил(-а)';
+    }else { // изменил
+      result.message = 'изменил(-а)';
     }
-  };
+  }
 
-  const action = getAction(values);
-  const entityHandlers = ['sprint', 'prevSprint', 'parentTask', 'prevParentTask'];
-  const message = messages[model.action] ? messages[model.action][action] : '';
+  switch(model.field) {
+  case 'statusId': result.message += ' статус'; break;
+  case 'name': result.message += ' название'; break;
+  case 'typeId': result.message += ' тип'; break;
+  case 'sprintId': result.message += ' спринт'; break;
+  case 'description': result.message += ' описание'; break;
+  case 'prioritiesId': result.message += ' приоритет'; break;
+  case 'plannedExecutionTime': result.message += ' планируемое время исполнения'; break;
+  case 'factExecutionTime': result.message += ' фактическое время исполнения'; break;
+  case 'parentId': result.message += ' родителя'; break;
+  }
 
-  return entityHandlers.map(entity => {
-    return {
-      name: `${action} ${entity}`,
-      statement: (model) => {
-        return typeof(model[entity]) !== 'undefined';
-      },
-      answer: (model) => {
-        return {
-          message: message,
-          entities: {
-            [entity]: model[entity]
-          }
-        };
-      }
-    };
-  });
+  result.message += ' ' + entityWord.update;
+
+  if(values.value  === null && values.prevValue) { // убрал
+    result.message += ` '${transformValue(model, values, 'prev')}'`;
+  } else if (values.value  && values.prevValue === null) { // установил
+    result.message += ` '${transformValue(model, values)}'`;
+  }else { // изменил
+    if(values.prevValue !== null)
+      result.message += ` с '${transformValue(model, values, 'prev')}'`;
+    if(values.value !== null)
+      result.message += ` на '${transformValue(model, values)}'`;
+  }
+
+  return result;
 }
 
-//TODO generate all handlers
 function declarativeHandlers(model, values) {
   const action = getAction(values);
   return [
