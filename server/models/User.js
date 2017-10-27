@@ -179,6 +179,13 @@ module.exports = function(sequelize, DataTypes) {
         field: 'user_id'
       }});
 
+    User.hasMany(models.ProjectUsers, {
+      as: 'myProjects',
+      foreignKey: {
+        name: 'authorId',
+        field: 'author_id'
+      }});
+
   };
   
   User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn', 'firstNameEn', 'skype',  'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole'];
