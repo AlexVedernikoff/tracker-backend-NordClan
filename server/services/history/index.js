@@ -3,6 +3,7 @@ const projectAnswer = require('./project/message');
 const taskRequest = require('./task/request');
 const taskAnswer = require('./task/message');
 const models = require('../../models');
+const { firstLetterUp } = require('../../components/StringHelper');
 
 module.exports = () => {
   const requestBuilder = {
@@ -34,7 +35,8 @@ module.exports = () => {
   return {
     call: (entity, entityId, pageSize, currentPage) => {
       const request = requestBuilder[entity](entityId, pageSize, currentPage);
-      return models.ModelHistory
+      const modelName = `${firstLetterUp(entity)}History`;
+      return models[modelName]
         .findAll(request)
         .then((models) => {
           return createResponse(entity, models);

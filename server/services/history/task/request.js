@@ -16,7 +16,7 @@ function additionalEntities() {
     {
       as: 'parentTask',
       model: models.Task,
-      where: Sequelize.literal('"ModelHistory"."field" = \'parentId\'' ),
+      where: Sequelize.literal('"TaskHistory"."field" = \'parentId\'' ),
       attributes: ['id','name', 'deletedAt'],
       required: false,
       paranoid: false,
@@ -24,7 +24,7 @@ function additionalEntities() {
     {
       as: 'prevParentTask',
       model: models.Task,
-      where: Sequelize.literal('"ModelHistory"."field" = \'parentId\'' ),
+      where: Sequelize.literal('"TaskHistory"."field" = \'parentId\'' ),
       attributes: ['id','name', 'deletedAt'],
       required: false,
       paranoid: false,
@@ -32,7 +32,7 @@ function additionalEntities() {
     {
       as: 'sprint',
       model: models.Sprint,
-      where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
+      where: Sequelize.literal('"TaskHistory"."field" = \'sprintId\'' ),
       attributes: ['id', 'name', 'deletedAt'],
       required: false,
       paranoid: false,
@@ -40,7 +40,7 @@ function additionalEntities() {
     {
       as: 'prevSprint',
       model: models.Sprint,
-      where: Sequelize.literal('"ModelHistory"."field" = \'sprintId\'' ),
+      where: Sequelize.literal('"TaskHistory"."field" = \'sprintId\'' ),
       attributes: ['id', 'name', 'deletedAt'],
       required: false,
       paranoid: false,
@@ -48,7 +48,7 @@ function additionalEntities() {
     {
       as: 'performer',
       model: models.User,
-      where: Sequelize.literal('"ModelHistory"."field" = \'performerId\'' ),
+      where: Sequelize.literal('"TaskHistory"."field" = \'performerId\'' ),
       attributes: models.User.defaultSelect,
       required: false,
       paranoid: false,
@@ -56,7 +56,7 @@ function additionalEntities() {
     {
       as: 'prevPerformer',
       model: models.User,
-      where: Sequelize.literal('"ModelHistory"."field" = \'performerId\'' ),
+      where: Sequelize.literal('"TaskHistory"."field" = \'performerId\'' ),
       attributes: models.User.defaultSelect,
       required: false,
       paranoid: false,
@@ -71,7 +71,7 @@ function additionalEntities() {
     {
       as: 'task',
       model: models.Task,
-      where: Sequelize.literal('"ModelHistory"."entity" = \'Task\'' ),
+      where: Sequelize.literal('"TaskHistory"."entity" = \'Task\'' ),
       attributes: ['id','name', 'deletedAt'],
       paranoid: false,
       required: false,
@@ -79,7 +79,7 @@ function additionalEntities() {
     {
       as: 'taskTasks',
       model: models.TaskTasks,
-      where: Sequelize.literal('"ModelHistory"."entity" = \'TaskTask\'' ),
+      where: Sequelize.literal('"TaskHistory"."entity" = \'TaskTask\'' ),
       paranoid: false,
       required: false,
       include: [
@@ -93,7 +93,7 @@ function additionalEntities() {
     {
       as: 'itemTag',
       model: models.ItemTag,
-      where: Sequelize.literal('"ModelHistory"."entity" = \'ItemTag\'' ),
+      where: Sequelize.literal('"TaskHistory"."entity" = \'ItemTag\'' ),
       required: false,
       paranoid: false,
       include: [
@@ -109,7 +109,7 @@ function additionalEntities() {
     {
       as: 'taskAttachments',
       model: models.TaskAttachments,
-      where: Sequelize.literal('"ModelHistory"."entity" = \'TaskAttachment\'' ),
+      where: Sequelize.literal('"TaskHistory"."entity" = \'TaskAttachment\'' ),
       attributes: models.TaskAttachments.defaultSelect,
       required: false,
       paranoid: false,

@@ -4,11 +4,6 @@ const _ = require('underscore');
 const { diffBetweenObjects } = require('./utils');
 
 exports.historyHandler = function(sequelize, historyModel) {
-  const modelBuilder = {
-    Task: 'ModelHistory',
-    Project: 'ProjectHistory'
-  };
-
   function getHistoryModelId(model) {
     const modelIdProperty = `${historyModel.toLowerCase()}Id`;
     return model[modelIdProperty] || model.id;
@@ -44,7 +39,7 @@ exports.historyHandler = function(sequelize, historyModel) {
       const userId = model.$modelOptions.sequelize.context.user.id;
       const modelIdProperty = `${historyModel.toLowerCase()}Id`;
       const modelId = getHistoryModelId(model);
-      const modelName = modelBuilder[historyModel];
+      const modelName = `${historyModel}History`;
 
       sequelize.models[modelName].create({
         entity: this.options.name.singular,
@@ -69,7 +64,7 @@ exports.historyHandler = function(sequelize, historyModel) {
       const modelId = getHistoryModelId(model);
 
       const histories = getHistories(diffObj, model, modelNameForm , userId, modelId, entity);
-      const modelName = modelBuilder[historyModel];
+      const modelName = `${historyModel}History`;
 
       sequelize.models[modelName].bulkCreate(histories)
         .catch((err) => {
