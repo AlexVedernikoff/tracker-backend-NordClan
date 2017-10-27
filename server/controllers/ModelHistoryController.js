@@ -1,6 +1,5 @@
 const createError = require('http-errors');
-// const ProjectHistoryService = require('../services/history/project');
-const TaskHistoryService = require('../services/history/task/index');
+const historyService = require('../services/history/index');
 
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
@@ -14,13 +13,8 @@ exports.list = function(req, res, next){
   const pageSize = req.query.pageSize;
   const currentPage = req.query.currentPage;
 
-  const services = {
-    // project: ProjectHistoryService,
-    task: TaskHistoryService
-  };
-
-  services[entity]()
-    .call(entityId, pageSize, currentPage)
+  historyService()
+    .call(entity, entityId, pageSize, currentPage)
     .then(histories => res.json(histories))
     .catch(error => next(error));
 };

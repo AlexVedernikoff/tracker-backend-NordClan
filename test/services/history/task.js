@@ -1,6 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
-const { getAnswer } = require('./../../../server/services/history/task/message');
+const getAnswer = require('./../../../server/services/history/task/message');
 
 describe('TaskHistory', () => {
   describe('Message generator', () => {

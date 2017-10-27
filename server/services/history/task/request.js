@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const models = require('../../../models');
 
-exports.getRequest = function(taskId, pageSize, currentPage) {
+module.exports = function(taskId, pageSize, currentPage) {
   return {
     where: { taskId: taskId },
     limit: pageSize,

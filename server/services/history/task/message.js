@@ -1,15 +1,11 @@
 const queries = require('./../../../models/queries');
+const { getChangedProperty } = require('./../utils');
+const constants = require('./../constants');
+const ACTIONS = constants.actions;
 
 const entityWord = {
   create: 'задачу',
   update: 'задачи'
-};
-
-const ACTIONS = {
-  SET: 'SET',
-  DELETE: 'DELETE',
-  CHANGE: 'CHANGE',
-  CREATE: 'CREATE'
 };
 
 function getAction(changedProperty) {
@@ -24,7 +20,7 @@ function getAction(changedProperty) {
   }
 }
 
-exports.getAnswer = function (model) {
+module.exports = function (model) {
   const changedProperty = getChangedProperty(model);
   const messageHandlers = declarativeHandlers();
   const messageHandler = messageHandlers.filter(handler => {
@@ -41,17 +37,6 @@ exports.getAnswer = function (model) {
   };
 };
 
-function getChangedProperty(model) {
-  const types = ['Int', 'Str', 'Date', 'Float', 'Text'];
-  const currentType = types.filter(type => {
-    return model[`value${type}`] || model[`prevValue${type}`];
-  })[0];
-
-  return {
-    prevValue: model[`prevValue${currentType}`] || null,
-    value: model[`value${currentType}`] || null
-  };
-}
 
 //TODO refactoring
 function generativeAnswer(model, values) {
