@@ -141,7 +141,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'projectId',
         field: 'project_id'
       }});
-    
+
     Project.hasMany(models.ItemTag, {
       as: 'itemTag',
       foreignKey: {
@@ -201,10 +201,10 @@ module.exports = function(sequelize, DataTypes) {
       foreignKey: 'taggable_id',
       constraints: false
     });
-    
+
     Project.hasOne(models.ProjectUsers);
-  
-  
+
+
     Project.hasMany(models.ProjectAttachments, {
       as: 'attachments',
       foreignKey: 'project_id',
@@ -226,6 +226,8 @@ module.exports = function(sequelize, DataTypes) {
     'completedAt',
     'createdAt'
   ];
+
+  Project.addHistoryForProject();
 
   return Project;
 };

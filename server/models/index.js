@@ -3,8 +3,8 @@ const fs        = require('fs');
 const path      = require('path');
 const Sequelize = require('sequelize');
 const sequelize = require('../orm');
-const modelHistory = require('../components/modelHistory');
-modelHistory(sequelize);
+const historyHook = require('../components/historyHook');
+historyHook(sequelize);
 
 const db = {};
 

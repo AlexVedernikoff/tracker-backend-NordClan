@@ -58,10 +58,10 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
-  
+
   TaskAttachments.defaultSelect = ['id', 'fileName', 'path', 'previewPath', 'size', 'type', 'deletedAt'];
-  
-  TaskAttachments.hasHistory();
-  
+
+  TaskAttachments.addHistoryForTask();
+
   return TaskAttachments;
 };
