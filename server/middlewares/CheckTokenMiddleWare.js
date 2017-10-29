@@ -56,6 +56,12 @@ exports.checkToken = function (req, res, next) {
           model: ProjectUsers,
           attributes: ['projectId', 'rolesIds', 'authorId'],
           required: false,
+        },
+        {
+          as: 'myProjects',
+          model: ProjectUsers,
+          attributes: ['projectId', 'rolesIds', 'authorId'],
+          required: false,
         }
       ]
     })

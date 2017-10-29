@@ -43,7 +43,13 @@ exports.create = function(req, res, next){
 exports.read = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
-  req.user.can('project', 'read', +req.params.id);
+  // req.user.can('project', 'read', +req.params.id);
+
+
+  let a = req.user.Access.project(+req.params.id);
+
+
+  console.log(a);
 
 
   Project
