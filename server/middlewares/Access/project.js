@@ -1,4 +1,5 @@
 const _ = require('underscore');
+const models = require('../../models/index');
 
 const projectGrants = {
   user: {
@@ -11,8 +12,8 @@ const projectGrants = {
 };
 
 const NO_ACCESS = 'NO_ACCESS';
-const PARTICIPANT = 'PARTICIPANT';
-const MANAGER = 'MANAGER';
+const USER_PROJECT = 'USER_PROJECT';
+const ADMIN_PROJECT = 'ADMIN_PROJECT';
 
 
 module.exports = function (user) {
@@ -22,56 +23,66 @@ module.exports = function (user) {
       //this.user = user;
       this.projectId = projectId;
       this.role = null;
-      this.isParticipant = false;
-      this.isManager = false;
-      this.setRole();
+      this.isAdmin = false;
+      this.isUser = false;
+      this.initRole();
     }
 
 
     can () {
-      // req.user.can = (resource, action, projectId) => {
-      //   const grants = _.find(req.user.projects, (obj) => {
-      //     console.log(obj.dataValues.projectId );
-      //     return obj.dataValues.projectId === projectId;
-      //   });
-      //   console.log(grants);
-      //   return grants;
-      // };
+      // ...
     }
 
+    initRole () {
+      // Проверка на глобальную роль
+      if (user.globalRole === 'ADMIN') {
+        this.role = ADMIN_PROJECT;
+        this.isAdmin = true;
+        this.isUser = true;
+      }
 
-
-
-    // noinspection JSAnnotator
-    setRole () {
-      const isMyProject = Boolean(_.find(user.myProjects, (obj) => obj.dataValues.projectId === this.projectId));
+      // Автор проекта
+      const isMyProject = Boolean(_.find(user.createdProjects, (obj) => obj.id === this.projectId));
       if (isMyProject) {
-        this.role = MANAGER;
-        this.isManager = true;
-        this.isParticipant = true;
+        this.role = ADMIN_PROJECT;
+        this.isAdmin = true;
+        this.isUser = true;
         return;
       }
 
 
-      const poject = _.find(this.myProjects, (obj) => obj.projectId === this.projectId);
-      if(!poject) {
-        this.isParticipant = true;
-        
+      const poject = _.find(user.userProjects, (obj) => obj.projectId === this.projectId);
+      if(poject) {
+        // PM, AM проекта
+        const roles = JSON.parse(poject.rolesIds);
+        if (contains(roles, models.ProjectRolesDictionary.ADMIN_IDS)) {
+          this.role = ADMIN_PROJECT;
+          this.isAdmin = true;
+          this.isUser = true;
+          return;
+        }
 
+        // Просто пользователь проекта
+        this.role = USER_PROJECT;
+        this.isAdmin = false;
+        this.isUser = true;
+        return;
       }
 
-
+      // Нет доступа к проекту
       this.role = NO_ACCESS;
       this.isManager = false;
       this.isParticipant = false;
       return;
-    };
-
-
+    }
   }
 
-  // const myProjects = req.user.myProjects.map(o => o.dataValues);
-  // const projects = req.user.projects.map(o => o.dataValues);
   return projectId => new ProjectAccess(projectId);
-
 };
+
+function contains(where, what){
+  for(let i=0; i < what.length; i++){
+    if(where.indexOf(what[i]) !== -1) return true;
+  }
+  return false;
+}

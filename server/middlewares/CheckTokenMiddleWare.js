@@ -3,6 +3,7 @@ const moment = require('moment');
 const jwt = require('jwt-simple');
 const User = require('../models/index').User;
 const ProjectUsers = require('../models/index').ProjectUsers;
+const Project = require('../models/index').Project;
 const UserTokens = require('../models/index').Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
@@ -52,15 +53,15 @@ exports.checkToken = function (req, res, next) {
           }
         },
         {
-          as: 'projects',
+          as: 'userProjects',
           model: ProjectUsers,
           attributes: ['projectId', 'rolesIds', 'authorId'],
           required: false,
         },
         {
-          as: 'myProjects',
-          model: ProjectUsers,
-          attributes: ['projectId', 'rolesIds', 'authorId'],
+          as: 'createdProjects',
+          model: Project,
+          attributes: ['id', 'name', 'authorId'],
           required: false,
         }
       ]

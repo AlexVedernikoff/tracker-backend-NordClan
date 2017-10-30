@@ -173,14 +173,14 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     User.hasMany(models.ProjectUsers, {
-      as: 'projects',
+      as: 'userProjects',
       foreignKey: {
         name: 'userId',
         field: 'user_id'
       }});
 
-    User.hasMany(models.ProjectUsers, {
-      as: 'myProjects',
+    User.hasMany(models.Project, {
+      as: 'createdProjects',
       foreignKey: {
         name: 'authorId',
         field: 'author_id'
