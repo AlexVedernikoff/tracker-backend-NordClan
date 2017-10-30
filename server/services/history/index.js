@@ -18,16 +18,19 @@ module.exports = () => {
 
   function createResponse(entity, models) {
     return new Promise(resolve => {
-      const histories = models.map(model => {
-        const answer = messageBuilder[entity](model);
-        return {
-          id: model.id,
-          date: model.createdAt,
-          message: answer.message,
-          entities: answer.entities,
-          author: model.author
-        };
-      });
+      const histories = models
+        .map(model => {
+          const answer = messageBuilder[entity](model);
+          return {
+            id: model.id,
+            date: model.createdAt,
+            message: answer.message,
+            entities: answer.entities,
+            author: model.author
+          };
+        })
+        .filter(model => model);
+
       resolve(histories);
     });
   }

@@ -96,6 +96,24 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
+
+    ProjectHistory.belongsTo(models.Sprint, {
+      as: 'sprint',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false,
+    });
+
+    ProjectHistory.belongsTo(models.ProjectUsers, {
+      as: 'user',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false,
+    });
   };
 
   return ProjectHistory;

@@ -5,23 +5,72 @@ const constants = require('./../constants');
 
 module.exports = function(model) {
   const changedProperty = getChangedProperty(model);
-  const message = getMessage(model.entity, model.field, changedProperty);
-  const entities = getEntities();
+  const resourceName = getResourceName(model, changedProperty);
+  const resource = constants.resources[resourceName];
+  console.log(resourceName);
+
+  if (!resource) return;
+
+  const { message, entities } = getResources(resource, model, changedProperty);
   return { message, entities };
 };
 
-function getMessage(entity, field, changedProperty) {
+function getResourceName(model, changedProperty) {
   const action = detectAction(changedProperty);
-  const resource = `${action}_${entity}_${field}`.toUpperCase();
-  console.log(resource);
-  const message = constants.resources[resource];
-  const properties = transformProperties(field, changedProperty);
-
-  return insertChangedProperties(message, properties);
+  return model.field ?
+    `${action}_${model.entity}_${model.field}`.toUpperCase() :
+    `${action}_${model.entity}`.toUpperCase();
 }
 
-function getEntities() {
-  return {};
+function getResources(resource, model, changedProperty) {
+  const message = transformMessage(resource.message, changedProperty);
+  const properties = transformProperties(model.field, changedProperty);
+  const entitiesName = resource.entities || [];
+  const entities = entitiesName.reduce((acc, name) => {
+    acc[name] = model[name];
+    return acc;
+  }, {});
+
+  return {
+    message: insertChangedProperties(message, properties),
+    entities
+  };
+}
+
+function transformMessage(message, changedProperty) {
+  //TODO bad regexp
+  const flags = message.match(/{([^{}]+)}/g) || [];
+  const dictionary = {
+    role: (changedProperty) => getUserRole(changedProperty),
+    action: (changedProperty) => getUserAction(changedProperty)
+  };
+
+  console.log(flags);
+
+  return flags
+    .map(flag => flag.replace(/[{}]/g, ''))
+    .filter(flag => dictionary[flag])
+    .reduce((acc, flag) => {
+      const replacement = dictionary[flag](changedProperty);
+      console.log(replacement);
+      return acc.replace(`{${flag}}`, replacement);
+    }, message);
+}
+
+function getUserAction(changedProperty) {
+  return changedProperty.value.length > changedProperty.prevValue.length ?
+    'добавил' : 'удалил';
+}
+
+function getUserRole(changedProperty) {
+  const rolesBefore = changedProperty.prevValue.match(/[0-9]+/g);
+  const rolesAfter = changedProperty.prevValue.match(/[0-9]+/g);
+
+  const roleId = rolesBefore
+    .concat(rolesAfter)
+    .filter((value, index, self) => self.indexOf(value) === index)[0];
+
+  return queries.dictionary.getName('ProjectRolesDictionary', roleId);
 }
 
 function insertChangedProperties(message, changedProperty) {

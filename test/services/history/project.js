@@ -63,5 +63,83 @@ describe('ProjectHistory', () => {
 
       expect(expected).to.deep.equal(actual);
     });
+
+    it('should return correct message on create sprint', () => {
+      const sprint = {
+        name: 'Спринт1'
+      };
+
+      const history = {
+        entity: 'Sprint',
+        entityId: 1,
+        action: 'create',
+        projectId: 1,
+        sprint
+      };
+
+      const actual = generateMessage(history);
+      const expected = {
+        message: 'создал(-а) спринт \'{sprint}\'',
+        entities: {
+          sprint
+        }
+      };
+
+      expect(expected).to.deep.equal(actual);
+    });
+
+    it('should return correct message on add user role', () => {
+      const user = {
+        name: 'Vasya'
+      };
+
+      const history = {
+        entity: 'ProjectUsers',
+        entityId: 1,
+        action: 'update',
+        field: 'rolesIds',
+        projectId: 1,
+        valueStr: '[1,2,3]',
+        prevValueStr: '[1,2]',
+        user
+      };
+
+      const actual = generateMessage(history);
+      const expected = {
+        message: 'добавил(-а) роль Account для пользователя {user}',
+        entities: {
+          user
+        }
+      };
+
+      expect(expected).to.deep.equal(actual);
+    });
+
+    it('should return correct message on delete user role', () => {
+      const user = {
+        name: 'Vasya'
+      };
+
+      const history = {
+        entity: 'ProjectUsers',
+        entityId: 1,
+        action: 'update',
+        field: 'rolesIds',
+        projectId: 1,
+        valueStr: '[1,2]',
+        prevValueStr: '[1,2,3]',
+        user
+      };
+
+      const actual = generateMessage(history);
+      const expected = {
+        message: 'удалил(-а) роль Account для пользователя {user}',
+        entities: {
+          user
+        }
+      };
+
+      expect(expected).to.deep.equal(actual);
+    });
   });
 });
