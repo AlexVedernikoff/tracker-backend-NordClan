@@ -1,4 +1,4 @@
-const excludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId'];
+const excludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId', 'completedAt', 'completed_at'];
 const createError = require('http-errors');
 const _ = require('underscore');
 const { diffBetweenObjects } = require('./utils');
