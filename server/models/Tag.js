@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
     ],
     underscored: true,
     timestamps: false,
-    paranoid: true,
+    paranoid: false,
     tableName: 'tags'
   });
 
