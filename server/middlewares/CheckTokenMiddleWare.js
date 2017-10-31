@@ -1,12 +1,14 @@
 const createError = require('http-errors');
 const moment = require('moment');
 const jwt = require('jwt-simple');
-const User = require('../models/index').User;
-const ProjectUsers = require('../models/index').ProjectUsers;
-const Project = require('../models/index').Project;
-const UserTokens = require('../models/index').Token;
+const models = require('../models/index');
+const User = models.User;
+const ProjectUsers = models.ProjectUsers;
+const Project = models.Project;
+const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const _ = require('underscore');
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -53,23 +55,39 @@ exports.checkToken = function (req, res, next) {
           }
         },
         {
-          as: 'userProjects',
+          as: 'usersProjects',
           model: ProjectUsers,
-          attributes: ['projectId', 'rolesIds', 'authorId'],
+          attributes: ['projectId', 'rolesIds'],
           required: false,
         },
         {
-          as: 'createdProjects',
+          as: 'authorsProjects',
           model: Project,
-          attributes: ['id', 'name', 'authorId'],
+          attributes: ['id'],
           required: false,
-        }
+        },
+        {
+          model: models.Department,
+          as: 'department',
+          required: false,
+          attributes: ['name'],
+          through: {
+            model: models.UserDepartments,
+            attributes: []
+          },
+        },
       ]
     })
     .then((user) => {
       if(!user) throw createError(401, 'No found user or access in the system. Or access token has expired');
 
+      if(user.dataValues.department[0]) {
+        user.dataValues.department = user.dataValues.department[0].name;
+      }
+
+      user.dataValues.projectsRoles = getProjectsRoles(user);
       req.user = user;
+
       return next();
     })
     .catch((err) => next(err));
@@ -92,4 +110,36 @@ function doesAuthorizationExist(req) {
 
 function isSystemUser(req) {
   return (req.headers['system-authorization'] || req.cookies['system-authorization']);
+}
+
+function getProjectsRoles (user) {
+  const administeredProjects = user.dataValues.authorsProjects.map(o => o.dataValues.id);
+  let projectsParticipant = [];
+
+  const usersProjects = user.dataValues.usersProjects.map(o => o.dataValues);
+  usersProjects.map(project => {
+    const rolesIds = JSON.parse(project.rolesIds);
+    if (contains(rolesIds, models.ProjectRolesDictionary.ADMIN_IDS)) {
+      administeredProjects.push(project.projectId);
+    } else {
+      projectsParticipant.push(project.projectId);
+    }
+  });
+  projectsParticipant = _.difference(projectsParticipant, administeredProjects);
+
+  delete user.dataValues.token;
+  delete user.dataValues.authorsProjects;
+  delete user.dataValues.usersProjects;
+  
+  return {
+    admin: administeredProjects,
+    user: projectsParticipant,
+  };
+}
+
+function contains (where, what){
+  for(let i=0; i < what.length; i++){
+    if(where.indexOf(what[i]) !== -1) return true;
+  }
+  return false;
 }
