@@ -1,18 +1,8 @@
 const createError = require('http-errors');
-const _ = require('underscore');
+const globalGrants = require('./globalGrants');
 
-const globalGrants = {
-  user: {
-    project: {
-      'create': { granted: true, attributes: ['*'] },
-      'read':  { granted: true, attributes: ['*'] },
-      'update':  { granted: true, attributes: ['*'] },
-      'delete':  { granted: false, attributes: ['*'] },
-    }
-  },
-};
-
-exports.routAccess = (resource, action, attributes) => {
+//Блокирую доступ к роутам на глобальном уровне
+exports.can = (resource, action) => {
   return (req, res, next) => {
     try {
       const permission = getPermission(req.user.globalRole, resource, action);

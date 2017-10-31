@@ -11,7 +11,7 @@ const routes = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
 const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
-const Access = require('./middlewares/Access/Access');
+const Access = require('./middlewares/Access/SetUserAccessMiddleWare');
 
 exports.run = function() {
   

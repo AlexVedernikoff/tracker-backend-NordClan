@@ -22,7 +22,9 @@ exports.create = function(req, res, next){
     model.authorId = req.user.id;
   });
 
-
+  if (req.user.isVisor) {
+    throw createError(403, 'Visor can\'t create, update or delete');
+  }
 
   Project
     .create(req.body)
@@ -42,13 +44,7 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-
-  // req.user.can('project', 'read', +req.params.id);
-
-
-  let a = req.user.Access.project(+req.params.id);
-
-
+  if (!req.user.canReadProject(req.params.id)) throw createError(403, 'Access denied');
 
   Project
     .findByPrimary(req.params.id, {
@@ -138,7 +134,8 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
+  if (!req.user.canUpdateProject(req.params.id)) throw createError(403, 'Access denied');
+
   const attributes = ['id', 'portfolioId', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
   let portfolioIdOld;
@@ -440,38 +437,4 @@ exports.list = function(req, res, next){
     })
     .catch(err => next(err));
 
-};
-
-
-exports.setStatus = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  if(!req.body.statusId) return next(createError(400, 'statusId need'));
-  if(!req.body.statusId.match(/^[0-9]+$/)) return next(createError(400, 'statusId must be integer'));
-  
-
-  const attributesForUpdate = {
-    statusId: req.body.statusId,
-    finishedAt: +req.body.statusId === 3 ? new Date() : null // Если проект завершен, то ставим finishedAt, иначе убираем
-  };
-
-
-  return models.sequelize.transaction(function (t) {
-    return Project
-      .findByPrimary(req.params.id, { attributes: ['id', 'statusId'], transaction: t, lock: 'UPDATE' })
-      .then((project) => {
-        if(!project) throw createError(404);
-
-        return project
-          .updateAttributes(attributesForUpdate, { transaction: t })
-          .then((model)=>{
-            res.json({
-              id: model.id,
-              statusId: model.statusId
-            });
-          });
-      });
-  })
-    .catch((err) => {
-      next(err);
-    });
 };
