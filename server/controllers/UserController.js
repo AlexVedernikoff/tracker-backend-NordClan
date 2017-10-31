@@ -84,7 +84,7 @@ class UserController {
           id: this.userId,
           active: 1,
         },
-        attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ],
+        attributes: models.User.defaultSelect,
         include: [
           {
             model: models.Department,
@@ -95,8 +95,19 @@ class UserController {
               model: models.UserDepartments,
               attributes: []
             },
+          },
+          {
+            model: models.ProjectUsers,
+            as: 'userProjects',
+            attributes: ['projectId', 'rolesIds', 'authorId'],
+            required: false,
+          },
+          {
+            model: models.Project,
+            as: 'createdProjects',
+            attributes: ['id', 'name', 'authorId'],
+            required: false,
           }
-
         ]
       })
       .then((user) => {
@@ -104,14 +115,43 @@ class UserController {
           return this.next(createError(404, 'User not found'));
         }
 
+
         if(user.dataValues.department[0]) {
           user.dataValues.department = user.dataValues.department[0].name;
         }
 
-        this.res.end(JSON.stringify(user.dataValues));
+        user.dataValues.projects = [];
+        user.dataValues.createdProjects = [];
+
+        // console.log(userProjects);
+        // console.log(createdProjects);
+
+        user.userProjects.map(el => {
+          let a = this.req.user.Access.project(el.projectId);
+          console.log(a);
+          user.dataValues.projects.push(a);
+        });
+
+
+        user.createdProjects.map(el => {
+          let a = this.req.user.Access.project(el.id);
+          console.log(a);
+          user.dataValues.createdProjects.push(a);
+        });
+
+
+
+
+
+        delete user.dataValues.userProjects;
+        delete user.dataValues.createdProjects;
+        this.res.json(user);
       })
       .catch((err) => {
         this.next(createError(err));
       });
   }
+
+
+
 }

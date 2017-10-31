@@ -49,8 +49,6 @@ exports.read = function(req, res, next){
   let a = req.user.Access.project(+req.params.id);
 
 
-  console.log(a);
-
 
   Project
     .findByPrimary(req.params.id, {
