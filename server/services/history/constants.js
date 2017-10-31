@@ -45,17 +45,23 @@ module.exports = {
       message: 'изменил(-а) фактическое завершение спринта {sprint} c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint']
     },
-    CREATE_PROJECTUSERS: {
+    CREATE_PROJECTUSER: {
       message: 'добавил(-а) нового пользователя {user} в проект',
       entities: ['user']
     },
-    CHANGE_PROJECTUSERS_ROLESIDS: {
+    CHANGE_PROJECTUSER_ROLESIDS: {
       message: '{action}(-а) роль {role} для пользователя {user}',
       entities: ['user']
     },
-    DELETE_PROJECTUSERS_ROLESIDS: {
+    SET_PROJECTUSER_DELETED_AT: {
       message: 'удалил(-а) пользователя {user} из проекта',
       entities: ['user']
+    },
+    CREATE_ITEMTAG: {
+      message: 'добавил(-а) тег \'{tag}\'',
+    },
+    SET_ITEMTAG_DELETED_AT: {
+      message: 'удалил(-а) тег \'{tag}\'',
     }
   }
 };

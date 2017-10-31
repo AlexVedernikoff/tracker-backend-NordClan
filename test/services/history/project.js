@@ -94,7 +94,7 @@ describe('ProjectHistory', () => {
       };
 
       const history = {
-        entity: 'ProjectUsers',
+        entity: 'ProjectUser',
         entityId: 1,
         action: 'update',
         field: 'rolesIds',
@@ -106,7 +106,7 @@ describe('ProjectHistory', () => {
 
       const actual = generateMessage(history);
       const expected = {
-        message: 'добавил(-а) роль Account для пользователя {user}',
+        message: 'добавил(-а) роль UX для пользователя {user}',
         entities: {
           user
         }
@@ -121,19 +121,19 @@ describe('ProjectHistory', () => {
       };
 
       const history = {
-        entity: 'ProjectUsers',
+        entity: 'ProjectUser',
         entityId: 1,
         action: 'update',
         field: 'rolesIds',
         projectId: 1,
-        valueStr: '[1,2]',
-        prevValueStr: '[1,2,3]',
+        valueStr: '[2,1]',
+        prevValueStr: '[3,1,2]',
         user
       };
 
       const actual = generateMessage(history);
       const expected = {
-        message: 'удалил(-а) роль Account для пользователя {user}',
+        message: 'удалил(-а) роль UX для пользователя {user}',
         entities: {
           user
         }

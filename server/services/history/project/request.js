@@ -23,25 +23,30 @@ function additionalEntities() {
     {
       as: 'sprint',
       model: models.Sprint,
-      // where: { id: Sequelize.col('project_histories.entity_id') },
-      // where: Sequelize.literal('"ProjectHistory"."entity_id" = "Sprint"."sprint_id"'),
-      // attributes: models.Sprint.defaultSelect,
       required: false,
       paranoid: false,
     },
     {
       as: 'user',
-      model: models.ProjectUsers,
-      // where: { id: Sequelize.col('project_histories.entity_id') },
-      // where: Sequelize.literal('"ProjectHistory"."entity_id" = "Sprint"."sprint_id"'),
-      attributes: ['roles_ids'],
+      model: models.User,
+      attributes: models.User.defaultSelect,
+      required: false,
+      paranoid: false
+    },
+    {
+      as: 'itemTag',
+      model: models.ItemTag,
+      where: Sequelize.literal('"ProjectHistory"."entity" = \'ItemTag\'' ),
       required: false,
       paranoid: false,
       include: [
         {
-          as: 'user',
-          model: models.User
-        }
+          as: 'tag',
+          model: models.Tag,
+          attributes: ['name'],
+          required: false,
+          paranoid: false,
+        },
       ]
     }
   ];

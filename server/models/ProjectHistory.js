@@ -97,6 +97,15 @@ module.exports = function(sequelize, DataTypes) {
       constraints: true,
     });
 
+    ProjectHistory.belongsTo(models.User, {
+      as: 'user',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: true,
+    });
+
     ProjectHistory.belongsTo(models.Sprint, {
       as: 'sprint',
       foreignKey: {
@@ -106,8 +115,8 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false,
     });
 
-    ProjectHistory.belongsTo(models.ProjectUsers, {
-      as: 'user',
+    ProjectHistory.belongsTo(models.ItemTag, {
+      as: 'itemTag',
       foreignKey: {
         name: 'entityId',
         field: 'entity_id'

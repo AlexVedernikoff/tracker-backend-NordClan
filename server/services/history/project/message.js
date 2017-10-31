@@ -1,3 +1,4 @@
+const _ = require('underscore');
 const queries = require('./../../../models/queries');
 const { getChangedProperty } = require('./../utils');
 const { detectAction } = require('./../utils');
@@ -7,7 +8,6 @@ module.exports = function(model) {
   const changedProperty = getChangedProperty(model);
   const resourceName = getResourceName(model, changedProperty);
   const resource = constants.resources[resourceName];
-  console.log(resourceName);
 
   if (!resource) return;
 
@@ -23,7 +23,7 @@ function getResourceName(model, changedProperty) {
 }
 
 function getResources(resource, model, changedProperty) {
-  const message = transformMessage(resource.message, changedProperty);
+  const message = transformMessage(resource.message, changedProperty, model);
   const properties = transformProperties(model.field, changedProperty);
   const entitiesName = resource.entities || [];
   const entities = entitiesName.reduce((acc, name) => {
@@ -37,22 +37,21 @@ function getResources(resource, model, changedProperty) {
   };
 }
 
-function transformMessage(message, changedProperty) {
-  //TODO bad regexp
+function transformMessage(message, changedProperty, model) {
+  //TODO Плохой regexp, символы {} попадают в группу, а надо без них
+  //из этого делаю лишний map
   const flags = message.match(/{([^{}]+)}/g) || [];
   const dictionary = {
     role: (changedProperty) => getUserRole(changedProperty),
-    action: (changedProperty) => getUserAction(changedProperty)
+    action: (changedProperty) => getUserAction(changedProperty),
+    tag: (changedProperty, model) => model.itemTag.tag.name
   };
-
-  console.log(flags);
 
   return flags
     .map(flag => flag.replace(/[{}]/g, ''))
     .filter(flag => dictionary[flag])
     .reduce((acc, flag) => {
-      const replacement = dictionary[flag](changedProperty);
-      console.log(replacement);
+      const replacement = dictionary[flag](changedProperty, model);
       return acc.replace(`{${flag}}`, replacement);
     }, message);
 }
@@ -63,14 +62,14 @@ function getUserAction(changedProperty) {
 }
 
 function getUserRole(changedProperty) {
-  const rolesBefore = changedProperty.prevValue.match(/[0-9]+/g);
-  const rolesAfter = changedProperty.prevValue.match(/[0-9]+/g);
+  const rolesBefore = changedProperty.prevValue.match(/[0-9]+/g) || [];
+  const rolesAfter = changedProperty.value.match(/[0-9]+/g) || [];
+  const [ biggerArray, smallerArray ] = rolesBefore.length < rolesAfter.length ?
+    [ rolesAfter, rolesBefore ] :
+    [ rolesBefore, rolesAfter ];
 
-  const roleId = rolesBefore
-    .concat(rolesAfter)
-    .filter((value, index, self) => self.indexOf(value) === index)[0];
-
-  return queries.dictionary.getName('ProjectRolesDictionary', roleId);
+  const value = _.difference(biggerArray, smallerArray)[0];
+  return queries.dictionary.getName('ProjectRolesDictionary', value);
 }
 
 function insertChangedProperties(message, changedProperty) {
@@ -78,7 +77,6 @@ function insertChangedProperties(message, changedProperty) {
   updatedMessage = changedProperty.prevValue ?
     updatedMessage.replace('{prevValue}', changedProperty.prevValue) :
     updatedMessage;
-
   updatedMessage = changedProperty.value ?
     updatedMessage.replace('{value}', changedProperty.value) :
     updatedMessage;
@@ -91,7 +89,6 @@ function transformProperties(field, changedProperty) {
     const dictionary = {
       statusId: queries.dictionary.getName('TaskStatusesDictionary', property)
     };
-
     return dictionary[field] || property;
   };
 

@@ -4,9 +4,10 @@ const _ = require('underscore');
 const { diffBetweenObjects } = require('./utils');
 
 exports.historyHandler = function(sequelize, historyModel) {
-  function getHistoryModelId(model) {
+  function getHistoryModelId(model, entity) {
     const modelIdProperty = `${historyModel.toLowerCase()}Id`;
-    return model[modelIdProperty] || model.id;
+    const modelId = model[modelIdProperty] || model.id;
+    return entity === 'ItemTag' ? model.taggableId : modelId;
   }
 
   function getHistories(diffObj, model, modelNameForm, userId, modelId, entity) {
@@ -38,11 +39,12 @@ exports.historyHandler = function(sequelize, historyModel) {
     onCreate: function(model) {
       const userId = model.$modelOptions.sequelize.context.user.id;
       const modelIdProperty = `${historyModel.toLowerCase()}Id`;
-      const modelId = getHistoryModelId(model);
+      const entity = this.options.name.singular;
+      const modelId = getHistoryModelId(model, entity);
       const modelName = `${historyModel}History`;
 
       sequelize.models[modelName].create({
-        entity: this.options.name.singular,
+        entity: entity,
         entityId: model.id,
         userId: userId,
         [modelIdProperty]: modelId,
@@ -61,7 +63,7 @@ exports.historyHandler = function(sequelize, historyModel) {
         sequelize.models[this.options.name.singular];
 
       const entity = this.options.name.singular;
-      const modelId = getHistoryModelId(model);
+      const modelId = getHistoryModelId(model, entity);
 
       const histories = getHistories(diffObj, model, modelNameForm , userId, modelId, entity);
       const modelName = `${historyModel}History`;

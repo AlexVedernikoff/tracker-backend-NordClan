@@ -1,5 +1,5 @@
 const queries = require('./../../../models/queries');
-const { getChangedProperty } = require('./../utils');
+const { getChangedProperty, detectAction } = require('./../utils');
 const constants = require('./../constants');
 const ACTIONS = constants.actions;
 
@@ -7,18 +7,6 @@ const entityWord = {
   create: 'задачу',
   update: 'задачи'
 };
-
-function getAction(changedProperty) {
-  if (!changedProperty.value && changedProperty.prevValue) {
-    return ACTIONS.DELETE;
-  } else if (changedProperty.value && !changedProperty.prevValue) {
-    return ACTIONS.SET;
-  } else if (!changedProperty.value && !changedProperty.prevValue) {
-    return ACTIONS.CREATE;
-  } else if (changedProperty.value && changedProperty.prevValue) {
-    return ACTIONS.CHANGE;
-  }
-}
 
 module.exports = function (model) {
   const changedProperty = getChangedProperty(model);
@@ -120,7 +108,7 @@ function declarativeHandlers() {
     {
       name: 'set performer',
       statement: (model, values) => {
-        return model.entity === 'Task' && model.field === 'performerId' && getAction(values) === ACTIONS.SET;
+        return model.entity === 'Task' && model.field === 'performerId' && detectAction(values) === ACTIONS.SET;
       },
       answer: (model) => {
         return {
@@ -134,7 +122,7 @@ function declarativeHandlers() {
     {
       name: 'delete performer',
       statement: (model, values) => {
-        return model.entity === 'Task' && model.field === 'performerId' && getAction(values) === ACTIONS.DELETE;
+        return model.entity === 'Task' && model.field === 'performerId' && detectAction(values) === ACTIONS.DELETE;
       },
       answer: (model) => {
         return {
@@ -148,7 +136,7 @@ function declarativeHandlers() {
     {
       name: 'change performer',
       statement: (model, values) => {
-        return model.entity === 'Task' && model.field === 'performerId' && getAction(values) === ACTIONS.CHANGE;
+        return model.entity === 'Task' && model.field === 'performerId' && detectAction(values) === ACTIONS.CHANGE;
       },
       answer: (model) => {
         return {

@@ -23,10 +23,10 @@ module.exports = function(sequelize, DataTypes) {
     ],
     underscored: true,
     timestamps: false,
-    paranoid: false,
+    paranoid: true,
     tableName: 'tags'
   });
-  
+
   Tag.associate = function(models) {
     Tag.belongsToMany(models.Task, {
       through: {
@@ -63,7 +63,7 @@ module.exports = function(sequelize, DataTypes) {
       foreignKey: 'tag_id',
       constraints: false
     });
-  
+
     Tag.hasMany(models.ItemTag, {
       as: 'itemTags',
       foreignKey: {

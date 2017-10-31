@@ -20,16 +20,16 @@ module.exports = () => {
     return new Promise(resolve => {
       const histories = models
         .map(model => {
-          const answer = messageBuilder[entity](model);
-          return {
+          const response = messageBuilder[entity](model);
+          return response ? {
             id: model.id,
             date: model.createdAt,
-            message: answer.message,
-            entities: answer.entities,
+            message: response.message,
+            entities: response.entities,
             author: model.author
-          };
+          } : null;
         })
-        .filter(model => model);
+        .filter(response => response);
 
       resolve(histories);
     });
