@@ -1,4 +1,3 @@
-# FROM postgres:9.6
 FROM postgres:latest
 RUN mkdir -p /pg
 WORKDIR /pg
