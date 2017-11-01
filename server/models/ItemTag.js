@@ -45,8 +45,9 @@ module.exports = function(sequelize, DataTypes) {
     });
 
   };
-  
-  ItemTag.hasHistory();
+
+  ItemTag.addHistoryForTask();
+  ItemTag.addHistoryForProject();
 
   return ItemTag;
 };

@@ -1,5 +1,5 @@
 module.exports = function(sequelize, DataTypes) {
-  const ModelHistory = sequelize.define('ModelHistory', {
+  const TaskHistory = sequelize.define('TaskHistory', {
     id : {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -25,11 +25,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     prevValueStr: {
-      field: 'prev_value',
+      field: 'prev_value_str',
       type: DataTypes.STRING,
       allowNull: true
     },
     valueStr: {
+      field: 'value_str',
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -83,11 +84,11 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: true,
     updatedAt: false,
     paranoid: false,
-    tableName: 'model_histories'
+    tableName: 'task_histories'
   });
-  
-  ModelHistory.associate = function(models) {
-    ModelHistory.belongsTo(models.Task, {
+
+  TaskHistory.associate = function(models) {
+    TaskHistory.belongsTo(models.Task, {
       as: 'parentTask',
       foreignKey: {
         name: 'valueInt',
@@ -95,8 +96,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
-    ModelHistory.belongsTo(models.Task, {
+
+    TaskHistory.belongsTo(models.Task, {
       as: 'prevParentTask',
       foreignKey: {
         name: 'prevValueInt',
@@ -104,8 +105,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-  
-    ModelHistory.belongsTo(models.Sprint, {
+
+    TaskHistory.belongsTo(models.Sprint, {
       as: 'sprint',
       foreignKey: {
         name: 'valueInt',
@@ -113,8 +114,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-  
-    ModelHistory.belongsTo(models.Sprint, {
+
+    TaskHistory.belongsTo(models.Sprint, {
       as: 'prevSprint',
       foreignKey: {
         name: 'prevValueInt',
@@ -122,8 +123,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
-    ModelHistory.belongsTo(models.User, {
+
+    TaskHistory.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'userId',
@@ -131,8 +132,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-    
-    ModelHistory.belongsTo(models.Task, {
+
+    TaskHistory.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
         name: 'taskId',
@@ -140,9 +141,9 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-    
-  
-    ModelHistory.belongsTo(models.User, {
+
+
+    TaskHistory.belongsTo(models.User, {
       as: 'performer',
       foreignKey: {
         name: 'valueInt',
@@ -150,8 +151,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-    
-    ModelHistory.belongsTo(models.User, {
+
+    TaskHistory.belongsTo(models.User, {
       as: 'prevPerformer',
       foreignKey: {
         name: 'prevValueInt',
@@ -159,9 +160,9 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: true,
     });
-  
-  
-    ModelHistory.belongsTo(models.TaskTasks, {
+
+
+    TaskHistory.belongsTo(models.TaskTasks, {
       as: 'taskTasks',
       foreignKey: {
         name: 'entityId',
@@ -169,8 +170,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
-    ModelHistory.belongsTo(models.ItemTag, {
+
+    TaskHistory.belongsTo(models.ItemTag, {
       as: 'itemTag',
       foreignKey: {
         name: 'entityId',
@@ -178,8 +179,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
-    ModelHistory.belongsTo(models.TaskAttachments, {
+
+    TaskHistory.belongsTo(models.TaskAttachments, {
       as: 'taskAttachments',
       foreignKey: {
         name: 'entityId',
@@ -187,8 +188,8 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
-    
+
   };
-  
-  return ModelHistory;
+
+  return TaskHistory;
 };

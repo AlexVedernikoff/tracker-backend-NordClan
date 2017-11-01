@@ -198,7 +198,7 @@ module.exports = function (sequelize, DataTypes) {
 
   };
 
-  Task.hasHistory();
+  Task.addHistoryForTask();
 
   return Task;
 };

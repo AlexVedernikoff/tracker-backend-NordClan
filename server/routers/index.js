@@ -13,7 +13,7 @@ const TaskTasksController = require('../controllers/TaskTasksController');
 const UploadController = require('../controllers/UploadController');
 const TimesheetController = require('../controllers/TimesheetController');
 const CommentController = require('../controllers/TaskCommentController');
-const ModelHistoryController = require('../controllers/ModelHistoryController');
+const HistoryController = require('../controllers/HistoryController');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 
 // Auth
@@ -97,8 +97,8 @@ router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTyp
 router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
 router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', UploadController.delete);
 
-// ModelHistory
-router.get('/:entity(project|task)/:entityId/history', ModelHistoryController.list);
+// History
+router.get('/:entity(project|task)/:entityId/history', HistoryController.list);
 
 // Deprecated
 router.post('/task/:taskId/timesheet', TimesheetController.actionCreate); // Deprecated

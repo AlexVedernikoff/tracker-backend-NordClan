@@ -13,17 +13,17 @@ const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddle
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 
 exports.run = function() {
-  
+
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(bodyParser.json());
   app.use(expressValidator());
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({extended: false}));
-  
+
   app.get('/api/v1/swagger/spec.js', function(req, res) {
     res.send(require('../swaggerSpec.js'));
   });
-  
+
   app.use(swagger.init(app, {
     apiVersion: '1.0',
     swaggerVersion: '2.0',
@@ -38,7 +38,7 @@ exports.run = function() {
     sequelize.context = { user: req.user };
     next();
   });
-  
+
   app.all('*', function(req, res, next){
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
@@ -48,10 +48,10 @@ exports.run = function() {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
     next();
   });
-  
+
   app.use('/api/v1', routes);
   app.use(errorHandlerMiddleWare);
-  
+
   app.get('*', function(req, res){
     res.status(404).json({
       status: 404,
@@ -59,7 +59,7 @@ exports.run = function() {
       name: 'NotFoundError'
     });
   });
-  
+
   sequelize
     .authenticate()
     .then(() => {
@@ -68,10 +68,10 @@ exports.run = function() {
     .catch((err) => {
       console.error('Unable to connect to the database:', err);
     });
-  
+
   app.listen(config.port, () => {
     console.log('listen ' + config.port );
   });
-  
+
 };
 

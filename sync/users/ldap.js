@@ -32,7 +32,7 @@ module.exports = function() {
             if(!ldapUser.cn ||!ldapUser.uid || !ldapUser.mail || !ldapUser.sn || !ldapUser.givenName) {
               return ;
             }
-            
+
             User
               .findOne({
                 where: {
