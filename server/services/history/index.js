@@ -17,33 +17,26 @@ module.exports = () => {
   };
 
   function createResponse(entity, models) {
-    return new Promise(resolve => {
-      const histories = models
-        .map(model => {
-          const response = messageBuilder[entity](model);
-          return response ? {
-            id: model.id,
-            date: model.createdAt,
-            message: response.message,
-            entities: response.entities,
-            author: model.author
-          } : null;
-        })
-        .filter(response => response);
-
-      resolve(histories);
-    });
+    return models
+      .map(model => {
+        const response = messageBuilder[entity](model);
+        return response ? {
+          id: model.id,
+          date: model.createdAt,
+          message: response.message,
+          entities: response.entities,
+          author: model.author
+        } : null;
+      })
+      .filter(response => response);
   }
 
   return {
-    call: (entity, entityId, pageSize, currentPage) => {
+    call: async (entity, entityId, pageSize, currentPage) => {
       const request = requestBuilder[entity](entityId, pageSize, currentPage);
       const modelName = `${firstLetterUp(entity)}History`;
-      return models[modelName]
-        .findAll(request)
-        .then((models) => {
-          return createResponse(entity, models);
-        });
+      const histories = await models[modelName].findAll(request);
+      return createResponse(entity, histories);
     }
   };
 };
