@@ -118,3 +118,9 @@ Back up PostgreSQL databases using cron jobs https://www.a2hosting.com/kb/develo
 
 ### Запуск тестов
 `npm test`
+
+### Сделать ручной dump базы на проде
+pg_dump -U postgres -F c -f dump.tar.gz 'sim-track' -W --host 127.0.0.1
+
+### Зайти в базу на проде
+psql -U postgres -W --host 127.0.0.1
