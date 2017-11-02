@@ -1,4 +1,5 @@
 'use strict';
+const models = require('../../models');
 const _ = require('underscore');
 
 const VISOR = 'VISOR';
@@ -9,6 +10,10 @@ const SYSTEM_USER = 'SYSTEM_USER';
  * Устанавливаю методы и свойства для работы с правами в контроллерах
  */
 exports.middleware = function (req, res, next) {
+  if (!req.user && !req.isSystemUser) {
+    return next();
+  }
+
   if (!req.user && req.isSystemUser) {
     req.user = {
       dataValues: {

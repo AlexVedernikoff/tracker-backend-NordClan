@@ -57,6 +57,13 @@ const USER = {
   history: {
     'list':  { granted: true },
   },
+  timesheet: {
+    'create':  { granted: true },
+    'update':  { granted: true },
+    'delete':  { granted: true },
+    'list':  { granted: true },
+    'trackAll':  { granted: true },
+  },
 };
 
 
@@ -67,16 +74,22 @@ module.exports = {
   ADMIN: {
     ...USER,
     project: {
+      ...USER.project,
       'delete':  { granted: true },
     },
     sprint: {
+      ...USER.sprint,
       'delete':  { granted: true },
     },
     task: {
+      ...USER.task,
       'delete':  { granted: true },
-    }
+    },
   },
   SYSTEM_USER: {
-
+    timesheet: {
+      'update':  { granted: true },
+      'list':  { granted: true },
+    },
   }
 };

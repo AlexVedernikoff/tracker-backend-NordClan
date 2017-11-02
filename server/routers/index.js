@@ -68,14 +68,14 @@ router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), Tas
 router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
 
 // Timesheets
-router.post('/timesheet/', GlobalAccess.can('project', 'delete'), TimesheetController.actionCreate.bind(TimesheetController));
-router.get('/timesheet/tracksAll/', GlobalAccess.can('project', 'delete'), TimesheetController.getTracksAll.bind(TimesheetController));
-router.get('/timesheet', GlobalAccess.can('project', 'delete'), TimesheetController.actionList);
-router.get('/task/timesheet/getTimesheets', GlobalAccess.can('project', 'delete'), TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
-router.put('/timesheetDraft/:timesheetDraftId/', GlobalAccess.can('project', 'delete'), TimesheetDraftController.updateVisible); // Deprecated. но еще используется
-router.put('/timesheet/:sheetId/', GlobalAccess.can('project', 'delete'), TimesheetController.actionCreate.bind(TimesheetController)); // Deprecated. но еще используется
-router.put('/timesheet/', GlobalAccess.can('project', 'delete'), TimesheetController.actionCreate.bind(TimesheetController));
-router.delete('/timesheet/:timesheetId', GlobalAccess.can('project', 'delete'), TimesheetController.delete);
+router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.actionCreate.bind(TimesheetController));
+router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll.bind(TimesheetController));
+router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.actionList);
+router.get('/task/timesheet/getTimesheets', GlobalAccess.can('timesheet', 'list'), TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
+router.put('/timesheetDraft/:timesheetDraftId/', GlobalAccess.can('timesheet', 'update'), TimesheetDraftController.updateVisible); // Deprecated. но еще используется
+router.put('/timesheet/:sheetId/', GlobalAccess.can('timesheet', 'update'), TimesheetController.actionCreate.bind(TimesheetController)); // Deprecated. но еще используется
+router.put('/timesheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.actionCreate.bind(TimesheetController));
+router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);
 
 // Comments
 router.post('/task/:taskId/comment', GlobalAccess.can('comment', 'create'), CommentController.create);
@@ -100,9 +100,9 @@ router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', Globa
 router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('project', 'delete'), ModelHistoryController.list);
 
 // Deprecated
-router.post('/task/:taskId/timesheet', TimesheetController.actionCreate); // Deprecated
-router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update); // Deprecated
-router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
+router.post('/task/:taskId/timesheet', GlobalAccess.can('timesheet', 'create'), TimesheetController.actionCreate); // Deprecated
+router.put('/task/:taskId/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'update'), TimesheetController.update); // Deprecated
+router.post('/timesheet/:taskId/setTime/', GlobalAccess.can('timesheet', 'create'), TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
 router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController)); // Deprecated
 // TimesheetsDraft, системные?
 router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft); // Deprecated
