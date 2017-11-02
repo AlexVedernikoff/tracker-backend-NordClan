@@ -121,7 +121,7 @@ function systemLogout (req, res, next) {
   SystemToken
     .destroy({
       where: {
-        token: req.token
+        token: req.systemToken
       }
     })
     .then((row) => {

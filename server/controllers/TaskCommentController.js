@@ -2,31 +2,25 @@ const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
 
-exports.create = function(req, res, next){
+exports.create = async function(req, res, next){
   req.checkParams('taskId', 'taskId must be int').isInt();
-  req
-    .getValidationResult()
-    .then((validationResult) => {
-      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-      return models.Task
-        .findByPrimary(req.params.taskId, {
-          attributes: ['id', 'statusId']
-        });
-    })
-    .then((model)=>{
-      if(!model) return next(createError(404, 'Task model not found'));
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) throw createError(400, validationResult);
 
-      req.body.authorId = req.user.id;
-      req.body.taskId = req.params.taskId;
+  const task = await models.Task
+    .findByPrimary(req.params.taskId, {
+      attributes: ['id', 'projectId']
+    });
+  if(!task) return next(createError(404, 'Task model not found'));
+  if (req.user.canCreateCommentProject(task.projectId)) throw createError(403, 'Access denied');
 
-      return models.Comment.create(req.body);
-    })
-    .then((model) => queries.comment.getOne(model.id))
-    .then((model)=>{
-      res.json(model);
-    })
-    .catch((err) => next(err));
+  req.body.authorId = req.user.id;
+  req.body.taskId = req.params.taskId;
+
+  const comment = await models.Comment.create(req.body);
+  const getOne = await queries.comment.getOne(comment.id);
+  res.json(getOne);
 };
 
 exports.update = function(req, res, next){
@@ -39,7 +33,7 @@ exports.update = function(req, res, next){
 
       return Promise.all([models.Task
         .findByPrimary(req.params.taskId, {
-          attributes: ['id', 'statusId']
+          attributes: ['id', 'projectId']
         }), models.Comment
         .findByPrimary(req.params.commentId, {
           attributes: ['id', 'deletedAt', 'authorId']
@@ -48,6 +42,7 @@ exports.update = function(req, res, next){
     .then(([task, comment])=>{
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
+      if (req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
       if(comment.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
 
       const { text } = req.body;
@@ -72,7 +67,7 @@ exports.delete = function(req, res, next){
 
       return Promise.all([models.Task
         .findByPrimary(req.params.taskId, {
-          attributes: ['id', 'statusId']
+          attributes: ['id', 'projectId']
         }), models.Comment
         .findByPrimary(req.params.commentId, {
           attributes: ['id', 'deletedAt', 'authorId']
@@ -81,6 +76,7 @@ exports.delete = function(req, res, next){
     .then(([task, comment])=>{
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
+      if (req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
       if(comment.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
 
       return comment.destroy();

@@ -5,6 +5,7 @@ const globalGrants = require('./globalGrants');
 exports.can = (resource, action) => {
   return (req, res, next) => {
     try {
+      console.log(req.user.globalRole, resource, action);
       const permission = getPermission(req.user.globalRole, resource, action);
       if (permission.granted) return next();
       return next(createError(403, 'Access denied'));
@@ -22,6 +23,5 @@ function getPermission (role, resource, action) {
   ) {
     return globalGrants[role][resource][action];
   }
-
   return { granted: false };
 }

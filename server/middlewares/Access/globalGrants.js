@@ -14,7 +14,6 @@ const USER = {
     'create':  { granted: true },
     'read':  { granted: true },
     'update':  { granted: true },
-    'delete':  { granted: false },
   },
   projectUsers: {
     'create':  { granted: true },
@@ -30,14 +29,11 @@ const USER = {
     'create':  { granted: true },
     'read':  { granted: true },
     'update':  { granted: true },
-    'delete':  { granted: false },
     'list':  { granted: true },
   },
   task: {
     'create':  { granted: true },
     'read':  { granted: true },
-    'update':  { granted: true },
-    'delete':  { granted: false },
     'list':  { granted: true },
   },
   taskLinks: {
@@ -85,11 +81,18 @@ module.exports = {
       ...USER.task,
       'delete':  { granted: true },
     },
+    portfolio: {
+      ...USER.portfolio,
+      'delete':  { granted: true },
+    },
   },
   SYSTEM_USER: {
     timesheet: {
       'update':  { granted: true },
       'list':  { granted: true },
     },
+  },
+  VISOR: {
+    ...USER,
   }
 };

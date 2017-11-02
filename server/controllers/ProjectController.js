@@ -23,7 +23,7 @@ exports.create = function(req, res, next){
   });
 
   if (req.user.isVisor) {
-    throw createError(403, 'Visor can\'t create, update or delete');
+    throw createError(403);
   }
 
   Project
@@ -221,7 +221,11 @@ exports.list = function(req, res, next){
   
   let include = [];
   let where = {};
-  
+
+  if (!req.user.isGlobalAdmin && !req.user.isVisor) {
+    where.id = req.user.dataValues.projects;
+  }
+
   if(req.query.portfolioId) {
     where.portfolioId = req.query.portfolioId;
   }
