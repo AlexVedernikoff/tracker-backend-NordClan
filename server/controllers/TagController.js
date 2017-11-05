@@ -13,7 +13,7 @@ exports.list = async function(req, res, next){
   if(!validationResult.isEmpty()) return next(createError(400, validationResult));
 
   if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
-    throw createError(403, 'Access denied');
+    return next(createError(403, 'Access denied'));
   }
 
   if (req.params.taggable === 'task') {
@@ -35,7 +35,7 @@ exports.create = async function(req, res, next){
   if (!validationResult.isEmpty()) throw createError(400, validationResult);
 
   if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
-    throw createError(403, 'Access denied');
+    return next(createError(403, 'Access denied'));
   }
 
   if (req.params.taggable === 'task') {

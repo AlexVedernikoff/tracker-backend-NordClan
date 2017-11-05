@@ -40,6 +40,7 @@ exports.create = async function(req, res, next) {
 
     const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
     res.json(taskTasks);
+    t.commit();
 
 
   } catch (e) {
@@ -64,7 +65,7 @@ exports.delete = async function(req, res, next) {
       await t.rollback();
       throw createError(403, 'Access denied');
     }
-    
+
     await Promise.all([
       models.TaskTasks
         .findOne({
@@ -90,6 +91,7 @@ exports.delete = async function(req, res, next) {
 
     const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
     res.json(taskTasks);
+    t.commit();
   } catch (e) {
     await t.rollback();
     return next(createError(e));
