@@ -14,7 +14,7 @@ exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) throw createError(400, validationResult);
-  if (req.user.canReadProject(req.body.projectId)) throw createError(403, 'Access denied');
+  if (!req.user.canReadProject(req.body.projectId)) throw createError(403, 'Access denied');
 
   if (req.body.tags) {
     req.body.tags.split(',').map(el => el.trim()).forEach(el => {
@@ -106,7 +106,7 @@ exports.read = function (req, res, next) {
   })
     .then((model) => {
       if (!model) return next(createError(404));
-      if (req.user.canReadProject(model.projectId)) throw createError(403, 'Access denied');
+      if (!req.user.canReadProject(model.projectId)) throw createError(403, 'Access denied');
       if (model.tags) model.tags = Object.keys(model.tags).map((k) => model.tags[k].name); // Преобразую теги в массив
 
       res.json(model);
@@ -144,7 +144,7 @@ exports.update = async function (req, res, next) {
       return next(createError(404))
     }
 
-    if (req.user.canReadProject(task.projectId))  {
+    if (!req.user.canReadProject(task.projectId))  {
       t.rollback();
       return next(createError(403, 'Access denied'));
     }
