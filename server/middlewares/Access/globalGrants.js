@@ -91,6 +91,9 @@ module.exports = {
       'update':  { granted: true },
       'list':  { granted: true },
     },
+    project: {
+      'read':  { granted: true },
+    },
   },
   VISOR: {
     ...USER,
