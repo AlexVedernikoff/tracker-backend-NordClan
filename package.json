@@ -4,7 +4,7 @@
   "description": "readme",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/mocha --recursive",
     "docker": "docker build -t simtrackback .",
     "docker:db": "docker build -t simtrackdb ./pg_db",
     "compose:up": "docker-compose up",
@@ -45,7 +45,9 @@
     "xml2json": "^0.11.0"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
     "eslint": "^4.4.1",
+    "mocha": "^4.0.1",
     "nodemon": "^1.12.0",
     "sequelize-log-syntax-colors": "^1.0.0"
   }

@@ -404,10 +404,10 @@ module.exports = {
         ]
       }
     },
-    
-    
-    
-    
+
+
+
+
     '/portfolio': {
       get: {
         tags: ['Portfolios'],
@@ -465,7 +465,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-    
+
 
     '/sprint': {
       get: {
@@ -904,7 +904,7 @@ module.exports = {
         responses: responsesCodes
       },
     },
-  
+
     '/task/{taskId}/tag': {
       post: {
         tags: ['Tasks'],
@@ -1090,10 +1090,35 @@ module.exports = {
     '/task/{taskId}/history': {
       get: {
         tags: ['Tasks'],
-        summary: 'Получить историю сущности',
+        summary: 'Получить историю сущности в контексте задачи',
         parameters: [
           {
             name: 'taskId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query',
+          },
+          {
+            name: 'currentPage',
+            type: 'integer',
+            in: 'query',
+          },
+        ],
+        responses: responsesCodes
+      },
+    },
+    '/project/{projectId}/history': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить историю сущности в контексте проекта',
+        parameters: [
+          {
+            name: 'projectId',
             type: 'integer',
             in: 'path',
             required: true

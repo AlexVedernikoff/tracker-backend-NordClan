@@ -58,8 +58,10 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
-  
+
   ProjectAttachments.defaultSelect = ['id', 'fileName', 'path', 'previewPath', 'size', 'type'];
-  
+
+  ProjectAttachments.addHistoryForProject();
+
   return ProjectAttachments;
 };

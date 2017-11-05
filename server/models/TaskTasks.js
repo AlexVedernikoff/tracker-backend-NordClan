@@ -29,8 +29,8 @@ module.exports = function(sequelize, DataTypes) {
       },
     }
   });
-  
-  
+
+
   TaskTasks.associate = function(models) {
     TaskTasks.belongsTo(models.Task,{
       as: 'task',
@@ -39,10 +39,10 @@ module.exports = function(sequelize, DataTypes) {
         field: 'linked_task_id'
       },
     });
-    
+
   };
-  
-  TaskTasks.hasHistory();
-  
+
+  TaskTasks.addHistoryForTask();
+
   return TaskTasks;
 };
