@@ -10,7 +10,12 @@ const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
 
 
-exports.create = function (req, res, next) {
+exports.create = async function (req, res, next) {
+  req.checkBody('projectId', 'projectId must be int').isInt();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) throw createError(400, validationResult);
+  if (req.user.canReadProject(req.body.projectId)) throw createError(403, 'Access denied');
+
   if (req.body.tags) {
     req.body.tags.split(',').map(el => el.trim()).forEach(el => {
       if (el.length < 2) throw createError(400, 'tag must be more then 2 chars');
@@ -101,6 +106,7 @@ exports.read = function (req, res, next) {
   })
     .then((model) => {
       if (!model) return next(createError(404));
+      if (req.user.canReadProject(model.projectId)) throw createError(403, 'Access denied');
       if (model.tags) model.tags = Object.keys(model.tags).map((k) => model.tags[k].name); // Преобразую теги в массив
 
       res.json(model);
@@ -138,6 +144,10 @@ exports.update = async function (req, res, next) {
       return next(createError(404))
     }
 
+    if (req.user.canReadProject(task.projectId))  {
+      t.rollback();
+      return next(createError(403, 'Access denied'));
+    }
 
     if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
       if (!body.statusId) {
@@ -353,6 +363,8 @@ exports.list = function (req, res, next) {
     where.projectId = {
       in: req.query.projectId.toString().split(',').map((el) => el.trim())
     };
+  } else if (!req.user.isGlobalAdmin && !req.user.isVisor) {
+      where.projectId = req.user.dataValues.projects;
   }
 
   if (req.query.sprintId) {
