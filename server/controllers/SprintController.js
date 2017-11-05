@@ -94,7 +94,8 @@ exports.delete = function(req, res, next){
   
   Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
     .then((model) => {
-      if(!model) { return next(createError(404)); }
+      if (!model) throw createError(404);
+      if (!req.user.canUpdateProject(model.projectId)) throw createError(403, 'Access denied');
 
       return model.destroy()
         .then(()=>{
@@ -113,9 +114,9 @@ exports.delete = function(req, res, next){
 
 
 exports.list = function(req, res, next){
-  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
-  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  if(!req.query.projectId.match(/^[0-9]+$/)) return next(createError(400, 'projectId must be int'));
+  if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if (req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if (!req.query.projectId.match(/^[0-9]+$/)) return next(createError(400, 'projectId must be int'));
   if (!req.user.canReadProject(req.query.projectId)) throw createError(403, 'Access denied');
 
   if(req.query.fields) {
