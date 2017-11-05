@@ -3,16 +3,23 @@ const models = require('../models');
 const queries = require('../models/queries');
 
 
-exports.create = function(req, res, next) {
+exports.create = async function(req, res, next) {
   if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if(!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if(!req.body.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be int'));
-  
-  req.params.taskId = req.params.taskId.trim();
 
+  let t;
+  try {
+    t = await models.sequelize.transaction();
+    req.params.taskId = req.params.taskId.trim();
+    const task = await models.Task.findByPrimary(req.params.taskId, { attributes: ['id', 'projectId']});
 
-  return models.sequelize.transaction(function (t) {
-    return Promise.all([
+    if (!req.user.canReadProject(task.projectId)) {
+      await t.rollback();
+      throw createError(403, 'Access denied');
+    }
+
+    await Promise.all([
       models.TaskTasks.findOrCreate({
         where: {
           taskId: req.params.taskId,
@@ -29,27 +36,36 @@ exports.create = function(req, res, next) {
         attributes: ['id'],
         transaction: t
       })
-    ])
-      .then(() => {
-        return queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t)
-          .then((result) => {
-            res.json(result);
-          });
-      });
-  })
-    .catch((err)=>next(err));
+    ]);
+
+    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
+    res.json(taskTasks);
+
+
+  } catch (e) {
+    await t.rollback();
+    return next(createError(e));
+  }
 };
 
 
-exports.delete = function(req, res, next) {
+exports.delete = async function(req, res, next) {
   if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
   if(!req.params.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if(!req.params.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
-  
-  req.params.taskId = req.params.taskId.trim();
 
-  return models.sequelize.transaction(function (t) {
-    return Promise.all([
+  let t;
+  try {
+    t = await models.sequelize.transaction();
+    req.params.taskId = req.params.taskId.trim();
+    const task = await models.Task.findByPrimary(req.params.taskId, { attributes: ['id', 'projectId']});
+
+    if (!req.user.canReadProject(task.projectId)) {
+      await t.rollback();
+      throw createError(403, 'Access denied');
+    }
+    
+    await Promise.all([
       models.TaskTasks
         .findOne({
           where: {
@@ -70,13 +86,12 @@ exports.delete = function(req, res, next) {
         },
         transaction: t
       })
-    ])
-      .then(() => {
-        return queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
-      })
-      .then((result) => {
-        res.json(result);
-      });
-  })
-    .catch((err)=>next(err));
+    ]);
+
+    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
+    res.json(taskTasks);
+  } catch (e) {
+    await t.rollback();
+    return next(createError(e));
+  }
 };
