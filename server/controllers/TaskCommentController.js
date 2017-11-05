@@ -13,7 +13,7 @@ exports.create = async function(req, res, next){
       attributes: ['id', 'projectId']
     });
   if(!task) return next(createError(404, 'Task model not found'));
-  if (req.user.canCreateCommentProject(task.projectId)) throw createError(403, 'Access denied');
+  if (!req.user.canCreateCommentProject(task.projectId)) throw createError(403, 'Access denied');
 
   req.body.authorId = req.user.id;
   req.body.taskId = req.params.taskId;
@@ -42,8 +42,8 @@ exports.update = function(req, res, next){
     .then(([task, comment])=>{
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
-      if (req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
-      if(comment.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
+      if (!req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
+      if(comment.authorId !== req.user.id && !req.user.isGlobalAdmin) next(createError(403, 'User is not an author of comment'));
 
       const { text } = req.body;
 
@@ -76,8 +76,8 @@ exports.delete = function(req, res, next){
     .then(([task, comment])=>{
       if(!task) return next(createError(404, 'Task model not found'));
       if(!comment) return next(createError(404, 'Comment model not found'));
-      if (req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
-      if(comment.authorId !== req.user.id) next(createError(403, 'User is not an author of comment'));
+      if (!req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
+      if(comment.authorId !== req.user.id && !req.user.isGlobalAdmin) next(createError(403, 'User is not an author of comment'));
 
       return comment.destroy();
     })
@@ -85,10 +85,12 @@ exports.delete = function(req, res, next){
     .catch((err) => next(err));
 };
 
-exports.list = function(req, res, next){
+exports.list = async function(req, res, next){
   const taskId = req.params.taskId;
-
   if(taskId && !taskId.match(/^\d+$/)) return next(createError(400, 'taskId must be int'));
+
+  const task = await models.Task.findByPrimary(taskId, { attributes: ['id', 'projectId']});
+  if (!req.user.canReadProject(task.projectId)) throw createError(403, 'Access denied');
 
   queries.comment.getCommentsByTask(taskId)
     .then((models) => {

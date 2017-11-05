@@ -66,7 +66,7 @@ exports.delete = async function(req, res, next){
   req.checkParams('tag', 'tag must be more then 1 char').isLength({min: 1});
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) throw createError(400, validationResult);
-  
+
   if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
     throw createError(403, 'Access denied');
   }
