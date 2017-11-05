@@ -21,7 +21,6 @@ const USER = {
     'delete':  { granted: true },
   },
   portfolio: {
-    'list':  { granted: true },
     'update':  { granted: true },
     'read':  { granted: true },
   },
@@ -83,6 +82,7 @@ module.exports = {
     },
     portfolio: {
       ...USER.portfolio,
+      'list':  { granted: true },
       'delete':  { granted: true },
     },
   },

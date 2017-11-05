@@ -4,18 +4,20 @@ const models = require('../models');
 const queries = require('../models/queries');
 
 exports.create = function(req, res, next){
-  if(!req.params.projectId) return next(createError(400, 'projectId need'));
-  if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
-  if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+  if (!req.params.projectId) return next(createError(400, 'projectId need'));
+  if (!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
+  if (+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
-  if(!req.body.userId) return next(createError(400, 'userId need'));
-  if(!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
-  if(+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
+  if (!req.body.userId) return next(createError(400, 'userId need'));
+  if (!Number.isInteger(+req.body.userId)) return next(createError(400, 'userId must be int'));
+  if (+req.body.userId <= 0) return next(createError(400, 'userId must be > 0'));
+
+  if (!req.user.canUpdateProject(req.params.projectId)) throw createError(403, 'Access denied');
 
   let rolesIds;
   let allowedRolesId;
   
-  if(req.body.rolesIds && +req.body.rolesIds === 0) {
+  if (req.body.rolesIds && +req.body.rolesIds === 0) {
     rolesIds = JSON.stringify([]);
   
   } else if(req.body.rolesIds) {
@@ -79,6 +81,7 @@ exports.delete = function(req, res, next){
   if(!Number.isInteger(+req.params.userId)) return next(createError(400, 'userId must be int'));
   if(+req.params.userId <= 0) return next(createError(400, 'userId must be > 0'));
 
+  if (!req.user.canUpdateProject(req.params.projectId)) throw createError(403, 'Access denied');
 
   return models.sequelize.transaction(function (t) {
     return models.ProjectUsers
