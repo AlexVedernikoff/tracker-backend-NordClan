@@ -12,9 +12,12 @@ const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').check
 const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 const Access = require('./middlewares/Access/SetUserAccessMiddleWare');
+const server = require('http').Server(app);
+const io = require('socket.io')(server, {
+  path: '/api/v1/socket'
+});
 
 exports.run = function() {
-
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(bodyParser.json());
   app.use(expressValidator());
@@ -51,6 +54,11 @@ exports.run = function() {
     next();
   });
 
+  app.use(function(req, res, next){
+    res.io = io;
+    next();
+  });
+
   app.use('/api/v1', routes);
   app.use(errorHandlerMiddleWare);
 
@@ -71,9 +79,7 @@ exports.run = function() {
       console.error('Unable to connect to the database:', err);
     });
 
-  app.listen(config.port, () => {
-    console.log('listen ' + config.port );
+  server.listen(config.port, () => {
+    console.log('listen ' + config.port);
   });
-
 };
-

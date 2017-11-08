@@ -9,7 +9,6 @@ const moment = require('moment');
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
 
-
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
@@ -39,7 +38,6 @@ exports.create = async function (req, res, next) {
     });
 
 };
-
 
 exports.read = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
@@ -153,10 +151,13 @@ exports.update = async function (req, res, next) {
       return next(createError(404))
     }
 
+<<<<<<< HEAD
     if (!req.user.canReadProject(task.projectId))  {
       t.rollback();
       return next(createError(403, 'Access denied'));
     }
+=======
+>>>>>>> broadcast changing of task through socket
 
     if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
       if (!body.statusId) {
@@ -232,6 +233,8 @@ exports.update = async function (req, res, next) {
       ]);
     }
 
+    const socketChannel = `project_${task.projectId}_task_${task.id}`;
+
     if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
       const taskWithUser = await queries.task.findTaskWithUser(req.params.id, t);
       const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, t);
@@ -263,10 +266,14 @@ exports.update = async function (req, res, next) {
       await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
 
 
-      res.json({
+      const updatedFields = {
         ...resultResponse,
         statusId: body.statusId ? +body.statusId : task.statusId
-      });
+      }
+
+      res.io.emit(socketChannel, updatedFields);
+      res.json(updatedFields);
+
       t.commit();
 
     } else {
@@ -278,7 +285,10 @@ exports.update = async function (req, res, next) {
       });
 
       resultResponse.id = task.id;
+
+      res.io.emit(socketChannel, resultResponse);
       res.json(resultResponse);
+
       t.commit();
     }
 
@@ -310,7 +320,6 @@ exports.delete = function (req, res, next) {
     });
 
 };
-
 
 exports.list = function (req, res, next) {
   if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
