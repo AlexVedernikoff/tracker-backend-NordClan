@@ -97,7 +97,7 @@ function insertChangedProperties(message, changedProperty) {
 function transformProperties(field, changedProperty) {
   const transformValue = (field, property) => {
     const dictionary = {
-      statusId: queries.dictionary.getName('TaskStatusesDictionary', property)
+      statusId: queries.dictionary.getName('ProjectStatusesDictionary', property)
     };
     return dictionary[field] || property;
   };

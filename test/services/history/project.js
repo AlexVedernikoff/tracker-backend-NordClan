@@ -37,7 +37,7 @@ describe('ProjectHistory', () => {
 
       const actual = generateMessage(history);
       const expected = {
-        message: 'изменил(-а) статус проекта c \'Develop play\' на \'New\'',
+        message: 'изменил(-а) статус проекта c \'Приостановлен\' на \'В процессе\'',
         entities: {}
       };
 
