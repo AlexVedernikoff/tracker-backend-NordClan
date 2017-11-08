@@ -97,8 +97,8 @@ module.exports = function(sequelize, DataTypes) {
       constraints: true,
     });
 
-    ProjectHistory.belongsTo(models.User, {
-      as: 'user',
+    ProjectHistory.belongsTo(models.ProjectUsers, {
+      as: 'project_user',
       foreignKey: {
         name: 'entityId',
         field: 'entity_id'

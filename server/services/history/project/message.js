@@ -27,7 +27,8 @@ function getResources(resource, model, changedProperty) {
   const properties = transformProperties(model.field, changedProperty);
   const entitiesName = resource.entities || [];
   const entities = entitiesName.reduce((acc, name) => {
-    acc[name] = model[name];
+    const key = getKey(name);
+    acc[key] = getEntity(name, model);
     return acc;
   }, {});
 
@@ -35,6 +36,15 @@ function getResources(resource, model, changedProperty) {
     message: insertChangedProperties(message, properties),
     entities
   };
+}
+
+function getKey(name) {
+  const keys = name.split('.');
+  return keys[keys.length - 1];
+}
+
+function getEntity(name, model) {
+  return name.split('.').reduce((acc, item) => acc[item], model);
 }
 
 function transformMessage(message, changedProperty, model) {
