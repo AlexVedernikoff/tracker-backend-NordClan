@@ -14,7 +14,7 @@ const queries = require('../models/queries');
 exports.create = function(req, res, next){
   if(req.body.tags) {
     req.body.tags.split(',').map(el=>el.trim()).forEach(el => {
-      if(el.length < 2) throw createError(400, 'tag must be more then 2 chars');
+      if(el.length < 2) return next(createError(400, 'tag must be more then 2 chars'))
     });
   }
   
@@ -45,7 +45,9 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  if (!req.user.canReadProject(req.params.id)) throw createError(403, 'Access denied');
+  if (!req.user.canReadProject(req.params.id)) {
+    return next(createError(403, 'Access denied'));
+  }
 
   Project
     .findByPrimary(req.params.id, {
@@ -135,7 +137,9 @@ exports.read = function(req, res, next){
 
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  if (!req.user.canUpdateProject(req.params.id)) throw createError(403, 'Access denied');
+  if (!req.user.canUpdateProject(req.params.id)) {
+    return next(createError(403, 'Access denied'));
+  }
 
   const attributes = ['id', 'portfolioId', 'statusId'].concat(Object.keys(req.body));
   const resultRespons = {};
@@ -146,7 +150,9 @@ exports.update = function(req, res, next){
     return Project
       .findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
       .then((project) => {
-        if(!project) { return next(createError(404)); }
+        if(!project) {
+          return next(createError(404));
+        }
 
         // сброс портфеля
         if (+req.body.portfolioId === 0) {

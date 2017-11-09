@@ -7,10 +7,7 @@ exports.list = async function(req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
-
-
-  if(!validationResult.isEmpty()) return next(createError(400, validationResult));
+  if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
   if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
     return next(createError(403, 'Access denied'));
@@ -18,7 +15,9 @@ exports.list = async function(req, res, next){
 
   if (req.params.taggable === 'task') {
     const task = await models.Task.findByPrimary(req.params.taggableId, { attributes: ['id', 'projectId']});
-    if (!req.user.canReadProject(task.projectId)) throw createError(403, 'Access denied');
+    if (!req.user.canReadProject(task.projectId)) {
+      return next(createError(403, 'Access denied'));
+    }
   }
 
   await queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId)
@@ -32,7 +31,9 @@ exports.create = async function(req, res, next){
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   req.checkBody('tag', 'tag must be more then 2 chars').isLength({min: 2});
   const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
 
   if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
     return next(createError(403, 'Access denied'));
@@ -40,7 +41,9 @@ exports.create = async function(req, res, next){
 
   if (req.params.taggable === 'task') {
     const task = await models.Task.findByPrimary(req.params.taggableId, { attributes: ['id', 'projectId']});
-    if (!req.user.canReadProject(task.projectId)) throw createError(403, 'Access denied');
+    if (!req.user.canReadProject(task.projectId)) {
+      return next(createError(403, 'Access denied'));
+    }
   }
 
   await models.sequelize.transaction(function (t) {
@@ -65,15 +68,19 @@ exports.delete = async function(req, res, next){
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   req.checkParams('tag', 'tag must be more then 1 char').isLength({min: 1});
   const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
 
   if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
-    throw createError(403, 'Access denied');
+    return next(createError(403, 'Access denied'));
   }
 
   if (req.params.taggable === 'task') {
     const task = await models.Task.findByPrimary(req.params.taggableId, { attributes: ['id', 'projectId']});
-    if (!req.user.canReadProject(task.projectId)) throw createError(403, 'Access denied');
+    if (!req.user.canReadProject(task.projectId)) {
+      return next(createError(403, 'Access denied'));
+    }
   }
 
   await models.sequelize.transaction(function (t) {

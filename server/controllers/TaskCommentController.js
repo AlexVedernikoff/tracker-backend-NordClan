@@ -6,14 +6,18 @@ exports.create = async function(req, res, next){
   req.checkParams('taskId', 'taskId must be int').isInt();
 
   const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
 
   const task = await models.Task
     .findByPrimary(req.params.taskId, {
       attributes: ['id', 'projectId']
     });
-  if(!task) return next(createError(404, 'Task model not found'));
-  if (!req.user.canCreateCommentProject(task.projectId)) throw createError(403, 'Access denied');
+  if (!task) return next(createError(404, 'Task model not found'));
+  if (!req.user.canCreateCommentProject(task.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
 
   req.body.authorId = req.user.id;
   req.body.taskId = req.params.taskId;
@@ -40,10 +44,18 @@ exports.update = function(req, res, next){
         })]);
     })
     .then(([task, comment])=>{
-      if(!task) return next(createError(404, 'Task model not found'));
-      if(!comment) return next(createError(404, 'Comment model not found'));
-      if (!req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
-      if(comment.authorId !== req.user.id && !req.user.isGlobalAdmin) next(createError(403, 'User is not an author of comment'));
+      if (!task) {
+        return next(createError(404, 'Task model not found'));
+      }
+      if (!comment) {
+        return next(createError(404, 'Comment model not found'));
+      }
+      if (!req.user.canUpdateCommentProject(task.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
+      if (comment.authorId !== req.user.id && !req.user.isGlobalAdmin) {
+        return next(createError(403, 'User is not an author of comment'));
+      }
 
       const { text } = req.body;
 
@@ -74,10 +86,18 @@ exports.delete = function(req, res, next){
         })]);
     })
     .then(([task, comment])=>{
-      if(!task) return next(createError(404, 'Task model not found'));
-      if(!comment) return next(createError(404, 'Comment model not found'));
-      if (!req.user.canUpdateCommentProject(task.projectId)) throw createError(403, 'Access denied');
-      if(comment.authorId !== req.user.id && !req.user.isGlobalAdmin) next(createError(403, 'User is not an author of comment'));
+      if(!task) {
+        return next(createError(404, 'Task model not found'));
+      }
+      if(!comment) {
+        return next(createError(404, 'Comment model not found'));
+      }
+      if (!req.user.canUpdateCommentProject(task.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
+      if(comment.authorId !== req.user.id && !req.user.isGlobalAdmin){
+        return next(createError(403, 'User is not an author of comment'));
+      }
 
       return comment.destroy();
     })
@@ -90,7 +110,9 @@ exports.list = async function(req, res, next){
   if(taskId && !taskId.match(/^\d+$/)) return next(createError(400, 'taskId must be int'));
 
   const task = await models.Task.findByPrimary(taskId, { attributes: ['id', 'projectId']});
-  if (!req.user.canReadProject(task.projectId)) throw createError(403, 'Access denied');
+  if (!req.user.canReadProject(task.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
 
   queries.comment.getCommentsByTask(taskId)
     .then((models) => {

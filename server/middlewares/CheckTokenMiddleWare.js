@@ -17,9 +17,11 @@ exports.checkToken = function (req, res, next) {
     return next();
   }
 
-  if (!doesAuthorizationExist(req)) throw createError(401, 'Need authorization');
+  if (!doesAuthorizationExist(req)) {
+    return next(createError(401, 'Need authorization'));
+  }
 
-  if (isSystemUser(req)) {
+  if(isSystemUser(req)) {
     return next();
   }
 
@@ -79,7 +81,9 @@ exports.checkToken = function (req, res, next) {
       ]
     })
     .then((user) => {
-      if(!user) throw createError(401, 'No found user or access in the system. Or access token has expired');
+      if(!user) {
+        return next(createError(401, 'No found user or access in the system. Or access token has expired'));
+      }
       if(user.dataValues.department[0])  user.dataValues.department = user.dataValues.department[0].name;
 
       req.user = user;

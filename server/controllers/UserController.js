@@ -16,7 +16,7 @@ exports.read = async function(req, res, next){
     req.checkParams('id', 'id must be int').notEmpty().isInt();
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) throw createError(400, validationResult);
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
     const user = await models.User
       .findOne({

@@ -350,7 +350,7 @@ exports.createTimesheetNoDraft = async function (req, res, next) {
 
   } catch (e) {
     await t.rollback();
-    throw createError(e);
+    return next(createError(e));
   }
 };
 

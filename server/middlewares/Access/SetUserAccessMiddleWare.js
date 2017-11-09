@@ -30,30 +30,23 @@ exports.middleware = function (req, res, next) {
   user.isVisor = user.globalRole === VISOR;
   user.isGlobalAdmin = user.globalRole === ADMIN;
 
-  user.isAdminOfProject = (projectId) => {
-    return user.dataValues.projectsRoles.admin.indexOf(+projectId) !== -1;
+  user.isAdminOfProject = function (projectId) {
+    return this.dataValues.projectsRoles.admin.indexOf(+projectId) !== -1;
   };
-  user.isUserOfProject = (projectId) => {
-    if (user.isAdminOfProject(projectId)) return true;
-    return user.dataValues.projectsRoles.user.indexOf(+projectId) !== -1;
+  user.isUserOfProject = function (projectId) {
+    return this.isAdminOfProject(projectId) || user.dataValues.projectsRoles.user.indexOf(+projectId) !== -1;
   };
-  user.canReadProject = (projectId) => {
-    if (user.isGlobalAdmin) return true;
-    if (user.isVisor) return true;
-    return user.isUserOfProject(projectId);
+  user.canReadProject = function (projectId) {
+    return this.isGlobalAdmin || this.isVisor || this.isUserOfProject(projectId);
   };
-  user.canUpdateProject = (projectId) => {
-    if (user.isGlobalAdmin) return true;
-    if (user.isVisor) return false;
-    return user.isAdminOfProject(projectId);
+  user.canUpdateProject = function (projectId) {
+    return this.isGlobalAdmin || this.isAdminOfProject(projectId);
   };
-  user.canCreateCommentProject = (projectId) => {
-    if (user.isGlobalAdmin) return true;
-    return user.isUserOfProject(projectId);
+  user.canCreateCommentProject = function (projectId) {
+    return this.isGlobalAdmin || this.isUserOfProject(projectId);
   };
-  user.canUpdateCommentProject = (projectId) => {
-    if (user.isGlobalAdmin) return true;
-    return user.isUserOfProject(projectId);
+  user.canUpdateCommentProject = function (projectId) {
+    return this.isGlobalAdmin || this.isUserOfProject(projectId);
   };
 
   next();

@@ -16,7 +16,7 @@ exports.create = async function(req, res, next) {
 
     if (!req.user.canReadProject(task.projectId)) {
       await t.rollback();
-      throw createError(403, 'Access denied');
+      return next(createError(403, 'Access denied'));
     }
 
     await Promise.all([
@@ -63,7 +63,7 @@ exports.delete = async function(req, res, next) {
 
     if (!req.user.canReadProject(task.projectId)) {
       await t.rollback();
-      throw createError(403, 'Access denied');
+      return next(createError(403, 'Access denied'));
     }
 
     await Promise.all([

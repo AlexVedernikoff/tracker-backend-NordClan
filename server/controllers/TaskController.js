@@ -13,12 +13,15 @@ const TimesheetController = require('./TimesheetController');
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
-  if (!req.user.canReadProject(req.body.projectId)) throw createError(403, 'Access denied');
+  if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+  if (!req.user.canReadProject(req.body.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
 
   if (req.body.tags) {
     req.body.tags.split(',').map(el => el.trim()).forEach(el => {
-      if (el.length < 2) throw createError(400, 'tag must be more then 2 chars');
+      if (el.length < 2) return next(createError(400, 'tag must be more then 2 chars'));
     });
   }
 
@@ -105,9 +108,15 @@ exports.read = function (req, res, next) {
     ]
   })
     .then((model) => {
-      if (!model) return next(createError(404));
-      if (!req.user.canReadProject(model.projectId)) throw createError(403, 'Access denied');
-      if (model.tags) model.tags = Object.keys(model.tags).map((k) => model.tags[k].name); // Преобразую теги в массив
+      if (!model) {
+        return next(createError(404));
+      }
+      if (!req.user.canReadProject(model.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
+      if (model.tags) {// Преобразую теги в массив
+        model.tags = Object.keys(model.tags).map((k) => model.tags[k].name);
+      }
 
       res.json(model);
     })
@@ -125,7 +134,7 @@ exports.update = async function (req, res, next) {
   try {
     req.checkParams('id', 'id must be int').isInt();
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) throw createError(400, validationResult);
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
 
     const attributes = ['id', 'statusId', 'performerId'].concat(Object.keys(req.body));

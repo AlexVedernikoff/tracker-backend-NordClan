@@ -1,66 +1,65 @@
 const USER = {
   user: {
-    'autocomplete':  { granted: true },
-    'me':  { granted: true },
-    'read':  { granted: true },
+    'autocomplete': true,
+    'me': true,
+    'read': true,
   },
   tag: {
-    'autocompliter':  { granted: true },
-    'create':  { granted: true },
-    'list':  { granted: true },
-    'delete':  { granted: true },
+    'autocompliter': true,
+    'create': true,
+    'list': true,
+    'delete': true,
   },
   project: {
-    'create':  { granted: true },
-    'read':  { granted: true },
-    'update':  { granted: true },
+    'create': true,
+    'read': true,
+    'update': true,
   },
   projectUsers: {
-    'create':  { granted: true },
-    'list':  { granted: true },
-    'delete':  { granted: true },
+    'create': true,
+    'list': true,
+    'delete': true,
   },
   portfolio: {
-    'update':  { granted: true },
-    'read':  { granted: true },
+    'update': true,
+    'read': true,
   },
   sprint: {
-    'create':  { granted: true },
-    'read':  { granted: true },
-    'update':  { granted: true },
-    'list':  { granted: true },
+    'create': true,
+    'read': true,
+    'update': true,
+    'list': true,
   },
   task: {
-    'create':  { granted: true },
-    'read':  { granted: true },
-    'list':  { granted: true },
+    'create': true,
+    'read': true,
+    'list': true,
   },
   taskLinks: {
-    'create':  { granted: true },
-    'delete':  { granted: true },
+    'create': true,
+    'delete': true,
   },
   comment: {
-    'create':  { granted: true },
-    'update':  { granted: true },
-    'delete':  { granted: true },
-    'list':  { granted: true },
+    'create': true,
+    'update': true,
+    'delete': true,
+    'list': true,
   },
   attachment: {
-    'upload':  { granted: true },
-    'delete':  { granted: true },
+    'upload': true,
+    'delete': true,
   },
   history: {
-    'list':  { granted: true },
+    'list': true,
   },
   timesheet: {
-    'create':  { granted: true },
-    'update':  { granted: true },
-    'delete':  { granted: true },
-    'list':  { granted: true },
-    'trackAll':  { granted: true },
+    'create': true,
+    'update': true,
+    'delete': true,
+    'list': true,
+    'trackAll': true,
   },
 };
-
 
 module.exports = {
   USER: {
@@ -70,29 +69,29 @@ module.exports = {
     ...USER,
     project: {
       ...USER.project,
-      'delete':  { granted: true },
+      'delete':  true,
     },
     sprint: {
       ...USER.sprint,
-      'delete':  { granted: true },
+      'delete': true,
     },
     task: {
       ...USER.task,
-      'delete':  { granted: true },
+      'delete': true,
     },
     portfolio: {
       ...USER.portfolio,
-      'list':  { granted: true },
-      'delete':  { granted: true },
+      'list': true,
+      'delete': true,
     },
   },
   SYSTEM_USER: {
     timesheet: {
-      'update':  { granted: true },
-      'list':  { granted: true },
+      'update': true,
+      'list': true,
     },
     project: {
-      'read':  { granted: true },
+      'read': true,
     },
   },
   VISOR: {

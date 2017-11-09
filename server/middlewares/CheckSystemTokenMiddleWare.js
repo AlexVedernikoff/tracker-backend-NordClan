@@ -35,7 +35,9 @@ exports.checkToken = function (req, res, next) {
       }
     })
     .then((row) => {
-      if(!row) throw createError(404, 'No found system access token or access token has expired');
+      if(!row) {
+        return next(createError(404, 'No found system access token or access token has expired'));
+      }
 
       req.isSystemUser = true;
       return next();
