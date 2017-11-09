@@ -75,7 +75,9 @@ exports.update = function(req, res, next){
   return models.sequelize.transaction(function (t) {
     return Sprint.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
       .then((model) => {
-        if (!model) {return next(createError(404));
+        if (!model) {
+          return next(createError(404));
+        }
         if (!req.user.canUpdateProject(model.projectId)) {
           return next(createError(403, 'Access denied'));
         }
