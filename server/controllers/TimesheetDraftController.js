@@ -1,4 +1,4 @@
-'use strict';
+
 
 const createError = require('http-errors');
 const models = require('../models');
@@ -30,21 +30,8 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
  *  Функция поиска драфтшитов
  */
 exports.getDrafts = async function (req, res, next) {
-  let where = { userId: req.query.userId };
-  if (req.query.onDate) {
-    let date = moment(req.query.onDate).format('YYYY-MM-DD');
+  const where = { userId: req.query.userId };
 
-    Object.assign(where, { $or:
-      [
-        // Обычные драфты
-        {onDate: { $eq: date }},
-        // Магические драфты
-        {onDate: { $eq: null }},
-        // Если задача все еще на тебе и есть драфт с таким статусом же как у задачи, то показываем драфт по этой задаче
-        models.sequelize.literal(`"task"."performer_id"  = ${req.query.userId} AND "task"."status_id" = "TimesheetDraft"."task_status_id"`)
-      ]
-    });
-  }
   if (req.params && req.params.sheetId) {
     Object.assign(where, { id: { $eq: req.params.sheetId } });
   }
@@ -55,7 +42,7 @@ exports.getDrafts = async function (req, res, next) {
     Object.assign(where, { taskStatusId: { $eq: req.query.taskStatusId } });
   }
   try {
-    let draftsheets = await models.TimesheetDraft.findAll({
+    const draftsheets = await models.TimesheetDraft.findAll({
       where: where,
       attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId', 'projectId'],
       order: [
@@ -74,14 +61,14 @@ exports.getDrafts = async function (req, res, next) {
               model: models.Project,
               required: false,
               attributes: ['id', 'name'],
-              paranoid: false,
+              paranoid: false
             },
             {
               as: 'taskStatus',
               model: models.TaskStatusesDictionary,
               required: false,
               attributes: ['id', 'name'],
-              paranoid: false,
+              paranoid: false
             }
           ]
         },
@@ -97,11 +84,11 @@ exports.getDrafts = async function (req, res, next) {
           model: models.Project,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false,
-        },
+          paranoid: false
+        }
       ]
     });
-    let result = [];
+    const result = [];
     draftsheets.map(ds => {
       Object.assign(ds.dataValues, { project: ds.dataValues.task ? ds.dataValues.task.dataValues.project : null });
       if (ds.dataValues.task) delete ds.dataValues.task.dataValues.project;
