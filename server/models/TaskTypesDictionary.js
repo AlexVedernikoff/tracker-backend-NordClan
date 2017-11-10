@@ -36,6 +36,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 3, name: 'Доп. Фича'},
     {id: 2, name: 'Баг'},
     {id: 4, name: 'Регрес. Баг'},
+    {id: 5, name: 'Баг от клиента'}
   ];
   
   return TaskTypes;
