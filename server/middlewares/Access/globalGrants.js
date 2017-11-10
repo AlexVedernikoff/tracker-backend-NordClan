@@ -33,6 +33,7 @@ const USER = {
   task: {
     'create': true,
     'read': true,
+    'update': true,
     'list': true,
   },
   taskLinks: {
