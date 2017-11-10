@@ -124,6 +124,11 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    globalRole: {
+      field: 'global_role',
+      type: DataTypes.ENUM(0, 1),
+      allowNull: true
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
@@ -167,11 +172,24 @@ module.exports = function(sequelize, DataTypes) {
       }
     });
 
-    User.hasOne(models.ProjectUsers);
+    User.hasMany(models.ProjectUsers, {
+      as: 'usersProjects',
+      foreignKey: {
+        name: 'userId',
+        field: 'user_id'
+      }});
+
+    User.hasMany(models.Project, {
+      as: 'authorsProjects',
+      foreignKey: {
+        name: 'authorId',
+        field: 'author_id'
+      }});
 
   };
-  
-  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn', 'firstNameEn', 'skype',  'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt'];
+  //
+  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn',
+    'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole'];
 
   return User;
 };

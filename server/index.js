@@ -11,6 +11,7 @@ const routes = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
 const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
+const Access = require('./middlewares/Access/SetUserAccessMiddleWare');
 
 exports.run = function() {
 
@@ -34,6 +35,7 @@ exports.run = function() {
 
   app.use(checkTokenMiddleWare);
   app.use(checkSystemTokenMiddleWare);
+  app.use(Access.middleware);
   app.all('*', function(req, res, next){
     sequelize.context = { user: req.user };
     next();

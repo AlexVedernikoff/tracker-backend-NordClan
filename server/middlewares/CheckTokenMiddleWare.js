@@ -1,10 +1,14 @@
 const createError = require('http-errors');
 const moment = require('moment');
 const jwt = require('jwt-simple');
-const User = require('../models/index').User;
-const UserTokens = require('../models/index').Token;
+const models = require('../models/index');
+const User = models.User;
+const ProjectUsers = models.ProjectUsers;
+const Project = models.Project;
+const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const _ = require('underscore');
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -13,9 +17,11 @@ exports.checkToken = function (req, res, next) {
     return next();
   }
 
-  if (!doesAuthorizationExist(req)) throw createError(401, 'Need authorization');
+  if (!doesAuthorizationExist(req)) {
+    return next(createError(401, 'Need authorization'));
+  }
 
-  if (isSystemUser(req)) {
+  if(isSystemUser(req)) {
     return next();
   }
 
@@ -49,15 +55,36 @@ exports.checkToken = function (req, res, next) {
               $gt: moment().format() // expires > now
             }
           }
-        }
+        },
+        {
+          as: 'usersProjects',
+          model: ProjectUsers,
+          attributes: ['projectId', 'rolesIds'],
+          required: false,
+        },
+        {
+          as: 'authorsProjects',
+          model: Project,
+          attributes: ['id'],
+          required: false,
+        },
+        {
+          model: models.Department,
+          as: 'department',
+          required: false,
+          attributes: ['name'],
+          through: {
+            model: models.UserDepartments,
+            attributes: []
+          },
+        },
       ]
     })
     .then((user) => {
-      if(!user) throw createError(401, 'No found user or access in the system. Or access token has expired');
-
-      /*
-      Тут нужно получение прав пользователя
-      */
+      if(!user) {
+        return next(createError(401, 'No found user or access in the system. Or access token has expired'));
+      }
+      if(user.dataValues.department[0])  user.dataValues.department = user.dataValues.department[0].name;
 
       req.user = user;
       return next();

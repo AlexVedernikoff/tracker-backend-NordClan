@@ -473,15 +473,16 @@ module.exports = {
         summary: 'Получить все спринты',
         parameters: [
           {
-            name: 'fields',
-            description: 'можно разделять через ","',
-            type: 'string',
-            in: 'query',
-          },
-          {
             name: 'projectId',
             type: 'integer',
             description: 'можно разделять через ","',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'fields',
+            description: 'можно разделять через ","',
+            type: 'string',
             in: 'query',
           },
           {

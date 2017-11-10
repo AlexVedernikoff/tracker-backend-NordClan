@@ -1,26 +1,56 @@
+'use strict';
 const createError = require('http-errors');
 const models = require('../models');
 
 exports.me = function(req, res, next){
-  new UserController(req, res, next, req.user.id)
-    .sendUserInfo();
+  try {
+    res.json(req.user);
+  } catch (e) {
+    return next(createError(e));
+  }
 };
 
-exports.read = function(req, res, next){
-  req.sanitize('id').trim();
-  req.checkParams('id', 'id must be int').notEmpty().isInt();
-  req.getValidationResult()
-    .then((validationResult) => {
-      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
-      
-      new UserController(req, res, next, req.params.id)
-        .sendUserInfo()
-        .catch((err) => {
-          next(err);
-        });
-      
-    })
-    .catch((err) => next(createError(err)));
+exports.read = async function(req, res, next){
+  try {
+    req.sanitize('id').trim();
+    req.checkParams('id', 'id must be int').notEmpty().isInt();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+    const user = await models.User
+      .findOne({
+        where: {
+          id: req.params.id,
+          active: 1,
+        },
+        attributes: models.User.defaultSelect,
+        include: [
+          {
+            model: models.Department,
+            as: 'department',
+            required: false,
+            attributes: ['name'],
+            through: {
+              model: models.UserDepartments,
+              attributes: []
+            },
+          },
+        ]
+      });
+
+    if(!user) return next(createError(404, 'User not found'));
+
+
+    if(user.dataValues.department[0]) {
+      user.dataValues.department = user.dataValues.department[0].name;
+    }
+
+    res.json(user);
+
+  } catch (e) {
+    return next(createError(e));
+  }
 };
 
 exports.autocomplete = function(req, res, next) {
@@ -67,51 +97,3 @@ exports.autocomplete = function(req, res, next) {
     })
     .catch((err) => next(createError(err)));
 };
-
-
-class UserController {
-  constructor(req, res, next, userId) {
-    this.req = req;
-    this.res = res;
-    this.next = next;
-    this.userId = userId;
-  }
-
-  sendUserInfo() {
-    return models.User
-      .findOne({
-        where: {
-          id: this.userId,
-          active: 1,
-        },
-        attributes: ['id', 'login', 'ldapLogin', 'lastNameEn', 'firstNameEn', 'lastNameRu', 'firstNameRu', 'photo', 'emailPrimary', 'emailSecondary', 'phone', 'mobile', 'skype', 'city', 'birthDate' ],
-        include: [
-          {
-            model: models.Department,
-            as: 'department',
-            required: false,
-            attributes: ['name'],
-            through: {
-              model: models.UserDepartments,
-              attributes: []
-            },
-          }
-
-        ]
-      })
-      .then((user) => {
-        if(!user) {
-          return this.next(createError(404, 'User not found'));
-        }
-
-        if(user.dataValues.department[0]) {
-          user.dataValues.department = user.dataValues.department[0].name;
-        }
-
-        this.res.end(JSON.stringify(user.dataValues));
-      })
-      .catch((err) => {
-        this.next(createError(err));
-      });
-  }
-}

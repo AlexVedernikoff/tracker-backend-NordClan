@@ -350,7 +350,7 @@ exports.createTimesheetNoDraft = async function (req, res, next) {
 
   } catch (e) {
     await t.rollback();
-    throw createError(e);
+    return next(createError(e));
   }
 };
 
@@ -473,15 +473,20 @@ exports.actionList = async function (req, res, next) {
 };
 
 async function _actionListReqValidate(req) {
-  // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
-  if (req.query.userId) {
-    req.checkQuery('userId', 'userId must be int').isInt();
-  } else if(req.query.userPSId) {
-    req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+  if (req.isSystemUser) {
+    // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
+    if (req.query.userId) {
+      req.checkQuery('userId', 'userId must be int').isInt();
+    } else if(req.query.userPSId) {
+      req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+    } else {
+      req.checkQuery('userId', 'userId must be int').isInt();
+      req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+    }
   } else {
-    req.checkQuery('userId', 'userId must be int').isInt();
-    req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+    req.query.userId = req.user.id;
   }
+
 
   req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
@@ -567,16 +572,12 @@ function _actionListGetInclude(req) {
 
 
 function _actionListTransformData(timesheets) {
-
   timesheets.forEach(model => {
-
     // переношу из задачи в корень объекта
     if(model.task && !model.dataValues.project) {
       model.dataValues.project = model.task.project.dataValues;
       delete model.task.project.dataValues;
     }
-
   });
-
   return timesheets;
 }

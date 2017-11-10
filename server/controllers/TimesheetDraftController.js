@@ -12,7 +12,7 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
   console.log('Функция создания драфтшита');
   if (req.body.id) delete req.body.id;
   if (req.params.taskId) req.body.taskId = req.params.taskId;
-  if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) throw createError(400, 'sprintId must be int');
+  if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) return next(createError(400, 'sprintId must be int'));
 
   return models.TimesheetDraft.create(req.body, { returning: false, transaction: t })
     .then((draftsheetModel) => {
@@ -20,8 +20,8 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
       res.json(draftsheetModel);
     })
     .catch((err) => {
-      console.log(createError(err));
-      throw createError(err);
+      console.error(createError(err));
+      return next(createError(err));
     });
 
 };
@@ -117,8 +117,8 @@ exports.getDrafts = async function (req, res, next) {
       result.push(ds.dataValues);
     });
     return result;
-  } catch (e) {
-    throw createError(e);
+  } catch (err) {
+    return next(createError(err));
   }
 };
 

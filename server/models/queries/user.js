@@ -15,4 +15,3 @@ exports.findOneActiveUser = function(userId, attributes = ['id'], t) {
     });
 
 };
-

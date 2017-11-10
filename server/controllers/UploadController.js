@@ -11,33 +11,39 @@ const stringHelper = require('../components/StringHelper');
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 10;
 
-exports.delete = function(req, res, next) {
+exports.delete = async function(req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('id').trim();
   req.checkParams('entity', 'entity must be \'task\' or \'project\'' ).isIn(['task',  'project']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req.checkParams('attachmentId', 'entityId must be int').isInt();
-  req
-    .getValidationResult()
-    .then((validationResult) => {
-      if(!validationResult.isEmpty()) return next(createError(400, validationResult));
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-      const modelName = stringHelper.firstLetterUp(req.params.entity);
-      const modelFileName = modelName + 'Attachments';
+  if (req.params.entity === 'project' && !req.user.canUpdateProject(req.params.id)) {
+    return next(createError(403, 'Access denied'));
+  }
 
-      models[modelFileName]
-        .findByPrimary(req.params.attachmentId)
-        .then(model => {
-          if(model) return model.destroy();
-        })
-        .then(()=>{
-          return queries.file.getFilesByModel(modelFileName, req.params.entityId);
-        })
-        .then((files) => {
-          res.json(files);
-        })
-        .catch((err) => next(createError(err)));
-    });
+  const modelName = stringHelper.firstLetterUp(req.params.entity);
+  const modelFileName = modelName + 'Attachments';
+  models[modelFileName]
+    .findByPrimary(req.params.attachmentId, {
+      attributes: req.params.entity === 'project' ? ['id'] : ['id', 'projectId']
+    })
+    .then(model => {
+      if (req.params.entity === 'task' && !req.user.canReadProject(model.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
+      if (model) return model.destroy();
+    })
+    .then(()=>{
+      return queries.file.getFilesByModel(modelFileName, req.params.entityId);
+    })
+    .then((files) => {
+      res.json(files);
+    })
+    .catch((err) => next(createError(err)));
+
 
 };
 
@@ -51,17 +57,29 @@ exports.upload = function(req, res, next) {
     .then((validationResult) => {
       if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
+      if (req.params.entity === 'project' && !req.user.canUpdateProject(req.params.entityId)) {
+        return next(createError(403, 'Access denied'));
+      }
+
       const modelName = stringHelper.firstLetterUp(req.params.entity);
       const modelFileName = modelName + 'Attachments';
 
 
       models[modelName]
         .findByPrimary(req.params.entityId, {
-          attributes: ['id', 'statusId']
+          attributes: req.params.entity === 'project' ? ['id', 'statusId'] : ['id', 'statusId', 'projectId']
         })
         .then((model) => {
-          if (!model) return next(createError(404, 'Entity model not found'));
-          if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') return next(createError(400, 'Task is closed'));
+          if (!model) {
+            return next(createError(404, 'Entity model not found'));
+          }
+          if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') {
+            return next(createError(400, 'Task is closed'));
+          }
+          if (req.params.entity === 'task' && !req.user.canReadProject(model.projectId)) {
+            return next(createError(403, 'Access denied'));
+          }
+
 
           const uploadDir = '/uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' +  classicRandom(3);
           const absoluteUploadDir = path.join(__dirname, '../../public/' + uploadDir);
@@ -140,7 +158,7 @@ exports.upload = function(req, res, next) {
             });
 
             form.parse(req, function (err) {
-              if (err) throw createError(err);
+              if (err) return next(createError(err));
             });
 
           });

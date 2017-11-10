@@ -15,96 +15,96 @@ const TimesheetController = require('../controllers/TimesheetController');
 const CommentController = require('../controllers/TaskCommentController');
 const HistoryController = require('../controllers/HistoryController');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
+const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 
 // Auth
 router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
 
 // User
-router.get('/user/autocompleter', UserController.autocomplete);
-router.get('/user/me', UserController.me);
-router.get('/user/:id', UserController.read);
+router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
+router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
+router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 
 // Tags
-router.get('/:taggable(project|task)/tag', TagController.autocompliter);
-router.post('/:taggable(project|task)/:taggableId/tag', TagController.create);
-router.get('/:taggable(project|task)/:taggableId/tag', TagController.list);
-router.delete('/:taggable(project|task)/:taggableId/tag/:tag', TagController.delete);
+router.get('/:taggable(project|task)/tag', GlobalAccess.can('tag', 'autocompliter'), TagController.autocompliter);
+router.post('/:taggable(project|task)/:taggableId/tag', GlobalAccess.can('tag', 'create'), TagController.create);
+router.get('/:taggable(project|task)/:taggableId/tag', GlobalAccess.can('tag', 'list'), TagController.list);
+router.delete('/:taggable(project|task)/:taggableId/tag/:tag', GlobalAccess.can('tag', 'delete'), TagController.delete);
 
 // Projects
-router.post('/project', ProjectController.create);
-router.get('/project/:id', ProjectController.read);
-router.put('/project/:id', ProjectController.update);
-router.delete('/project/:id', ProjectController.delete);
-router.get('/project', ProjectController.list);
-router.put('/project/:id/status', ProjectController.setStatus);  // Deprecated
-router.post('/project/:projectId/users', ProjectUsersController.create);
-router.get('/project/:projectId/users', ProjectUsersController.list);
-router.delete('/project/:projectId/users/:userId', ProjectUsersController.delete);
+router.post('/project', GlobalAccess.can('project', 'create'), ProjectController.create);
+router.get('/project/:id', GlobalAccess.can('project', 'read'), ProjectController.read);
+router.put('/project/:id', GlobalAccess.can('project', 'update'), ProjectController.update);
+router.delete('/project/:id', GlobalAccess.can('project', 'delete'), ProjectController.delete);
+router.get('/project', GlobalAccess.can('project', 'read'), ProjectController.list);
+
+router.post('/project/:projectId/users', GlobalAccess.can('projectUsers', 'create'), ProjectUsersController.create);
+router.get('/project/:projectId/users', GlobalAccess.can('projectUsers', 'list'), ProjectUsersController.list);
+router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUsers', 'delete'), ProjectUsersController.delete);
 
 // Portfolios
-router.get('/portfolio', PortfolioController.list);
-router.put('/portfolio/:id', PortfolioController.update);
-router.get('/portfolio/:id', PortfolioController.read);
+router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
+router.put('/portfolio/:id', GlobalAccess.can('portfolio', 'update'), PortfolioController.update);
+router.get('/portfolio/:id', GlobalAccess.can('portfolio', 'read'), PortfolioController.read);
 // Отключил т.к. портфели выбираются или создаются при создании проекта. Остальное в системе не используется
 /* router.post('/portfolio', PortfolioController.create);
 router.delete('/portfolio/:id', PortfolioController.delete);
 */
 
 // Sprints
-router.post('/sprint', SprintController.create);
-router.get('/sprint/:id', SprintController.read);
-router.put('/sprint/:id', SprintController.update);
-router.delete('/sprint/:id', SprintController.delete);
-router.get('/sprint', SprintController.list);
+router.post('/sprint', GlobalAccess.can('sprint', 'create'), SprintController.create);
+router.get('/sprint/:id', GlobalAccess.can('sprint', 'read'), SprintController.read);
+router.put('/sprint/:id', GlobalAccess.can('sprint', 'update'), SprintController.update);
+router.delete('/sprint/:id', GlobalAccess.can('sprint', 'delete'), SprintController.delete);
+router.get('/sprint', GlobalAccess.can('sprint', 'list'), SprintController.list);
 
 // Tasks
-router.post('/task', TaskController.create);
-router.get('/task/:id', TaskController.read);
-router.put('/task/:id', TaskController.update);
-router.delete('/task/:id', TaskController.delete);
-router.get('/task', TaskController.list);
-router.post('/task/:taskId/links/', TaskTasksController.create);
-router.delete('/task/:taskId/links/:linkedTaskId', TaskTasksController.delete);
+router.post('/task', GlobalAccess.can('task', 'create'), TaskController.create);
+router.get('/task/:id', GlobalAccess.can('task', 'read'), TaskController.read);
+router.put('/task/:id', GlobalAccess.can('task', 'update'), TaskController.update);
+router.delete('/task/:id', GlobalAccess.can('task', 'delete'), TaskController.delete);
+router.get('/task', GlobalAccess.can('task', 'list'), TaskController.list);
+router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), TaskTasksController.create);
+router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
 
 // Timesheets
-router.post('/timesheet/', TimesheetController.actionCreate.bind(TimesheetController));
-router.get('/timesheet/tracksAll/', TimesheetController.getTracksAll.bind(TimesheetController));
-router.get('/timesheet', TimesheetController.actionList);
-router.get('/task/timesheet/getTimesheets', TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
-router.put('/timesheetDraft/:timesheetDraftId/', TimesheetDraftController.updateVisible); // Deprecated. но еще используется
-router.put('/timesheet/:sheetId/', TimesheetController.actionCreate.bind(TimesheetController)); // Deprecated. но еще используется
-router.put('/timesheet/', TimesheetController.actionCreate.bind(TimesheetController));
-router.delete('/timesheet/:timesheetId', TimesheetController.delete);
+router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.actionCreate.bind(TimesheetController));
+router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll.bind(TimesheetController));
+router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.actionList);
+router.get('/task/timesheet/getTimesheets', GlobalAccess.can('timesheet', 'list'), TimesheetController.actionList);// Deprecated. но еще используется, аналог /timesheet
+router.put('/timesheetDraft/:timesheetDraftId/', GlobalAccess.can('timesheet', 'update'), TimesheetDraftController.updateVisible); // Deprecated. но еще используется
+router.put('/timesheet/:sheetId/', GlobalAccess.can('timesheet', 'update'), TimesheetController.actionCreate.bind(TimesheetController)); // Deprecated. но еще используется
+router.put('/timesheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.actionCreate.bind(TimesheetController));
+router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);
 
 // Comments
-router.post('/task/:taskId/comment', CommentController.create);
-router.put('/task/:taskId/comment/:commentId', CommentController.update);
-router.delete('/task/:taskId/comment/:commentId', CommentController.delete);
-router.get('/task/:taskId/comment', CommentController.list);
+router.post('/task/:taskId/comment', GlobalAccess.can('comment', 'create'), CommentController.create);
+router.put('/task/:taskId/comment/:commentId', GlobalAccess.can('comment', 'update'), CommentController.update);
+router.delete('/task/:taskId/comment/:commentId', GlobalAccess.can('comment', 'delete'), CommentController.delete);
+router.get('/task/:taskId/comment', GlobalAccess.can('comment', 'list'), CommentController.list);
 
 // Dictionaries
 router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
 router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
-
-router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated
-router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated
-router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated
+router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated. но еще используется
+router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated. но еще используется
+router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 
 // Attachments
-router.post('/:entity(project|task)/:entityId/attachment', UploadController.upload);
-router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', UploadController.delete);
+router.post('/:entity(project|task)/:entityId/attachment', GlobalAccess.can('attachment', 'upload'), UploadController.upload);
+router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', GlobalAccess.can('attachment', 'delete'), UploadController.delete);
 
 // History
-router.get('/:entity(project|task)/:entityId/history', HistoryController.list);
+router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history', 'list'), HistoryController.list);
 
 // Deprecated
-router.post('/task/:taskId/timesheet', TimesheetController.actionCreate); // Deprecated
-router.put('/task/:taskId/timesheet/:timesheetId', TimesheetController.update); // Deprecated
-router.post('/timesheet/:taskId/setTime/', TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
-router.get('/timesheet/tracks/', TimesheetController.getTracks.bind(TimesheetController)); // Deprecated
+router.post('/task/:taskId/timesheet', GlobalAccess.can('timesheet', 'create'), TimesheetController.actionCreate); // Deprecated
+router.put('/task/:taskId/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'update'), TimesheetController.update); // Deprecated
+router.post('/timesheet/:taskId/setTime/', GlobalAccess.can('timesheet', 'create'), TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
+router.get('/timesheet/tracks/', GlobalAccess.can('timesheet', 'list'), TimesheetController.getTracks.bind(TimesheetController)); // Deprecated
 // TimesheetsDraft, системные?
 router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft); // Deprecated
 router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts); // Deprecated

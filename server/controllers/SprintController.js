@@ -7,6 +7,11 @@ const Sequelize = require('sequelize');
 
 
 exports.create = function(req, res, next){
+  if (!req.params.projectId.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  if (!req.user.canUpdateProject(req.params.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
+
   Sprint.beforeValidate((model) => {
     model.authorId = req.user.id;
   });
@@ -21,7 +26,6 @@ exports.create = function(req, res, next){
     .catch((err) => {
       next(err);
     });
-
 };
 
 
@@ -50,7 +54,12 @@ exports.read = function(req, res, next){
     ],
   })
     .then((model) => {
-      if(!model) { return next(createError(404)); }
+      if (!model) {
+        return next(createError(404));
+      }
+      if (!req.user.canReadProject(model.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
       res.end(JSON.stringify(model.dataValues));
     })
     .catch((err) => {
@@ -66,7 +75,12 @@ exports.update = function(req, res, next){
   return models.sequelize.transaction(function (t) {
     return Sprint.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
       .then((model) => {
-        if(!model) { return next(createError(404)); }
+        if (!model) {
+          return next(createError(404));
+        }
+        if (!req.user.canUpdateProject(model.projectId)) {
+          return next(createError(403, 'Access denied'));
+        }
 
         return model.updateAttributes(req.body, { transaction: t })
           .then((model)=>{
@@ -89,7 +103,12 @@ exports.delete = function(req, res, next){
   
   Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
     .then((model) => {
-      if(!model) { return next(createError(404)); }
+      if (!model) {
+        return next(createError(404));
+      }
+      if (!req.user.canUpdateProject(model.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
 
       return model.destroy()
         .then(()=>{
@@ -108,8 +127,13 @@ exports.delete = function(req, res, next){
 
 
 exports.list = function(req, res, next){
-  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
-  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if (req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if (!req.query.projectId.match(/^[0-9]+$/)) return next(createError(400, 'projectId must be int'));
+  if (!req.user.canReadProject(req.query.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
+
   if(req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Sprint.checkAttributes(req.query.fields);
