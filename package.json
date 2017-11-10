@@ -12,7 +12,14 @@
     "init:app": "./init_backend.sh",
     "db:restore": "./pg_db/restore_dump.sh",
     "db:dump": "./pg_db/base_dump.sh",
-    "restart": "./restart.sh"
+    "restart": "./restart.sh",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
@@ -47,6 +54,8 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^4.4.1",
+    "husky": "^0.14.3",
+    "lint-staged": "^4.3.0",
     "mocha": "^4.0.1",
     "nodemon": "^1.12.0",
     "sequelize-log-syntax-colors": "^1.0.0"
