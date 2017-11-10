@@ -137,7 +137,7 @@ exports.update = async function (req, res, next) {
     if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
 
-    const attributes = ['id', 'statusId', 'performerId'].concat(Object.keys(req.body));
+    const attributes = ['id', 'statusId', 'performerId', 'projectId'].concat(Object.keys(req.body));
     const now = moment().format('YYYY-MM-DD');
     const resultResponse = {};
     const taskId = req.params.id;
