@@ -378,8 +378,11 @@ exports.actionCreate = async function (req, res, next) {
   } else {
     console.log('isDraft false');
     if (!req.body.sheetId) {
-      result = await this.createTimesheetNoDraft(req, res, next);
+      if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
+        return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
+      }
 
+      result = await this.createTimesheetNoDraft(req, res, next);
     } else if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     } else {
