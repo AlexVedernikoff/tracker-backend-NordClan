@@ -108,60 +108,57 @@ exports.getTimesheets = async function (req, res, next) {
 /**
  *  Функция составления треков для трекера
  */
-async function getTracks (req, res, next) {
+const getTracks = async (req, res, next) => {
   const today = moment().format('YYYY-MM-DD');
-
-  const timesheets = await this.getTimesheets(req, res, next);
+  req.query.userId = req.user.id;
+  const timesheets = this.getTimesheets(req, res, next);
+  const drafts = moment(req.query.onDate).isSame(today) // Если текущий день, то добавляю драфты
+    ? TimesheetDraftController.getDrafts(req, res, next)
+    : [];
   return {
     tracks: [
-      ...timesheets,
-      ...( // Если текущий день, то вставляем драфты
-        moment(req.query.onDate).isSame(today)
-          ? await TimesheetDraftController.getDrafts(req, res, next)
-          : []
-      )
+      ... await timesheets,
+      ... await drafts
     ]
   };
+};
+
+function getDateArray (startDate, endDate) {
+  const dateFormat = 'YYYY-MM-DD';
+  const start = moment(startDate);
+  const end = moment(endDate);
+  const difference = end.diff(start, 'days');
+
+  if (!start.isValid() || !end.isValid() || difference <= 0) {
+    return 'Invalid dates specified. Please check format and or make sure that the dates are different';
+  }
+
+  return [
+    end.format(dateFormat),
+    ...dateRangeInArray(difference, end, dateFormat)
+  ];
+}
+
+function dateRangeInArray (difference, end, format) {
+  const arr = [];
+  for (let i = 0; i < difference; i++) {
+    arr.push(end.subtract(1, 'd').format(format));
+  }
+  return arr;
 }
 
 /**
  *  Функция загрузки треков на неделю
  */
 exports.getTracksAll = async function (req, res, next) {
-
-  // Это безобразие с датами надо переписать
-  function pushDates (difference, end, format) {
-    const arr = [];
-    for (let i = 0; i < difference; i++) {
-      arr.push(end.subtract(1, 'd').format(format));
-    }
-    return arr;
-  }
-
-
   try {
     const result = {};
-
-    // Отрефакторить это
-    // Это безобразие с датами надо переписать
-    const dateFormat = 'YYYY-MM-DD';
-    const dates = [];
-    const start = moment(req.query.startDate);
-    const end = moment(req.query.endDate);
-
-    const difference = end.diff(start, 'days');
-
-    if (!start.isValid() || !end.isValid() || difference <= 0) {
-      throw Error('Invalid dates specified. Please check format and or make sure that the dates are different');
-    }
-    dates.push(end.format(dateFormat));
-
-    const dateArr = dates.concat(pushDates(difference, end, dateFormat));
+    const dateArr = getDateArray(req.query.startDate, req.query.endDate);
+    console.log(dateArr);
 
 
     await Promise.all(dateArr.map(async (onDate) => {
-      console.log(onDate);
-      req.query.onDate = onDate;
+      req.query.onDate = onDate; // Здесь и далее потанцеиальная опастность использования объектов в req
       const tracks = await getTracks(req, res, next);
       // пройти по трекам
       const scales = {};
