@@ -1,5 +1,3 @@
-const _ = require('underscore');
-
 module.exports = function (sequelize, DataTypes) {
   const TimesheetDraft = sequelize.define('TimesheetDraft', {
     id: {
