@@ -222,6 +222,7 @@ exports.update = async function (req, res, next) {
       req.query.taskStatusId = req.body.statusId;
       req.query.userId = task.dataValues.performerId;
       req.query.taskId = task.dataValues.id;
+      req.query.onDate = now;
 
       timesheet = await TimesheetController.getTimesheets(req, res, next);
       draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
