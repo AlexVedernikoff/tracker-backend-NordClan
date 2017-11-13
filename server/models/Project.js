@@ -1,7 +1,7 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 const ProjectHooks = require('../components/sequelizeHooks/project');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Project = sequelize.define('Project', {
     id: {
       type: DataTypes.INTEGER,
@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
     name: {
@@ -18,7 +18,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       validate: {
         len: [1, 255]
-      },
+      }
     },
     description: {
       trim: true,
@@ -79,16 +79,22 @@ module.exports = function(sequelize, DataTypes) {
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true
     },
     completedAt: {
       field: 'completed_at',
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: true
+    },
+    createdBySystemUser: {
+      field: 'created_by_system_user',
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
 
   }, {
     underscored: true,
@@ -96,7 +102,7 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: true,
     tableName: 'projects',
     hooks: {
-      afterFind: function(model) {
+      afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
     }
@@ -107,7 +113,7 @@ module.exports = function(sequelize, DataTypes) {
   Project.addHook('beforeUpdate', ProjectHooks.setCompletedAtIfNeed);
   Project.addHook('beforeCreate', ProjectHooks.setCompletedAtIfNeed);
 
-  Project.associate = function(models) {
+  Project.associate = function (models) {
 
     Project.belongsTo(models.Portfolio, {
       as: 'portfolio',
@@ -183,7 +189,7 @@ module.exports = function(sequelize, DataTypes) {
       through: {
         as: 'projectUsers',
         model: models.ProjectUsers,
-        unique: false,
+        unique: false
       },
       foreignKey: 'project_id',
       constraints: false
@@ -207,7 +213,7 @@ module.exports = function(sequelize, DataTypes) {
 
     Project.hasMany(models.ProjectAttachments, {
       as: 'attachments',
-      foreignKey: 'project_id',
+      foreignKey: 'project_id'
     });
 
   };

@@ -11,15 +11,21 @@ const Sprint = require('../models').Sprint;
 const queries = require('../models/queries');
 
 
-exports.create = function(req, res, next){
-  if(req.body.tags) {
+exports.create = function (req, res, next){
+  if (req.body.tags) {
     req.body.tags.split(',').map(el=>el.trim()).forEach(el => {
-      if(el.length < 2) return next(createError(400, 'tag must be more then 2 chars'))
+      if (el.length < 2) return next(createError(400, 'tag must be more then 2 chars'));
     });
   }
-  
+
   Project.beforeValidate((model) => {
-    model.authorId = req.user.id;
+    if (req.isSystemUser === true) {
+      model.createdBySystemUser = true;
+    } else if (req.user.id) {
+      model.authorId = req.user.id;
+    } else {
+      return next(createError(500, 'in req must be req.isSystemUser or req.user.id'));
+    }
   });
 
   if (req.user.isVisor) {
@@ -33,7 +39,7 @@ exports.create = function(req, res, next){
 
       return queries.tag.saveTagsForModel(model, req.body.tags, 'project')
         .then(() => {
-          if(!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
+          if (!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
         })
         .then(() => res.json({id: model.id}));
     })
@@ -43,8 +49,8 @@ exports.create = function(req, res, next){
 };
 
 
-exports.read = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.read = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canReadProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
   }
@@ -53,7 +59,7 @@ exports.read = function(req, res, next){
     .findByPrimary(req.params.id, {
       order: [
         [{model: models.Sprint, as: 'sprints'}, 'factStartDate', 'ASC'],
-        [{model: models.Sprint, as: 'sprints'}, 'name', 'ASC'],
+        [{model: models.Sprint, as: 'sprints'}, 'name', 'ASC']
       ],
       include: [
         {
@@ -65,8 +71,8 @@ exports.read = function(req, res, next){
             attributes: []
           },
           order: [
-            ['name', 'ASC'],
-          ],
+            ['name', 'ASC']
+          ]
         },
         {
           as: 'sprints',
@@ -84,12 +90,12 @@ exports.read = function(req, res, next){
                                 AND t.sprint_id = "sprints"."id"
                                 AND t.deleted_at IS NULL
                                 AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
-          ],
+          ]
         },
         {
           as: 'portfolio',
           model: Portfolio,
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name']
         },
         {
           as: 'users',
@@ -99,7 +105,7 @@ exports.read = function(req, res, next){
             as: 'projectUsers',
             model: models.ProjectUsers,
             attributes: ['rolesIds']
-          },
+          }
         },
         {
           as: 'attachments',
@@ -112,19 +118,19 @@ exports.read = function(req, res, next){
       ]
     })
     .then((model) => {
-      if(!model) return next(createError(404));
+      if (!model) return next(createError(404));
 
-      if(model.users) {
+      if (model.users) {
         model.users.forEach((user, key) => {
           model.users[key] = {
             id: user.id,
             fullNameRu: user.fullNameRu,
-            roles: queries.projectUsers.getTransRolesToObject(JSON.parse(user.projectUsers.rolesIds)),
+            roles: queries.projectUsers.getTransRolesToObject(JSON.parse(user.projectUsers.rolesIds))
           };
         });
       }
 
-      if(model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
+      if (model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
       delete model.dataValues.portfolioId;
       res.json(model.dataValues);
     })
@@ -135,8 +141,8 @@ exports.read = function(req, res, next){
 };
 
 
-exports.update = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.update = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canUpdateProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
   }
@@ -150,7 +156,7 @@ exports.update = function(req, res, next){
     return Project
       .findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
       .then((project) => {
-        if(!project) {
+        if (!project) {
           return next(createError(404));
         }
 
@@ -166,13 +172,12 @@ exports.update = function(req, res, next){
           .then((model)=>{
 
             // Запускаю проверку портфеля на пустоту и его удаление
-            if(portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+            if (portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
 
             resultRespons.id = model.id;
             // Получаю измененные поля
             _.keys(model.dataValues).forEach((key) => {
-              if(req.body[key])
-                resultRespons[key] = model.dataValues[key];
+              if (req.body[key]) {resultRespons[key] = model.dataValues[key];}
             });
 
             res.json(resultRespons);
@@ -187,12 +192,12 @@ exports.update = function(req, res, next){
 };
 
 
-exports.delete = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
+exports.delete = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+
   Project.findByPrimary(req.params.id, { attributes: ['id'] })
     .then((project) => {
-      if(!project) { return next(createError(404)); }
+      if (!project) { return next(createError(404)); }
 
       return project.destroy()
         .then(()=>{
@@ -206,48 +211,48 @@ exports.delete = function(req, res, next){
 };
 
 
-exports.list = function(req, res, next){
-  if(req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
-  if(req.query.dateSprintEnd && !req.query.dateSprintEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
-  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
-  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  if(req.query.portfolioId && !req.query.portfolioId.match(/^\d+$/)) return next(createError(400, 'portfolioId must be int'));
-  if(req.query.performerId && !req.query.performerId.match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
-  if(req.query.fields) {
+exports.list = function (req, res, next){
+  if (req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
+  if (req.query.dateSprintEnd && !req.query.dateSprintEnd.match(/^\d{4}-\d{2}-\d{2}$/)) return next(createError(400, 'date must be in YYYY-MM-DD format'));
+  if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if (req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+  if (req.query.portfolioId && !req.query.portfolioId.match(/^\d+$/)) return next(createError(400, 'portfolioId must be int'));
+  if (req.query.performerId && !req.query.performerId.match(/^\d+$/)) return next(createError(400, 'performerId must be int'));
+  if (req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Project.checkAttributes(req.query.fields);
   }
-  
-  if(!req.query.pageSize) {
+
+  if (!req.query.pageSize) {
     req.query.pageSize = 25;
   }
-  
-  if(!req.query.currentPage) {
+
+  if (!req.query.currentPage) {
     req.query.currentPage = 1;
   }
-  
-  let include = [];
-  let where = {};
+
+  const include = [];
+  const where = {};
 
   if (!req.user.isGlobalAdmin && !req.user.isVisor) {
     where.id = req.user.dataValues.projects;
   }
 
-  if(req.query.portfolioId) {
+  if (req.query.portfolioId) {
     where.portfolioId = req.query.portfolioId;
   }
 
-  if(req.query.name) {
+  if (req.query.name) {
     where.name = { $iLike: '%' + req.query.name + '%' };
   }
-  
-  if(req.query.statusId) {
+
+  if (req.query.statusId) {
     where.statusId = {
       in: req.query.statusId.toString().split(',').map((el)=>el.trim())
     };
   }
-  
-  if(req.query.tags) {
+
+  if (req.query.tags) {
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
   }
 
@@ -262,7 +267,7 @@ exports.list = function(req, res, next){
         $eq: null // IS NULL
       }
     },
-    required: false,
+    required: false
   });
 
   // вывод тегов
@@ -275,20 +280,20 @@ exports.list = function(req, res, next){
     include: [{
       as: 'tag',
       model: Tag,
-      attributes: ['name'],
+      attributes: ['name']
     }],
-    required: false,
+    required: false
   });
 
   // Порфтель
   include.push({
     as: 'portfolio',
     model: Portfolio,
-    attributes: ['id','name']
+    attributes: ['id', 'name']
   });
 
   // Фильтрация по исполнитею
-  if(req.query.performerId) {
+  if (req.query.performerId) {
     include.push({
       model: models.ProjectUsers,
       attributes: [],
@@ -297,22 +302,22 @@ exports.list = function(req, res, next){
       }
     });
   }
-  
+
   // Фильтрация по дате
   const queryFactStartDate = {};
   const queryFactFinishDate = {};
-  
-  if(req.query.dateSprintBegin) {
+
+  if (req.query.dateSprintBegin) {
     queryFactStartDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD'); // factStartDate >= queryBegin
     queryFactFinishDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD'); // factStartDate >= queryBegin
   }
 
-  if(req.query.dateSprintEnd) {
+  if (req.query.dateSprintEnd) {
     queryFactStartDate.$lte = moment(req.query.dateSprintEnd).format('YYYY-MM-DD'); // factStartDate >= queryBegin
     queryFactFinishDate.$lte = moment(req.query.dateSprintEnd).format('YYYY-MM-DD'); // factStartDate >= queryBegin
   }
 
-  if(req.query.dateSprintBegin || req.query.dateSprintEnd) {
+  if (req.query.dateSprintBegin || req.query.dateSprintEnd) {
     include.push({
       as: 'sprintForQuery',
       model: Sprint,
@@ -331,7 +336,7 @@ exports.list = function(req, res, next){
     });
   }
 
-  let attributes = Project.defaultSelect.concat([
+  const attributes = Project.defaultSelect.concat([
     [Sequelize.literal(`(SELECT count(t.*)
                                 FROM project_users as t
                                 WHERE t.project_id = "Project"."id"
@@ -347,13 +352,13 @@ exports.list = function(req, res, next){
                                 WHERE t.project_id = "Project"."id"
                                 AND t.deleted_at IS NULL 
                                 ORDER BY fact_start_date DESC
-                                LIMIT 1)`), 'dateFinishLastSprint'], // Дата завершения последнего спринта у проекта
+                                LIMIT 1)`), 'dateFinishLastSprint'] // Дата завершения последнего спринта у проекта
   ]);
-  
+
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
     .then(() => {
-      if(req.query.tags)
+      if (req.query.tags) {
         return Tag
           .findAll({
             where: {
@@ -362,7 +367,8 @@ exports.list = function(req, res, next){
               }
             }
           });
-      
+      }
+
       return [];
     })
     // Включаем фильтрация по тегам в запрос
@@ -382,8 +388,8 @@ exports.list = function(req, res, next){
           attributes: [],
           required: true,
           where: {
-            tag_id: tag.id,
-          },
+            tag_id: tag.id
+          }
         });
       });
     })
@@ -399,8 +405,8 @@ exports.list = function(req, res, next){
           order: [
             ['statusId', 'ASC'],
             ['name', 'ASC'],
-            [{ as: 'currentSprints', model: Sprint }, 'factStartDate', 'ASC'],
-          ],
+            [{ as: 'currentSprints', model: Sprint }, 'factStartDate', 'ASC']
+          ]
         })
         .then(projects => {
 
@@ -411,34 +417,34 @@ exports.list = function(req, res, next){
               group: ['Project.id']
             })
             .then((count) => {
-              count = count.length;
+              const projectCount = count.length;
 
 
-              if(projects) {
-                for(let key in projects) {
-                  let row = projects[key].dataValues;
-                  
-                  if(row.itemTagSelect) row.tags = Object.keys(row.itemTagSelect).map((k) => row.itemTagSelect[k].tag.name); // Преобразую теги в массив
+              if (projects) {
+                for (const key in projects) {
+                  const row = projects[key].dataValues;
+
+                  if (row.itemTagSelect) row.tags = Object.keys(row.itemTagSelect).map((k) => row.itemTagSelect[k].tag.name); // Преобразую теги в массив
                   delete row.itemTagSelect;
                   delete row.portfolioId;
-                  
-                  if(row.currentSprints && row.currentSprints[0]) { // преобразую спринты
+
+                  if (row.currentSprints && row.currentSprints[0]) { // преобразую спринты
                     row.currentSprints = [row.currentSprints[0]];
                   }
-                  
+
                   projects[key].dataValues = row;
                 }
-                
-              }
-              
 
-              let responseObject = {
+              }
+
+
+              const responseObject = {
                 currentPage: +req.query.currentPage,
-                pagesCount: Math.ceil(count / req.query.pageSize),
+                pagesCount: Math.ceil(projectCount / req.query.pageSize),
                 pageSize: req.query.pageSize,
-                rowsCountAll: count,
+                rowsCountAll: projectCount,
                 rowsCountOnCurrentPage: projects.length,
-                data: projects,
+                data: projects
               };
               res.json(responseObject);
 

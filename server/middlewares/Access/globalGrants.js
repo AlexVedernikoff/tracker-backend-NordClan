@@ -2,64 +2,64 @@ const USER = {
   user: {
     'autocomplete': true,
     'me': true,
-    'read': true,
+    'read': true
   },
   tag: {
     'autocompliter': true,
     'create': true,
     'list': true,
-    'delete': true,
+    'delete': true
   },
   project: {
     'create': true,
     'read': true,
-    'update': true,
+    'update': true
   },
   projectUsers: {
     'create': true,
     'list': true,
-    'delete': true,
+    'delete': true
   },
   portfolio: {
     'update': true,
-    'read': true,
+    'read': true
   },
   sprint: {
     'create': true,
     'read': true,
     'update': true,
-    'list': true,
+    'list': true
   },
   task: {
     'create': true,
     'read': true,
     'update': true,
-    'list': true,
+    'list': true
   },
   taskLinks: {
     'create': true,
-    'delete': true,
+    'delete': true
   },
   comment: {
     'create': true,
     'update': true,
     'delete': true,
-    'list': true,
+    'list': true
   },
   attachment: {
     'upload': true,
-    'delete': true,
+    'delete': true
   },
   history: {
-    'list': true,
+    'list': true
   },
   timesheet: {
     'create': true,
     'update': true,
     'delete': true,
     'list': true,
-    'trackAll': true,
-  },
+    'trackAll': true
+  }
 };
 
 module.exports = {
@@ -70,32 +70,33 @@ module.exports = {
     ...USER,
     project: {
       ...USER.project,
-      'delete':  true,
+      'delete': true
     },
     sprint: {
       ...USER.sprint,
-      'delete': true,
+      'delete': true
     },
     task: {
       ...USER.task,
-      'delete': true,
+      'delete': true
     },
     portfolio: {
       ...USER.portfolio,
       'list': true,
-      'delete': true,
-    },
+      'delete': true
+    }
   },
   SYSTEM_USER: {
     timesheet: {
       'update': true,
-      'list': true,
+      'list': true
     },
     project: {
       'read': true,
-    },
+      'create': true
+    }
   },
   VISOR: {
-    ...USER,
+    ...USER
   }
 };
