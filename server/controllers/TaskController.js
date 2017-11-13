@@ -8,6 +8,7 @@ const queries = require('../models/queries');
 const moment = require('moment');
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
+const TasksChannel = require('../channels/Tasks/Tasks');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -31,12 +32,14 @@ exports.create = async function (req, res, next) {
   Task.create(req.body)
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
-        .then(() => res.json({ id: model.id }));
+        .then(() => {
+          TasksChannel.sendAction('create', model, res.io);
+          res.json(model);
+        });
     })
     .catch((err) => {
       next(err);
     });
-
 };
 
 exports.read = function (req, res, next) {
@@ -233,8 +236,6 @@ exports.update = async function (req, res, next) {
       ]);
     }
 
-    const socketChannel = `project_${task.projectId}_task_${task.id}`;
-
     if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
       const taskWithUser = await queries.task.findTaskWithUser(req.params.id, t);
       const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, t);
@@ -265,13 +266,13 @@ exports.update = async function (req, res, next) {
 
       await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
 
-
       const updatedFields = {
         ...resultResponse,
+        id: task.id,
         statusId: body.statusId ? +body.statusId : task.statusId
       }
 
-      res.io.emit(socketChannel, updatedFields);
+      TasksChannel.sendAction('update', updatedFields, res.io);
       res.json(updatedFields);
 
       t.commit();
@@ -286,7 +287,7 @@ exports.update = async function (req, res, next) {
 
       resultResponse.id = task.id;
 
-      res.io.emit(socketChannel, resultResponse);
+      TasksChannel.sendAction('update', resultResponse, res.io);
       res.json(resultResponse);
 
       t.commit();
