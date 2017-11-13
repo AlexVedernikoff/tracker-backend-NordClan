@@ -154,13 +154,10 @@ exports.update = async function (req, res, next) {
       return next(createError(404))
     }
 
-<<<<<<< HEAD
     if (!req.user.canReadProject(task.projectId))  {
       t.rollback();
       return next(createError(403, 'Access denied'));
     }
-=======
->>>>>>> broadcast changing of task through socket
 
     if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
       if (!body.statusId) {
