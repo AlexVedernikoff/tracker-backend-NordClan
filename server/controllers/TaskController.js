@@ -55,8 +55,8 @@ exports.read = function (req, res, next) {
           attributes: []
         },
         order: [
-          ['name', 'ASC'],
-        ],
+          ['name', 'ASC']
+        ]
       },
       {
         as: 'project',
@@ -95,7 +95,7 @@ exports.read = function (req, res, next) {
       {
         as: 'performer',
         model: models.User,
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo']
       },
       {
         as: 'attachments',
@@ -128,7 +128,7 @@ exports.read = function (req, res, next) {
 
 
 exports.update = async function (req, res, next) {
-  'use strict';
+
   let t;
 
   try {
@@ -150,10 +150,10 @@ exports.update = async function (req, res, next) {
     let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction: t, lock: 'UPDATE' });
     if (!task) {
       t.rollback();
-      return next(createError(404))
+      return next(createError(404));
     }
 
-    if (!req.user.canReadProject(task.projectId))  {
+    if (!req.user.canReadProject(task.projectId)) {
       t.rollback();
       return next(createError(403, 'Access denied'));
     }
@@ -201,7 +201,7 @@ exports.update = async function (req, res, next) {
 
     // Если хотели изменить спринт, присылаю его обратно
     if (+body.sprintId > 0) {
-      let task = await Task.findByPrimary(req.params.id, {
+      const task = await Task.findByPrimary(req.params.id, {
         attributes: ['id'],
         transaction: t,
         include: [
@@ -222,14 +222,10 @@ exports.update = async function (req, res, next) {
       req.query.taskStatusId = req.body.statusId;
       req.query.userId = task.dataValues.performerId;
       req.query.taskId = task.dataValues.id;
-      req.query.onDate = now;
 
-      await Promise.all([
-        TimesheetDraftController.getDrafts(req, res, next)
-          .then((result) => { draftsheet = result; }),
-        TimesheetController.getTimesheets(req, res, next)
-          .then((result) => { timesheet = result; })
-      ]);
+      timesheet = await TimesheetController.getTimesheets(req, res, next);
+      draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+
     }
 
     if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
@@ -273,8 +269,7 @@ exports.update = async function (req, res, next) {
 
       // Получаю измененные поля
       _.keys(task.dataValues).forEach((key) => {
-        if (body[key])
-          resultResponse[key] = task.dataValues[key];
+        if (body[key]) {resultResponse[key] = task.dataValues[key];}
       });
 
       resultResponse.id = task.id;
@@ -337,7 +332,7 @@ exports.list = function (req, res, next) {
     req.query.currentPage = 1;
   }
 
-  let where = {
+  const where = {
     deletedAt: { $eq: null } // IS NULL
   };
 
@@ -360,7 +355,7 @@ exports.list = function (req, res, next) {
 
   if (!req.query.statusId) {
     where.statusId = {
-      $notIn: [9, 10], // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
+      $notIn: [9, 10] // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
     };
   }
 
@@ -373,7 +368,7 @@ exports.list = function (req, res, next) {
       in: req.query.projectId.toString().split(',').map((el) => el.trim())
     };
   } else if (!req.user.isGlobalAdmin && !req.user.isVisor) {
-      where.projectId = req.user.dataValues.projects;
+    where.projectId = req.user.dataValues.projects;
   }
 
   if (req.query.sprintId) {
@@ -397,13 +392,13 @@ exports.list = function (req, res, next) {
   const includePerformer = {
     as: 'performer',
     model: models.User,
-    attributes: models.User.defaultSelect,
+    attributes: models.User.defaultSelect
   };
 
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
-    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime'],
+    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
   };
 
   const includeTagSelect = {
@@ -415,8 +410,8 @@ exports.list = function (req, res, next) {
       attributes: []
     },
     order: [
-      ['name', 'ASC'],
-    ],
+      ['name', 'ASC']
+    ]
   };
 
   const includeTagConst = {
@@ -426,8 +421,8 @@ exports.list = function (req, res, next) {
     attributes: [],
     where: {
       name: {
-        $or: req.query.tags,
-      },
+        $or: req.query.tags
+      }
     },
     through: {
       model: ItemTag,
@@ -438,18 +433,18 @@ exports.list = function (req, res, next) {
   const includeProject = {
     as: 'project',
     model: models.Project,
-    attributes: ['prefix'],
+    attributes: ['prefix']
   };
 
 
-  let includeForSelect = [];
+  const includeForSelect = [];
   includeForSelect.push(includeAuthor);
   includeForSelect.push(includePerformer);
   includeForSelect.push(includeSprint);
   includeForSelect.push(includeTagSelect);
   if (prefixNeed) includeForSelect.push(includeProject);
 
-  let includeForCount = [];
+  const includeForCount = [];
   if (req.query.tags) includeForCount.push(includeTagConst);
   if (req.query.performerId) includeForCount.push(includePerformer);
 
@@ -457,7 +452,7 @@ exports.list = function (req, res, next) {
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
     .then(() => {
-      if (req.query.tags)
+      if (req.query.tags) {
         return Tag
           .findAll({
             where: {
@@ -466,6 +461,7 @@ exports.list = function (req, res, next) {
               }
             }
           });
+      }
 
       return [];
     })
@@ -486,8 +482,8 @@ exports.list = function (req, res, next) {
           attributes: [],
           required: true,
           where: {
-            tag_id: tag.id,
-          },
+            tag_id: tag.id
+          }
         });
       });
     })

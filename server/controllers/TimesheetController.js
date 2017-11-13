@@ -17,7 +17,7 @@ exports.getTimesheets = async function (req, res, next) {
       deletedAt: null
     };
     if (req.query.onDate) {
-      let date = new Date(req.query.onDate);
+      const date = new Date(req.query.onDate);
       Object.assign(where, { onDate: { $eq: date } });
     }
     if (req.params && req.params.sheetId) {
@@ -55,14 +55,14 @@ exports.getTimesheets = async function (req, res, next) {
               model: models.Project,
               required: false,
               attributes: ['id', 'name'],
-              paranoid: false,
+              paranoid: false
             },
             {
               as: 'taskStatus',
               model: models.TaskStatusesDictionary,
               required: false,
               attributes: ['id', 'name'],
-              paranoid: false,
+              paranoid: false
             }
           ]
         },
@@ -78,11 +78,11 @@ exports.getTimesheets = async function (req, res, next) {
           model: models.Project,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false,
-        },
+          paranoid: false
+        }
       ]
     });
-    let result = [];
+    const result = [];
     timesheets.map(ds => {
 
       if (ds.dataValues.task && ds.dataValues.task.dataValues.project) {
@@ -96,7 +96,7 @@ exports.getTimesheets = async function (req, res, next) {
       }
 
 
-      ds.dataValues.onDate =  ds.onDate;
+      ds.dataValues.onDate = ds.onDate;
       result.push(ds.dataValues);
     });
     return result;
@@ -109,23 +109,19 @@ exports.getTimesheets = async function (req, res, next) {
  * Функция составления треков на текущий день
  */
 exports.getTracksOnCurrentDay = async function (req, res, next) {
-  let result;
-  let timesheets =  this.getTimesheets(req, res, next);
+  let timesheets = this.getTimesheets(req, res, next);
   let draftsheets = TimesheetDraftController.getDrafts(req, res, next);
   timesheets = await timesheets;
   draftsheets = await draftsheets;
-  result = { tracks: [...draftsheets, ...timesheets] };
-  return result;
+  return { tracks: [...draftsheets, ...timesheets] };
 };
 
 /**
  *  Функция составления треков на не текущий день
  */
 exports.getTracksOnOtherDay = async function (req, res, next) {
-  let result;
-  let timesheets = await this.getTimesheets(req, res, next);
-  result = { tracks: timesheets };
-  return result;
+  const timesheets = await this.getTimesheets(req, res, next);
+  return { tracks: timesheets };
 };
 
 /**
@@ -144,14 +140,14 @@ exports.getTracks = async function (req, res, next) {
 };
 
 /**
- *  Функция загрузки треков на неделю 
+ *  Функция загрузки треков на неделю
  */
 exports.getTracksAll = async function (req, res, next) {
 
   // Это безобразие с датами надо переписать
-  function pushDates(difference, end, format) {
+  function pushDates (difference, end, format) {
     const arr = [];
-    for(let i = 0; i < difference; i++) {
+    for (let i = 0; i < difference; i++) {
       arr.push(end.subtract(1, 'd').format(format));
     }
     return arr;
@@ -164,7 +160,7 @@ exports.getTracksAll = async function (req, res, next) {
     // Отрефакторить это
     // Это безобразие с датами надо переписать
     const dateFormat = 'YYYY-MM-DD';
-    let dates = [];
+    const dates = [];
     const start = moment(req.query.startDate);
     const end = moment(req.query.endDate);
 
@@ -179,13 +175,14 @@ exports.getTracksAll = async function (req, res, next) {
 
 
     await Promise.all(dateArr.map(async (onDate) => {
+      console.log(onDate);
       req.query.onDate = onDate;
-      const tracks =  await this.getTracks(req, res, next);
+      const tracks = await this.getTracks(req, res, next);
       // пройти по трекам
       const scales = {};
       tracks.tracks.map(track => {
         models.TimesheetTypesDictionary.values.map(value => {
-          if (track.typeId == value.id) {
+          if (track.typeId === value.id) {
             if (scales.hasOwnProperty(value.id)) {
               scales[value.id] = +scales[value.id] + +track.spentTime;
             } else {
@@ -200,7 +197,7 @@ exports.getTracksAll = async function (req, res, next) {
         sum += +scales[key];
       });
       Object.assign(scales, {all: sum});
-      let tr = tracks.tracks;
+      const tr = tracks.tracks;
       result[onDate] = { tracks: tr, scales};
       return;
     }));
@@ -271,7 +268,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   }
 };
 
-async function _setAdditionalInfo(tmp, req) {
+async function _setAdditionalInfo (tmp, req) {
   tmp.userRoleId = null;
   tmp.isBillible = false;
   tmp.onDate = moment().format('YYYY-MM-DD');
@@ -310,15 +307,15 @@ exports.setTimesheetTime = async function (req, res, next) {
   }
 
   try {
-    let tmp = {};
+    const tmp = {};
     delete req.body.isDraft;
-    let timesheet = await this.getTimesheets(req, res, next);
+    const timesheet = await this.getTimesheets(req, res, next);
     if (_.isEmpty(timesheet)) return next(createError(404, 'Timesheet not found'));
     Object.assign(tmp, timesheet[0]);
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
 
     if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
-      let task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
+      const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
     }
 
@@ -355,12 +352,14 @@ exports.createTimesheetNoDraft = async function (req, res, next) {
 };
 
 exports.actionCreate = async function (req, res, next) {
-
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+  if (req.params.sheetId) {
+    req.body.sheetId = req.params.sheetId;
+  }
 
   let result;
   req.query.userId = req.user.id;
-  if (''+req.body.isDraft == 'true') {
+  if ('' + req.body.isDraft === 'true') {
     console.log('isDraft true');
     if (req.body.spentTime) {
       result = await this.setDraftTimesheetTime(req, res, next);
@@ -420,9 +419,9 @@ exports.createOrUpdateTimesheet = async function (req, res, next) {
 exports.update = async function (req, res, next) {
   if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
   try {
-    let timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
+    const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
     if (!timesheetModel) return next(createError(404, 'Timesheet not found'));
-    let result = await timesheetModel.updateAttributes(req.body);
+    const result = await timesheetModel.updateAttributes(req.body);
     res.json(result);
   } catch (e) {
     return next(e);
@@ -472,12 +471,12 @@ exports.actionList = async function (req, res, next) {
   }
 };
 
-async function _actionListReqValidate(req) {
+async function _actionListReqValidate (req) {
   if (req.isSystemUser) {
     // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
     if (req.query.userId) {
       req.checkQuery('userId', 'userId must be int').isInt();
-    } else if(req.query.userPSId) {
+    } else if (req.query.userPSId) {
       req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
     } else {
       req.checkQuery('userId', 'userId must be int').isInt();
@@ -495,7 +494,7 @@ async function _actionListReqValidate(req) {
   if (!validationResult.isEmpty()) throw createError(400, validationResult);
 }
 
-async function _actionListGetData(req) {
+async function _actionListGetData (req) {
   const where = await _actionListGetWhere(req);
   const include = await _actionListGetInclude(req);
 
@@ -505,17 +504,17 @@ async function _actionListGetData(req) {
     order: [
       ['createdAt', 'ASC']
     ],
-    include: include,
+    include: include
   });
 }
 
-function _actionListGetWhere(req) {
+function _actionListGetWhere (req) {
   const where = {
     deletedAt: null,
     onDate: {
       $and: {
         $gte: new Date(req.query.dateBegin),
-        $lte: new Date(req.query.dateEnd),
+        $lte: new Date(req.query.dateEnd)
       }
     }
   };
@@ -527,7 +526,7 @@ function _actionListGetWhere(req) {
   return where;
 }
 
-function _actionListGetInclude(req) {
+function _actionListGetInclude (req) {
   const include = [
     {
       as: 'task',
@@ -541,7 +540,7 @@ function _actionListGetInclude(req) {
           model: models.Project,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false,
+          paranoid: false
         }
       ]
     },
@@ -550,8 +549,8 @@ function _actionListGetInclude(req) {
       model: models.Project,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false,
-    },
+      paranoid: false
+    }
   ];
 
   if (req.query.userPSId && !req.query.userId) {
@@ -571,10 +570,10 @@ function _actionListGetInclude(req) {
 }
 
 
-function _actionListTransformData(timesheets) {
+function _actionListTransformData (timesheets) {
   timesheets.forEach(model => {
     // переношу из задачи в корень объекта
-    if(model.task && !model.dataValues.project) {
+    if (model.task && !model.dataValues.project) {
       model.dataValues.project = model.task.project.dataValues;
       delete model.task.project.dataValues;
     }
