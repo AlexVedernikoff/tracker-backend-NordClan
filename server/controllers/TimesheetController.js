@@ -106,22 +106,37 @@ exports.getTimesheets = async function (req, res, next) {
 };
 
 /**
+ * Функция составления треков на текущий день
+ */
+exports.getTracksOnCurrentDay = async function (req, res, next) {
+  let timesheets = this.getTimesheets(req, res, next);
+  let draftsheets = TimesheetDraftController.getDrafts(req, res, next);
+  timesheets = await timesheets;
+  draftsheets = await draftsheets;
+  return { tracks: [...draftsheets, ...timesheets] };
+};
+
+/**
+ *  Функция составления треков на не текущий день
+ */
+exports.getTracksOnOtherDay = async function (req, res, next) {
+  const timesheets = await this.getTimesheets(req, res, next);
+  return { tracks: timesheets };
+};
+
+/**
  *  Функция составления треков для трекера
  */
 exports.getTracks = async function (req, res, next) {
+  let result;
   const today = moment().format('YYYY-MM-DD');
   req.query.userId = req.user.id;
-
-  return {
-    tracks: [
-      ...await this.getTimesheets(req, res, next),
-      ...(
-        moment(req.query.onDate).isSame(today)
-          ? await TimesheetDraftController.getDrafts(req, res, next)
-          : []
-      )
-    ]
-  };
+  if (moment(req.query.onDate).isSame(today)) {
+    result = await this.getTracksOnCurrentDay(req, res, next);
+  } else {
+    result = await this.getTracksOnOtherDay(req, res, next);
+  }
+  return result;
 };
 
 /**
@@ -160,6 +175,7 @@ exports.getTracksAll = async function (req, res, next) {
 
 
     await Promise.all(dateArr.map(async (onDate) => {
+      console.log(onDate);
       req.query.onDate = onDate;
       const tracks = await this.getTracks(req, res, next);
       // пройти по трекам
