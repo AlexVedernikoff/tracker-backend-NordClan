@@ -258,6 +258,11 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
 
     tmp = await _setAdditionalInfo(tmp, req);
     Object.assign(tmp, { spentTime: req.body.spentTime });
+
+    if (!await queries.timesheet.isNeedCreateTimesheet(tmp)) {
+      return next(createError(400, `Some timesheet already exists on date ${tmp.onDate}`));
+    }
+
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
 

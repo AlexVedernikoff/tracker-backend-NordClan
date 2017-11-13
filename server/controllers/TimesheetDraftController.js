@@ -88,7 +88,6 @@ exports.getDrafts = async function (req, res, next) {
         }
       ]
     });
-    console.log(draftsheets);
     const result = [];
     draftsheets.map(ds => {
       Object.assign(ds.dataValues, { project: ds.dataValues.task ? ds.dataValues.task.dataValues.project : null });

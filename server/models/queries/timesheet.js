@@ -79,14 +79,12 @@ exports.isNeedCreateTimesheet = async function (options) {
 
   if (taskId) {
     where.taskId = taskId;
-  }
-
-  if (projectId) {
+  } else if (projectId) {
     where.projectId = projectId;
   }
 
   if (taskStatusId) {
-    where.projectId = taskStatusId;
+    where.taskStatusId = taskStatusId;
   }
 
   const foundTimesheet = await models.Timesheet

@@ -201,7 +201,7 @@ exports.update = async function (req, res, next) {
 
     // Если хотели изменить спринт, присылаю его обратно
     if (+body.sprintId > 0) {
-      const task = await Task.findByPrimary(req.params.id, {
+      const taskSprint = await Task.findByPrimary(req.params.id, {
         attributes: ['id'],
         transaction: t,
         include: [
@@ -212,7 +212,7 @@ exports.update = async function (req, res, next) {
           }
         ]
       });
-      if (task.sprint) resultResponse.sprint = task.sprint;
+      if (taskSprint.sprint) resultResponse.sprint = taskSprint.sprint;
     }
 
 
@@ -232,27 +232,22 @@ exports.update = async function (req, res, next) {
       const taskWithUser = await queries.task.findTaskWithUser(req.params.id, t);
       const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, t);
 
-
-      const timesheet = {
-        sprintId: task.dataValues.sprintId,
-        taskId: task.dataValues.id,
-        userId: task.dataValues.performerId,
-        onDate: now,
-        typeId: 1,
-        spentTime: 0,
-        comment: '',
-        isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
-        userRoleId: projectUserRoles.join(','),
-        taskStatusId: task.dataValues.statusId,
-        statusId: 1,
-        isVisible: true
-      };
-
       const reqForDraft = {
         ...req,
         body: {
           ...req.body,
-          ...timesheet
+          sprintId: task.dataValues.sprintId,
+          taskId: task.dataValues.id,
+          userId: task.dataValues.performerId,
+          onDate: now,
+          typeId: 1,
+          spentTime: 0,
+          comment: '',
+          isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
+          userRoleId: projectUserRoles.join(','),
+          taskStatusId: task.dataValues.statusId,
+          statusId: 1,
+          isVisible: true
         }
       };
 
@@ -511,8 +506,7 @@ exports.list = function (req, res, next) {
               group: ['Task.id']
             })
             .then((count) => {
-
-              count = count.length;
+              const projectCount = count.length;
 
               if (prefixNeed) {
                 tasks.forEach((task) => {
@@ -523,9 +517,9 @@ exports.list = function (req, res, next) {
 
               const responseObject = {
                 currentPage: +req.query.currentPage,
-                pagesCount: (req.query.pageSize) ? Math.ceil(count / req.query.pageSize) : 1,
-                pageSize: (req.query.pageSize) ? req.query.pageSize : count,
-                rowsCountAll: count,
+                pagesCount: (req.query.pageSize) ? Math.ceil(projectCount / req.query.pageSize) : 1,
+                pageSize: (req.query.pageSize) ? req.query.pageSize : projectCount,
+                rowsCountAll: projectCount,
                 rowsCountOnCurrentPage: tasks.length,
                 data: tasks
               };
