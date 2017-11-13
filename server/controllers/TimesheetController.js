@@ -352,8 +352,10 @@ exports.createTimesheetNoDraft = async function (req, res, next) {
 };
 
 exports.actionCreate = async function (req, res, next) {
-
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+  if (req.params.sheetId) {
+    req.body.sheetId = req.params.sheetId;
+  }
 
   let result;
   req.query.userId = req.user.id;
