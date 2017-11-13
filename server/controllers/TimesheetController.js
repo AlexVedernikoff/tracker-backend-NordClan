@@ -260,6 +260,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     Object.assign(tmp, { spentTime: req.body.spentTime });
 
     if (!await queries.timesheet.isNeedCreateTimesheet(tmp)) {
+      await t.rollback();
       return next(createError(400, `Some timesheet already exists on date ${tmp.onDate}`));
     }
 
