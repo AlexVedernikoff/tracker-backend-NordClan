@@ -235,17 +235,15 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
         return next(createError(404, 'Drafts not found'));
       }
       Object.assign(tmp, draftsheet[0]);
-
-
     } else {
       Object.assign(tmp, req.body);
     }
 
-
-    delete tmp.id;
     if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
       await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     }
+
+    delete tmp.id;
     if (tmp.taskId) {
       const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`) }, {
