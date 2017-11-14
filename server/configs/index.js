@@ -16,14 +16,14 @@ module.exports = {
     port: 8080,
     path: '/default/rest/',
     username: 'serviceman',
-    password: 'FdKg&$b*)FeA{',
+    password: 'FdKg&$b*)FeA{'
   },
   auth: {
-    accessTokenLifetime: 60 * 60 * 24 * 7,
+    accessTokenLifetime: 60 * 60 * 24 * 7
   },
   systemAuth: {
     login: 'systemUser',
     password: '123456',
-    accessTokenLifetime: 60 * 60 * 24 * 365 * 10,
-  },
+    accessTokenLifetime: 60 * 60 * 24 * 365 * 10
+  }
 };

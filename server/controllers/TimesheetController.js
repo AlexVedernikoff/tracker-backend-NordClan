@@ -106,78 +106,60 @@ exports.getTimesheets = async function (req, res, next) {
 };
 
 /**
- * Функция составления треков на текущий день
- */
-exports.getTracksOnCurrentDay = async function (req, res, next) {
-  let timesheets = this.getTimesheets(req, res, next);
-  let draftsheets = TimesheetDraftController.getDrafts(req, res, next);
-  timesheets = await timesheets;
-  draftsheets = await draftsheets;
-  return { tracks: [...draftsheets, ...timesheets] };
-};
-
-/**
- *  Функция составления треков на не текущий день
- */
-exports.getTracksOnOtherDay = async function (req, res, next) {
-  const timesheets = await this.getTimesheets(req, res, next);
-  return { tracks: timesheets };
-};
-
-/**
  *  Функция составления треков для трекера
  */
-exports.getTracks = async function (req, res, next) {
-  let result;
+const getTracks = async (req, res, next) => {
   const today = moment().format('YYYY-MM-DD');
   req.query.userId = req.user.id;
-  if (moment(req.query.onDate).isSame(today)) {
-    result = await this.getTracksOnCurrentDay(req, res, next);
-  } else {
-    result = await this.getTracksOnOtherDay(req, res, next);
-  }
-  return result;
+  const timesheets = this.getTimesheets(req, res, next);
+  const drafts = moment(req.query.onDate).isSame(today) // Если текущий день, то добавляю драфты
+    ? TimesheetDraftController.getDrafts(req, res, next)
+    : [];
+  return {
+    tracks: [
+      ... await timesheets,
+      ... await drafts
+    ]
+  };
 };
+
+function getDateArray (startDate, endDate) {
+  const dateFormat = 'YYYY-MM-DD';
+  const start = moment(startDate);
+  const end = moment(endDate);
+  const difference = end.diff(start, 'days');
+
+  if (!start.isValid() || !end.isValid() || difference <= 0) {
+    return 'Invalid dates specified. Please check format and or make sure that the dates are different';
+  }
+
+  return [
+    end.format(dateFormat),
+    ...dateRangeInArray(difference, end, dateFormat)
+  ];
+}
+
+function dateRangeInArray (difference, end, format) {
+  const arr = [];
+  for (let i = 0; i < difference; i++) {
+    arr.push(end.subtract(1, 'd').format(format));
+  }
+  return arr;
+}
 
 /**
  *  Функция загрузки треков на неделю
  */
 exports.getTracksAll = async function (req, res, next) {
-
-  // Это безобразие с датами надо переписать
-  function pushDates (difference, end, format) {
-    const arr = [];
-    for (let i = 0; i < difference; i++) {
-      arr.push(end.subtract(1, 'd').format(format));
-    }
-    return arr;
-  }
-
-
   try {
     const result = {};
-
-    // Отрефакторить это
-    // Это безобразие с датами надо переписать
-    const dateFormat = 'YYYY-MM-DD';
-    const dates = [];
-    const start = moment(req.query.startDate);
-    const end = moment(req.query.endDate);
-
-    const difference = end.diff(start, 'days');
-
-    if (!start.isValid() || !end.isValid() || difference <= 0) {
-      throw Error('Invalid dates specified. Please check format and or make sure that the dates are different');
-    }
-    dates.push(end.format(dateFormat));
-
-    const dateArr = dates.concat(pushDates(difference, end, dateFormat));
+    const dateArr = getDateArray(req.query.startDate, req.query.endDate);
+    console.log(dateArr);
 
 
     await Promise.all(dateArr.map(async (onDate) => {
-      console.log(onDate);
-      req.query.onDate = onDate;
-      const tracks = await this.getTracks(req, res, next);
+      req.query.onDate = onDate; // Здесь и далее потанцеиальная опастность использования объектов в req
+      const tracks = await getTracks(req, res, next);
       // пройти по трекам
       const scales = {};
       tracks.tracks.map(track => {
@@ -235,17 +217,15 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
         return next(createError(404, 'Drafts not found'));
       }
       Object.assign(tmp, draftsheet[0]);
-
-
     } else {
       Object.assign(tmp, req.body);
     }
 
-
-    delete tmp.id;
     if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
       await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
     }
+
+    delete tmp.id;
     if (tmp.taskId) {
       const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`) }, {
@@ -258,6 +238,12 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
 
     tmp = await _setAdditionalInfo(tmp, req);
     Object.assign(tmp, { spentTime: req.body.spentTime });
+
+    if (!await queries.timesheet.isNeedCreateTimesheet(tmp)) {
+      await t.rollback();
+      return next(createError(400, `Some timesheet already exists on date ${tmp.onDate}`));
+    }
+
     const createTs = await models.Timesheet.create(tmp, { transaction: t });
     await t.commit();
 
@@ -378,8 +364,11 @@ exports.actionCreate = async function (req, res, next) {
   } else {
     console.log('isDraft false');
     if (!req.body.sheetId) {
-      result = await this.createTimesheetNoDraft(req, res, next);
+      if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
+        return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
+      }
 
+      result = await this.createTimesheetNoDraft(req, res, next);
     } else if (req.body.spentTime) {
       result = await this.setTimesheetTime(req, res, next);
     } else {
