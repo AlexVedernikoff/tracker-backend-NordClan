@@ -1,6 +1,6 @@
 const responsesCodes = {
   '200': {
-    description: 'OK',
+    description: 'OK'
   },
   '400': {
     description: 'Не коректныые данные запроса'
@@ -12,7 +12,6 @@ const responsesCodes = {
     description: 'Ошибка сервера'
   }
 };
-
 
 
 module.exports = {
@@ -32,59 +31,59 @@ module.exports = {
             name: 'fields',
             description: 'можно разделять через ","',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'name',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'statusId',
             description: 'можно разделять через ","',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'portfolioId',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'dateSprintBegin',
             description: 'yyyy-mm-dd',
             type: 'string',
             format: 'date',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'dateSprintEnd',
             description: 'yyyy-mm-dd',
             type: 'string',
             format: 'date',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'performerId',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'currentPage',
             type: 'integer',
-            in: 'query',
-          },
+            in: 'query'
+          }
         ],
         responses: responsesCodes
       },
@@ -103,49 +102,49 @@ module.exports = {
             name: 'prefix',
             type: 'string',
             in: 'formData',
-            example: 'string',
+            example: 'string'
           },
           {
             name: 'description',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'statusId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'portfolioId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'portfolioName',
             description: 'создаст новый портфель и прикрепит его к проекту',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'notbillable',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'budget',
             type: 'number',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'riskBudget',
             type: 'number',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
-            in: 'formData',
+            in: 'formData'
           }
         ],
         responses: responsesCodes
@@ -161,7 +160,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -178,40 +177,40 @@ module.exports = {
           {
             name: 'name',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'prefix',
             type: 'string',
             in: 'formData',
-            example: 'string',
+            example: 'string'
           },
           {
             name: 'description',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'notbillable',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'budget',
             type: 'number',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'riskBudget',
             type: 'number',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'portfolioId',
             description: '0 чтобы сбросить портфель у проекта',
             type: 'integer',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
       },
@@ -224,10 +223,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/{projectId}/users': {
       post: {
@@ -250,8 +249,8 @@ module.exports = {
             name: 'rolesIds',
             type: 'string',
             description: 'можно разделять через ",". Смотри словарь ролей. Новое значение затерет предыдушие роли пользователя',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
       },
@@ -264,10 +263,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/{projectId}/users/{userId}': {
       delete: {
@@ -285,10 +284,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/{projectId}/tag': {
       post: {
@@ -307,7 +306,7 @@ module.exports = {
             type: 'string',
             in: 'formData',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -320,10 +319,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/{projectId}/tag/{tag}': {
       delete: {
@@ -342,10 +341,10 @@ module.exports = {
             type: 'string',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/tag': {
       get: {
@@ -358,10 +357,10 @@ module.exports = {
             type: 'string',
             in: 'query',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/{projectId}/attachment': {
       post: {
@@ -379,7 +378,7 @@ module.exports = {
             type: 'file',
             in: 'formData',
             required: true
-          },
+          }
         ]
       }
     },
@@ -400,12 +399,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ]
       }
     },
-
-
 
 
     '/portfolio': {
@@ -416,21 +413,21 @@ module.exports = {
           {
             name: 'name',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'currentPage',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/portfolio/{portfolioId}': {
       get: {
@@ -442,7 +439,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -459,11 +456,11 @@ module.exports = {
           {
             name: 'name',
             type: 'string',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
 
 
@@ -483,28 +480,28 @@ module.exports = {
             name: 'fields',
             description: 'можно разделять через ","',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'name',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'statusId',
             type: 'integer',
             description: 'можно разделять через ","',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'currentPage',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           }
         ],
         responses: responsesCodes
@@ -544,13 +541,13 @@ module.exports = {
           {
             name: 'statusId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'allottedTime',
             type: 'numeric',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
       }
@@ -565,7 +562,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -582,32 +579,32 @@ module.exports = {
           {
             name: 'projectId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'name',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'factStartDate',
             description: 'yyyy-mm-dd',
             type: 'string',
             format: 'date',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'factFinishDate',
             description: 'yyyy-mm-dd',
             type: 'string',
             format: 'date',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'allottedTime',
             type: 'numeric',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
       },
@@ -620,10 +617,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
 
 
@@ -636,50 +633,56 @@ module.exports = {
             name: 'fields',
             description: 'можно разделять через ","',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'name',
             type: 'string',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'statusId',
             type: 'integer',
             description: 'можно разделять через ","',
-            in: 'query',
+            in: 'query'
+          },
+          {
+            name: 'typeId',
+            type: 'integer',
+            description: 'можно разделять через ","',
+            in: 'query'
           },
           {
             name: 'projectId',
             type: 'integer',
             description: 'можно разделять через ","',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'sprintId',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'performerId',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'currentPage',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           }
         ],
         responses: responsesCodes
@@ -715,44 +718,44 @@ module.exports = {
           {
             name: 'parentId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'sprintId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'description',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'plannedExecutionTime',
             type: 'numeric',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'factExecutionTime',
             type: 'numeric',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'prioritiesId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'performerId',
             type: 'integer',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
       }
@@ -767,7 +770,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -784,67 +787,67 @@ module.exports = {
           {
             name: 'name',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'description',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
 
           {
             name: 'projectId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'statusId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'plannedExecutionTime',
             type: 'numeric',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'factExecutionTime',
             type: 'numeric',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'typeId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'sprintId',
             description: '0 чтобы сбросить спринт у задачи',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'parentId',
             description: '0 чтобы сбросить родительскую задачу',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'prioritiesId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'linkedTasks',
             type: 'string',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'performerId',
             description: '0 для того чтобы урать текущего исполнителя',
             type: 'integer',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
       },
@@ -857,10 +860,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/task/{taskId}/links': {
       post: {
@@ -878,10 +881,10 @@ module.exports = {
             type: 'integer',
             in: 'formData',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/task/{taskId}/links/{linkedTaskId}': {
       delete: {
@@ -899,10 +902,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
 
     '/task/{taskId}/tag': {
@@ -922,7 +925,7 @@ module.exports = {
             type: 'string',
             in: 'formData',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -935,10 +938,10 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/task/{taskId}/tag/{tag}': {
       delete: {
@@ -957,10 +960,10 @@ module.exports = {
             type: 'string',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/task/{taskId}/attachment': {
       post: {
@@ -978,7 +981,7 @@ module.exports = {
             type: 'file',
             in: 'formData',
             required: true
-          },
+          }
         ]
       }
     },
@@ -999,7 +1002,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ]
       }
     },
@@ -1013,7 +1016,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ]
       },
       post: {
@@ -1037,7 +1040,7 @@ module.exports = {
             type: 'string',
             in: 'formData',
             required: true
-          },
+          }
         ]
       }
     },
@@ -1083,7 +1086,7 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ]
       }
     },
@@ -1101,16 +1104,16 @@ module.exports = {
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'currentPage',
             type: 'integer',
-            in: 'query',
-          },
+            in: 'query'
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/project/{projectId}/history': {
       get: {
@@ -1126,16 +1129,16 @@ module.exports = {
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
+            in: 'query'
           },
           {
             name: 'currentPage',
             type: 'integer',
-            in: 'query',
-          },
+            in: 'query'
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/task/tag/': {
       get: {
@@ -1148,10 +1151,10 @@ module.exports = {
             type: 'string',
             in: 'query',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
 
 
@@ -1176,11 +1179,11 @@ module.exports = {
           {
             name: 'isSystemUser',
             type: 'boolean',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/auth/logout': {
       delete: {
@@ -1190,13 +1193,12 @@ module.exports = {
           {
             name: 'isSystemUser',
             type: 'boolean',
-            in: 'formData',
-          },
+            in: 'formData'
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
-
 
 
     '/user/{userId}': {
@@ -1209,17 +1211,17 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
     '/user/me': {
       get: {
         tags: ['User'],
         summary: 'Получить информацию о текущем пользователе',
         responses: responsesCodes
-      },
+      }
     },
     '/user/autocompleter': {
       get: {
@@ -1236,10 +1238,10 @@ module.exports = {
           {
             name: 'pageSize',
             type: 'integer',
-            in: 'query',
-          },
-        ],
-      },
+            in: 'query'
+          }
+        ]
+      }
     },
 
 
@@ -1259,7 +1261,7 @@ module.exports = {
             type: 'boolean',
             in: 'formData',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       }
@@ -1323,7 +1325,7 @@ module.exports = {
             format: 'date',
             in: 'query',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -1335,32 +1337,32 @@ module.exports = {
           {
             name: 'sheetId',
             type: 'integer',
-            in: 'path',
+            in: 'path'
           },
           {
             name: 'isDraft',
             type: 'boolean',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'taskId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'taskStatusId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'projectId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'typeId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'spentTime',
@@ -1384,7 +1386,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'formData'
-          },
+          }
         ],
         responses: responsesCodes
       },
@@ -1396,12 +1398,12 @@ module.exports = {
           {
             name: 'sheetId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'typeId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'spentTime',
@@ -1427,7 +1429,7 @@ module.exports = {
           {
             name: 'statusId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'onDate',
@@ -1435,7 +1437,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'formData'
-          },
+          }
         ],
         responses: responsesCodes
       }
@@ -1448,12 +1450,12 @@ module.exports = {
           {
             name: 'sheetId',
             type: 'integer',
-            in: 'path',
+            in: 'path'
           },
           {
             name: 'typeId',
             type: 'integer',
-            in: 'formData',
+            in: 'formData'
           },
           {
             name: 'spentTime',
@@ -1491,13 +1493,11 @@ module.exports = {
             type: 'string',
             in: 'path',
             required: true
-          },
+          }
         ],
         responses: responsesCodes
-      },
+      }
     },
-
-
 
 
     '/dictionary/project/status': {
@@ -1505,46 +1505,44 @@ module.exports = {
         tags: ['Dictionary'],
         summary: 'Справочник статусов проектов',
         responses: responsesCodes
-      },
+      }
     },
     '/dictionary/sprint/status': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник статусов спринтов',
         responses: responsesCodes
-      },
+      }
     },
     '/dictionary/task/status': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник статусов задач',
         responses: responsesCodes
-      },
+      }
     },
 
     '/dictionary/timesheet/status': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник типов активности в таймшитах',
-        responses: responsesCodes,
-      },
+        responses: responsesCodes
+      }
     },
     '/dictionary/project/roles': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник ролей пользователей для проекта',
-        responses: responsesCodes,
-      },
+        responses: responsesCodes
+      }
     },
     '/dictionary/timesheet/types': {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник типов активности в таймшитах',
-        responses: responsesCodes,
-      },
-    },
-
-
+        responses: responsesCodes
+      }
+    }
 
 
   },
