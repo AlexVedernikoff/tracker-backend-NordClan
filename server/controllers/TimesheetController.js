@@ -112,11 +112,12 @@ async function getTimesheets (req, res, next) {
  *  Функция составления треков для трекера
  */
 const getTracks = async (req, res, next) => {
+  const { onDate } = req.query;
   const today = moment().format('YYYY-MM-DD');
   req.query.userId = req.user.id;
   const timesheets = await getTimesheets(req, res, next);
-  const drafts = moment(req.query.onDate).isSame(today) // Если текущий день, то добавляю драфты
-    ? TimesheetDraftController.getDrafts(req, res, next)
+  const drafts = moment(onDate).isSame(today) // Если текущий день, то добавляю драфты
+    ? await TimesheetDraftController.getDrafts(req, res, next)
     : [];
   return {
     tracks: [
