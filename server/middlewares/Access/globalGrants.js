@@ -21,6 +21,7 @@ const USER = {
     'delete': true
   },
   portfolio: {
+    'list': true,
     'update': true,
     'read': true
   },
