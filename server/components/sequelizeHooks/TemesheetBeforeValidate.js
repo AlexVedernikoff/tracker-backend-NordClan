@@ -16,7 +16,7 @@ exports.index = async (instance, options) => {
       where: {
         projectId: instance.projectId
       },
-      attributes: ['id','rolesIds'],
+      attributes: ['id', 'rolesIds'],
       transaction: t
     });
     instance.isBillible = isBillible(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
@@ -24,7 +24,7 @@ exports.index = async (instance, options) => {
 
   } else if (isImplementation(instance)) {
     const task = await models.Task.findById(instance.taskId, {
-      attributes: ['id','projectId'],
+      attributes: ['id', 'projectId'],
       transaction: t
     });
 
@@ -32,7 +32,7 @@ exports.index = async (instance, options) => {
       where: {
         projectId: task.projectId
       },
-      attributes: ['id','rolesIds'],
+      attributes: ['id', 'rolesIds'],
       transaction: t
     });
     instance.isBillible = isBillible(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
@@ -56,14 +56,14 @@ function isImplementation (instance) {
 
 
 function isBillible (projectUsers, UNBILLABLE_ID) {
-  if (projectUsers.rolesIds) {
+  if (projectUsers) {
     return !~projectUsers.rolesIds.indexOf(UNBILLABLE_ID);
   }
   return true;
 }
 
 function getRoles (projectUsers, UNBILLABLE_ID) {
-  if (projectUsers.rolesIds) {
+  if (projectUsers) {
     const roles = JSON.parse(projectUsers.rolesIds);
     const index = roles.indexOf(UNBILLABLE_ID);
     if (index > -1) roles.splice(index, 1);
