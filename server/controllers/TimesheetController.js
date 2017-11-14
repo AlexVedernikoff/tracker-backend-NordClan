@@ -9,7 +9,7 @@ const Sequelize = require('../orm/index');
 /**
  * Функция поиска таймшитов
  */
-exports.getTimesheets = async function (req, res, next) {
+async function getTimesheets (req, res, next) {
   console.log('Функция поиска таймшитов (getTimesheets)');
   try {
     const where = {
@@ -103,7 +103,7 @@ exports.getTimesheets = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-};
+}
 
 /**
  *  Функция составления треков для трекера
@@ -111,7 +111,7 @@ exports.getTimesheets = async function (req, res, next) {
 const getTracks = async (req, res, next) => {
   const today = moment().format('YYYY-MM-DD');
   req.query.userId = req.user.id;
-  const timesheets = this.getTimesheets(req, res, next);
+  const timesheets = await getTimesheets(req, res, next);
   const drafts = moment(req.query.onDate).isSame(today) // Если текущий день, то добавляю драфты
     ? TimesheetDraftController.getDrafts(req, res, next)
     : [];
@@ -295,8 +295,11 @@ exports.setTimesheetTime = async function (req, res, next) {
   try {
     const tmp = {};
     delete req.body.isDraft;
-    const timesheet = await this.getTimesheets(req, res, next);
-    if (_.isEmpty(timesheet)) return next(createError(404, 'Timesheet not found'));
+    const timesheet = await getTimesheets(req, res, next);
+    if (_.isEmpty(timesheet)) {
+      await t.rollback();
+      return next(createError(404, 'Timesheet not found'));
+    }
     Object.assign(tmp, timesheet[0]);
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
 
@@ -306,7 +309,6 @@ exports.setTimesheetTime = async function (req, res, next) {
     }
 
     await t.commit();
-
     return await queries.timesheet.getTimesheet(tmp.id);
   } catch (e) {
     await t.rollback();
@@ -375,7 +377,7 @@ exports.actionCreate = async function (req, res, next) {
       const newDate = {};
       Object.assign(newDate, req.body);
 
-      const timesheet = await this.getTimesheets(req, res, next);
+      const timesheet = await getTimesheets(req, res, next);
       const tmp = {};
 
       Object.assign(tmp, timesheet[0]);
@@ -421,7 +423,7 @@ exports.update = async function (req, res, next) {
 exports.delete = async function (req, res, next) {
   req.checkParams('timesheetId', 'timesheetId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);
   const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) next(createError(400, validationResult));
+  if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
   let t;
 
