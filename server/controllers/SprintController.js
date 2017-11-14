@@ -7,8 +7,7 @@ const Sequelize = require('sequelize');
 
 
 exports.create = function(req, res, next){
-  if (!req.params.projectId.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  if (!req.user.canUpdateProject(req.params.projectId)) {
+  if (!req.user.canUpdateProject(req.body.projectId)) {
     return next(createError(403, 'Access denied'));
   }
 
