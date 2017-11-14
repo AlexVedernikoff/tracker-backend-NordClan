@@ -102,8 +102,6 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 
 // Deprecated
 router.post('/task/:taskId/timesheet', GlobalAccess.can('timesheet', 'create'), TimesheetController.actionCreate); // Deprecated
-router.put('/task/:taskId/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'update'), TimesheetController.update); // Deprecated
-router.post('/timesheet/:taskId/setTime/', GlobalAccess.can('timesheet', 'create'), TimesheetController.createOrUpdateTimesheet.bind(TimesheetController)); // Deprecated
 // TimesheetsDraft, системные?
 router.post('/task/:taskId/timesheetDraft', TimesheetDraftController.createDraft); // Deprecated
 router.get('/timesheetDraft/:userId', TimesheetDraftController.getDrafts); // Deprecated

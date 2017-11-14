@@ -6,6 +6,8 @@ const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
 
+exports.getTimesheets = getTimesheets;
+
 /**
  * Функция поиска таймшитов
  */
@@ -104,6 +106,7 @@ async function getTimesheets (req, res, next) {
     return next(createError(e));
   }
 }
+
 
 /**
  *  Функция составления треков для трекера
@@ -282,7 +285,7 @@ async function _setAdditionalInfo (tmp, req) {
 /**
  * Функция поиска и обновления таймшита
  */
-exports.setTimesheetTime = async function (req, res, next) {
+async function setTimesheetTime (req, res, next) {
   console.log('Функция поиска и обновления таймшита');
   let t;
 
@@ -303,7 +306,7 @@ exports.setTimesheetTime = async function (req, res, next) {
     Object.assign(tmp, timesheet[0]);
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
 
-    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+    if (+tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
       const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
     }
@@ -314,9 +317,9 @@ exports.setTimesheetTime = async function (req, res, next) {
     await t.rollback();
     next(createError(e));
   }
-};
+}
 
-exports.createTimesheetNoDraft = async function (req, res, next) {
+async function createTimesheetNoDraft (req, res, next) {
   let t;
 
   try {
@@ -326,7 +329,7 @@ exports.createTimesheetNoDraft = async function (req, res, next) {
 
     if (timesheetObj.taskId && +timesheetObj.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
       const task = await queries.task.findOneActiveTask(timesheetObj.taskId, ['id', 'factExecutionTime'], t);
-      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${timesheetObj.spentTime})`)}, { where: { id: task.id }, transaction: t });
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + ${timesheetObj.spentTime}`)}, { where: { id: task.id }, transaction: t });
     }
 
     const timesheet = await models.Timesheet.create(req.body, { transaction: t});
@@ -337,7 +340,7 @@ exports.createTimesheetNoDraft = async function (req, res, next) {
     await t.rollback();
     return next(createError(e));
   }
-};
+}
 
 exports.actionCreate = async function (req, res, next) {
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
@@ -370,9 +373,9 @@ exports.actionCreate = async function (req, res, next) {
         return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
       }
 
-      result = await this.createTimesheetNoDraft(req, res, next);
+      result = await createTimesheetNoDraft(req, res, next);
     } else if (req.body.spentTime) {
-      result = await this.setTimesheetTime(req, res, next);
+      result = await setTimesheetTime(req, res, next);
     } else {
       const newDate = {};
       Object.assign(newDate, req.body);
@@ -385,37 +388,6 @@ exports.actionCreate = async function (req, res, next) {
       result = await queries.timesheet.getTimesheet(tmp.id);
     }
     res.json(result);
-  }
-};
-
-/**
- * Функция для создания или обновления таймшитов в UI таблице таймшитов
- */
-exports.createOrUpdateTimesheet = async function (req, res, next) {
-  req.query.onDate = req.body.onDate;
-  req.query.taskId = req.params.taskId;
-  req.query.userId = req.user.id;
-  req.query.taskStatusId = req.body.taskStatusId;
-  let result = await this.setDraftTimesheetTime(req, res, next);
-  if (!result) {
-    result = await this.setTimesheetTime(req, res, next);
-  }
-  res.json(result);
-};
-
-
-/**
- * @deprecated update
- */
-exports.update = async function (req, res, next) {
-  if (!req.params.timesheetId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
-  try {
-    const timesheetModel = await queries.timesheet.canUserChangeTimesheet(req.user.id, req.params.timesheetId);
-    if (!timesheetModel) return next(createError(404, 'Timesheet not found'));
-    const result = await timesheetModel.updateAttributes(req.body);
-    res.json(result);
-  } catch (e) {
-    return next(e);
   }
 };
 
