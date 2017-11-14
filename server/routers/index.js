@@ -87,6 +87,7 @@ router.get('/task/:taskId/comment', GlobalAccess.can('comment', 'list'), Comment
 // Dictionaries
 router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
+router.get('/dictionary/task/types', DictionaryController.taskTypes);
 router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
 router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated. но еще используется
 router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated. но еще используется

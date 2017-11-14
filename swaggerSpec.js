@@ -1521,7 +1521,13 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
+    '/dictionary/task/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов задач',
+        responses: responsesCodes
+      }
+    },
     '/dictionary/timesheet/status': {
       get: {
         tags: ['Dictionary'],
