@@ -10,6 +10,8 @@ const Portfolio = require('../models').Portfolio;
 const Sprint = require('../models').Sprint;
 const queries = require('../models/queries');
 
+const ProjectsChannelClass = require('../channels/Projects');
+const ProjectsChannel = new ProjectsChannelClass();
 
 exports.create = function (req, res, next){
   if (req.body.tags) {
@@ -198,10 +200,10 @@ exports.update = function (req, res, next){
                 transaction: t
               })
               .then((model)=>{
+                ProjectsChannel.sendAction('update', model, res.io);
                 res.json(model);
               });
           });
-
       });
   })
     .catch((err) => {
@@ -363,13 +365,13 @@ exports.list = function (req, res, next){
     [Sequelize.literal(`(SELECT fact_start_date
                                 FROM sprints as t
                                 WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL 
+                                AND t.deleted_at IS NULL
                                 ORDER BY fact_start_date ASC
                                 LIMIT 1)`), 'dateStartFirstSprint'], // Дата начала превого спринта у проекта
     [Sequelize.literal(`(SELECT fact_finish_date
                                 FROM sprints as t
                                 WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL 
+                                AND t.deleted_at IS NULL
                                 ORDER BY fact_start_date DESC
                                 LIMIT 1)`), 'dateFinishLastSprint'] // Дата завершения последнего спринта у проекта
   ]);

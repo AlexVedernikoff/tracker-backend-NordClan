@@ -8,7 +8,8 @@ const queries = require('../models/queries');
 const moment = require('moment');
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
-const TasksChannel = require('../channels/Tasks/Tasks');
+const TasksChannelClass = require('../channels/Tasks');
+const TasksChannel = new TasksChannelClass();
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
