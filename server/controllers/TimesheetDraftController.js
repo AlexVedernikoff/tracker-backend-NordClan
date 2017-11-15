@@ -1,5 +1,3 @@
-
-
 const createError = require('http-errors');
 const models = require('../models');
 const queries = require('../models/queries');
@@ -31,6 +29,11 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
  */
 exports.getDrafts = async function (req, res, next) {
   const where = { userId: req.query.userId };
+
+  if (req.query.onDate) {
+    const date = moment(req.query.onDate).format('YYYY-MM-DD');
+    Object.assign(where, { onDate: { $eq: date } });
+  }
 
   if (req.params && req.params.sheetId) {
     Object.assign(where, { id: { $eq: req.params.sheetId } });
