@@ -23,7 +23,7 @@ module.exports = {
   },
   systemAuth: {
     login: 'systemUser',
-    password: '123456',
+    password: 'N}q6gF7L',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   }
 };

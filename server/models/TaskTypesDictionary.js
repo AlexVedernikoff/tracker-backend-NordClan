@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const TaskTypes = sequelize.define('TaskTypesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -13,16 +13,16 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
-    },
+    }
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
     tableName: 'task_types'
   });
-  
-  
-  TaskTypes.associate = function(models) {
+
+
+  TaskTypes.associate = function (models) {
     TaskTypes.hasMany(models.Task, {
       as: 'taskTypes',
       foreignKey: {
@@ -30,7 +30,7 @@ module.exports = function(sequelize, DataTypes) {
         field: 'type_id'
       }});
   };
-  
+
   TaskTypes.values = [
     {id: 1, name: 'Фича'},
     {id: 3, name: 'Доп. Фича'},
@@ -38,6 +38,6 @@ module.exports = function(sequelize, DataTypes) {
     {id: 4, name: 'Регрес. Баг'},
     {id: 5, name: 'Баг от клиента'}
   ];
-  
+
   return TaskTypes;
 };
