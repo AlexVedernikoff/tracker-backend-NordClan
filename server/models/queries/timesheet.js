@@ -81,6 +81,8 @@ exports.isNeedCreateTimesheet = async function (options) {
     where.taskId = taskId;
   } else if (projectId) {
     where.projectId = projectId;
+  } else {
+    where.projectId = { $eq: null }; // IS NULL
   }
 
   if (taskStatusId) {
