@@ -129,7 +129,6 @@ exports.read = function (req, res, next) {
 
 
 exports.update = async function (req, res, next) {
-
   let t;
 
   try {
@@ -259,12 +258,12 @@ exports.update = async function (req, res, next) {
         ...resultResponse,
         id: task.id,
         statusId: body.statusId ? +body.statusId : task.statusId
-      }
+      };
 
       TasksChannel.sendAction('update', updatedFields, res.io);
+      t.commit();
       res.json(updatedFields);
 
-      t.commit();
 
     } else {
 
@@ -276,9 +275,8 @@ exports.update = async function (req, res, next) {
       resultResponse.id = task.id;
 
       TasksChannel.sendAction('update', resultResponse, res.io);
-      res.json(resultResponse);
-
       t.commit();
+      res.json(resultResponse);
     }
 
 
