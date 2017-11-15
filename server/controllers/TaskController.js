@@ -260,8 +260,8 @@ exports.update = async function (req, res, next) {
         statusId: body.statusId ? +body.statusId : task.statusId
       };
 
-      TasksChannel.sendAction('update', updatedFields, res.io);
       t.commit();
+      TasksChannel.sendAction('update', updatedFields, res.io);
       res.json(updatedFields);
 
 
@@ -274,8 +274,8 @@ exports.update = async function (req, res, next) {
 
       resultResponse.id = task.id;
 
-      TasksChannel.sendAction('update', resultResponse, res.io);
       t.commit();
+      TasksChannel.sendAction('update', resultResponse, res.io);
       res.json(resultResponse);
     }
 
