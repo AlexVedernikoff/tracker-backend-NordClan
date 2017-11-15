@@ -8,7 +8,7 @@ const queries = require('../models/queries');
 const moment = require('moment');
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
-
+const TasksChannel = require('../channels/Tasks/Tasks');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -32,14 +32,15 @@ exports.create = async function (req, res, next) {
   Task.create(req.body)
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
-        .then(() => res.json({ id: model.id }));
+        .then(() => {
+          TasksChannel.sendAction('create', model, res.io);
+          res.json(model);
+        });
     })
     .catch((err) => {
       next(err);
     });
-
 };
-
 
 exports.read = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
@@ -254,11 +255,15 @@ exports.update = async function (req, res, next) {
 
       await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
 
-
-      res.json({
+      const updatedFields = {
         ...resultResponse,
+        id: task.id,
         statusId: body.statusId ? +body.statusId : task.statusId
-      });
+      }
+
+      TasksChannel.sendAction('update', updatedFields, res.io);
+      res.json(updatedFields);
+
       t.commit();
 
     } else {
@@ -269,7 +274,10 @@ exports.update = async function (req, res, next) {
       });
 
       resultResponse.id = task.id;
+
+      TasksChannel.sendAction('update', resultResponse, res.io);
       res.json(resultResponse);
+
       t.commit();
     }
 
@@ -301,7 +309,6 @@ exports.delete = function (req, res, next) {
     });
 
 };
-
 
 exports.list = function (req, res, next) {
   if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
