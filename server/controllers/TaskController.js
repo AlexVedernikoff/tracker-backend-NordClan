@@ -194,10 +194,6 @@ exports.update = async function (req, res, next) {
       body.parentId = null;
     }
 
-    // Закостылил для корректного обновления тасок на agile-board
-    if (body.statusId) {
-      await models.sequelize.query(`UPDATE tasks SET status_id = ${body.statusId} WHERE id = ${task.id};`, { transaction: t });
-    }
 
     // Обновление задачи
     task = await task.updateAttributes(body, { transaction: t });
