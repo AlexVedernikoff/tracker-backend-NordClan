@@ -117,7 +117,13 @@ const getTracks = async (req, res, next) => {
   req.query.userId = req.user.id;
   const timesheets = await getTimesheets(req, res, next);
   const drafts = moment(onDate).isSame(today) // Если текущий день, то добавляю драфты
-    ? await TimesheetDraftController.getDrafts(req, res, next)
+    ? await TimesheetDraftController.getDrafts({
+      ...req,
+      query: {
+        ...req.query,
+        onDate
+      }
+    }, res, next)
     : [];
   return {
     tracks: [
@@ -225,9 +231,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
       Object.assign(tmp, req.body);
     }
 
-    if (tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
-      await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
-    }
+    await models.TimesheetDraft.destroy({ where: { id: tmp.id }, transaction: t });
 
     delete tmp.id;
     if (tmp.taskId) {
@@ -482,6 +486,12 @@ function _actionListGetWhere (req) {
       }
     }
   };
+
+  if (req.isSystemUser) {
+    where.spentTime = {
+      gt: 0
+    };
+  }
 
   if (req.query.userId) {
     where.userId = req.query.userId;
