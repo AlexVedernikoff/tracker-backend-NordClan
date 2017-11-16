@@ -487,6 +487,12 @@ function _actionListGetWhere (req) {
     }
   };
 
+  if (req.isSystemUser) {
+    where.spentTime = {
+      gt: 0
+    };
+  }
+
   if (req.query.userId) {
     where.userId = req.query.userId;
   }
