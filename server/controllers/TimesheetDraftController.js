@@ -121,14 +121,3 @@ exports.getDrafts = async function (req, res, next) {
 };
 
 
-exports.updateVisible = async function (req, res, next) {
-  if (!req.params.timesheetDraftId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
-  try {
-    const timesheetModel = await queries.timesheetDraft.findDraftSheet(req.user.id, req.params.timesheetDraftId);
-    const result = await timesheetModel.updateAttributes(req.body);
-    res.json(result);
-  } catch (e) {
-    return next(e);
-  }
-};
-

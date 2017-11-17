@@ -345,43 +345,33 @@ async function createTimesheetNoDraft (req, res, next) {
   }
 }
 
-// функция претендент на рефакторинг
-exports.actionCreate = async function (req, res, next) {
-  if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
-  if (req.params.sheetId) {
-    req.body.sheetId = req.params.sheetId;
-  }
-
+exports.create = async function (req, res, next) {
   try {
-    let result = {};
-    req.query.userId = req.user.id;
-    if ('' + req.body.isDraft === 'true') {
-      console.log('isDraft true');
-      if (req.body.spentTime) { // Из драфта в тш
-        result = await this.setDraftTimesheetTime(req, res, next);
-      } else if (req.body.comment || 'isVisible' in req.body) { // Обновление драфта
-        const newData = {};
-        if (req.body.comment) newData.comment = req.body.comment;
-        if ('isVisible' in req.body) newData.isVisible = req.body.isVisible;
-
-        const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-        const tmp = {};
-        Object.assign(tmp, draftsheet[0]);
-        await models.TimesheetDraft.update(newData, { where: { id: tmp.id }});
-
-        result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
-      }
-    } else {
-      console.log('isDraft false');
-      if (!req.body.sheetId) { // Создатине тш
-        if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
-          return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
-        }
-        result = await createTimesheetNoDraft(req, res, next);
-      } else { // Обновление тш
-        result = await setTimesheetTime(req, res, next);
-      }
+    if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+    if (req.params.sheetId) {
+      req.body.sheetId = req.params.sheetId;
     }
+    req.query.userId = req.user.id;
+
+    if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
+      return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
+    }
+    const result = await createTimesheetNoDraft(req, res, next);
+    res.json(result);
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
+exports.update = async function (req, res, next) {
+  try {
+    if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+    if (req.params.sheetId) {
+      req.body.sheetId = req.params.sheetId;
+    }
+    req.query.userId = req.user.id;
+
+    const result = await setTimesheetTime(req, res, next);
 
     if (req.query.return === 'trackList' && result.onDate) {
       const trackList = await getTracks({
@@ -401,9 +391,52 @@ exports.actionCreate = async function (req, res, next) {
   } catch (e) {
     return next(createError(e));
   }
-
 };
 
+exports.updateDraft = async function (req, res, next) {
+  try {
+    if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+    if (req.params.sheetId) {
+      req.body.sheetId = req.params.sheetId;
+    }
+    req.query.userId = req.user.id;
+
+    let result = {};
+
+    if (req.body.spentTime) { // Из драфта в тш
+      result = await this.setDraftTimesheetTime(req, res, next);
+    } else if (req.body.comment || 'isVisible' in req.body) { // Обновление драфта
+
+      const newData = {};
+      if (req.body.comment) newData.comment = req.body.comment;
+      if ('isVisible' in req.body) newData.isVisible = req.body.isVisible;
+
+      const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+      const tmp = {};
+      Object.assign(tmp, draftsheet[0]);
+      await models.TimesheetDraft.update(newData, { where: { id: tmp.id }});
+
+      result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
+    }
+
+    if (req.query.return === 'trackList' && result.onDate) {
+      const trackList = await getTracks({
+        ...req,
+        body: {},
+        params: {},
+        query: {
+          onDate: result.onDate
+        }
+      }, res, next);
+      return res.json({
+        [result.onDate]: trackList.tracks
+      });
+    }
+
+  } catch (e) {
+    return next(createError(e));
+  }
+};
 
 exports.delete = async function (req, res, next) {
   req.checkParams('timesheetId', 'timesheetId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);

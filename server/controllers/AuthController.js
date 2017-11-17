@@ -158,7 +158,7 @@ function userLogout (req, res, next) {
 
 
 function isSystemUser (req) {
-  return (String(req.body.isSystemUser) === 'true'); // String потому-что хочу что бы работало в сваггере тоже
+  return JSON.parse(req.body.isSystemUser);
 }
 
 function extractHostname (url) {
