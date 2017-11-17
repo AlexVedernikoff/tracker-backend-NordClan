@@ -219,8 +219,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     delete req.body.isDraft;
     let tmp = {};
 
-
-    if (req.params.sheetId) {
+    if (req.params.sheetId || req.body.sheetId) {
       const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
       if (!draftsheet || draftsheet.length === 0) {
         await t.rollback();
@@ -297,7 +296,7 @@ async function setTimesheetTime (req, res, next) {
   try {
     t = await Sequelize.transaction();
   } catch (e) {
-    next(createError(e));
+    throw createError(e);
   }
 
   try {
@@ -305,13 +304,12 @@ async function setTimesheetTime (req, res, next) {
     delete req.body.isDraft;
     const timesheet = await getTimesheets(req, res, next);
     if (_.isEmpty(timesheet)) {
-      await t.rollback();
-      return next(createError(404, 'Timesheet not found'));
+      throw createError(404, 'Timesheet not found');
     }
     Object.assign(tmp, timesheet[0]);
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
 
-    if (+tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+    if (req.body.spentTime && +tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
       const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
     }
@@ -320,7 +318,7 @@ async function setTimesheetTime (req, res, next) {
     return await queries.timesheet.getTimesheet(tmp.id);
   } catch (e) {
     await t.rollback();
-    next(createError(e));
+    throw createError(e);
   }
 }
 
@@ -347,53 +345,63 @@ async function createTimesheetNoDraft (req, res, next) {
   }
 }
 
+// функция претендент на рефакторинг
 exports.actionCreate = async function (req, res, next) {
   if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
   if (req.params.sheetId) {
     req.body.sheetId = req.params.sheetId;
   }
 
-  let result;
-  req.query.userId = req.user.id;
-  if ('' + req.body.isDraft === 'true') {
-    console.log('isDraft true');
-    if (req.body.spentTime) {
-      result = await this.setDraftTimesheetTime(req, res, next);
-    } else if (req.body.comment || 'isVisible' in req.body) {
-      const newDate = {};
-      if (req.body.comment) newDate.comment = req.body.comment;
-      if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
+  try {
+    let result = {};
+    req.query.userId = req.user.id;
+    if ('' + req.body.isDraft === 'true') {
+      console.log('isDraft true');
+      if (req.body.spentTime) { // Из драфта в тш
+        result = await this.setDraftTimesheetTime(req, res, next);
+      } else if (req.body.comment || 'isVisible' in req.body) { // Обновление драфта
+        const newData = {};
+        if (req.body.comment) newData.comment = req.body.comment;
+        if ('isVisible' in req.body) newData.isVisible = req.body.isVisible;
 
-      const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-      const tmp = {};
-      Object.assign(tmp, draftsheet[0]);
-      await models.TimesheetDraft.update(newDate, { where: { id: tmp.id }});
-      result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
-    }
-    res.json(result);
-  } else {
-    console.log('isDraft false');
-    if (!req.body.sheetId) {
-      if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
-        return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
+        const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
+        const tmp = {};
+        Object.assign(tmp, draftsheet[0]);
+        await models.TimesheetDraft.update(newData, { where: { id: tmp.id }});
+
+        result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
       }
-
-      result = await createTimesheetNoDraft(req, res, next);
-    } else if (req.body.spentTime) {
-      result = await setTimesheetTime(req, res, next);
     } else {
-      const newDate = {};
-      Object.assign(newDate, req.body);
-
-      const timesheet = await getTimesheets(req, res, next);
-      const tmp = {};
-
-      Object.assign(tmp, timesheet[0]);
-      await models.Timesheet.update(newDate, { where: { id: tmp.id }});
-      result = await queries.timesheet.getTimesheet(tmp.id);
+      console.log('isDraft false');
+      if (!req.body.sheetId) { // Создатине тш
+        if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
+          return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
+        }
+        result = await createTimesheetNoDraft(req, res, next);
+      } else { // Обновление тш
+        result = await setTimesheetTime(req, res, next);
+      }
     }
+
+    if (req.query.return === 'trackList' && result.onDate) {
+      const trackList = await getTracks({
+        ...req,
+        body: {},
+        params: {},
+        query: {
+          onDate: result.onDate
+        }
+      }, res, next);
+      return res.json({
+        [result.onDate]: trackList.tracks
+      });
+    }
+
     res.json(result);
+  } catch (e) {
+    return next(createError(e));
   }
+
 };
 
 

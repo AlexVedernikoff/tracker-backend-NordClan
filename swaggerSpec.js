@@ -1437,6 +1437,12 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'formData'
+          },
+          {
+            name: 'return',
+            type: 'string',
+            description: 'Вернуть в ответ: "trackList"',
+            in: 'query'
           }
         ],
         responses: responsesCodes

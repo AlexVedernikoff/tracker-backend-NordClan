@@ -28,14 +28,22 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
  *  Функция поиска драфтшитов
  */
 exports.getDrafts = async function (req, res, next) {
-  const where = { userId: req.query.userId };
+  const where = {
+    userId: req.query.userId,
+    deletedAt: null
+  };
 
   if (req.query.onDate) {
     const date = moment(req.query.onDate).format('YYYY-MM-DD');
     Object.assign(where, { onDate: { $eq: date } });
   }
 
-  if (req.params && req.params.sheetId) {
+
+  if (req.body.sheetId) {
+    Object.assign(where, { id: { $eq: req.body.sheetId } });
+  }
+
+  if (req.params.sheetId) {
     Object.assign(where, { id: { $eq: req.params.sheetId } });
   }
   if (req.query.taskId) {
