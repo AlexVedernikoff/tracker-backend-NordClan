@@ -11,9 +11,8 @@ const config = require('.././configs');
 
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
-exports.login = function(req, res, next){
+exports.login = function (req, res, next){
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
-  if (!req.headers.origin) return next(createError(401, 'header "origin" are required'));
 
   if (isSystemUser(req)) {
     return authSystemUser(req.body.login, req.body.password);
@@ -22,13 +21,13 @@ exports.login = function(req, res, next){
   User.findOne({
     where: {
       login: req.body.login,
-      active: 1,
+      active: 1
     },
-    attributes: User.defaultSelect.concat('ldapLogin'),
+    attributes: User.defaultSelect.concat('ldapLogin')
   })
     .then((user) => {
-      if(!user) return next(createError(404, 'Invalid Login or Password'));
-  
+      if (!user) return next(createError(404, 'Invalid Login or Password'));
+
       queries.token.deleteExpiredTokens(user);
       authLdap(user, req.body.password);
     })
@@ -37,19 +36,19 @@ exports.login = function(req, res, next){
     });
 
 
-  function authLdap(user, password) {
+  function authLdap (user, password) {
     const client = ldap.createClient({
       url: ldapUrl
     });
 
-    client.bind('cn=' + user.ldapLogin + ',cn=People,dc=simbirsoft', password, function(err) {
-      if(err) {
+    client.bind('cn=' + user.ldapLogin + ',cn=People,dc=simbirsoft', password, function (err) {
+      if (err) {
         client.unbind();
         return next(createError(err));
       }
 
       const token = Auth.createJwtToken({
-        login: req.body.login,
+        login: req.body.login
       });
 
       Token
@@ -61,7 +60,6 @@ exports.login = function(req, res, next){
         .then(() => {
           res.cookie('authorization', 'Basic ' + token.token, {
             maxAge: config.auth.accessTokenLifetime * 1000,
-            domain: extractHostname(req.headers.origin),
             httpOnly: true
           });
           user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
@@ -73,7 +71,7 @@ exports.login = function(req, res, next){
             user: user.dataValues
           });
         })
-        .catch((err) => next(createError(err)));
+        .catch((e) => next(createError(e)));
 
     });
   }
@@ -95,7 +93,6 @@ exports.login = function(req, res, next){
       .then(() => {
         res.cookie('system-authorization', 'Basic ' + token.token, {
           maxAge: config.auth.accessTokenLifetime * 1000,
-          domain: extractHostname(req.headers.origin),
           httpOnly: true
         });
 
@@ -110,7 +107,7 @@ exports.login = function(req, res, next){
 };
 
 
-exports.logout = function(req, res, next) {
+exports.logout = function (req, res, next) {
   if (isSystemUser(req)) {
     return systemLogout(req, res, next);
   }
@@ -125,7 +122,7 @@ function systemLogout (req, res, next) {
       }
     })
     .then((row) => {
-      if(!row) return next(createError(404));
+      if (!row) return next(createError(404));
 
       res.cookie('system-authorization', '', {
         maxAge: 0,
@@ -145,11 +142,10 @@ function userLogout (req, res, next) {
     }
   })
     .then((row) => {
-      if(!row) return next(createError(404));
+      if (!row) return next(createError(404));
 
       res.cookie('authorization', '', {
         maxAge: 0,
-        domain: extractHostname(req.headers.origin),
         httpOnly: true
       });
 
@@ -161,16 +157,15 @@ function userLogout (req, res, next) {
 }
 
 
-function isSystemUser(req) {
-  return (String(req.body.isSystemUser)  === 'true'); // String потому-что хочу что бы работало в сваггере тоже
+function isSystemUser (req) {
+  return (String(req.body.isSystemUser) === 'true'); // String потому-что хочу что бы работало в сваггере тоже
 }
 
-function extractHostname(url) {
+function extractHostname (url) {
   let hostname;
   if (url.indexOf('://') > -1) {
     hostname = url.split('/')[2];
-  }
-  else {
+  } else {
     hostname = url.split('/')[0];
   }
   //find & remove port number
