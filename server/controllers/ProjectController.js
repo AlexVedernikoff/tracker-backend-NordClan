@@ -53,7 +53,10 @@ exports.create = function (req, res, next){
         .then(() => {
           if (!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
         })
-        .then(() => res.json({id: model.id}));
+        .then(() => {
+          ProjectsChannel.sendAction('create', model, res.io);
+          res.status(200);
+        });
     })
     .catch((err) => {
       next(err);
