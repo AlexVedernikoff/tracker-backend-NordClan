@@ -47,15 +47,15 @@ module.exports = {
     },
     CREATE_PROJECTUSER: {
       message: 'добавил(-а) нового пользователя {user} в проект',
-      entities: ['user']
+      entities: ['project_user.user']
     },
     CHANGE_PROJECTUSER_ROLESIDS: {
       message: '{action}(-а) роль {role} для пользователя {user}',
-      entities: ['user']
+      entities: ['project_user.user']
     },
     SET_PROJECTUSER_DELETED_AT: {
       message: 'удалил(-а) пользователя {user} из проекта',
-      entities: ['user']
+      entities: ['project_user.user']
     },
     CREATE_ITEMTAG: {
       message: 'добавил(-а) тег \'{tag}\'',

@@ -37,7 +37,7 @@ describe('ProjectHistory', () => {
 
       const actual = generateMessage(history);
       const expected = {
-        message: 'изменил(-а) статус проекта c \'Develop play\' на \'New\'',
+        message: 'изменил(-а) статус проекта c \'Приостановлен\' на \'В процессе\'',
         entities: {}
       };
 
@@ -93,6 +93,11 @@ describe('ProjectHistory', () => {
         name: 'Vasya'
       };
 
+      const project_user = {
+        id: 1,
+        user: user
+      };
+
       const history = {
         entity: 'ProjectUser',
         entityId: 1,
@@ -101,7 +106,7 @@ describe('ProjectHistory', () => {
         projectId: 1,
         valueStr: '[1,2,3]',
         prevValueStr: '[1,2]',
-        user
+        project_user
       };
 
       const actual = generateMessage(history);
@@ -120,6 +125,11 @@ describe('ProjectHistory', () => {
         name: 'Vasya'
       };
 
+      const project_user = {
+        id: 1,
+        user: user
+      };
+
       const history = {
         entity: 'ProjectUser',
         entityId: 1,
@@ -128,7 +138,7 @@ describe('ProjectHistory', () => {
         projectId: 1,
         valueStr: '[2,1]',
         prevValueStr: '[3,1,2]',
-        user
+        project_user
       };
 
       const actual = generateMessage(history);

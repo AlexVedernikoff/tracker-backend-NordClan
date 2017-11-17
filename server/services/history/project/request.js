@@ -27,11 +27,18 @@ function additionalEntities() {
       paranoid: false,
     },
     {
-      as: 'user',
-      model: models.User,
-      attributes: models.User.defaultSelect,
+      as: 'project_user',
+      model: models.ProjectUsers,
+      attributes: models.ProjectUsers.defaultSelect,
       required: false,
-      paranoid: false
+      paranoid: false,
+      include: {
+        as: 'user',
+        model: models.User,
+        attributes: models.User.defaultSelect,
+        required: false,
+        paranoid: false
+      }
     },
     {
       as: 'itemTag',
