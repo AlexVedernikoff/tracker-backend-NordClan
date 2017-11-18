@@ -1,0 +1,1 @@
+INSERT INTO task_types VALUES (5, 'Баг от клиента');

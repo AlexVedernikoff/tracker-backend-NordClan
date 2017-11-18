@@ -1,0 +1,2 @@
+ALTER TABLE projects ADD COLUMN created_by_system_user BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE projects ALTER COLUMN author_id DROP NOT NULL;

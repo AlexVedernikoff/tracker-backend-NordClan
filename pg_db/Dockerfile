@@ -1,0 +1,6 @@
+FROM postgres:latest
+RUN mkdir -p /pg
+WORKDIR /pg
+ENV POSTGRES_USER postgres
+ENV POSTGRES_PASSWORD 123456
+ENV POSTGRES_DB sim-track

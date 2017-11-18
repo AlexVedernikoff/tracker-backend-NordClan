@@ -1,0 +1,1 @@
+ALTER TABLE timesheets DROP CONSTRAINT timesheets_project_id_fkey;
