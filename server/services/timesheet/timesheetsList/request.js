@@ -3,7 +3,6 @@ const models = require('../../../models');
 module.exports = function (dateBegin, dateEnd, userId, userPSId, isSystemUser) {
   const where = {
     deletedAt: null,
-    userId,
     onDate: {
       $and: {
         $gte: dateBegin,
@@ -11,6 +10,10 @@ module.exports = function (dateBegin, dateEnd, userId, userPSId, isSystemUser) {
       }
     }
   };
+
+  if (userId && !userPSId) {
+    where.userId = userId;
+  }
 
   if (isSystemUser) {
     where.spentTime = {
