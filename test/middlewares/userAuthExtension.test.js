@@ -42,14 +42,15 @@ describe('Auth Extension', () => {
     };
 
     const extensibleUser = userAuthExtension(user);
+    const projectId = 1;
     expect(extensibleUser.isGlobalAdmin).to.be.true;
     expect(extensibleUser.isVisor).to.be.false;
-    expect(extensibleUser.isAdminOfProject(1)).to.be.true;
-    expect(extensibleUser.isUserOfProject(1)).to.be.true;
-    expect(extensibleUser.canReadProject(1)).to.be.true;
-    expect(extensibleUser.canUpdateProject(1)).to.be.true;
-    expect(extensibleUser.canCreateCommentProject(1)).to.be.true;
-    expect(extensibleUser.canUpdateCommentProject(1)).to.be.true;
+    expect(extensibleUser.isAdminOfProject(projectId)).to.be.true;
+    expect(extensibleUser.isUserOfProject(projectId)).to.be.true;
+    expect(extensibleUser.canReadProject(projectId)).to.be.true;
+    expect(extensibleUser.canUpdateProject(projectId)).to.be.true;
+    expect(extensibleUser.canCreateCommentProject(projectId)).to.be.true;
+    expect(extensibleUser.canUpdateCommentProject(projectId)).to.be.true;
   });
 
   it('should add access for project creator', () => {
@@ -75,14 +76,15 @@ describe('Auth Extension', () => {
     };
 
     const extensibleUser = userAuthExtension(user);
+    const projectId = 1;
     expect(extensibleUser.isGlobalAdmin).to.be.false;
     expect(extensibleUser.isVisor).to.be.false;
-    expect(extensibleUser.isAdminOfProject(1)).to.be.true;
-    expect(extensibleUser.isUserOfProject(1)).to.be.true;
-    expect(extensibleUser.canReadProject(1)).to.be.true;
-    expect(extensibleUser.canUpdateProject(1)).to.be.true;
-    expect(extensibleUser.canCreateCommentProject(1)).to.be.true;
-    expect(extensibleUser.canUpdateCommentProject(1)).to.be.true;
+    expect(extensibleUser.isAdminOfProject(projectId)).to.be.true;
+    expect(extensibleUser.isUserOfProject(projectId)).to.be.true;
+    expect(extensibleUser.canReadProject(projectId)).to.be.true;
+    expect(extensibleUser.canUpdateProject(projectId)).to.be.true;
+    expect(extensibleUser.canCreateCommentProject(projectId)).to.be.true;
+    expect(extensibleUser.canUpdateCommentProject(projectId)).to.be.true;
   });
 
   it('should not add access for common user', () => {
@@ -95,13 +97,14 @@ describe('Auth Extension', () => {
     };
 
     const extensibleUser = userAuthExtension(user);
+    const projectId = 1;
     expect(extensibleUser.isGlobalAdmin).to.be.false;
     expect(extensibleUser.isVisor).to.be.false;
-    expect(extensibleUser.isAdminOfProject(1)).to.be.false;
-    expect(extensibleUser.isUserOfProject(1)).to.be.false;
-    expect(extensibleUser.canReadProject(1)).to.be.false;
-    expect(extensibleUser.canUpdateProject(1)).to.be.false;
-    expect(extensibleUser.canCreateCommentProject(1)).to.be.false;
-    expect(extensibleUser.canUpdateCommentProject(1)).to.be.false;
+    expect(extensibleUser.isAdminOfProject(projectId)).to.be.false;
+    expect(extensibleUser.isUserOfProject(projectId)).to.be.false;
+    expect(extensibleUser.canReadProject(projectId)).to.be.false;
+    expect(extensibleUser.canUpdateProject(projectId)).to.be.false;
+    expect(extensibleUser.canCreateCommentProject(projectId)).to.be.false;
+    expect(extensibleUser.canUpdateCommentProject(projectId)).to.be.false;
   });
 });
