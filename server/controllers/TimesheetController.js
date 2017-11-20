@@ -434,6 +434,8 @@ exports.updateDraft = async function (req, res, next) {
       });
     }
 
+    res.json(result);
+
   } catch (e) {
     return next(createError(e));
   }
