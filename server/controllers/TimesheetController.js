@@ -5,6 +5,7 @@ const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
+const { timesheetsList } = require('../services/timesheet/index');
 
 exports.getTimesheets = getTimesheets;
 
@@ -469,129 +470,36 @@ exports.delete = async function (req, res, next) {
   }
 };
 
-exports.actionList = async function (req, res, next) {
+exports.list = async function (req, res, next) {
   try {
-    await _actionListReqValidate(req);
-    const timesheets = await _actionListGetData(req);
-    res.json(_actionListTransformData(timesheets));
+    if (req.isSystemUser) {
+      // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
+      if (req.query.userId) {
+        req.checkQuery('userId', 'userId must be int').isInt();
+      } else if (req.query.userPSId) {
+        req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+      } else {
+        req.checkQuery('userId', 'userId must be int').isInt();
+        req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+      }
+    }
 
+    req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+    req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+    const dateBegin = req.query.dateBegin;
+    const dateEnd = req.query.dateEnd;
+    const userId = req.isSystemUser ? req.query.userId : req.user.id;
+    const userPSId = req.query.userPSId ? req.query.userPSId : null;
+
+    timesheetsList()
+      .call(dateBegin, dateEnd, userId, userPSId, req.isSystemUser)
+      .then(timesheets => res.json(timesheets))
+      .catch(error => next(error));
   } catch (e) {
-    return next(e);
+    next(createError(e));
   }
 };
-
-async function _actionListReqValidate (req) {
-  if (req.isSystemUser) {
-    // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
-    if (req.query.userId) {
-      req.checkQuery('userId', 'userId must be int').isInt();
-    } else if (req.query.userPSId) {
-      req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
-    } else {
-      req.checkQuery('userId', 'userId must be int').isInt();
-      req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
-    }
-  } else {
-    req.query.userId = req.user.id;
-  }
-
-
-  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
-  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
-
-  const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
-}
-
-async function _actionListGetData (req) {
-  const where = await _actionListGetWhere(req);
-  const include = await _actionListGetInclude(req);
-
-  return await models.Timesheet.findAll({
-    where: where,
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
-    order: [
-      ['createdAt', 'ASC']
-    ],
-    include: include
-  });
-}
-
-function _actionListGetWhere (req) {
-  const where = {
-    deletedAt: null,
-    onDate: {
-      $and: {
-        $gte: new Date(req.query.dateBegin),
-        $lte: new Date(req.query.dateEnd)
-      }
-    }
-  };
-
-  if (req.isSystemUser) {
-    where.spentTime = {
-      gt: 0
-    };
-  }
-
-  if (req.query.userId) {
-    where.userId = req.query.userId;
-  }
-
-  return where;
-}
-
-function _actionListGetInclude (req) {
-  const include = [
-    {
-      as: 'task',
-      model: models.Task,
-      required: false,
-      attributes: ['id', 'name'],
-      paranoid: false,
-      include: [
-        {
-          as: 'project',
-          model: models.Project,
-          required: false,
-          attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
-    },
-    {
-      as: 'project',
-      model: models.Project,
-      required: false,
-      attributes: ['id', 'name'],
-      paranoid: false
-    }
-  ];
-
-  if (req.query.userPSId && !req.query.userId) {
-    include.push({
-      as: 'user',
-      model: models.User,
-      required: true,
-      attributes: [],
-      paranoid: false,
-      where: {
-        psId: req.query.userPSId
-      }
-    });
-  }
-
-  return include;
-}
-
-
-function _actionListTransformData (timesheets) {
-  timesheets.forEach(model => {
-    // переношу из задачи в корень объекта
-    if (model.task && !model.dataValues.project) {
-      model.dataValues.project = model.task.project.dataValues;
-      delete model.task.project.dataValues;
-    }
-  });
-  return timesheets;
-}
