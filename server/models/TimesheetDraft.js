@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    onDate: { // Устарело
+    onDate: {
       field: 'on_date',
       type: DataTypes.DATEONLY,
       allowNull: true
@@ -77,6 +77,7 @@ module.exports = function (sequelize, DataTypes) {
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
   }, {
+    underscored: true,
     timestamps: true,
     paranoid: true,
     tableName: 'timesheets_draft'

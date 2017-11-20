@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const TaskStatuses = sequelize.define('TaskStatusesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -13,24 +13,14 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
-    },
+    }
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
     tableName: 'task_statuses'
   });
-  
-  
- /* TaskStatuses.associate = function(models) {
-    TaskStatuses.hasMany(models.Task, {
-      as: 'taskStatuses',
-      foreignKey: {
-        name: 'statusId',
-        field: 'status_id'
-      }});
-  };*/
-  
+
   TaskStatuses.values = [
     {id: 1, name: 'New'},
     {id: 2, name: 'Develop play'},
@@ -41,10 +31,9 @@ module.exports = function(sequelize, DataTypes) {
     {id: 7, name: 'QA stop'},
     {id: 8, name: 'Done'},
     {id: 9, name: 'Canceled'},
-    {id: 10, name: 'Closed'},
+    {id: 10, name: 'Closed'}
   ];
-  
-  
+
   TaskStatuses.DONE_STATUS = 8;
   TaskStatuses.CANCELED_STATUS = 9;
   TaskStatuses.CLOSED_STATUS = 10;
