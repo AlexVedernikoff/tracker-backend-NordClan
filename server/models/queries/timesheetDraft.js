@@ -7,16 +7,15 @@ exports.name = 'timesheetDraft';
 /**
  * Поиск драфтшита по id
  */
-exports.findDraftSheet = async function(userId, draftsheetId) {
+exports.findDraftSheet = async function (userId, draftsheetId) {
   const draftsheetModel = await models.TimesheetDraft.findOne({
     required: true,
     where: {
       id: draftsheetId,
       userId: userId
     },
-    attributes: ['id', 'typeId', 'onDate', 'statusId', 'comment', 'isVisible'],
+    attributes: ['id', 'typeId', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'statusId', 'comment', 'isVisible']
   });
   if (!draftsheetModel) throw createError(404, 'User can\'t change draftsheet!');
   return draftsheetModel;
 };
-  

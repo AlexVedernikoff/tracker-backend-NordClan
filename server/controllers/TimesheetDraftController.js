@@ -28,14 +28,22 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
  *  Функция поиска драфтшитов
  */
 exports.getDrafts = async function (req, res, next) {
-  const where = { userId: req.query.userId };
+  const where = {
+    userId: req.query.userId,
+    deletedAt: null
+  };
 
   if (req.query.onDate) {
     const date = moment(req.query.onDate).format('YYYY-MM-DD');
     Object.assign(where, { onDate: { $eq: date } });
   }
 
-  if (req.params && req.params.sheetId) {
+
+  if (req.body.sheetId) {
+    Object.assign(where, { id: { $eq: req.body.sheetId } });
+  }
+
+  if (req.params.sheetId) {
     Object.assign(where, { id: { $eq: req.params.sheetId } });
   }
   if (req.query.taskId) {
@@ -112,15 +120,4 @@ exports.getDrafts = async function (req, res, next) {
   }
 };
 
-
-exports.updateVisible = async function (req, res, next) {
-  if (!req.params.timesheetDraftId.match(/^[0-9]+$/)) return next(createError(400, 'timesheetId must be int'));
-  try {
-    const timesheetModel = await queries.timesheetDraft.findDraftSheet(req.user.id, req.params.timesheetDraftId);
-    const result = await timesheetModel.updateAttributes(req.body);
-    res.json(result);
-  } catch (e) {
-    return next(e);
-  }
-};
 
