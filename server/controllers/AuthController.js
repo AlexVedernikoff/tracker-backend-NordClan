@@ -158,7 +158,7 @@ function userLogout (req, res, next) {
 
 
 function isSystemUser (req) {
-  return JSON.parse(req.body.isSystemUser);
+  return req.body.isSystemUser;
 }
 
 function extractHostname (url) {
