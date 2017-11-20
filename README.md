@@ -49,7 +49,7 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 
 1. Используйте баш и поставьте Node.js LTS ( 6.11.3 на момент написания)
 
-2. положите фронт рядом с беком (пример /projects/sim-track-front и /projects/sim-track-back, если названия папок другие проверьте правильность в docker-compose.yml раздел web volumes, он отвечает за хотрелоад)
+2. положите фронт рядом с беком (пример /projects/sim-track и /projects/sim-track-back, если названия папок другие проверьте правильность в docker-compose.yml раздел web volumes, он отвечает за хотрелоад)
 
 3. установить docker и docker-compose
 
@@ -63,7 +63,9 @@ http://asyncee.github.io/2016/04/17/ustanovka-postgresql-v-ubuntu-linut-mint/
 
 5. старт приложения с 0
 
-        npm run init:app
+        npm run init:app(стартует продакшен версию приложения)
+
+        npm run init:dev(стартует dev версию проекта, с автоматическим перезапусом фронта и бека при изменениях)
 
 - на localhost:8080 будет фронт
 - на 8000 - бек
