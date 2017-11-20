@@ -54,7 +54,7 @@ exports.create = function (req, res, next){
           if (!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
         })
         .then(() => {
-          ProjectsChannel.sendAction('create', model, res.io);
+          ProjectsChannel.sendAction('create', model, res.io, model.id);
           res.status(200);
         });
     })
@@ -455,12 +455,9 @@ exports.list = function (req, res, next){
                   if (row.currentSprints && row.currentSprints[0]) { // преобразую спринты
                     row.currentSprints = [row.currentSprints[0]];
                   }
-
                   projects[key].dataValues = row;
                 }
-
               }
-
 
               const responseObject = {
                 currentPage: +req.query.currentPage,
@@ -471,11 +468,8 @@ exports.list = function (req, res, next){
                 data: projects
               };
               res.json(responseObject);
-
             });
-
         });
     })
     .catch(err => next(err));
-
 };

@@ -1,6 +1,32 @@
-const Channel = require('./Channel');
+const User = require('../models').User;
+const ProjectUsers = require('../models').ProjectUsers;
+const Project = require('../models').Project;
+const { userAuthExtension } = require('./../middlewares/Access/userAuthExtension');
 
-class TasksChannel extends Channel {
+class TasksChannel {
+  async sendAction(type, data, socketIO, projectId) {
+    const action = this.getAction(type, data);
+    const users = await User.findAll({
+      include: [
+        {
+          as: 'usersProjects',
+          model: ProjectUsers
+        },
+        {
+          as: 'authorsProjects',
+          model: Project
+        }
+      ]
+    });
+
+    users
+      .map(user => userAuthExtension(user))
+      .filter(user => user.isUserOfProject(projectId))
+      .forEach(user => {
+        this.emit(socketIO, action, user.dataValues.id);
+      });
+  }
+
   getAction(type, data) {
     const actions = {
       update: {

@@ -34,7 +34,7 @@ exports.create = async function (req, res, next) {
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
         .then(() => {
-          TasksChannel.sendAction('create', model, res.io);
+          TasksChannel.sendAction('create', model, res.io, model.projectId);
           res.json(model);
         });
     })
@@ -252,10 +252,9 @@ exports.update = async function (req, res, next) {
       };
 
       t.commit();
-      TasksChannel.sendAction('update', updatedFields, res.io);
+
+      TasksChannel.sendAction('update', updatedFields, res.io, task.projectId);
       res.json(updatedFields);
-
-
     } else {
 
       // Получаю измененные поля
@@ -266,7 +265,8 @@ exports.update = async function (req, res, next) {
       resultResponse.id = task.id;
 
       t.commit();
-      TasksChannel.sendAction('update', resultResponse, res.io);
+      TasksChannel.sendAction('update', resultResponse, res.io, task.projectId);
+
       res.json(resultResponse);
     }
 
