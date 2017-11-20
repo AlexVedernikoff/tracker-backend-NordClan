@@ -3,7 +3,7 @@ const responsesCodes = {
     description: 'OK'
   },
   '400': {
-    description: 'Не коректныые данные запроса'
+    description: 'Некорректные данные запроса'
   },
   '401': {
     description: 'Токен невалидный'
@@ -92,59 +92,57 @@ module.exports = {
         summary: 'Создать проект',
         parameters: [
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData',
-            example: 'string',
-            required: true
-          },
-          {
-            name: 'prefix',
-            type: 'string',
-            in: 'formData',
-            example: 'string'
-          },
-          {
-            name: 'description',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'portfolioId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'portfolioName',
-            description: 'создаст новый портфель и прикрепит его к проекту',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'notbillable',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'budget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'riskBudget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'tags',
-            type: 'string',
-            description: 'можно разделять через ","',
-            in: 'formData'
+            in: 'body',
+            name: 'project',
+            description: 'The project to create.',
+            schema: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                prefix: {
+                  type: 'string',
+                  example: 'string'
+                },
+                description: {
+                  type: 'string',
+                  example: 'string'
+                },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                portfolioId: {
+                  type: 'integer',
+                  example: 1
+                },
+                portfolioName: {
+                  description: 'создаст новый портфель и прикрепит его к проекту',
+                  type: 'string',
+                  example: 'string'
+                },
+                notbillable: {
+                  type: 'integer',
+                  example: 1
+                },
+                budget: {
+                  type: 'number',
+                  example: 1.55
+                },
+                riskBudget: {
+                  type: 'number',
+                  example: 1.55
+                },
+                tags: {
+                  type: 'string',
+                  description: 'можно разделять через ","',
+                  example: 'a,b,c'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -175,41 +173,44 @@ module.exports = {
             required: true
           },
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'prefix',
-            type: 'string',
-            in: 'formData',
-            example: 'string'
-          },
-          {
-            name: 'description',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'notbillable',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'budget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'riskBudget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'portfolioId',
-            description: '0 чтобы сбросить портфель у проекта',
-            type: 'integer',
-            in: 'formData'
+            in: 'body',
+            name: 'project',
+            description: 'The project to edit.',
+            schema: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                prefix: {
+                  type: 'string',
+                  example: 'string'
+                },
+                description: {
+                  type: 'string',
+                  example: 'string'
+                },
+                notbillable: {
+                  type: 'integer',
+                  example: 1
+                },
+                budget: {
+                  type: 'number',
+                  example: 1
+                },
+                riskBudget: {
+                  type: 'number',
+                  example: 1
+                },
+                portfolioId: {
+                  description: '0 чтобы сбросить портфель у проекта',
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
