@@ -16,9 +16,13 @@ async function getTimesheets (req, res, next) {
   console.log('Функция поиска таймшитов (getTimesheets)');
   try {
     const where = {
-      userId: req.query.userId,
       deletedAt: null
     };
+
+    if (!req.isSystemUser) {
+      Object.assign(where, { userId: req.query.userId });
+    }
+
     if (req.query.onDate) {
       const date = new Date(req.query.onDate);
       Object.assign(where, { onDate: { $eq: date } });
