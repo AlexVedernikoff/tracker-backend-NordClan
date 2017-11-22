@@ -58,6 +58,21 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    budget: {
+      type: DataTypes.FLOAT,
+      defaultValue: null,
+      validate: {
+        isFloat: true
+      }
+    },
+    riskBudget: {
+      field: 'risk_budget',
+      type: DataTypes.FLOAT,
+      defaultValue: null,
+      validate: {
+        isFloat: true
+      }
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
@@ -116,7 +131,7 @@ module.exports = function(sequelize, DataTypes) {
 
   };
 
-  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime'];
+  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'budget', 'riskBudget'];
 
   Sprint.addHistoryForProject();
 

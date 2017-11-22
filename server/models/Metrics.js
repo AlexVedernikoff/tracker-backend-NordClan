@@ -16,20 +16,16 @@ module.exports = function(sequelize, DataTypes) {
 		value: {
 			type: DataTypes.STRING,
 			trim: true,
-			allowNull: false,
 			validate: {
 				len: [1, 255]
 			}
 		},
-		date: {
+		createdAt: {
+			field: 'created_at',
 			type: DataTypes.DATE
 		},
 		projectId: {
 			field: 'project_id',
-			type: DataTypes.INTEGER
-		},
-		projectRoleId: {
-			field: 'project_role_id',
 			type: DataTypes.INTEGER
 		},
 		sprintId: {
@@ -42,14 +38,9 @@ module.exports = function(sequelize, DataTypes) {
 		}
 	}, {
 		underscored: true,
-		timestamps: true,
+		timestamps: false,
 		paranoid: true,
-		tableName: 'metrics',
-		hooks: {
-		  afterFind: function (model) {
-			ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-		  }
-		}
+		tableName: 'metrics'
 	});
 
 	Metrics.associate = function (models) {
@@ -62,14 +53,6 @@ module.exports = function(sequelize, DataTypes) {
 			}
 		});
 
-		Metrics.belongsTo(models.ProjectRolesDictionary, {
-			as: 'projectRole',
-			foreignKey: {
-				name: 'projectRoleId',
-				field: 'project_role_id'
-			}
-		});
-
 		Metrics.belongsTo(models.Sprint, {
 			as: 'sprint',
 			foreignKey: {
@@ -78,8 +61,8 @@ module.exports = function(sequelize, DataTypes) {
 			}
 		});
 
-		Metrics.belongsTo(models.ProjectUsers, {
-			as: 'projectUsers',
+		Metrics.belongsTo(models.User, {
+			as: 'user',
 			foreignKey: {
 				name: 'userId',
 				field: 'user_id'
@@ -92,9 +75,8 @@ module.exports = function(sequelize, DataTypes) {
 		'id',
 		'typeId',
 		'value',
-		'date',
+		'createdAt',
 		'projectId',
-		'projectRoleId',
 		'sprintId',
 		'userId'
 	];
