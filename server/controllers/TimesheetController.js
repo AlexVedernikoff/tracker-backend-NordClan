@@ -175,27 +175,10 @@ exports.getTracksAll = async function (req, res, next) {
     await Promise.all(dateArr.map(async (onDate) => {
       req.query.onDate = onDate; // Здесь и далее потанцеиальная опастность использования объектов в req
       const tracks = await getTracks(req, res, next);
-      // пройти по трекам
-      const scales = {};
-      tracks.tracks.map(track => {
-        models.TimesheetTypesDictionary.values.map(value => {
-          if (track.typeId === value.id) {
-            if (scales.hasOwnProperty(value.id)) {
-              scales[value.id] = +scales[value.id] + +track.spentTime;
-            } else {
-              scales[value.id] = 0;
-              scales[value.id] = +scales[value.id] + +track.spentTime;
-            }
-          }
-        });
-      });
-      let sum = 0;
-      Object.keys(scales).map(key => {
-        sum += +scales[key];
-      });
-      Object.assign(scales, {all: sum});
-      const tr = tracks.tracks;
-      result[onDate] = { tracks: tr, scales};
+      result[onDate] = {
+        tracks: tracks.tracks,
+        scales: getScales(tracks.tracks)
+      };
       return;
     }));
 
@@ -388,7 +371,10 @@ exports.update = async function (req, res, next) {
         }
       }, res, next);
       return res.json({
-        [result.onDate]: trackList.tracks
+        [result.onDate]: {
+          tracks: trackList.tracks,
+          scales: getScales(trackList.tracks)
+        }
       });
     }
 
@@ -434,7 +420,10 @@ exports.updateDraft = async function (req, res, next) {
         }
       }, res, next);
       return res.json({
-        [result.onDate]: trackList.tracks
+        [result.onDate]: {
+          tracks: trackList.tracks,
+          scales: getScales(trackList.tracks)
+        }
       });
     }
 
@@ -444,6 +433,32 @@ exports.updateDraft = async function (req, res, next) {
     return next(createError(e));
   }
 };
+
+function getScales (tracks) {
+  const timesheetTypes = models.TimesheetTypesDictionary.values;
+  const scales = {};
+  tracks.map(track => {
+    timesheetTypes.map(value => {
+      if (track.typeId === value.id) {
+        if (scales.hasOwnProperty(value.id)) {
+          scales[value.id] = +scales[value.id] + +track.spentTime;
+        } else {
+          scales[value.id] = 0;
+          scales[value.id] = +scales[value.id] + +track.spentTime;
+        }
+      }
+    });
+  });
+  let sum = 0;
+  Object.keys(scales).map(key => {
+    sum += +scales[key];
+  });
+
+  return {
+    ...scales,
+    all: sum
+  };
+}
 
 exports.delete = async function (req, res, next) {
   req.checkParams('timesheetId', 'timesheetId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);
