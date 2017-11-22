@@ -5,6 +5,8 @@
       "script": "server.js",
       "instances": "1",
       "exec_mode": "cluster",
+      "node_args": ["--inspect=localhost:9080"],
+      "args": ["--inspect=localhost:9081"],
       "env": {
         "NODE_ENV": "develop",
         "watch": true

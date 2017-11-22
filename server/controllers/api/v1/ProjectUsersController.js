@@ -1,8 +1,9 @@
 const createError = require('http-errors');
+const _ = require('underscore');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
-exports.create = async function (req, res, next){
+exports.create = function(req, res, next){
   if (!(Number.isInteger(+req.params.projectId) && +req.params.projectId > 0)) {
     return next(createError(400, 'projectId is wrong'));
   }
@@ -14,58 +15,72 @@ exports.create = async function (req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
-  const rolesIds = parseRolesIds(req.body.rolesIds);
-  if (!rolesIds) {
-    return next(createError('roleId is invalid, see project roles dictionary'));
+  let rolesIds;
+  let allowedRolesId;
+
+  if (req.body.rolesIds && +req.body.rolesIds === 0) {
+    rolesIds = JSON.stringify([]);
+
+  } else if(req.body.rolesIds) {
+    rolesIds = req.body.rolesIds.split(',').map((el) => +el.trim());
+    allowedRolesId = models.ProjectRolesDictionary.values.map((el) => el.id);
+
+    rolesIds.forEach((roleId) => {
+      if(allowedRolesId.indexOf(+roleId) === -1) {
+        return next(createError(400, 'roleId is invalid, see project roles dictionary'));
+      }
+    });
+    rolesIds = JSON.stringify(_.uniq(rolesIds));
   }
 
   models.ProjectUsers.beforeValidate((model) => {
     model.authorId = req.user.id;
   });
 
-  const projectId = req.params.projectId;
-  const userId = req.body.userId;
+  return models.sequelize.transaction(function (t) {
+    return Promise.all([
+      queries.user.findOneActiveUser(req.body.userId, ['id'], t),
+      queries.project.findOneActiveProject(req.params.projectId, ['id'], t)
+    ])
+      .then(() => {
 
-  const options = {
-    where: { projectId, userId, deletedAt: null },
-    defaults: { rolesIds, projectId, userId }
-  };
+        return models.ProjectUsers
+          .findOrCreate({where: {
+            projectId: req.params.projectId,
+            userId: req.body.userId,
+            deletedAt: null
+          }, transaction: t, lock: 'UPDATE'})
+          .spread((projectUser) => {
+            return Promise.resolve()
+              .then(() => {
+                if(rolesIds) {
+                  return projectUser.updateAttributes({rolesIds: rolesIds}, { transaction: t });
+                }
+              })
+              .then(() => {
+                return queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t)
+                  .then((users) => {
+                    res.json(users);
+                  });
+              });
+          });
 
-  models.ProjectUsers
-    .findOrCreate(options)
-    .spread(async (user, created) => {
-      if (!created) {
-        await user.updateAttributes({ rolesIds });
-      }
-
-      const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, ['userId', 'rolesIds']);
-      res.json(allProjectUsers);
-    })
-    .catch(e => next(createError(e)));
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
 };
 
-function parseRolesIds (rolesIds) {
-  if (rolesIds && parseInt(rolesIds) !== 0) {
-    const roles = rolesIds.split(',').map((el) => +el.trim());
-    const allowedRolesId = models.ProjectRolesDictionary.values.map((el) => el.id);
-    roles.forEach((roleId) => {
-      if (!~allowedRolesId.indexOf(roleId)) {
-        return null;
-      }
-    });
-    return JSON.stringify(roles);
-  }
-  return JSON.stringify([]);
-}
 
-exports.delete = function (req, res, next){
-  if (!req.params.projectId) return next(createError(400, 'projectId need'));
-  if (!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
-  if (+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+exports.delete = function(req, res, next){
+  if(!req.params.projectId) return next(createError(400, 'projectId need'));
+  if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
+  if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
-  if (!req.params.userId) return next(createError(400, 'userId need'));
-  if (!Number.isInteger(+req.params.userId)) return next(createError(400, 'userId must be int'));
-  if (+req.params.userId <= 0) return next(createError(400, 'userId must be > 0'));
+  if(!req.params.userId) return next(createError(400, 'userId need'));
+  if(!Number.isInteger(+req.params.userId)) return next(createError(400, 'userId must be int'));
+  if(+req.params.userId <= 0) return next(createError(400, 'userId must be > 0'));
 
   if (!req.user.canUpdateProject(req.params.projectId)) {
     return next(createError(403, 'Access denied'));
@@ -79,7 +94,7 @@ exports.delete = function (req, res, next){
         deletedAt: null
       }, transaction: t, lock: 'UPDATE' })
       .then((projectUser) => {
-        if (!projectUser) { return next(createError(404)); }
+        if(!projectUser) { return next(createError(404)); }
 
         return projectUser.destroy({ transaction: t })
           .then(()=>{
@@ -96,10 +111,10 @@ exports.delete = function (req, res, next){
 };
 
 
-exports.list = function (req, res, next){
-  if (!req.params.projectId) return next(createError(400, 'projectId need'));
-  if (!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
-  if (+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
+exports.list = function(req, res, next){
+  if(!req.params.projectId) return next(createError(400, 'projectId need'));
+  if(!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
+  if(+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
   queries.projectUsers.getUsersByProject(req.params.projectId)
     .then((users) => {
