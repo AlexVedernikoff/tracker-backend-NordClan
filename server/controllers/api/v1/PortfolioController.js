@@ -1,7 +1,7 @@
 const createError = require('http-errors');
 const _ = require('underscore');
-const Portfolio = require('../models').Portfolio;
-const models = require('../models');
+const models = require('../../../models');
+const Portfolio = models.Portfolio;
 
 exports.create = function(req, res, next){
   Portfolio.beforeValidate((model) => {
@@ -15,9 +15,7 @@ exports.create = function(req, res, next){
     .catch((err) => {
       next(createError(err));
     });
-
 };
-
 
 exports.read = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
@@ -34,20 +32,17 @@ exports.read = function(req, res, next){
     .catch((err) => {
       next(err);
     });
-
 };
 
 
 exports.update = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
-
   return models.sequelize.transaction(function (t) {
     return Portfolio
       .findByPrimary(req.params.id, { attributes: ['id'], transaction: t, lock: 'UPDATE' })
       .then((portfolio) => {
         if(!portfolio) { return next(createError(404)); }
-
 
         return portfolio
           .updateAttributes(req.body, { transaction: t })
@@ -57,7 +52,6 @@ exports.update = function(req, res, next){
     .catch((err) => {
       next(err);
     });
-
 };
 
 
@@ -81,15 +75,14 @@ exports.delete = function(req, res, next){
 
 };
 
-
 exports.list = function(req, res, next){
   if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
-  
+
   let where = {
     deletedAt: {$eq: null} // IS NULL
   };
-  
+
   if(req.query.name) {
     where.name = {
       $iLike: '%' + req.query.name + '%'

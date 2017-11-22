@@ -1,14 +1,16 @@
 const createError = require('http-errors');
 const _ = require('underscore');
-const models = require('../models');
-const Task = require('../models').Task;
-const Tag = require('../models').Tag;
-const ItemTag = require('../models').ItemTag;
-const queries = require('../models/queries');
+const models = require('../../../models');
+const Task = models.Task;
+const Tag = models.Tag;
+const ItemTag = models.ItemTag;
+const queries = require('../../../models/queries');
 const moment = require('moment');
+
+//TODO контроллер использует другой контроллер - очень стремно, надо переписать
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
-const TasksChannelClass = require('../channels/Tasks');
+const TasksChannelClass = require('../../../channels/Tasks');
 const TasksChannel = new TasksChannelClass();
 
 exports.create = async function (req, res, next) {
@@ -277,7 +279,6 @@ exports.update = async function (req, res, next) {
   }
 };
 
-
 exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
@@ -543,9 +544,9 @@ exports.list = function (req, res, next) {
 };
 
 function isNeedCreateDraft (options) {
-  const { body, task, draftsheet, timesheet} = options;
+  const { body, task, draftsheet, timesheet } = options;
 
-  return !!((draftsheet.length === 0 && timesheet.length === 0)
+  return ((draftsheet.length === 0 && timesheet.length === 0)
     && body.statusId
     && (task.performerId || body.performerId)
     && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS.indexOf(parseInt(body.statusId)));

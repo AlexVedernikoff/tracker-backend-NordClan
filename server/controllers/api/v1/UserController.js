@@ -1,9 +1,9 @@
 const createError = require('http-errors');
-const models = require('../models');
+const models = require('../../../models');
 
 exports.me = function(req, res, next){
   try {
-    res.json(req.user.dataValues);
+    res.json(req.user);
   } catch (e) {
     return next(createError(e));
   }
@@ -39,7 +39,6 @@ exports.read = async function(req, res, next){
       });
 
     if(!user) return next(createError(404, 'User not found'));
-
 
     if(user.dataValues.department[0]) {
       user.dataValues.department = user.dataValues.department[0].name;

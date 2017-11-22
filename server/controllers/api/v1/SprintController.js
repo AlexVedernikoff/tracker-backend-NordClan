@@ -1,10 +1,9 @@
 const createError = require('http-errors');
 const _ = require('underscore');
-const Sprint = require('../models').Sprint;
-const models = require('../models');
-const queries = require('../models/queries');
+const models = require('../../../models');
+const Sprint = models.Sprint;
+const queries = require('../../../models/queries');
 const Sequelize = require('sequelize');
-
 
 exports.create = function(req, res, next){
   if (!req.user.canUpdateProject(req.body.projectId)) {
@@ -30,7 +29,7 @@ exports.create = function(req, res, next){
 
 exports.read = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
+
   Sprint.findByPrimary(req.params.id, {
     attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt', 'projectId', 'authorId',
       [Sequelize.literal(`(SELECT count(*)
@@ -99,7 +98,7 @@ exports.update = function(req, res, next){
 
 exports.delete = function(req, res, next){
   if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
+
   Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
     .then((model) => {
       if (!model) {
@@ -137,11 +136,11 @@ exports.list = function(req, res, next){
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Sprint.checkAttributes(req.query.fields);
   }
-  
+
   let where = {
     deletedAt: {$eq: null} // IS NULL
   };
-  
+
   if(req.query.name) {
     where.name = {
       $iLike: '%' + req.query.name + '%'
@@ -160,7 +159,7 @@ exports.list = function(req, res, next){
     };
   }
 
-  
+
   Sprint
     .findAll({
       attributes: req.query.fields ? _.union(['id','name', 'factStartDate'].concat(req.query.fields)) : '',

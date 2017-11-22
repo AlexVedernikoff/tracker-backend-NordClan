@@ -2,15 +2,15 @@ const createError = require('http-errors');
 const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
-const models = require('../models');
-const Project = require('../models').Project;
-const Tag = require('../models').Tag;
-const ItemTag = require('../models').ItemTag;
-const Portfolio = require('../models').Portfolio;
-const Sprint = require('../models').Sprint;
-const queries = require('../models/queries');
+const models = require('../../../models');
+const Project = models.Project;
+const Tag = models.Tag;
+const ItemTag = models.ItemTag;
+const Portfolio = models.Portfolio;
+const Sprint = models.Sprint;
+const queries = require('../../../models/queries');
 
-const ProjectsChannelClass = require('../channels/Projects');
+const ProjectsChannelClass = require('../../../channels/Projects');
 const ProjectsChannel = new ProjectsChannelClass();
 
 exports.create = function (req, res, next){

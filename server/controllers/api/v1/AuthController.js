@@ -1,13 +1,14 @@
 const createError = require('http-errors');
 const moment = require('moment');
 const ldap = require('ldapjs');
-const Auth = require('../middlewares/CheckTokenMiddleWare');
-const SystemAuth = require('../middlewares/CheckSystemTokenMiddleWare');
-const User = require('../models').User;
-const Token = require('../models').Token;
-const SystemToken = require('../models').SystemToken;
-const queries = require('../models/queries');
-const config = require('.././configs');
+const Auth = require('../../../middlewares/CheckTokenMiddleWare');
+const SystemAuth = require('../../../middlewares/CheckSystemTokenMiddleWare');
+const models = require('../../../models');
+const User = models.User;
+const Token = models.Token;
+const SystemToken = models.SystemToken;
+const queries = require('../../../models/queries');
+const config = require('../../../configs');
 
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 

@@ -15,7 +15,7 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
     return getSystemUser();
   }
 
-  const extensibleUser = Object.assign({}, user);
+  const extensibleUser = user;
   extensibleUser.dataValues.projectsRoles = getProjectsRoles(extensibleUser);
   extensibleUser.dataValues.projects = [
     ...extensibleUser.dataValues.projectsRoles.user,

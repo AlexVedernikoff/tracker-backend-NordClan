@@ -4,9 +4,9 @@ const gm = require('gm');
 const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
-const models = require('../models');
-const queries = require('../models/queries');
-const stringHelper = require('../components/StringHelper');
+const models = require('../../../models');
+const queries = require('../../../models/queries');
+const stringHelper = require('../../../components/StringHelper');
 
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 10;
