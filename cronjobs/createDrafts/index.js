@@ -1,9 +1,7 @@
 const moment = require('moment');
 const createDraftsService = require('./service');
 
-createDrafts();
-
-async function createDrafts () {
+(async function createDrafts () {
   try {
     const onDate = moment().format('YYYY-MM-DD');
     await createDraftsService().call(onDate);
@@ -11,4 +9,4 @@ async function createDrafts () {
   } catch (e) {
     console.error(e);
   }
-}
+}());

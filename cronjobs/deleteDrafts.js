@@ -1,9 +1,7 @@
 const moment = require('moment');
 const models = require('../server/models');
 
-deleteDrafts();
-
-async function deleteDrafts () {
+(async function deleteDrafts () {
   try {
     await models.TimesheetDraft.destroy({
       where: {
@@ -17,4 +15,4 @@ async function deleteDrafts () {
   } catch (e) {
     console.error(e);
   }
-}
+}());
