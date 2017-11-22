@@ -80,10 +80,13 @@ module.exports = function(sequelize, DataTypes) {
       field: 'project_id'
     }});
 
-    Sprint.hasMany(models.Task, {foreignKey: {
-      name: 'sprintId',
-      field: 'sprint_id'
-    }});
+    Sprint.hasMany(models.Task, {
+      as: 'tasks',
+      foreignKey: {
+        name: 'sprintId',
+        field: 'sprint_id'
+      }
+    });
 
     Sprint.belongsToMany(models.Tag, {
       as: 'tags',
