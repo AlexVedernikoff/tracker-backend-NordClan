@@ -15,7 +15,8 @@ module.exports.run = async function(){
 
   console.log('Database connection has been established successfully.');
 
-  let metricsData
+  let metricsData;
+  
   try{
     metricsData = await getMetrics();
   }catch (err){
