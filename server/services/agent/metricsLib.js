@@ -1,4 +1,4 @@
-const TaskStatusesDictionary = require('../models').TaskStatusesDictionary;
+const TaskStatusesDictionary = require('../../models').TaskStatusesDictionary;
 
 module.exports = function (metricsTypeId, input){
 	switch(metricsTypeId){
