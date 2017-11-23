@@ -1,6 +1,6 @@
 const hooks = require('../components/sequelizeHooks/draftMagicActivity');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const ProjectUsers = sequelize.define('ProjectUsers', {
     id: {
       type: DataTypes.INTEGER,
@@ -8,48 +8,53 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false
     },
-    projectId : {
+    projectId: {
       field: 'project_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
-    userId : {
+    userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true,
-      },
+        isInt: true
+      }
     },
-    rolesIds : {
+    subscriptionsIds: {
+      field: 'subscriptions_ids',
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    rolesIds: {
       field: 'roles_ids',
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
-    authorId : {
+    authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
     deletedAt: {
       type: DataTypes.DATE,
-      field: 'deleted_at',
-    },
+      field: 'deleted_at'
+    }
   }, {
     underscored: true,
     timestamps: true,
     updatedAt: false,
     paranoid: true,
-    tableName: 'project_users',
+    tableName: 'project_users'
   });
 
-  ProjectUsers.associate = function(models) {
+  ProjectUsers.associate = function (models) {
     ProjectUsers.belongsTo(models.User, {
       as: 'user',
       foreignKey: {

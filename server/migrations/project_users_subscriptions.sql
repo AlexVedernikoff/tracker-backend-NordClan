@@ -1,0 +1,1 @@
+ALTER TABLE project_users ADD COLUMN subscriptions_ids VARCHAR(255) DEFAULT NULL;
