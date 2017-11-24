@@ -10,7 +10,7 @@ module.exports.run = async function (){
     await init();
   } catch (err){
     console.error('Unable to connect to the database:', err);
-    throw err;
+    process.exit(-1);
   }
 
   console.log('Database connection has been established successfully.');
@@ -21,14 +21,14 @@ module.exports.run = async function (){
     metricsData = await getMetrics();
   } catch (err){
     console.error('getMetrics err', err);
-    throw err;
+    process.exit(-1);
   }
 
   try {
     await saveMetrics(metricsData);
   } catch (err){
     console.error('saveMetrics err', err);
-    throw err;
+    process.exit(-1);
   }
 
   process.exit(-1);
@@ -128,7 +128,7 @@ async function getMetrics (){
     MetricTypesDictionary.values.forEach(function (value){
       if (value.id > 29) return;
       projectMetricsTasks.push(metricsLib(value.id, {
-        plainProject,
+        project: plainProject,
         executeDate
       }));
     });
@@ -137,7 +137,7 @@ async function getMetrics (){
         MetricTypesDictionary.values.forEach(function (value){
           if (value.id < 30 || value.id > 40) return;
           projectMetricsTasks.push(metricsLib(value.id, {
-            plainProject,
+            project: plainProject,
             sprint,
             executeDate
           }));
@@ -151,5 +151,7 @@ async function getMetrics (){
 
 
 async function saveMetrics (metricsData){
-  return await Metrics.bulkCreate(metricsData);
+  return await sequelize.transaction(function (t){
+    return Metrics.bulkCreate(metricsData, {transaction: t});
+  });
 }
