@@ -43,8 +43,6 @@ async function getTimesheets (req, res, next) {
       Object.assign(where, { taskStatusId: { $eq: req.query.taskStatusId } });
     }
 
-    console.log('where');
-    console.log(where);
     const timesheets = await models.Timesheet.findAll({
       where: where,
       attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],

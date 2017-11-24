@@ -59,61 +59,37 @@ function getScales (tracks) {
 
 async function getTracks (req, onDate) {
   const today = moment();
-  const timesheetConditions = getConditionsForTimesheets(req, onDate);
-  const timesheets = await getTimesheets(timesheetConditions);
-  const draftConditions = getConditionsForDrafts(req, onDate);
-  const drafts = moment(onDate).isSame(today) ? await getDrafts(draftConditions) : [];
+  const queryParams = {
+    id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+    taskStatusId: req.body.statusId,
+    taskId: req.body.taskId,
+    onDate: onDate || req.onDate
+  };
+
+  const timesheets = await getTimesheets(queryParams);
+  const drafts = moment(onDate).isSame(today) ? await getDrafts(queryParams) : [];
   return [ ...timesheets, ...drafts ];
 }
 
-//TODO подумать, как без if сделать
-function getConditionsForDrafts (req, onDate) {
+function getConditions (query) {
   const conditions = {
-    userId: req.query.userId,
-    deletedAt: null,
-    onDate: { $eq: new Date(onDate) }
+    deletedAt: null
   };
 
-  if (req.body.sheetId) {
-    conditions.id = { $eq: req.body.sheetId };
-  }
-  if (req.params.sheetId) {
-    conditions.id = { $eq: req.params.sheetId };
-  }
-  if (req.query.taskId) {
-    conditions.taskId = { $eq: req.query.taskId };
-  }
-  if (req.query.taskStatusId) {
-    conditions.taskStatusId = { $eq: req.query.taskStatusId };
+  if (query.onDate) {
+    conditions.onDate = { $eq: new Date(query.onDate) };
   }
 
-  return conditions;
-}
+  if (query.sheetId) {
+    conditions.id = { $eq: query.sheetId };
+  }
 
-//TODO подумать, как без if сделать
-function getConditionsForTimesheets (req, onDate) {
-  const conditions = {
-    deletedAt: null,
-    onDate: { $eq: new Date(onDate) }
-  };
+  if (query.taskId) {
+    conditions.taskId = { $eq: query.taskId };
+  }
 
-  if (!req.isSystemUser) {
-    conditions.userId = req.user.id;
-  }
-  if (req.params && req.params.sheetId) {
-    conditions.id = { $eq: req.params.sheetId };
-  }
-  if (req.query && req.query.sheetId) {
-    conditions.id = { $eq: req.query.sheetId };
-  }
-  if (req.body && req.body.sheetId) {
-    conditions.id = { $eq: req.body.sheetId };
-  }
-  if (req.query.taskId) {
-    conditions.taskId = { $eq: req.query.taskId };
-  }
-  if (req.query.taskStatusId) {
-    conditions.taskStatusId = { $eq: req.query.taskStatusId };
+  if (query.taskStatusId) {
+    conditions.taskStatusId = { $eq: query.taskStatusId };
   }
 
   return conditions;
@@ -121,7 +97,10 @@ function getConditionsForTimesheets (req, onDate) {
 
 //TODO refactoring
 async function getTimesheets (conditions) {
-  const timesheets = await queries.timesheet.all(conditions);
+  console.log(conditions);
+  const queryParams = getConditions(conditions);
+  console.log(queryParams);
+  const timesheets = await queries.timesheet.all(queryParams);
   return timesheets.map(timesheet => {
     if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.project) {
       Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project, isDraft: false });
@@ -136,9 +115,12 @@ async function getTimesheets (conditions) {
   });
 }
 
+exports.getTimesheets = getTimesheets;
+
 //TODO refactoring
 async function getDrafts (conditions) {
-  const drafts = queries.timesheetDraft.all(conditions);
+  const queryParams = getConditions(conditions);
+  const drafts = await queries.timesheetDraft.all(queryParams);
   return drafts.map(ds => {
     Object.assign(ds.dataValues, { project: ds.dataValues.task ? ds.dataValues.task.dataValues.project : null });
     if (ds.dataValues.task) delete ds.dataValues.task.dataValues.project;
@@ -155,6 +137,8 @@ async function getDrafts (conditions) {
   });
 }
 
+exports.getDrafts = getDrafts;
+
 function getDateRange (startDate, endDate) {
   const start = moment(startDate);
   const end = moment(endDate);
@@ -164,15 +148,10 @@ function getDateRange (startDate, endDate) {
     throw new Error('Invalid dates specified. Please check format and or make sure that the dates are different');
   }
 
-  //TODO maybe Array.from
-  const range = [];
-  for (let i = 0; i <= difference; i++) {
-    const previousDay = moment(endDate).subtract(i, 'd');
-    range.push(previousDay);
-  }
-
   const dateFormat = 'YYYY-MM-DD';
-  return range.map(date => date.format(dateFormat));
+  return Array.from({ length: difference + 1 }, (_, v) => v).map(i => {
+    return moment(endDate).subtract(i, 'd').format(dateFormat);
+  });
 }
 
 exports.getDateRange = getDateRange;
@@ -209,7 +188,6 @@ exports.list = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
-//TODO refactoring
 exports.update = async (req, res, next) => {
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
@@ -222,54 +200,53 @@ exports.update = async (req, res, next) => {
   req.query.userId = req.user.id;
 
   try {
-    const result = await setTimesheetTime(req, res, next);
+    const updatedTimesheet = await setTimesheetTime(req);
+    const onDate = updatedTimesheet.onDate;
 
-    if (req.query.return === 'trackList' && result.onDate) {
-      const tracks = await getTracks({
-        ...req,
-        body: {},
-        params: {},
-        query: {
-          onDate: result.onDate
-        }
-      }, res, next);
-      return res.json({
-        [result.onDate]: {
+    if (req.query.return === 'trackList' && onDate) {
+      const tracksParams = { ...req, body: {}, params: {} };
+      const tracks = await getTracks(tracksParams, onDate);
+      const updatedTracks = {
+        [onDate]: {
           scales: getScales(tracks),
           tracks
         }
-      });
+      };
+
+      return res.json(updatedTracks);
     }
 
-    res.json(result);
+    res.json(updatedTimesheet);
   } catch (e) {
     return next(createError(e));
   }
 };
 
-//TODO refactoring
 async function setTimesheetTime (req) {
-  const transaction = await Sequelize.transaction();
-  const tmp = {};
   delete req.body.isDraft;
+  const transaction = await Sequelize.transaction();
+  const queryParams = {
+    sheetId: req.body.sheetId
+  };
+
+  const timesheets = await getTimesheets(queryParams);
+
+  if (timesheets.length === 0) {
+    throw new Error('Timesheet not found');
+  }
+
+  const timesheet = timesheets[0];
+  await models.Timesheet.update(req.body, { where: { id: timesheet.id } });
 
   try {
-    const timesheetConditions = getConditionsForTimesheets(req, req.query.onDate);
-    const timesheets = await getTimesheets(timesheetConditions);
-    if (timesheets.length === 0) {
-      throw createError(404, 'Timesheet not found');
-    }
-    Object.assign(tmp, timesheets[0]);
-    await models.Timesheet.update(req.body, { where: { id: tmp.id } });
-
-    if (req.body.spentTime && tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
-      const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], transaction);
-      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)},
+    if (req.body.spentTime && timesheet.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+      const task = await queries.task.findOneActiveTask(timesheet.taskId, ['id', 'factExecutionTime'], transaction);
+      await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${timesheet.spentTime})`)},
         { where: { id: task.id }, transaction: transaction });
     }
 
     await transaction.commit();
-    return await queries.timesheet.getTimesheet(tmp.id);
+    return await queries.timesheet.getTimesheet(timesheet.id);
   } catch (e) {
     await transaction.rollback();
     throw e;
@@ -355,12 +332,17 @@ exports.updateDraft = async function (req, res, next) {
       if (req.body.comment) newData.comment = req.body.comment;
       if ('isVisible' in req.body) newData.isVisible = req.body.isVisible;
 
-      const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-      const tmp = {};
-      Object.assign(tmp, draftsheet[0]);
-      await models.TimesheetDraft.update(newData, { where: { id: tmp.id }});
+      const timesheetQueryParams = {
+        id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+        taskStatusId: req.body.statusId,
+        taskId: req.body.taskId,
+        onDate: req.body.onDate
+      };
 
-      result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
+      const draft = getDrafts(timesheetQueryParams)[0];
+      await models.TimesheetDraft.update(newData, { where: { id: draft.id }});
+
+      result = await queries.timesheetDraft.findDraftSheet(req.user.id, draft.id);
     }
 
     if (req.query.return === 'trackList' && result.onDate) {
@@ -383,7 +365,6 @@ exports.updateDraft = async function (req, res, next) {
     res.json(result);
 
   } catch (e) {
-    console.log(e);
     return next(createError(e));
   }
 };
