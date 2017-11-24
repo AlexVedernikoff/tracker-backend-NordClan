@@ -3,7 +3,7 @@ const responsesCodes = {
     description: 'OK'
   },
   '400': {
-    description: 'Не коректныые данные запроса'
+    description: 'Некорректные данные запроса'
   },
   '401': {
     description: 'Токен невалидный'
@@ -92,59 +92,57 @@ module.exports = {
         summary: 'Создать проект',
         parameters: [
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData',
-            example: 'string',
-            required: true
-          },
-          {
-            name: 'prefix',
-            type: 'string',
-            in: 'formData',
-            example: 'string'
-          },
-          {
-            name: 'description',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'portfolioId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'portfolioName',
-            description: 'создаст новый портфель и прикрепит его к проекту',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'notbillable',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'budget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'riskBudget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'tags',
-            type: 'string',
-            description: 'можно разделять через ","',
-            in: 'formData'
+            in: 'body',
+            name: 'project',
+            description: 'The project to create.',
+            schema: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                prefix: {
+                  type: 'string',
+                  example: 'string'
+                },
+                description: {
+                  type: 'string',
+                  example: 'string'
+                },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                portfolioId: {
+                  type: 'integer',
+                  example: 1
+                },
+                portfolioName: {
+                  description: 'создаст новый портфель и прикрепит его к проекту',
+                  type: 'string',
+                  example: 'string'
+                },
+                notbillable: {
+                  type: 'integer',
+                  example: 1
+                },
+                budget: {
+                  type: 'number',
+                  example: 1.55
+                },
+                riskBudget: {
+                  type: 'number',
+                  example: 1.55
+                },
+                tags: {
+                  type: 'string',
+                  description: 'можно разделять через ","',
+                  example: 'a,b,c'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -175,41 +173,44 @@ module.exports = {
             required: true
           },
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'prefix',
-            type: 'string',
-            in: 'formData',
-            example: 'string'
-          },
-          {
-            name: 'description',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'notbillable',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'budget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'riskBudget',
-            type: 'number',
-            in: 'formData'
-          },
-          {
-            name: 'portfolioId',
-            description: '0 чтобы сбросить портфель у проекта',
-            type: 'integer',
-            in: 'formData'
+            in: 'body',
+            name: 'project',
+            description: 'The project to edit.',
+            schema: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                prefix: {
+                  type: 'string',
+                  example: 'string'
+                },
+                description: {
+                  type: 'string',
+                  example: 'string'
+                },
+                notbillable: {
+                  type: 'integer',
+                  example: 1
+                },
+                budget: {
+                  type: 'number',
+                  example: 1
+                },
+                riskBudget: {
+                  type: 'number',
+                  example: 1
+                },
+                portfolioId: {
+                  description: '0 чтобы сбросить портфель у проекта',
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1300,13 +1301,13 @@ module.exports = {
         parameters: [
           {
             name: 'userId',
-            description: 'Можно использовать либо userId из SimTrack',
+            description: 'Можно использовать либо userId из SimTrack. Только для systemUser',
             type: 'integer',
             in: 'query'
           },
           {
             name: 'userPSId',
-            description: 'Либо userPSId id юзера из PS',
+            description: 'Либо userPSId id юзера из PS. Только для systemUser',
             type: 'string',
             in: 'query'
           },
@@ -1340,11 +1341,6 @@ module.exports = {
             in: 'path'
           },
           {
-            name: 'isDraft',
-            type: 'boolean',
-            in: 'formData'
-          },
-          {
             name: 'taskId',
             type: 'integer',
             in: 'formData'
@@ -1369,7 +1365,6 @@ module.exports = {
             type: 'integer',
             in: 'formData'
           },
-
           {
             name: 'isVisible',
             type: 'boolean',
@@ -1392,7 +1387,7 @@ module.exports = {
       },
       put: {
         tags: ['Timesheets'],
-        summary: 'Изменение информации таймшит или драфте',
+        summary: 'Изменение таймшита',
         description: 'yyyy-mm-dd',
         parameters: [
           {
@@ -1401,20 +1396,9 @@ module.exports = {
             in: 'formData'
           },
           {
-            name: 'typeId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
             name: 'spentTime',
             type: 'integer',
             in: 'formData'
-          },
-          {
-            name: 'isDraft',
-            type: 'boolean',
-            in: 'formData',
-            required: true
           },
           {
             name: 'isVisible',
@@ -1437,23 +1421,24 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'formData'
+          },
+          {
+            name: 'return',
+            type: 'string',
+            description: 'Вернуть в ответ: "trackList"',
+            in: 'query'
           }
         ],
         responses: responsesCodes
       }
     },
-    '/timesheet/{sheetId}/': {
+    '/draftsheet/': {
       put: {
         tags: ['Timesheets'],
-        summary: 'Изменение информации таймшит или драфте (deprecated, но еще используется)',
+        summary: 'Изменение драфта',
         parameters: [
           {
             name: 'sheetId',
-            type: 'integer',
-            in: 'path'
-          },
-          {
-            name: 'typeId',
             type: 'integer',
             in: 'formData'
           },
@@ -1463,20 +1448,15 @@ module.exports = {
             in: 'formData'
           },
           {
-            name: 'isDraft',
-            type: 'boolean',
-            in: 'formData',
-            required: true
-          },
-          {
             name: 'isVisible',
             type: 'boolean',
             in: 'formData'
           },
           {
-            name: 'comment',
+            name: 'return',
             type: 'string',
-            in: 'formData'
+            description: 'Вернуть в ответ: "trackList"',
+            in: 'query'
           }
         ],
         responses: responsesCodes

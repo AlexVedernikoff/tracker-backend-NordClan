@@ -5,6 +5,7 @@ const models = require('../models');
 const queries = require('../models/queries');
 const TimesheetDraftController = require('../controllers/TimesheetDraftController');
 const Sequelize = require('../orm/index');
+const { timesheetsList } = require('../services/timesheet/index');
 
 exports.getTimesheets = getTimesheets;
 
@@ -15,9 +16,13 @@ async function getTimesheets (req, res, next) {
   console.log('Функция поиска таймшитов (getTimesheets)');
   try {
     const where = {
-      userId: req.query.userId,
       deletedAt: null
     };
+
+    if (!req.isSystemUser) {
+      Object.assign(where, { userId: req.query.userId });
+    }
+
     if (req.query.onDate) {
       const date = new Date(req.query.onDate);
       Object.assign(where, { onDate: { $eq: date } });
@@ -170,27 +175,10 @@ exports.getTracksAll = async function (req, res, next) {
     await Promise.all(dateArr.map(async (onDate) => {
       req.query.onDate = onDate; // Здесь и далее потанцеиальная опастность использования объектов в req
       const tracks = await getTracks(req, res, next);
-      // пройти по трекам
-      const scales = {};
-      tracks.tracks.map(track => {
-        models.TimesheetTypesDictionary.values.map(value => {
-          if (track.typeId === value.id) {
-            if (scales.hasOwnProperty(value.id)) {
-              scales[value.id] = +scales[value.id] + +track.spentTime;
-            } else {
-              scales[value.id] = 0;
-              scales[value.id] = +scales[value.id] + +track.spentTime;
-            }
-          }
-        });
-      });
-      let sum = 0;
-      Object.keys(scales).map(key => {
-        sum += +scales[key];
-      });
-      Object.assign(scales, {all: sum});
-      const tr = tracks.tracks;
-      result[onDate] = { tracks: tr, scales};
+      result[onDate] = {
+        tracks: tracks.tracks,
+        scales: getScales(tracks.tracks)
+      };
       return;
     }));
 
@@ -219,8 +207,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
     delete req.body.isDraft;
     let tmp = {};
 
-
-    if (req.params.sheetId) {
+    if (req.params.sheetId || req.body.sheetId) {
       const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
       if (!draftsheet || draftsheet.length === 0) {
         await t.rollback();
@@ -297,7 +284,7 @@ async function setTimesheetTime (req, res, next) {
   try {
     t = await Sequelize.transaction();
   } catch (e) {
-    next(createError(e));
+    throw createError(e);
   }
 
   try {
@@ -305,13 +292,12 @@ async function setTimesheetTime (req, res, next) {
     delete req.body.isDraft;
     const timesheet = await getTimesheets(req, res, next);
     if (_.isEmpty(timesheet)) {
-      await t.rollback();
-      return next(createError(404, 'Timesheet not found'));
+      throw createError(404, 'Timesheet not found');
     }
     Object.assign(tmp, timesheet[0]);
     await models.Timesheet.update(req.body, { where: { id: tmp.id } });
 
-    if (+tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
+    if (req.body.spentTime && +tmp.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
       const task = await queries.task.findOneActiveTask(tmp.taskId, ['id', 'factExecutionTime'], t);
       await models.Task.update({ factExecutionTime: models.sequelize.literal(`"fact_execution_time" + (${req.body.spentTime} - ${tmp.spentTime})`)}, { where: { id: task.id }, transaction: t });
     }
@@ -320,7 +306,7 @@ async function setTimesheetTime (req, res, next) {
     return await queries.timesheet.getTimesheet(tmp.id);
   } catch (e) {
     await t.rollback();
-    next(createError(e));
+    throw createError(e);
   }
 }
 
@@ -347,55 +333,132 @@ async function createTimesheetNoDraft (req, res, next) {
   }
 }
 
-exports.actionCreate = async function (req, res, next) {
-  if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
-  if (req.params.sheetId) {
-    req.body.sheetId = req.params.sheetId;
-  }
+exports.create = async function (req, res, next) {
+  try {
+    if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+    if (req.params.sheetId) {
+      req.body.sheetId = req.params.sheetId;
+    }
+    req.query.userId = req.user.id;
 
-  let result;
-  req.query.userId = req.user.id;
-  if ('' + req.body.isDraft === 'true') {
-    console.log('isDraft true');
-    if (req.body.spentTime) {
+    if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
+      return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
+    }
+    const result = await createTimesheetNoDraft(req, res, next);
+    res.json(result);
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
+exports.update = async function (req, res, next) {
+  try {
+    if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+    if (req.params.sheetId) {
+      req.body.sheetId = req.params.sheetId;
+    }
+    req.query.userId = req.user.id;
+
+    const result = await setTimesheetTime(req, res, next);
+
+    if (req.query.return === 'trackList' && result.onDate) {
+      const trackList = await getTracks({
+        ...req,
+        body: {},
+        params: {},
+        query: {
+          onDate: result.onDate
+        }
+      }, res, next);
+      return res.json({
+        [result.onDate]: {
+          tracks: trackList.tracks,
+          scales: getScales(trackList.tracks)
+        }
+      });
+    }
+
+    res.json(result);
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
+exports.updateDraft = async function (req, res, next) {
+  try {
+    if (req.body.spentTime && req.body.spentTime < 0) return next(createError(400, 'spentTime wrong'));
+    if (req.params.sheetId) {
+      req.body.sheetId = req.params.sheetId;
+    }
+    req.query.userId = req.user.id;
+
+    let result = {};
+
+    if (req.body.spentTime) { // Из драфта в тш
       result = await this.setDraftTimesheetTime(req, res, next);
-    } else if (req.body.comment || 'isVisible' in req.body) {
-      const newDate = {};
-      if (req.body.comment) newDate.comment = req.body.comment;
-      if ('isVisible' in req.body) newDate.isVisible = req.body.isVisible;
+    } else if (req.body.comment || 'isVisible' in req.body) { // Обновление драфта
+
+      const newData = {};
+      if (req.body.comment) newData.comment = req.body.comment;
+      if ('isVisible' in req.body) newData.isVisible = req.body.isVisible;
 
       const draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
       const tmp = {};
       Object.assign(tmp, draftsheet[0]);
-      await models.TimesheetDraft.update(newDate, { where: { id: tmp.id }});
+      await models.TimesheetDraft.update(newData, { where: { id: tmp.id }});
+
       result = await queries.timesheetDraft.findDraftSheet(req.user.id, tmp.id);
     }
-    res.json(result);
-  } else {
-    console.log('isDraft false');
-    if (!req.body.sheetId) {
-      if (!await queries.timesheet.isNeedCreateTimesheet(req.body)) {
-        return next(createError(400, `Some timesheet already exists on date ${req.body.onDate}`));
-      }
 
-      result = await createTimesheetNoDraft(req, res, next);
-    } else if (req.body.spentTime) {
-      result = await setTimesheetTime(req, res, next);
-    } else {
-      const newDate = {};
-      Object.assign(newDate, req.body);
-
-      const timesheet = await getTimesheets(req, res, next);
-      const tmp = {};
-
-      Object.assign(tmp, timesheet[0]);
-      await models.Timesheet.update(newDate, { where: { id: tmp.id }});
-      result = await queries.timesheet.getTimesheet(tmp.id);
+    if (req.query.return === 'trackList' && result.onDate) {
+      const trackList = await getTracks({
+        ...req,
+        body: {},
+        params: {},
+        query: {
+          onDate: result.onDate
+        }
+      }, res, next);
+      return res.json({
+        [result.onDate]: {
+          tracks: trackList.tracks,
+          scales: getScales(trackList.tracks)
+        }
+      });
     }
+
     res.json(result);
+
+  } catch (e) {
+    return next(createError(e));
   }
 };
 
+function getScales (tracks) {
+  const timesheetTypes = models.TimesheetTypesDictionary.values;
+  const scales = {};
+  tracks.map(track => {
+    timesheetTypes.map(value => {
+      if (track.typeId === value.id) {
+        if (scales.hasOwnProperty(value.id)) {
+          scales[value.id] = +scales[value.id] + +track.spentTime;
+        } else {
+          scales[value.id] = 0;
+          scales[value.id] = +scales[value.id] + +track.spentTime;
+        }
+      }
+    });
+  });
+  let sum = 0;
+  Object.keys(scales).map(key => {
+    sum += +scales[key];
+  });
+
+  return {
+    ...scales,
+    all: sum
+  };
+}
 
 exports.delete = async function (req, res, next) {
   req.checkParams('timesheetId', 'timesheetId must be integer or comma-separated integers. Exp: 1,2,3').matches(/^\d+(,\d+)*$/);
@@ -428,129 +491,36 @@ exports.delete = async function (req, res, next) {
   }
 };
 
-exports.actionList = async function (req, res, next) {
+exports.list = async function (req, res, next) {
   try {
-    await _actionListReqValidate(req);
-    const timesheets = await _actionListGetData(req);
-    res.json(_actionListTransformData(timesheets));
+    if (req.isSystemUser) {
+      // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
+      if (req.query.userId) {
+        req.checkQuery('userId', 'userId must be int').isInt();
+      } else if (req.query.userPSId) {
+        req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+      } else {
+        req.checkQuery('userId', 'userId must be int').isInt();
+        req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
+      }
+    }
 
+    req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+    req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+    const dateBegin = req.query.dateBegin;
+    const dateEnd = req.query.dateEnd;
+    const userId = req.isSystemUser ? req.query.userId : req.user.id;
+    const userPSId = req.query.userPSId ? req.query.userPSId : null;
+
+    timesheetsList()
+      .call(dateBegin, dateEnd, userId, userPSId, req.isSystemUser)
+      .then(timesheets => res.json(timesheets))
+      .catch(error => next(error));
   } catch (e) {
-    return next(e);
+    next(createError(e));
   }
 };
-
-async function _actionListReqValidate (req) {
-  if (req.isSystemUser) {
-    // В роуте можно использовать либо userId либо userPSId. Одно из них обязательно
-    if (req.query.userId) {
-      req.checkQuery('userId', 'userId must be int').isInt();
-    } else if (req.query.userPSId) {
-      req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
-    } else {
-      req.checkQuery('userId', 'userId must be int').isInt();
-      req.checkQuery('userPSId', 'userPSId string must be Ascii').isAscii();
-    }
-  } else {
-    req.query.userId = req.user.id;
-  }
-
-
-  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
-  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
-
-  const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) throw createError(400, validationResult);
-}
-
-async function _actionListGetData (req) {
-  const where = await _actionListGetWhere(req);
-  const include = await _actionListGetInclude(req);
-
-  return await models.Timesheet.findAll({
-    where: where,
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
-    order: [
-      ['createdAt', 'ASC']
-    ],
-    include: include
-  });
-}
-
-function _actionListGetWhere (req) {
-  const where = {
-    deletedAt: null,
-    onDate: {
-      $and: {
-        $gte: new Date(req.query.dateBegin),
-        $lte: new Date(req.query.dateEnd)
-      }
-    }
-  };
-
-  if (req.isSystemUser) {
-    where.spentTime = {
-      gt: 0
-    };
-  }
-
-  if (req.query.userId) {
-    where.userId = req.query.userId;
-  }
-
-  return where;
-}
-
-function _actionListGetInclude (req) {
-  const include = [
-    {
-      as: 'task',
-      model: models.Task,
-      required: false,
-      attributes: ['id', 'name'],
-      paranoid: false,
-      include: [
-        {
-          as: 'project',
-          model: models.Project,
-          required: false,
-          attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
-    },
-    {
-      as: 'project',
-      model: models.Project,
-      required: false,
-      attributes: ['id', 'name'],
-      paranoid: false
-    }
-  ];
-
-  if (req.query.userPSId && !req.query.userId) {
-    include.push({
-      as: 'user',
-      model: models.User,
-      required: true,
-      attributes: [],
-      paranoid: false,
-      where: {
-        psId: req.query.userPSId
-      }
-    });
-  }
-
-  return include;
-}
-
-
-function _actionListTransformData (timesheets) {
-  timesheets.forEach(model => {
-    // переношу из задачи в корень объекта
-    if (model.task && !model.dataValues.project) {
-      model.dataValues.project = model.task.project.dataValues;
-      delete model.task.project.dataValues;
-    }
-  });
-  return timesheets;
-}

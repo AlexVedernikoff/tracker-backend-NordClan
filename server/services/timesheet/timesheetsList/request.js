@@ -1,0 +1,76 @@
+const models = require('../../../models');
+
+module.exports = function (dateBegin, dateEnd, userId, userPSId, isSystemUser) {
+  const where = {
+    deletedAt: null,
+    onDate: {
+      $and: {
+        $gte: dateBegin,
+        $lte: dateEnd
+      }
+    }
+  };
+
+  if (userId && !userPSId) {
+    where.userId = userId;
+  }
+
+  if (isSystemUser) {
+    where.spentTime = {
+      gt: 0
+    };
+  }
+
+  return {
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+    where,
+    include: getInclude(userId, userPSId),
+    order: [
+      ['createdAt', 'ASC']
+    ]
+  };
+};
+
+
+function getInclude (userId, userPSId) {
+  const include = [
+    {
+      as: 'task',
+      model: models.Task,
+      required: false,
+      attributes: ['id', 'name'],
+      paranoid: false,
+      include: [
+        {
+          as: 'project',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false
+        }
+      ]
+    },
+    {
+      as: 'project',
+      model: models.Project,
+      required: false,
+      attributes: ['id', 'name'],
+      paranoid: false
+    }
+  ];
+
+  if (userPSId && !userId) {
+    include.push({
+      as: 'user',
+      model: models.User,
+      required: true,
+      attributes: [],
+      paranoid: false,
+      where: {
+        psId: userPSId
+      }
+    });
+  }
+
+  return include;
+}

@@ -56,14 +56,14 @@ function isImplementation (instance) {
 
 
 function isBillible (projectUsers, UNBILLABLE_ID) {
-  if (projectUsers) {
+  if (projectUsers && projectUsers.rolesIds) {
     return !~projectUsers.rolesIds.indexOf(UNBILLABLE_ID);
   }
   return true;
 }
 
 function getRoles (projectUsers, UNBILLABLE_ID) {
-  if (projectUsers) {
+  if (projectUsers && projectUsers.rolesIds) {
     const roles = JSON.parse(projectUsers.rolesIds);
     const index = roles.indexOf(UNBILLABLE_ID);
     if (index > -1) roles.splice(index, 1);
