@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const MetricTypes = sequelize.define('MetricTypesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -7,7 +7,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     name: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(255),
       trim: true,
       allowNull: false,
       validate: {
@@ -63,6 +63,6 @@ module.exports = function(sequelize, DataTypes) {
     {id: 39, name: 'Количество открытых задач типа 5(Баг от клиента)'},
     {id: 40, name: 'Количество фич без оценки'}
   ];
-  
+
   return MetricTypes;
 };

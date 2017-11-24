@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS "metrics" ("id"   SERIAL , "type_id" INTEGER, "value" VARCHAR(255), "created_at" TIMESTAMP WITH TIME ZONE, "project_id" INTEGER REFERENCES "projects" ("id") ON DELETE NO ACTION ON UPDATE CASCADE, "sprint_id" INTEGER REFERENCES "sprints" ("id") ON DELETE NO ACTION ON UPDATE CASCADE, "user_id" INTEGER REFERENCES "users" ("id") ON DELETE NO ACTION ON UPDATE CASCADE, PRIMARY KEY ("id"));
-CREATE TABLE IF NOT EXISTS "metric_types" ("id" INTEGER NOT NULL , "name" VARCHAR(20) NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE IF NOT EXISTS "metric_types" ("id" INTEGER NOT NULL , "name" VARCHAR(255) NOT NULL, PRIMARY KEY ("id"));
 INSERT INTO metric_types VALUES (1, 'Дата начала проекта');
 INSERT INTO metric_types VALUES (2, 'Дата завершения проекта');
 INSERT INTO metric_types VALUES (3, 'Бюджет проекта без РР (часы)');
