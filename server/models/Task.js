@@ -42,24 +42,12 @@ module.exports = function (sequelize, DataTypes) {
     plannedExecutionTime: {
       field: 'planned_execution_time',
       type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
-      isDecimal: {
-        isFloat: true
-      },
-      get: function () {
-        return +('' + this.getDataValue('plannedExecutionTime'));
-      }
+      defaultValue: 0
     },
     factExecutionTime: {
       field: 'fact_execution_time',
       type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
-      isDecimal: {
-        isFloat: true
-      },
-      get: function () {
-        return +('' + this.getDataValue('factExecutionTime'));
-      }
+      defaultValue: 0
     },
     prioritiesId: {
       field: 'priorities_id',
