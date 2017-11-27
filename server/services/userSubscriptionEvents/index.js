@@ -1,142 +1,121 @@
 const email = require('../email');
-const { User, ProjectUsers } = require('../models');
+const { Sequelize, Comment, User, Project, ProjectUsers, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../models');
 
 module.exports = async function (eventId, input){
 
   const emails = [];
-
-  let query, users, user, userSubscriptions;
+  let receivers, task, comment;
 
   switch (eventId){
 
   case (1):
-    // добавлена новая задача в проект
-    // если я - PM или QA ; если у меня есть подписка на новые задачи в рамках проекта
+    // event description : new task added to project
+    // receivers : project's PM and QA (which has subscription)
+    // input = { taskId }
 
-    // input.projectId
-
-    query = {
+    task = await getTask(input.taskId);
+    receivers = await ProjectUsers.findAll({
       attributes: ProjectUsers.defaultSelect,
       include: [
         {
           as: 'user',
           model: User,
-          attributes: ['emailPrimary']
+          attributes: User.defaultSelect
         }
       ],
       where: {
-        projectId: input.projectId
-        // PM QA
+        projectId: task.project.id,
+        rolesIds: {
+          $contains: [ProjectRolesDictionary.values[1].id, ProjectRolesDictionary.values[8].id]// PM QA
+        }
       }
-    };
-    users = await ProjectUsers.findAll(query);
-    users.forEach(function (_user){
-      userSubscriptions = JSON.parse(_user.subscriptionsIds);
-      if (userSubscriptions.indexOf(eventId) === -1) return;
+    });
+
+    receivers.forEach(function (projectUser){
+      if (!isUserSubscribed(eventId, projectUser)) return;
+      const emailTemplate = email.template('newTaskForQAPM', { task });
       emails.push({
-        'receiver': _user.emailPrimary,
-        'subject': 'Новая задача в проекте',
-        'text': 'Новая задача в проекте'
+        'receiver': projectUser.user.emailPrimary,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
       });
     });
+
     break;
 
   case (2):
-    // задаче при создании или редактировании присваивается исполнитель
-    // если задача присвоена мне и если у меня есть подписка на assign в рамках проекта
+    // event description : task assigned to performer
+    // receivers : task performer (which has subscription)
+    // input = { taskId }
 
-    // input.performerId
+    task = await getTask(input.taskId);
+    receivers = [task.performer];
 
-    query = {
-      include: [
-        {
-          as: 'user',
-          model: User,
-          attributes: ['emailPrimary']
-        }
-      ]
-    };
-    user = await ProjectUsers.findByPrimary(input.performerId, query);
-    userSubscriptions = JSON.parse(user.subscriptionsIds);
-    if (userSubscriptions.indexOf(eventId) === -1) return;
-    emails.push({
-      'receiver': user.emailPrimary,
-      'subject': 'Новая задача',
-      'text': 'Новая задача'
+    receivers.forEach(function (user){
+      if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
+      const emailTemplate = email.template('newTaskForPerformer', { task });
+      emails.push({
+        'receiver': user.emailPrimary,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
+      });
     });
+
     break;
 
   case (3):
-    // добавлен комментарий к задаче
-    // если прокомментировали задачу, в которой я исполнитель ; если прокомментировали задачу которую я кому то назначил ; + к обоим условиям если у меня есть подписка на reply в рамках проекта
+    // event description : new comment to task
+    // receivers : task author, task performer (which has subscription)
+    // input = { taskId, commentId }
 
-    // input.authorId
-    // input.performerId
-
-    query = {
-      attributes: ProjectUsers.defaultSelect,
+    task = await getTask(input.taskId);
+    comment = await Comment.findByPrimary(input.commentId, {
+      attributes: Comment.defaultSelect,
       include: [
         {
-          as: 'user',
+          as: 'author',
           model: User,
-          attributes: ['emailPrimary']
+          attributes: User.defaultSelect
         }
-      ],
-      where: {
-        userId: {
-          $in: [input.authorId, input.performerId]
-        }
-      }
-    };
-    users = await ProjectUsers.findAll(query);
-    users.forEach(function (_user){
-      userSubscriptions = JSON.parse(_user.subscriptionsIds);
-      if (userSubscriptions.indexOf(eventId) === -1) return;
+      ]
+    });
+    receivers = [task.author, task.performer];
+
+    receivers.forEach(function (user){
+      if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
+      const emailTemplate = email.template('newTaskComment', { task });
       emails.push({
-        'receiver': _user.emailPrimary,
-        'subject': 'Новый комментарий к задаче',
-        'text': 'Новый комментарий к задаче'
+        'receiver': user.emailPrimary,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
       });
     });
+
     break;
 
   case (4):
-    // изменен статус задачи
-    // если изменили статус задачи, в которой я исполнитель ; если изменили статус задачи, которую я кому то назначил ;  + к обоим условиям если у меня есть подписка на изменение статуса задач в рамках проекта
+    // event description : task status changed
+    // receivers : task author, task performer (which has subscription)
+    // input = { taskId }
 
-    // input.authorId
-    // input.performerId
+    task = await getTask(input.taskId);
+    receivers = [task.author, task.performer];
 
-    query = {
-      attributes: ProjectUsers.defaultSelect,
-      include: [
-        {
-          as: 'user',
-          model: User,
-          attributes: ['emailPrimary']
-        }
-      ],
-      where: {
-        userId: {
-          $in: [input.authorId, input.performerId]
-        }
-      }
-    };
-    users = await ProjectUsers.findAll(query);
-    users.forEach(function (_user){
-      userSubscriptions = JSON.parse(_user.subscriptionsIds);
-      if (userSubscriptions.indexOf(eventId) === -1) return;
+    receivers.forEach(function (user){
+      if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
+      const emailTemplate = email.template('newTaskComment', { task });
       emails.push({
-        'receiver': _user.emailPrimary,
-        'subject': 'Изменен статус задачи',
-        'text': 'Изменени статус задачи'
+        'receiver': user.emailPrimary,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
       });
     });
+
     break;
 
   case (5):
-    // в комментарии есть упоминание
-    // если упомянули меня и если у меня есть подписка на уведомления от упоминаний в рамках проекта
+    // event description : task comment has mention
+    // receivers : mentioned user (which has subscription)
     break;
 
   default:
@@ -151,3 +130,66 @@ module.exports = async function (eventId, input){
 
   return await Promise.all(emailTasks);
 };
+
+function isUserSubscribed (eventId, projectUser){
+  const userSubscriptions = JSON.parse(projectUser.subscriptionsIds);
+  return (userSubscriptions.indexOf(eventId) !== -1);
+}
+
+function getTask (id){
+  return Task.findByPrimary(id, {
+    attributes: Task.defaultSelect,
+    include: [
+      {
+        as: 'taskStatus',
+        model: TaskStatusesDictionary,
+        attributes: TaskStatusesDictionary.defaultSelect
+      },
+      {
+        as: 'type',
+        model: TaskTypesDictionary,
+        attributes: TaskTypesDictionary.defaultSelect
+      },
+      {
+        as: 'project',
+        model: Project,
+        attributes: Project.defaultSelect
+      },
+      {
+        as: 'sprint',
+        model: Sprint,
+        attributes: Sprint.defaultSelect
+      },
+      {
+        as: 'author',
+        model: User,
+        attributes: User.defaultSelect,
+        include: [
+          {
+            as: 'usersProjects',
+            model: ProjectUsers,
+            attributes: ProjectUsers.defaultSelect,
+            where: {
+              projectId: Sequelize.col('task.projectId')
+            }
+          }
+        ]
+      },
+      {
+        as: 'performer',
+        model: User,
+        attributes: User.defaultSelect,
+        include: [
+          {
+            as: 'usersProjects',
+            model: ProjectUsers,
+            attributes: ProjectUsers.defaultSelect,
+            where: {
+              projectId: Sequelize.col('task.projectId')
+            }
+          }
+        ]
+      }
+    ]
+  });
+}

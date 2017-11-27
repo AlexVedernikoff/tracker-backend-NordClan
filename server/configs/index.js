@@ -25,5 +25,13 @@ module.exports = {
     login: 'systemUser',
     password: 'N}q6gF7L',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
+  },
+  email: {
+    enabled: false,
+    service: 'serviceHere',
+    login: 'mail@here.ru',
+    password: 'passwordHere',
+    title: 'SimTrack',
+    templateBaseUrl: 'http://sim-track.simbirsoft'
   }
 };

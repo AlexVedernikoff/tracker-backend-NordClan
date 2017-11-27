@@ -8,7 +8,7 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
     name: {
@@ -41,24 +41,24 @@ module.exports = function (sequelize, DataTypes) {
     },
     plannedExecutionTime: {
       field: 'planned_execution_time',
-      type: DataTypes.DECIMAL(10,2),
+      type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0,
       isDecimal: {
         isFloat: true
       },
-      get: function() {
-        return +(''+this.getDataValue('plannedExecutionTime'));
+      get: function () {
+        return +('' + this.getDataValue('plannedExecutionTime'));
       }
     },
     factExecutionTime: {
       field: 'fact_execution_time',
-      type: DataTypes.DECIMAL(10,2),
+      type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0,
       isDecimal: {
         isFloat: true
       },
-      get: function() {
-        return +(''+this.getDataValue('factExecutionTime'));
+      get: function () {
+        return +('' + this.getDataValue('factExecutionTime'));
       }
     },
     prioritiesId: {
@@ -72,12 +72,12 @@ module.exports = function (sequelize, DataTypes) {
     performerId: {
       field: 'performer_id',
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
     updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
@@ -100,7 +100,7 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id',
-        allowNull: false,
+        allowNull: false
       }
     });
 
@@ -109,7 +109,16 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'statusId',
         field: 'status_id',
-        allowNull: false,
+        allowNull: false
+      }
+    });
+
+    Task.belongsTo(models.TaskTypesDictionary, {
+      as: 'type',
+      foreignKey: {
+        name: 'typeId',
+        field: 'type_id',
+        allowNull: false
       }
     });
 
@@ -141,7 +150,7 @@ module.exports = function (sequelize, DataTypes) {
       as: 'linkedTasks',
       through: {
         model: models.TaskTasks,
-        unique: false,
+        unique: false
       },
       foreignKey: {
         name: 'taskId',
@@ -193,7 +202,7 @@ module.exports = function (sequelize, DataTypes) {
 
     Task.hasMany(models.TaskAttachments, {
       as: 'attachments',
-      foreignKey: 'task_id',
+      foreignKey: 'task_id'
     });
 
   };
@@ -202,9 +211,5 @@ module.exports = function (sequelize, DataTypes) {
 
   return Task;
 };
-
-
-
-
 
 

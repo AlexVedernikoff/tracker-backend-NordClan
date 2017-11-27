@@ -9,6 +9,7 @@ const moment = require('moment');
 const TimesheetDraftController = require('./TimesheetDraftController');
 const TimesheetController = require('./TimesheetController');
 const TasksChannel = require('../channels/Tasks/Tasks');
+const userSubscriptionEvents = require('../services/userSubscriptionEvents');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -29,17 +30,15 @@ exports.create = async function (req, res, next) {
     model.authorId = req.user.id;
   });
 
-  Task.create(req.body)
-    .then((model) => {
-      return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
-        .then(() => {
-          TasksChannel.sendAction('create', model, res.io);
-          res.json(model);
-        });
-    })
-    .catch((err) => {
-      next(err);
-    });
+  try {
+    const createdTaskModel = await Task.create(req.body);
+    await queries.tag.saveTagsForModel(createdTaskModel, req.body.tags, 'task');
+    TasksChannel.sendAction('create', createdTaskModel, res.io);
+    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: createdTaskModel.id });
+    res.json(createdTaskModel);
+  } catch (err){
+    next(err);
+  }
 };
 
 exports.read = function (req, res, next) {
@@ -146,6 +145,8 @@ exports.update = async function (req, res, next) {
     let timesheet = [];
     let draftsheet = [];
 
+    const isStateChanged = (body.statusId);
+    const isPerformerAssigned = (body.performerId);
 
     let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction: t, lock: 'UPDATE' });
     if (!task) {
@@ -262,6 +263,8 @@ exports.update = async function (req, res, next) {
 
       t.commit();
       TasksChannel.sendAction('update', updatedFields, res.io);
+      if (isPerformerAssigned) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id });
+      if (isStateChanged) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId: task.id });
       res.json(updatedFields);
 
 
@@ -276,6 +279,8 @@ exports.update = async function (req, res, next) {
 
       t.commit();
       TasksChannel.sendAction('update', resultResponse, res.io);
+      if (isPerformerAssigned) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id });
+      if (isStateChanged) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId: task.id });
       res.json(resultResponse);
     }
 

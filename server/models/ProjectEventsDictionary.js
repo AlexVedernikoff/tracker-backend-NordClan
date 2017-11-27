@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const ProjectSubscriptions = sequelize.define('ProjectSubscriptionsDictionary', {
+  const ProjectEvents = sequelize.define('ProjectEventsDictionary', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -15,10 +15,10 @@ module.exports = function (sequelize, DataTypes) {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'project_subscriptions'
+    tableName: 'project_events'
   });
 
-  ProjectSubscriptions.values = [
+  ProjectEvents.values = [
     {id: 1, name: 'Новая задача в проекте'},
     {id: 2, name: 'Присвоена новая задача'},
     {id: 3, name: 'Новый комментарий к задаче'},
@@ -26,5 +26,5 @@ module.exports = function (sequelize, DataTypes) {
     {id: 5, name: 'Новое упоминание в комментарии к задаче'}
   ];
 
-  return ProjectSubscriptions;
+  return ProjectEvents;
 };
