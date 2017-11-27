@@ -18,6 +18,8 @@ const Models  = [
   // models.UserDepartments,
   // models.Token,
   // models.SystemToken,
+  // models.Metrics,
+  // models.MetricTypesDictionary,
 
   // models.ProjectUsers,
   // models.ProjectAttachments,
@@ -27,7 +29,7 @@ const Models  = [
   // models.Timesheet,
   // models.TimesheetDraft,
   // models.ModelHistory,
-  models.ProjectHistory,
+  //models.ProjectHistory,
   // models.TaskTasks,
   // models.ItemTag,
   // models.ItemTag,
@@ -43,6 +45,7 @@ const dictionariesModels  = [
   // models.ProjectRolesDictionary,
   // models.TimesheetTypesDictionary,
   // models.TimesheetStatusesDictionary,
+  // models.MetricTypesDictionary,
 ];
 
 
@@ -54,13 +57,13 @@ const dictionariesModels  = [
   });
 
 
-  dictionariesModels.forEach(function(model) {
+  /*dictionariesModels.forEach(function(model) {
     chain = chain
       .then(() => {
         return model.destroy({where: {}})
           .then(() => model.bulkCreate(model.values));
       });
-  });
+  });*/
 
 
   chain
