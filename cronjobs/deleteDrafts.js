@@ -1,5 +1,7 @@
 const moment = require('moment');
 const models = require('../server/models');
+const logger = require('./logger')(module);
+
 
 (async function deleteDrafts () {
   try {
@@ -11,8 +13,8 @@ const models = require('../server/models');
       },
       force: true
     });
-    console.info('Done');
+    logger.info('Done');
   } catch (e) {
-    console.error(e);
+    logger.error(e);
   }
 }());
