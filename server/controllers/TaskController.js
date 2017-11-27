@@ -551,5 +551,5 @@ function isNeedCreateDraft (options) {
   return !!((draftsheet.length === 0 && timesheet.length === 0)
     && body.statusId
     && (task.performerId || body.performerId)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(body.statusId)));
+    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS.indexOf(parseInt(body.statusId)));
 }

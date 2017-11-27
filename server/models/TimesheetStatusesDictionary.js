@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const TimesheetStatusesDictionary = sequelize.define('TimesheetStatusesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -23,14 +23,14 @@ module.exports = function(sequelize, DataTypes) {
       field: 'is_blocked',
       type: DataTypes.BOOLEAN,
       allowNull: false
-    },
+    }
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
     tableName: 'timesheets_statuses'
   });
-    
+
   TimesheetStatusesDictionary.values = [
     {id: 1, name: 'inprogress', nameRu: 'В процессе', isBlocked: false},
     {id: 2, name: 'rejected', nameRu: 'Отменено', isBlocked: false},
@@ -39,6 +39,6 @@ module.exports = function(sequelize, DataTypes) {
   ];
 
   TimesheetStatusesDictionary.NON_BLOCKED_IDS = [1, 2];
-    
+
   return TimesheetStatusesDictionary;
 };
