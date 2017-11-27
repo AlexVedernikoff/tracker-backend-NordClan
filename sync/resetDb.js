@@ -1,6 +1,6 @@
 const models = require('../server/models');
 
-const Models  = [
+const Models = [
   // models.ProjectRolesDictionary,
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
@@ -37,7 +37,7 @@ const Models  = [
   // models.Comment
 ];
 
-const dictionariesModels  = [
+const dictionariesModels = [
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
@@ -51,19 +51,19 @@ const dictionariesModels  = [
 
 (() => {
   let chain = Promise.resolve();
-  Models.forEach(function(Model) {
+  Models.forEach(function (Model) {
     chain = chain
       .then(() => Model.sync({force: true}));
   });
 
 
-  /*dictionariesModels.forEach(function(model) {
+  dictionariesModels.forEach(function (model) {
     chain = chain
       .then(() => {
         return model.destroy({where: {}})
           .then(() => model.bulkCreate(model.values));
       });
-  });*/
+  });
 
 
   chain
