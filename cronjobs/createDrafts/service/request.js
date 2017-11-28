@@ -1,7 +1,7 @@
 const models = require('../../../server/models');
 
 module.exports = (onDate) => ({
-  attributes: ['id', 'performerId'],
+  attributes: ['id', 'performerId', 'statusId'],
   where: {
     statusId: models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CRON, // Только для активных тасок
     sprintId: {

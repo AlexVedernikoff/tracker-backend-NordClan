@@ -11,11 +11,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    sprintId: {
-      field: 'sprint_id',
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
@@ -29,42 +24,16 @@ module.exports = function (sequelize, DataTypes) {
     onDate: {
       field: 'on_date',
       type: DataTypes.DATEONLY,
-      allowNull: true
+      allowNull: false
     },
     typeId: {
       field: 'type_id',
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    spentTime: {
-      field: 'spent_time',
-      type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
-      allowNull: false
-    },
-    comment: {
-      type: DataTypes.TEXT,
-      trim: true,
-      allowNull: true
-    },
-    isBillible: {
-      field: 'is_billible',
-      type: DataTypes.BOOLEAN,
-      allowNull: true
-    },
-    userRoleId: {
-      field: 'user_role_id',
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',
-      allowNull: true
-    },
-    statusId: {
-      type: DataTypes.INTEGER,
-      field: 'status_id',
       allowNull: true
     },
     isVisible: {
@@ -119,30 +88,11 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    TimesheetDraft.belongsTo(models.ProjectRolesDictionary, {
-      as: 'userRole',
-      foreignKey: {
-        name: 'userRoleId',
-        field: 'user_role_id',
-        allowNull: false
-      },
-      constraints: false
-    });
-
     TimesheetDraft.belongsTo(models.TaskStatusesDictionary, {
       as: 'taskStatus',
       foreignKey: {
         name: 'taskStatusId',
         field: 'task_status_id',
-        allowNull: false
-      }
-    });
-
-    TimesheetDraft.belongsTo(models.TimesheetStatusesDictionary, {
-      as: 'timesheetStatus',
-      foreignKey: {
-        name: 'statusId',
-        field: 'status_id',
         allowNull: false
       }
     });
