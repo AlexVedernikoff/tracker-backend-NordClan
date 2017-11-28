@@ -186,13 +186,9 @@ module.exports = function (sequelize, DataTypes) {
 
     Task.hasOne(models.Timesheet, {
       as: 'timesheet',
-      targetKey: {
-        name: 'performerId',
-        field: 'performer_id'
-      },
       foreignKey: {
-        name: 'userId',
-        field: 'user_id'
+        name: 'taskId',
+        field: 'task_id'
       }
     });
 
