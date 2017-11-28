@@ -24,11 +24,6 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
-    subscriptionsIds: {
-      field: 'subscriptions_ids',
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     rolesIds: {
       field: 'roles_ids',
       type: DataTypes.STRING,
@@ -69,6 +64,12 @@ module.exports = function (sequelize, DataTypes) {
         field: 'project_id'
       }});
 
+    ProjectUsers.hasMany(models.ProjectUsersSubscriptions, {
+      as: 'subscriptions',
+      foreignKey: {
+        name: 'projectUserId',
+        field: 'project_user_id'
+      }});
   };
 
   /* Управление созданием и удалением магических активностей */

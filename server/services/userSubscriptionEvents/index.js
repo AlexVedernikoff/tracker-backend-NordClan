@@ -1,5 +1,5 @@
 const email = require('../email');
-const { Sequelize, Comment, User, Project, ProjectUsers, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../models');
+const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../models');
 
 module.exports = async function (eventId, input){
 
@@ -21,6 +21,11 @@ module.exports = async function (eventId, input){
           as: 'user',
           model: User,
           attributes: User.defaultSelect
+        },
+        {
+          as: 'subscriptions',
+          model: ProjectUsersSubscriptions,
+          attributes: ProjectUsersSubscriptions.defaultSelect
         }
       ],
       where: {
@@ -132,8 +137,8 @@ module.exports = async function (eventId, input){
 };
 
 function isUserSubscribed (eventId, projectUser){
-  const userSubscriptions = JSON.parse(projectUser.subscriptionsIds);
-  return (userSubscriptions.indexOf(eventId) !== -1);
+  //return (projectUser.subscriptions && projectUser.subscriptions.indexOf(eventId) !== -1);
+  return true;
 }
 
 function getTask (id){
@@ -171,7 +176,14 @@ function getTask (id){
             attributes: ProjectUsers.defaultSelect,
             where: {
               projectId: Sequelize.col('task.projectId')
-            }
+            },
+            include: [
+              {
+                as: 'subscriptions',
+                model: ProjectUsersSubscriptions,
+                attributes: ProjectUsersSubscriptions.defaultSelect
+              }
+            ]
           }
         ]
       },
@@ -186,7 +198,14 @@ function getTask (id){
             attributes: ProjectUsers.defaultSelect,
             where: {
               projectId: Sequelize.col('task.projectId')
-            }
+            },
+            include: [
+              {
+                as: 'subscriptions',
+                model: ProjectUsersSubscriptions,
+                attributes: ProjectUsersSubscriptions.defaultSelect
+              }
+            ]
           }
         ]
       }
