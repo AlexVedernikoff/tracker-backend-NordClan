@@ -230,24 +230,14 @@ exports.update = async function (req, res, next) {
     }
 
     if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
-      const taskWithUser = await queries.task.findTaskWithUser(req.params.id, t);
-      const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, t);
-
       const reqForDraft = {
         ...req,
         body: {
-          ...req.body,
-          sprintId: task.dataValues.sprintId,
           taskId: task.dataValues.id,
           userId: task.dataValues.performerId,
           onDate: now,
           typeId: 1,
-          spentTime: 0,
-          comment: '',
-          isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
-          userRoleId: projectUserRoles.join(','),
           taskStatusId: task.dataValues.statusId,
-          statusId: 1,
           isVisible: true
         }
       };

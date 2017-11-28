@@ -8,7 +8,9 @@ module.exports = () => {
       onDate,
       userId: task.performerId,
       typeId: models.TimesheetTypesDictionary.IMPLEMENTATION,
-      taskId: task.id
+      taskId: task.id,
+      taskStatusId: task.statusId,
+      isVisible: true
     }));
   }
 

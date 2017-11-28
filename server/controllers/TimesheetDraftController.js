@@ -54,7 +54,7 @@ exports.getDrafts = async function (req, res, next) {
   try {
     const draftsheets = await models.TimesheetDraft.findAll({
       where: where,
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId', 'projectId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], [models.sequelize.literal('0'), 'spentTime'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
       order: [
         ['on_date', 'ASC']
       ],
