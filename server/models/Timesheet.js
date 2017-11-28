@@ -72,12 +72,11 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue: true
     },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
-    updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-    deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+    updatedAt: { type: DataTypes.DATE, field: 'updated_at' }
   }, {
     underscored: true,
     timestamps: true,
-    paranoid: true,
+    paranoid: false,
     tableName: 'timesheets',
     hooks: {
       afterFind: function (model) {

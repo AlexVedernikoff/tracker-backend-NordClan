@@ -7,7 +7,8 @@ module.exports = () => {
     return tasks.map(task => ({
       onDate,
       userId: task.performerId,
-      typeId: models.TimesheetTypesDictionary.IMPLEMENTATION
+      typeId: models.TimesheetTypesDictionary.IMPLEMENTATION,
+      taskId: task.id
     }));
   }
 

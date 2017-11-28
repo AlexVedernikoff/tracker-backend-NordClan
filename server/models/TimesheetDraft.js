@@ -73,13 +73,12 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: true
     },
-    createdAt: {type: DataTypes.DATE, field: 'created_at'},
-    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    createdAt: { type: DataTypes.DATE, field: 'created_at' },
+    updatedAt: { type: DataTypes.DATE, field: 'updated_at' }
   }, {
     underscored: true,
     timestamps: true,
-    paranoid: true,
+    paranoid: false,
     tableName: 'timesheets_draft'
   });
 

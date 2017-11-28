@@ -48,7 +48,8 @@ module.exports = (onDate) => ({
       required: false,
       where: {
         onDate: onDate,
-        typeId: models.TimesheetTypesDictionary.IMPLEMENTATION
+        typeId: models.TimesheetTypesDictionary.IMPLEMENTATION,
+        userId: models.sequelize.literal('"timesheet"."user_id" = "Task"."performer_id"') // Только для пользователя который состоит в проекте
       }
     }
   ]

@@ -2,7 +2,6 @@ const models = require('../../../models');
 
 module.exports = function (dateBegin, dateEnd, userId, userPSId, isSystemUser) {
   const where = {
-    deletedAt: null,
     onDate: {
       $and: {
         $gte: dateBegin,
