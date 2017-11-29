@@ -13,7 +13,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
         userId: userId,
         statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS
       },
-      attributes: ['id', 'typeId', 'taskId', 'onDate', 'statusId', 'spentTime']
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'statusId', 'spentTime']
     })
     .then((model) => {
       if (!model) {
@@ -30,7 +30,7 @@ exports.getTimesheet = function (timesheetId) {
       where: {
         id: timesheetId
       },
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'isVisible'],
       include: [
         {
           as: 'task',

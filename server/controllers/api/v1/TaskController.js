@@ -9,8 +9,12 @@ const moment = require('moment');
 
 //TODO контроллер использует другой контроллер - очень стремно, надо переписать
 const TimesheetController = require('./../../api/v2/TimesheetController');
+
+//TODO refactoring channels
 const TasksChannelClass = require('../../../channels/Tasks');
 const TasksChannel = new TasksChannelClass();
+const TimesheetsChannelClass = require('../../../channels/Timesheets');
+const TimesheetsChannel = new TimesheetsChannelClass();
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -211,25 +215,28 @@ exports.update = async function (req, res, next) {
     }
 
     const now = moment().format('YYYY-MM-DD');
+    const needCreateDraft = await isNeedCreateDraft({ req, task, now });
 
-    if (await isNeedCreateDraft({ req, task, now })) {
-      const taskWithUser = await queries.task.findTaskWithUser(req.params.id, transaction);
+    if (needCreateDraft) {
+      const taskWithUser = await queries.task.findTaskWithUser(taskId, transaction);
       const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, transaction);
 
-      const reqForDraft = {
-        ...req,
-        body: {
-          taskId: task.dataValues.id,
-          userId: task.dataValues.performerId,
-          onDate: now,
-          typeId: 1,
-          taskStatusId: task.dataValues.statusId,
-          isVisible: true
-        }
+      const draftParams = {
+        sprintId: task.sprintId,
+        taskId: task.id,
+        userId: task.performerId,
+        onDate: now,
+        typeId: 1,
+        spentTime: 0,
+        comment: '',
+        isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
+        userRoleId: projectUserRoles.join(','),
+        taskStatusId: task.dataValues.statusId,
+        statusId: 1,
+        isVisible: true
       };
 
-      delete reqForDraft.body.id;
-      await models.TimesheetDraft.create(reqForDraft, { returning: false, transaction });
+      const draft = await queries.timesheetDraft.create(draftParams, transaction);
 
       const updatedFields = {
         ...resultResponse,
@@ -239,7 +246,21 @@ exports.update = async function (req, res, next) {
 
       transaction.commit();
 
+      // const extensibleDraft = await queries.timesheetDraft.findDraftSheet(req.user.id, draft.id);
+      const query = {
+        id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+        taskStatusId: req.body.statusId,
+        taskId: task.id,
+        onDate: now
+      };
+
+      const extensibleDrafts = await TimesheetController.getDrafts(query);
+
+      const extensibleDraft = extensibleDrafts[0];
+
+      TimesheetsChannel.sendAction('create', extensibleDraft, res.io, req.user.id);
       TasksChannel.sendAction('update', updatedFields, res.io, task.projectId);
+
       res.json(updatedFields);
     } else {
 
@@ -520,8 +541,14 @@ exports.list = function (req, res, next) {
     });
 };
 
+//TODO remove req from args
 async function isNeedCreateDraft ({ req, task, now }) {
-  console.log('isNeedMethod');
+  const performerId = task.performerId || req.body.performerId;
+
+  if (!performerId) {
+    return false;
+  }
+
   if (!req.body.statusId) {
     return false;
   }
@@ -529,12 +556,12 @@ async function isNeedCreateDraft ({ req, task, now }) {
   const timesheetQueryParams = {
     id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
     taskStatusId: req.body.statusId,
-    taskId: task.dataValues.id,
+    taskId: task.id,
     onDate: now
   };
 
   if (!req.isSystemUser) {
-    timesheetQueryParams.userId = task.dataValues.performerId;
+    timesheetQueryParams.userId = task.performerId;
   }
 
   const timesheets = await TimesheetController.getTimesheets(timesheetQueryParams);
@@ -547,7 +574,6 @@ async function isNeedCreateDraft ({ req, task, now }) {
     && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS.indexOf(parseInt(body.statusId)));
 =======
   return ((drafts.length === 0 && timesheets.length === 0)
-    && (task.performerId || req.body.performerId)
     && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId)));
 >>>>>>> fix pass parameters in not controller methods
 }
