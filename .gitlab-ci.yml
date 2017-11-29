@@ -64,7 +64,7 @@ deploy_to_dev:
     - mkdir -p ~/.ssh/
     - pwd
     - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    #- echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
     - chmod 600 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
