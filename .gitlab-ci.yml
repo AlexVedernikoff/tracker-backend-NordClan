@@ -60,11 +60,8 @@ deploy_to_dev:
     - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$TAG be_version=$CI_SHORT_REF_NAME"
   only:
     - develop
-    - test
-    - master
-    - feature/ci
   tags:
-    - devops
+    - docker
   environment:
     name: dev
     url: https://simtrack-dev.simbirsoft/
@@ -87,6 +84,8 @@ deploy_to_test:
     - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$TAG be_version=$CI_SHORT_REF_NAME"
   only:
     - test
+  tags:
+    - docker
   when: manual
   environment:
     name: test
@@ -110,6 +109,8 @@ deploy_to_prod:
     - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$TAG be_version=$CI_SHORT_REF_NAME"
   only:
     - master
+  tags:
+    - docker
   when: manual
   environment:
     name: prod
