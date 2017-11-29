@@ -1,0 +1,76 @@
+image: docker:stable
+
+stages:
+#  - build
+  - docker
+  - release
+  - deploy
+
+variables:
+  DEPLOYMENT_REPO: git@gitlab.simbirsoft:devops/simtrack-back.git
+
+before_script:
+  - mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
+  - export DOCKER_PREFIX=dr.simbirsoft1.com/simtrack
+  - export CI_SHORT_REF_NAME=$(echo $CI_COMMIT_REF_NAME | sed 's/\//-/g' )
+  - export TAG="${CI_SHORT_REF_NAME}-${CI_COMMIT_SHA:0:8}"
+  - export TAG_DB="${CI_SHORT_REF_NAME}-db-${CI_COMMIT_SHA:0:8}"
+
+#build_be:
+#  image: node:8-alpine
+#  stage: build
+#  script:
+#    - echo hello build_be
+#  only:
+#    - feature/ci
+
+
+build_docker_be:
+  image: docker:stable
+  stage: docker
+  script:
+    - cp ci/Dockerfile.be ./
+    - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.be .
+  only:
+    - feature/ci
+
+release:
+  image: docker:stable
+  stage: release
+  script:
+    - echo release
+    - docker tag $DOCKER_PREFIX/be:$TAG $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+    - docker push $DOCKER_PREFIX/be:$TAG
+    - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+    - docker rmi $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+
+  only:
+    - feature/ci
+
+deploy_to_dev:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$DEV_DEPLOYMENT_KEY"
+    CURRENT_DEPLOYMENT_ENV: "dev"
+  script:
+    - ip ad
+    - ls -la
+    - uname -a
+    - mkdir -p ~/.ssh/
+    - pwd
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$TAG be_version=$CI_SHORT_REF_NAME"
+  only:
+    - feature/ci
+    #- develop
+  environment:
+    name: dev
+    url: https://simtrack-dev.simbirsoft/
