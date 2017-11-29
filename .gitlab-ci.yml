@@ -57,7 +57,7 @@ deploy_to_dev:
     - ssh-add ~/.ssh/id_rsa
     - git clone $DEPLOYMENT_REPO ~/deploy
     - cd ~/deploy
-- ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
   only:
     - develop
   tags:
