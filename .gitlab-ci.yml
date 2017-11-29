@@ -6,7 +6,7 @@ stages:
   - deploy
 
 variables:
-  DEPLOYMENT_REPO: git@gitlab.simbirsoft:devops/simtrack-back.git
+  DEPLOYMENT_REPO: git@gitlab.simbirsoft:devops/simtrack.git
 
 before_script:
   - mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
