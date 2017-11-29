@@ -140,6 +140,10 @@ module.exports = {
                   type: 'string',
                   description: 'можно разделять через ","',
                   example: 'a,b,c'
+                },
+                creatorPsId: {
+                  type: 'string',
+                  description: 'Только для системного пользователя, id пользователя в пс. Обязательное поле для системного пользователя'
                 }
               }
             }
