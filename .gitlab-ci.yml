@@ -21,6 +21,9 @@ build_docker_be:
     - cp ci/Dockerfile.be ./
     - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.be .
   only:
+    - develop
+    - test
+    - master
     - feature/ci
   tags:
     - docker
