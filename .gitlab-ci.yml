@@ -14,7 +14,7 @@ before_script:
   - export DOCKER_PREFIX=dr.simbirsoft1.com/simtrack
   - export CI_SHORT_REF_NAME=$(echo $CI_COMMIT_REF_NAME | sed 's/\//-/g' )
   - export TAG="${CI_SHORT_REF_NAME}-${CI_COMMIT_SHA:0:8}"
-  - export TAG_DB="${CI_SHORT_REF_NAME}-db-${CI_COMMIT_SHA:0:8}"
+  #- export TAG_DB="${CI_SHORT_REF_NAME}-db-${CI_COMMIT_SHA:0:8}"
 
 #build_be:
 #  image: node:8-alpine
@@ -58,11 +58,7 @@ deploy_to_dev:
     CURRENT_DEPLOYMENT_KEY: "$DEV_DEPLOYMENT_KEY"
     CURRENT_DEPLOYMENT_ENV: "dev"
   script:
-    - ip ad
-    - ls -la
-    - uname -a
     - mkdir -p ~/.ssh/
-    - pwd
     - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     #- ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
