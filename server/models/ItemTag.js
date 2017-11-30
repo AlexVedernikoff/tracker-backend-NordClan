@@ -1,6 +1,6 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const ItemTag = sequelize.define('ItemTag', {
-    id : {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
@@ -35,8 +35,8 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'item_tags'
   });
 
-  ItemTag.associate = function(models) {
-    ItemTag.belongsTo(models.Tag,{
+  ItemTag.associate = function (models) {
+    ItemTag.belongsTo(models.Tag, {
       as: 'tag',
       foreignKey: {
         name: 'tagId',

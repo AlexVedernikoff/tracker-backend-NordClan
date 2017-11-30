@@ -15,9 +15,7 @@ exports.getTimesheets = getTimesheets;
 async function getTimesheets (req, res, next) {
   console.log('Функция поиска таймшитов (getTimesheets)');
   try {
-    const where = {
-      deletedAt: null
-    };
+    const where = {};
 
     if (!req.isSystemUser) {
       Object.assign(where, { userId: req.query.userId });

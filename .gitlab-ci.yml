@@ -1,0 +1,120 @@
+image: docker:stable
+
+stages:
+  - docker
+  - release
+  - deploy
+
+variables:
+  DEPLOYMENT_REPO: git@gitlab.simbirsoft:devops/simtrack.git
+
+before_script:
+  - mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
+  - export DOCKER_PREFIX=dr.simbirsoft1.com/simtrack
+  - export CI_SHORT_REF_NAME=$(echo $CI_COMMIT_REF_NAME | sed 's/\//-/g' )
+  - export TAG="${CI_SHORT_REF_NAME}-${CI_COMMIT_SHA:0:8}"
+
+build_docker_be:
+  image: docker:stable
+  stage: docker
+  script:
+    - cp ci/Dockerfile.be ./
+    - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.be .
+  only:
+    - develop
+    - test
+    - master
+    - feature/ci
+  tags:
+    - docker
+
+release:
+  image: docker:stable
+  stage: release
+  script:
+    - echo release
+    - docker tag $DOCKER_PREFIX/be:$TAG $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+    - docker push $DOCKER_PREFIX/be:$TAG
+    - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+    - docker rmi $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+  only:
+    - develop
+    - test
+    - master
+    - feature/ci
+  tags:
+    - docker
+
+deploy_to_dev:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$DEV_DEPLOYMENT_KEY"
+    CURRENT_DEPLOYMENT_ENV: "dev"
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+  only:
+    - develop
+  tags:
+    - docker
+  environment:
+    name: dev
+    url: https://simtrack-dev.simbirsoft/
+    
+deploy_to_test:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$TEST_DEPLOYMENT_KEY"
+    CURRENT_DEPLOYMENT_ENV: "test"
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+  only:
+    - test
+  tags:
+    - docker
+  when: manual
+  environment:
+    name: test
+    url: https://simtrack-test.simbirsoft/
+
+deploy_to_prod:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$PROD_DEPLOYMENT_KEY"
+    CURRENT_DEPLOYMENT_ENV: "prod"
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+  only:
+    - master
+  tags:
+    - docker
+  when: manual
+  environment:
+    name: prod
+    url: https://simtrack.simbirsoft/

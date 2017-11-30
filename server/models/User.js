@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
     id: {
       type: DataTypes.INTEGER,
@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
     ldapLogin: {
       field: 'ldap_login',
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: false
     },
     login: {
       type: DataTypes.STRING,
@@ -129,36 +129,33 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.ENUM(0, 1),
       allowNull: true
     },
-    createdAt: {type: DataTypes.DATE, field: 'created_at'},
-    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
-    
     psId: {
       field: 'ps_id',
       allowNull: true,
       type: DataTypes.STRING
     },
-
-
+    createdAt: {type: DataTypes.DATE, field: 'created_at'},
+    updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
   }, {
     indexes: [
       {
         unique: true,
         fields: ['login']
-      },
+      }
     ],
     timestamps: false,
     paranoid: true,
     underscored: true,
     tableName: 'users',
     getterMethods: {
-      fullNameRu: function(){
+      fullNameRu: function (){
         return this.firstNameRu.concat(' ', this.lastNameRu);
       }
     }
   });
 
-  User.associate = function(models) {
+  User.associate = function (models) {
     User.belongsToMany(models.Department, {
       as: 'department',
       through: models.UserDepartments
@@ -186,8 +183,16 @@ module.exports = function(sequelize, DataTypes) {
         field: 'author_id'
       }});
 
+    User.hasOne(models.Timesheet, {
+      as: 'timesheet',
+      foreignKey: {
+        name: 'userId',
+        field: 'user_id'
+      }
+    });
+
   };
-  //
+
   User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn',
     'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole'];
 
