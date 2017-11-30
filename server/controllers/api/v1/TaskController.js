@@ -6,15 +6,9 @@ const Tag = models.Tag;
 const ItemTag = models.ItemTag;
 const queries = require('../../../models/queries');
 const moment = require('moment');
-
-//TODO контроллер использует другой контроллер - очень стремно, надо переписать
-const TimesheetController = require('./../../api/v2/TimesheetController');
-
-//TODO refactoring channels
-const TasksChannelClass = require('../../../channels/Tasks');
-const TasksChannel = new TasksChannelClass();
-const TimesheetsChannelClass = require('../../../channels/Timesheets');
-const TimesheetsChannel = new TimesheetsChannelClass();
+const TimesheetService = require('../../../services/timesheet/index');
+const TasksChannel = require('../../../channels/Tasks');
+const TimesheetsChannel = require('../../../channels/Timesheets');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -215,7 +209,7 @@ exports.update = async function (req, res, next) {
     }
 
     const now = moment().format('YYYY-MM-DD');
-    const needCreateDraft = await isNeedCreateDraft({ req, task, now });
+    const needCreateDraft = await TimesheetService.isNeedCreateDraft({ req, task, now });
 
     if (needCreateDraft) {
       const taskWithUser = await queries.task.findTaskWithUser(taskId, transaction);
@@ -236,7 +230,8 @@ exports.update = async function (req, res, next) {
         isVisible: true
       };
 
-      const draft = await queries.timesheetDraft.create(draftParams, transaction);
+      const draft = await TimesheetService.createDraft(draftParams, transaction);
+      console.log(draft);
 
       const updatedFields = {
         ...resultResponse,
@@ -246,19 +241,7 @@ exports.update = async function (req, res, next) {
 
       transaction.commit();
 
-      // const extensibleDraft = await queries.timesheetDraft.findDraftSheet(req.user.id, draft.id);
-      const query = {
-        id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
-        taskStatusId: req.body.statusId,
-        taskId: task.id,
-        onDate: now
-      };
-
-      const extensibleDrafts = await TimesheetController.getDrafts(query);
-
-      const extensibleDraft = extensibleDrafts[0];
-
-      TimesheetsChannel.sendAction('create', extensibleDraft, res.io, req.user.id);
+      TimesheetsChannel.sendAction('create', draft, res.io, req.user.id);
       TasksChannel.sendAction('update', updatedFields, res.io, task.projectId);
 
       res.json(updatedFields);
@@ -540,6 +523,7 @@ exports.list = function (req, res, next) {
       next(err);
     });
 };
+<<<<<<< HEAD
 
 //TODO remove req from args
 async function isNeedCreateDraft ({ req, task, now }) {
@@ -567,13 +551,6 @@ async function isNeedCreateDraft ({ req, task, now }) {
   const timesheets = await TimesheetController.getTimesheets(timesheetQueryParams);
   const drafts = await TimesheetController.getDrafts(timesheetQueryParams);
 
-<<<<<<< HEAD
-  return ((draftsheet.length === 0 && timesheet.length === 0)
-    && body.statusId
-    && (task.performerId || body.performerId)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS.indexOf(parseInt(body.statusId)));
-=======
   return ((drafts.length === 0 && timesheets.length === 0)
     && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId)));
->>>>>>> fix pass parameters in not controller methods
 }

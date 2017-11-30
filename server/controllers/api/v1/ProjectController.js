@@ -9,9 +9,7 @@ const ItemTag = models.ItemTag;
 const Portfolio = models.Portfolio;
 const Sprint = models.Sprint;
 const queries = require('../../../models/queries');
-
-const ProjectsChannelClass = require('../../../channels/Projects');
-const ProjectsChannel = new ProjectsChannelClass();
+const ProjectsChannel = require('../../../channels/Projects');
 
 exports.create = function (req, res, next){
   if (req.body.tags) {
