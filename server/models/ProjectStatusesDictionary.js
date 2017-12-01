@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const ProjectStatuses = sequelize.define('ProjectStatusesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
-    },
+    }
   }, {
     underscored: true,
     timestamps: false,
@@ -21,13 +21,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'project_statuses'
   });
 
-  ProjectStatuses.values = [
-    {id: 1, name: 'В процессе'},
-    {id: 2, name: 'Приостановлен'},
-    {id: 3, name: 'Завершен'},
-  ];
-  
-  ProjectStatuses.associate = function(models) {
+  ProjectStatuses.associate = function (models) {
     ProjectStatuses.hasMany(models.Project, {
       as: 'projectStatuses',
       foreignKey: {
@@ -35,6 +29,16 @@ module.exports = function(sequelize, DataTypes) {
         field: 'status_id'
       }});
   };
-  
+
+  ProjectStatuses.values = [
+    {id: 1, name: 'В процессе'},
+    {id: 2, name: 'Приостановлен'},
+    {id: 3, name: 'Завершен'}
+  ];
+
+  ProjectStatuses.IN_PROGRESS = 1;
+  ProjectStatuses.STOPPED = 2;
+  ProjectStatuses.DONE = 2;
+
   return ProjectStatuses;
 };

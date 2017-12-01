@@ -21,7 +21,6 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
       }
       return model;
     });
-
 };
 
 exports.getTimesheet = function (timesheetId) {

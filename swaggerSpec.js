@@ -140,6 +140,10 @@ module.exports = {
                   type: 'string',
                   description: 'можно разделять через ","',
                   example: 'a,b,c'
+                },
+                creatorPsId: {
+                  type: 'string',
+                  description: 'Только для системного пользователя, id пользователя в пс. Обязательное поле для системного пользователя'
                 }
               }
             }
@@ -655,6 +659,12 @@ module.exports = {
           },
           {
             name: 'projectId',
+            type: 'integer',
+            description: 'можно разделять через ","',
+            in: 'query'
+          },
+          {
+            name: 'prioritiesId',
             type: 'integer',
             description: 'можно разделять через ","',
             in: 'query'

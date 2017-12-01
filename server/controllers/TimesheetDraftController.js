@@ -29,8 +29,7 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
  */
 exports.getDrafts = async function (req, res, next) {
   const where = {
-    userId: req.query.userId,
-    deletedAt: null
+    userId: req.query.userId
   };
 
   if (req.query.onDate) {
@@ -55,9 +54,9 @@ exports.getDrafts = async function (req, res, next) {
   try {
     const draftsheets = await models.TimesheetDraft.findAll({
       where: where,
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId', 'projectId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], [models.sequelize.literal('0'), 'spentTime'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
       order: [
-        ['createdAt', 'ASC']
+        ['on_date', 'ASC']
       ],
       include: [
         {

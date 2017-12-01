@@ -18,13 +18,23 @@ exports.create = function (req, res, next){
     });
   }
 
-  Project.beforeValidate((model) => {
-    if (req.isSystemUser === true) {
-      model.createdBySystemUser = true;
-    } else if (req.user.id) {
-      model.authorId = req.user.id;
-    } else {
-      return next(createError(500, 'in req must be req.isSystemUser or req.user.id'));
+  Project.beforeValidate(async (model) => {
+    try {
+      if (req.isSystemUser && req.body.creatorPsId) {
+        const user = await models.User.findOne({where: { psId: req.body.creatorPsId }, attributes: ['id'] });
+        if (!user) {
+          return next(createError(404, 'User not found'));
+        }
+        model.authorId = user.id;
+        model.createdBySystemUser = true;
+
+      } else if (req.user.id) {
+        model.authorId = req.user.id;
+      } else {
+        return next(createError(500, 'in req must be req.isSystemUser and have creatorPsId field or req.user.id'));
+      }
+    } catch (e) {
+      next(createError(e));
     }
   });
 
@@ -148,7 +158,6 @@ exports.update = function (req, res, next){
   }
 
   const attributes = ['id', 'portfolioId', 'statusId'].concat(Object.keys(req.body));
-  const resultRespons = {};
   let portfolioIdOld;
 
 
@@ -169,18 +178,28 @@ exports.update = function (req, res, next){
 
         return project
           .updateAttributes(req.body, { transaction: t })
-          .then((model)=>{
+          .then(()=>{
 
             // Запускаю проверку портфеля на пустоту и его удаление
             if (portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
 
-            resultRespons.id = model.id;
-            // Получаю измененные поля
-            _.keys(model.dataValues).forEach((key) => {
-              if (req.body[key]) {resultRespons[key] = model.dataValues[key];}
-            });
-
-            res.json(resultRespons);
+            // Отсылаю ответ модель с проектом
+            return Project
+              .findByPrimary(req.params.id, {
+                attributes: Project.defaultSelect,
+                include: [
+                  {
+                    as: 'portfolio',
+                    model: Portfolio,
+                    attributes: ['id', 'name'],
+                    required: false
+                  }
+                ],
+                transaction: t
+              })
+              .then((model)=>{
+                res.json(model);
+              });
           });
 
       });

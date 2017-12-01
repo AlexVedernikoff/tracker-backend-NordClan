@@ -230,24 +230,14 @@ exports.update = async function (req, res, next) {
     }
 
     if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
-      const taskWithUser = await queries.task.findTaskWithUser(req.params.id, t);
-      const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, t);
-
       const reqForDraft = {
         ...req,
         body: {
-          ...req.body,
-          sprintId: task.dataValues.sprintId,
           taskId: task.dataValues.id,
           userId: task.dataValues.performerId,
           onDate: now,
           typeId: 1,
-          spentTime: 0,
-          comment: '',
-          isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
-          userRoleId: projectUserRoles.join(','),
           taskStatusId: task.dataValues.statusId,
-          statusId: 1,
           isVisible: true
         }
       };
@@ -351,6 +341,12 @@ exports.list = function (req, res, next) {
   if (req.query.statusId && +req.query.statusId !== 0) {
     where.statusId = {
       in: req.query.statusId.toString().split(',').map((el) => el.trim())
+    };
+  }
+
+  if (req.query.prioritiesId) {
+    where.prioritiesId = {
+      in: req.query.prioritiesId.toString().split(',').map((el) => el.trim())
     };
   }
 
@@ -551,5 +547,5 @@ function isNeedCreateDraft (options) {
   return !!((draftsheet.length === 0 && timesheet.length === 0)
     && body.statusId
     && (task.performerId || body.performerId)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(body.statusId)));
+    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS.indexOf(parseInt(body.statusId)));
 }
