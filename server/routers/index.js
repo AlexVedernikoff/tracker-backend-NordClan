@@ -68,12 +68,12 @@ router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), Tas
 router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
 
 // Timesheets
-router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create.bind(TimesheetController));
+router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
 router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);
 router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);
-router.put('/draftsheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.updateDraft.bind(TimesheetController));
+router.put('/draftsheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.updateDraft);
 
 // Comments
 router.post('/task/:taskId/comment', GlobalAccess.can('comment', 'create'), CommentController.create);

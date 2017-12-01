@@ -230,16 +230,13 @@ exports.update = async function (req, res, next) {
         isVisible: true
       };
 
-      const draft = await TimesheetService.createDraft(draftParams, transaction);
-      console.log(draft);
+      const draft = await TimesheetService.createDraft(draftParams, req.user.id, transaction);
 
       const updatedFields = {
         ...resultResponse,
         id: task.id,
         statusId: body.statusId || task.statusId
       };
-
-      transaction.commit();
 
       TimesheetsChannel.sendAction('create', draft, res.io, req.user.id);
       TasksChannel.sendAction('update', updatedFields, res.io, task.projectId);
