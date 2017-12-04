@@ -6,7 +6,7 @@ const Tag = models.Tag;
 const ItemTag = models.ItemTag;
 const queries = require('../../../models/queries');
 const moment = require('moment');
-const TimesheetService = require('../../../services/timesheet/index');
+const TimesheetService = require('../../../services/timesheets');
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 
@@ -520,34 +520,3 @@ exports.list = function (req, res, next) {
       next(err);
     });
 };
-<<<<<<< HEAD
-
-//TODO remove req from args
-async function isNeedCreateDraft ({ req, task, now }) {
-  const performerId = task.performerId || req.body.performerId;
-
-  if (!performerId) {
-    return false;
-  }
-
-  if (!req.body.statusId) {
-    return false;
-  }
-
-  const timesheetQueryParams = {
-    id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
-    taskStatusId: req.body.statusId,
-    taskId: task.id,
-    onDate: now
-  };
-
-  if (!req.isSystemUser) {
-    timesheetQueryParams.userId = task.performerId;
-  }
-
-  const timesheets = await TimesheetController.getTimesheets(timesheetQueryParams);
-  const drafts = await TimesheetController.getDrafts(timesheetQueryParams);
-
-  return ((drafts.length === 0 && timesheets.length === 0)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFTSHEET_STATUSES.indexOf(parseInt(req.body.statusId)));
-}

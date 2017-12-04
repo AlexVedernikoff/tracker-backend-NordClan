@@ -6,7 +6,7 @@ exports.findDraftSheet = async function (userId, id) {
   return await models.TimesheetDraft.findOne({
     required: true,
     where: { id, userId },
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId', 'projectId'],
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
     include: [
       {
         as: 'task',
@@ -52,7 +52,7 @@ exports.findDraftSheet = async function (userId, id) {
 exports.all = async function (conditions) {
   return await models.TimesheetDraft.findAll({
     where: conditions,
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId', 'projectId'],
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
     order: [
       ['createdAt', 'ASC']
     ],
@@ -149,7 +149,7 @@ exports.findDraft = async function (where, links = []) {
   return await models.TimesheetDraft.findOne({
     required: true,
     where,
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId', 'projectId'],
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
     include
   });
 };

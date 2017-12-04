@@ -3,52 +3,22 @@ const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
 
-exports.getTracksAll = async (startDate, endDate, params) => {
-  const dateRange = getDateRange(startDate, endDate);
-
-  const tracksData = await Promise
-    .all(dateRange.map(async (onDate) => {
-      const tracks = await getTracks({...params, onDate});
-      const scales = getScales(tracks);
-      return { tracks, scales, onDate };
-    }));
-
-  const formatTracksData = tracksData.reduce((acc, { tracks, scales, onDate }) => {
-    acc[onDate] = { tracks, scales };
-    return acc;
-  });
-
-  return formatTracksData;
-};
-
-async function getTracks (params) {
+async function getTracks (req, onDate) {
   const today = moment().format('YYYY-MM-DD');
-  const timesheets = await getTimesheets(params);
-  const drafts = moment(params.onDate).isSame(today) ? await getDrafts(params) : [];
+  const queryParams = {
+    id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+    taskStatusId: req.body.statusId,
+    taskId: req.body.taskId,
+    onDate: onDate || req.onDate
+  };
+
+  const timesheets = await getTimesheets(queryParams);
+  const drafts = moment(onDate).isSame(today) ? await getDrafts(queryParams) : [];
   return [ ...timesheets, ...drafts ];
 }
 
-function getScales (tracks) {
-  const timesheetTypes = models.TimesheetTypesDictionary.values;
-  const scales = tracks
-    .filter(track => timesheetTypes.some(type => type.id === track.typeId))
-    .reduce((acc, track) => {
-      acc[track.typeId] = acc[track.typeId] || 0;
-      acc[track.typeId] += parseInt(track.spentTime);
-      return acc;
-    }, {});
-
-  scales.all = Object
-    .values(scales)
-    .reduce((acc, value) => acc + value, 0);
-
-  return scales;
-}
-
 function getConditions (query) {
-  const conditions = {
-    deletedAt: null
-  };
+  const conditions = {};
 
   if (query.onDate) {
     conditions.onDate = { $eq: new Date(query.onDate) };
@@ -130,3 +100,33 @@ function getDateRange (startDate, endDate) {
 }
 
 exports.getDateRange = getDateRange;
+
+//TODO remove req from args
+exports.isNeedCreateDraft = async ({ req, task, now }) => {
+  const performerId = task.performerId || req.body.performerId;
+
+  if (!performerId) {
+    return false;
+  }
+
+  if (!req.body.statusId) {
+    return false;
+  }
+
+  const timesheetQueryParams = {
+    id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+    taskStatusId: req.body.statusId,
+    taskId: task.id,
+    onDate: now
+  };
+
+  if (!req.isSystemUser) {
+    timesheetQueryParams.userId = task.performerId;
+  }
+
+  const timesheets = await getTimesheets(timesheetQueryParams);
+  const drafts = await getDrafts(timesheetQueryParams);
+
+  return ((drafts.length === 0 && timesheets.length === 0)
+    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS.indexOf(parseInt(req.body.statusId)));
+};

@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const TimesheetService = require('../../../services/timesheet/index');
+const TimesheetService = require('../../../services/timesheets');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 
 exports.create = async (req, res, next) => {
@@ -111,23 +111,13 @@ exports.updateDraft = async function (req, res, next) {
     return next(createError(400, 'spentTime wrong'));
   }
 
-  const actions = {
-    ['created timesheet']: (timesheet) => {
-      TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
-      res.json(timesheet);
-    },
-    ['updated draft']: (draft) => {
-      TimesheetsChannel.sendAction('update', draft, res.io, req.user.id);
-      res.json(draft);
-    }
-  };
-
   const draftId = req.params.sheetId || req.body.sheetId || req.query.sheetId;
 
   TimesheetService
-    .updateDraft(req.body, draftId, req.user.id)
-    .then(result => {
-      actions[result.action](result.data);
+    .updateDraft(req.body, draftId)
+    .then(timesheet => {
+      TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
+      res.json(timesheet);
     })
     .catch(e => {
       return next(createError(e));
