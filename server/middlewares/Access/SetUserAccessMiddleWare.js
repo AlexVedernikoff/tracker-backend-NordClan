@@ -9,7 +9,6 @@ exports.middleware = function (req, res, next) {
 
   req.user = userAuthExtension(req.user, req.isSystemUser);
 
-  //TODO зачем это удалять?
   if (!req.isSystemUser) {
     delete req.user.dataValues.token;
     delete req.user.dataValues.authorsProjects;
