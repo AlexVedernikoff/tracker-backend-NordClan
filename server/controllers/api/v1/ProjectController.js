@@ -201,7 +201,8 @@ exports.update = function (req, res, next){
                 transaction: t
               })
               .then((model)=>{
-                ProjectsChannel.sendAction('update', model, res.io);
+                const updatedParams = { ...req.body, id: model.id };
+                ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
                 res.json(model);
               });
           });
