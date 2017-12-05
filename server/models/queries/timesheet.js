@@ -58,7 +58,10 @@ exports.getTimesheet = function (timesheetId) {
       ]
     })
     .then((model) => {
-      if (!model) return createError('User can\'t change timesheet');
+      if (!model) {
+        return createError('User can\'t change timesheet');
+      }
+
       if (model.dataValues.task && model.dataValues.task.dataValues.project) {
         model.dataValues.project = model.dataValues.task.dataValues.project;
         delete model.dataValues.task.dataValues.project;
@@ -184,7 +187,10 @@ exports.findOne = function (where) {
       ]
     })
     .then((model) => {
-      if (!model) return createError('User can\'t change timesheet');
+      if (!model) {
+        return createError('User can\'t change timesheet');
+      }
+
       if (model.dataValues.task && model.dataValues.task.dataValues.project) {
         model.dataValues.project = model.dataValues.task.dataValues.project;
         delete model.dataValues.task.dataValues.project;

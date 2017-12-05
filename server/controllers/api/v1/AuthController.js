@@ -4,9 +4,7 @@ const ldap = require('ldapjs');
 const Auth = require('../../../middlewares/CheckTokenMiddleWare');
 const SystemAuth = require('../../../middlewares/CheckSystemTokenMiddleWare');
 const models = require('../../../models');
-const User = models.User;
-const Token = models.Token;
-const SystemToken = models.SystemToken;
+const { User, Token, SystemToken } = models;
 const queries = require('../../../models/queries');
 const config = require('../../../configs');
 
@@ -160,18 +158,4 @@ function userLogout (req, res, next) {
 
 function isSystemUser (req) {
   return req.body.isSystemUser;
-}
-
-function extractHostname (url) {
-  let hostname;
-  if (url.indexOf('://') > -1) {
-    hostname = url.split('/')[2];
-  } else {
-    hostname = url.split('/')[0];
-  }
-  //find & remove port number
-  hostname = hostname.split(':')[0];
-  //find & remove "?"
-  hostname = hostname.split('?')[0];
-  return hostname;
 }

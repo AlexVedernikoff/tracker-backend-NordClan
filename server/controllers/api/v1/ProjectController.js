@@ -3,11 +3,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
 const models = require('../../../models');
-const Project = models.Project;
-const Tag = models.Tag;
-const ItemTag = models.ItemTag;
-const Portfolio = models.Portfolio;
-const Sprint = models.Sprint;
+const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
 

@@ -1,9 +1,7 @@
 const createError = require('http-errors');
 const _ = require('underscore');
 const models = require('../../../models');
-const Task = models.Task;
-const Tag = models.Tag;
-const ItemTag = models.ItemTag;
+const { Task, Tag, ItemTag } = models;
 const queries = require('../../../models/queries');
 const moment = require('moment');
 const TimesheetService = require('../../../services/timesheets');
@@ -216,17 +214,11 @@ exports.update = async function (req, res, next) {
       const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, transaction);
 
       const draftParams = {
-        sprintId: task.sprintId,
         taskId: task.id,
         userId: task.performerId,
         onDate: now,
         typeId: 1,
-        spentTime: 0,
-        comment: '',
-        isBillible: projectUserRoles ? Boolean(projectUserRoles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID) === -1) : true,
-        userRoleId: projectUserRoles.join(','),
         taskStatusId: task.dataValues.statusId,
-        statusId: 1,
         isVisible: true
       };
 

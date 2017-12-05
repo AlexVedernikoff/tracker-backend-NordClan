@@ -1,9 +1,8 @@
 const createError = require('http-errors');
-const _ = require('underscore');
 const models = require('../../../models');
-const Portfolio = models.Portfolio;
+const { Portfolio } = models;
 
-exports.create = function(req, res, next){
+exports.create = function (req, res, next){
   Portfolio.beforeValidate((model) => {
     model.authorId = req.user.id;
   });
@@ -17,15 +16,15 @@ exports.create = function(req, res, next){
     });
 };
 
-exports.read = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.read = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Portfolio
     .findByPrimary(req.params.id, {
       attributes: ['id', 'name']
     })
     .then((portfolio) => {
-      if(!portfolio) { return next(createError(404)); }
+      if (!portfolio) { return next(createError(404)); }
 
       res.end(JSON.stringify(portfolio.dataValues));
     })
@@ -35,14 +34,14 @@ exports.read = function(req, res, next){
 };
 
 
-exports.update = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.update = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   return models.sequelize.transaction(function (t) {
     return Portfolio
       .findByPrimary(req.params.id, { attributes: ['id'], transaction: t, lock: 'UPDATE' })
       .then((portfolio) => {
-        if(!portfolio) { return next(createError(404)); }
+        if (!portfolio) { return next(createError(404)); }
 
         return portfolio
           .updateAttributes(req.body, { transaction: t })
@@ -55,13 +54,13 @@ exports.update = function(req, res, next){
 };
 
 
-exports.delete = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.delete = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Portfolio
     .findByPrimary(req.params.id, { attributes: ['id'] })
     .then((portfolio) => {
-      if(!portfolio) { return next(createError(404)); }
+      if (!portfolio) { return next(createError(404)); }
 
       return portfolio.destroy()
         .then(()=>{
@@ -75,15 +74,15 @@ exports.delete = function(req, res, next){
 
 };
 
-exports.list = function(req, res, next){
-  if(req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
-  if(req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
+exports.list = function (req, res, next){
+  if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
+  if (req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
 
-  let where = {
+  const where = {
     deletedAt: {$eq: null} // IS NULL
   };
 
-  if(req.query.name) {
+  if (req.query.name) {
     where.name = {
       $iLike: '%' + req.query.name + '%'
     };
@@ -91,7 +90,7 @@ exports.list = function(req, res, next){
 
   Portfolio
     .findAll({
-      attributes: ['id','name'],
+      attributes: ['id', 'name'],
       limit: req.query.pageSize ? +req.query.pageSize : 20,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
@@ -101,12 +100,12 @@ exports.list = function(req, res, next){
           as: 'projects',
           model: models.Project,
           required: true,
-          attributes: [],
+          attributes: []
         }
       ],
       order: [
-        ['name', 'ASC'],
-      ],
+        ['name', 'ASC']
+      ]
     })
     .then(projects => {
 
@@ -118,25 +117,25 @@ exports.list = function(req, res, next){
               as: 'projects',
               model: models.Project,
               required: true,
-              attributes: [],
+              attributes: []
             }
           ],
           group: ['Portfolio.id']
         })
         .then((count) => {
-          count = count.length;
+          const portfolioCount = count.length;
 
-          let projectsRows = projects ?
-            projects.map(
+          const projectsRows = projects
+            ? projects.map(
               item =>
                 item.dataValues
             ) : [];
 
-          let responseObject = {
+          const responseObject = {
             currentPage: req.query.currentPage ? +req.query.currentPage : 1,
-            pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
-            pageSize: req.query.pageSize ? +req.query.pageSize : +count,
-            rowsCountAll: count,
+            pagesCount: Math.ceil(portfolioCount / (req.query.pageSize ? req.query.pageSize : 1)),
+            pageSize: req.query.pageSize ? +req.query.pageSize : +portfolioCount,
+            rowsCountAll: portfolioCount,
             rowsCountOnCurrentPage: projectsRows.length,
             data: projectsRows
           };

@@ -18,12 +18,12 @@ exports.sendAction = async (type, data, socketIO, projectId) => {
     ]
   });
 
-  users
-    .map(user => userAuthExtension(user))
-    .filter(user => user.isUserOfProject(projectId))
-    .forEach(user => {
+  users.forEach(user => {
+    const extensibleUser = userAuthExtension(user);
+    if (extensibleUser.isUserOfProject(projectId)) {
       emit(socketIO, action, user.dataValues.id);
-    });
+    }
+  });
 };
 
 function getAction (type, data) {

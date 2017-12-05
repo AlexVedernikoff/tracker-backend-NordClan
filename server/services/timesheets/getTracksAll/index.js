@@ -28,21 +28,21 @@ async function getTracks (params) {
 }
 
 function getScales (tracks) {
-  const timesheetTypes = models.TimesheetTypesDictionary.values;
   const scales = tracks
-    .filter(track => timesheetTypes.some(type => type.id === track.typeId))
     .reduce((acc, track) => {
       acc[track.typeId] = acc[track.typeId] || 0;
-      acc[track.typeId] += track.spentTime ? parseInt(track.spentTime) : 0;
+      acc.all = acc.all || 0;
+      const spentTime = track.spentTime ? parseInt(track.spentTime) : 0;
+      acc[track.typeId] += spentTime;
+      acc.all += spentTime;
       return acc;
     }, {});
 
-  scales.all = Object
-    .values(scales)
-    .reduce((acc, value) => acc + value, 0);
-
-  return scales;
+  const all = scales.all || 0;
+  return { ...scales, all };
 }
+
+exports.getScales = getScales;
 
 function getConditions (query) {
   const conditions = {};
