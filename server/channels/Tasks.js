@@ -2,6 +2,10 @@ const { sendActionCreator } = require('./Channel');
 
 function getAction (type, data) {
   const actions = {
+    setActiveTask: {
+      type: 'GET_ACTIVE_TASK',
+      task: data
+    },
     update: {
       type: 'TASK_CHANGE_REQUEST_SUCCESS',
       changedFields: data

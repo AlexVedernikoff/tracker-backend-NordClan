@@ -102,25 +102,24 @@ function getDateRange (startDate, endDate) {
 exports.getDateRange = getDateRange;
 
 //TODO remove req from args
-exports.isNeedCreateDraft = async ({ req, task, now }) => {
-  const performerId = task.performerId || req.body.performerId;
+exports.isNeedCreateDraft = async (body, task, now, isSystemUser) => {
+  const performerId = task.performerId || body.performerId;
 
   if (!performerId) {
     return false;
   }
 
-  if (!req.body.statusId) {
+  if (!body.statusId) {
     return false;
   }
 
   const timesheetQueryParams = {
-    id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
-    taskStatusId: req.body.statusId,
+    taskStatusId: body.statusId,
     taskId: task.id,
     onDate: now
   };
 
-  if (!req.isSystemUser) {
+  if (!isSystemUser) {
     timesheetQueryParams.userId = task.performerId;
   }
 
@@ -128,5 +127,5 @@ exports.isNeedCreateDraft = async ({ req, task, now }) => {
   const drafts = await getDrafts(timesheetQueryParams);
 
   return ((drafts.length === 0 && timesheets.length === 0)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS.indexOf(parseInt(req.body.statusId)));
+    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS.indexOf(parseInt(body.statusId)));
 };
