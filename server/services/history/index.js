@@ -16,19 +16,26 @@ module.exports = () => {
     project: projectAnswer
   };
 
-  function createResponse(entity, models) {
-    return models
-      .map(model => {
-        const response = messageBuilder[entity](model);
-        return response ? {
-          id: model.id,
-          date: model.createdAt,
-          message: response.message,
-          entities: response.entities,
-          author: model.author
-        } : null;
-      })
-      .filter(response => response);
+  function createResponse (entity, histories, countAll, pageSize, currentPage) {
+    return {
+      currentPage: currentPage,
+      pagesCount: Math.ceil(countAll / pageSize),
+      pageSize: pageSize,
+      rowsCountAll: countAll,
+      rowsCountOnCurrentPage: histories.length,
+      data: histories
+        .map(model => {
+          const response = messageBuilder[entity](model);
+          return response ? {
+            id: model.id,
+            date: model.createdAt,
+            message: response.message,
+            entities: response.entities,
+            author: model.author
+          } : null;
+        })
+        .filter(response => response)
+    };
   }
 
   return {
@@ -36,7 +43,8 @@ module.exports = () => {
       const request = requestBuilder[entity](entityId, pageSize, currentPage);
       const modelName = `${firstLetterUp(entity)}History`;
       const histories = await models[modelName].findAll(request);
-      return createResponse(entity, histories);
+      const countAll = await models[modelName].count(request);
+      return createResponse(entity, histories, countAll, pageSize, currentPage);
     }
   };
 };
