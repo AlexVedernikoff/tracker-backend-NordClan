@@ -31,15 +31,13 @@ function getScales (tracks) {
   const scales = tracks
     .reduce((acc, track) => {
       acc[track.typeId] = acc[track.typeId] || 0;
-      acc.all = acc.all || 0;
       const spentTime = track.spentTime ? parseInt(track.spentTime) : 0;
       acc[track.typeId] += spentTime;
       acc.all += spentTime;
       return acc;
-    }, {});
+    }, { all: 0 });
 
-  const all = scales.all || 0;
-  return { ...scales, all };
+  return scales;
 }
 
 exports.getScales = getScales;

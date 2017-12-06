@@ -1,6 +1,5 @@
-const User = require('../models').User;
-const ProjectUsers = require('../models').ProjectUsers;
-const Project = require('../models').Project;
+const model = require('../models');
+const { User, ProjectUsers, Project } = model;
 const { userAuthExtension } = require('./../middlewares/Access/userAuthExtension');
 
 exports.sendAction = async (type, data, socketIO, projectId) => {
