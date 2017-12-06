@@ -21,9 +21,9 @@ async function createTimesheet (params, draftId) {
 
   const timesheetParams = Object
     .entries(draft.dataValues)
-    .reduce((acc, [k, v]) => {
-      if (k !== 'id') {
-        acc[k] = v;
+    .reduce((acc, [key, value]) => {
+      if (key !== 'id') {
+        acc[key] = value;
       }
       return acc;
     }, {});
