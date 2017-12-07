@@ -1,8 +1,4 @@
-const { sendAction } = require('./Channel');
-
-exports.sendAction = async (type, data, socketIO, projectId) => {
-  sendAction(type, data, socketIO, projectId, getAction, emit);
-};
+const { sendActionCreator } = require('./Channel');
 
 function getAction (type, data) {
   const actions = {
@@ -23,3 +19,5 @@ function emit (socketIO, action, userId) {
   const channel = `project_user_${userId}`;
   socketIO.emit(channel, action);
 }
+
+exports.sendAction = sendActionCreator(getAction, emit);

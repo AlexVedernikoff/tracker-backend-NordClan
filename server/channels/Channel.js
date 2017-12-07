@@ -2,7 +2,7 @@ const model = require('../models');
 const { User, ProjectUsers, Project } = model;
 const { userAuthExtension } = require('./../middlewares/Access/userAuthExtension');
 
-exports.sendAction = async (type, data, socketIO, projectId, getAction, emit) => {
+exports.sendActionCreator = (getAction, emit) => async (type, data, socketIO, projectId) => {
   const action = getAction(type, data);
   const users = await User.findAll({
     include: [
