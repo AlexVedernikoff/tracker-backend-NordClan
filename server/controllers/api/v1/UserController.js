@@ -1,6 +1,5 @@
-'use strict';
 const createError = require('http-errors');
-const models = require('../models');
+const models = require('../../../models');
 
 exports.me = function(req, res, next){
   try {
@@ -22,7 +21,7 @@ exports.read = async function(req, res, next){
       .findOne({
         where: {
           id: req.params.id,
-          active: 1,
+          active: 1
         },
         attributes: models.User.defaultSelect,
         include: [
@@ -34,13 +33,12 @@ exports.read = async function(req, res, next){
             through: {
               model: models.UserDepartments,
               attributes: []
-            },
-          },
+            }
+          }
         ]
       });
 
     if(!user) return next(createError(404, 'User not found'));
-
 
     if(user.dataValues.department[0]) {
       user.dataValues.department = user.dataValues.department[0].name;
@@ -55,13 +53,13 @@ exports.read = async function(req, res, next){
 
 exports.autocomplete = function(req, res, next) {
   req.sanitize('userName').trim();
-  req.checkQuery('userName', 'userName must be not empty' ).notEmpty();
+  req.checkQuery('userName', 'userName must be not empty').notEmpty();
   req.getValidationResult()
     .then((validationResult) => {
       if (!validationResult.isEmpty()) return next(createError(400, validationResult));
-  
-      let result = [];
-  
+
+      const result = [];
+
       return models.User
         .findAll({
           where: {
@@ -76,15 +74,14 @@ exports.autocomplete = function(req, res, next) {
                 fullNameRu: {
                   $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
                 }
-              },
-            ],
-        
+              }
+            ]
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
           attributes: ['id', 'firstNameRu', 'lastNameRu']
         })
         .then((users) => {
-      
+
           users.forEach((user) => {
             result.push({fullNameRu: user.fullNameRu, id: user.id});
           });
@@ -93,7 +90,6 @@ exports.autocomplete = function(req, res, next) {
         .catch((err) => {
           next(err);
         });
-      
     })
     .catch((err) => next(createError(err)));
 };

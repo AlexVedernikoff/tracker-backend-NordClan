@@ -5,8 +5,12 @@ const globalGrants = require('./globalGrants');
 exports.can = (resource, action) => {
   return (req, res, next) => {
     try {
-      const permission = getPermission(req.user.globalRole, resource, action);
-      if (permission) return next();
+      const role = req.user.dataValues.globalRole;
+      const permission = getPermission(role, resource, action);
+
+      if (permission) {
+        return next();
+      }
       return next(createError(403, 'Access denied'));
     } catch (e) {
       return next(createError(e));

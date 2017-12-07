@@ -1,12 +1,11 @@
 const createError = require('http-errors');
 const _ = require('underscore');
-const Sprint = require('../models').Sprint;
-const models = require('../models');
-const queries = require('../models/queries');
+const models = require('../../../models');
+const { Sprint } = models;
+const queries = require('../../../models/queries');
 const Sequelize = require('sequelize');
 
-
-exports.create = function(req, res, next){
+exports.create = function (req, res, next){
   if (!req.user.canUpdateProject(req.body.projectId)) {
     return next(createError(403, 'Access denied'));
   }
@@ -28,9 +27,9 @@ exports.create = function(req, res, next){
 };
 
 
-exports.read = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
+exports.read = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+
   Sprint.findByPrimary(req.params.id, {
     attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt', 'projectId', 'authorId',
       [Sequelize.literal(`(SELECT count(*)
@@ -50,7 +49,7 @@ exports.read = function(req, res, next){
     order: [
       ['factStartDate', 'ASC'],
       ['name', 'ASC']
-    ],
+    ]
   })
     .then((model) => {
       if (!model) {
@@ -68,8 +67,8 @@ exports.read = function(req, res, next){
 };
 
 
-exports.update = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+exports.update = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   return models.sequelize.transaction(function (t) {
     return Sprint.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
@@ -82,8 +81,8 @@ exports.update = function(req, res, next){
         }
 
         return model.updateAttributes(req.body, { transaction: t })
-          .then((model)=>{
-            return queries.sprint.allSprintsByProject(model.projectId, Sprint.defaultSelect, t)
+          .then((updatedModel)=>{
+            return queries.sprint.allSprintsByProject(updatedModel.projectId, Sprint.defaultSelect, t)
               .then((sprints) => {
                 res.end(JSON.stringify(sprints));
               });
@@ -97,9 +96,9 @@ exports.update = function(req, res, next){
 };
 
 
-exports.delete = function(req, res, next){
-  if(!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-  
+exports.delete = function (req, res, next){
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+
   Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
     .then((model) => {
       if (!model) {
@@ -125,7 +124,7 @@ exports.delete = function(req, res, next){
 };
 
 
-exports.list = function(req, res, next){
+exports.list = function (req, res, next){
   if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
   if (req.query.pageSize && !req.query.pageSize.match(/^\d+$/)) return next(createError(400, 'pageSize must be int'));
   if (!req.query.projectId.match(/^[0-9]+$/)) return next(createError(400, 'projectId must be int'));
@@ -133,43 +132,43 @@ exports.list = function(req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
-  if(req.query.fields) {
+  if (req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
     Sprint.checkAttributes(req.query.fields);
   }
-  
-  let where = {
+
+  const where = {
     deletedAt: {$eq: null} // IS NULL
   };
-  
-  if(req.query.name) {
+
+  if (req.query.name) {
     where.name = {
       $iLike: '%' + req.query.name + '%'
     };
   }
 
-  if(req.query.statusId) {
+  if (req.query.statusId) {
     where.statusId = {
       in: req.query.statusId.toString().split(',').map((el)=>el.trim())
     };
   }
 
-  if(req.query.projectId) {
+  if (req.query.projectId) {
     where.projectId = {
       in: req.query.projectId.toString().split(',').map((el)=>el.trim())
     };
   }
 
-  
+
   Sprint
     .findAll({
-      attributes: req.query.fields ? _.union(['id','name', 'factStartDate'].concat(req.query.fields)) : '',
+      attributes: req.query.fields ? _.union(['id', 'name', 'factStartDate'].concat(req.query.fields)) : '',
       limit: req.query.pageSize ? +req.query.pageSize : 1000,
       offset: req.query.pageSize && req.query.currentPage && req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
       where: where,
 
       order: [['factStartDate', 'ASC'], ['name', 'ASC']],
-      subQuery: true,
+      subQuery: true
     })
     .then(projects => {
 
@@ -180,19 +179,19 @@ exports.list = function(req, res, next){
         })
         .then((count) => {
 
-          count = count.length;
+          const sprintCount = count.length;
 
-          let projectsRows = projects ?
-            projects.map(
+          const projectsRows = projects
+            ? projects.map(
               item =>
                 item.dataValues
             ) : [];
 
-          let responseObject = {
+          const responseObject = {
             currentPage: req.query.currentPage ? +req.query.currentPage : 1,
-            pagesCount: Math.ceil(count / (req.query.pageSize ? req.query.pageSize : 1)),
-            pageSize: req.query.pageSize ? +req.query.pageSize : +count,
-            rowsCountAll: count,
+            pagesCount: Math.ceil(sprintCount / (req.query.pageSize ? req.query.pageSize : 1)),
+            pageSize: req.query.pageSize ? +req.query.pageSize : +sprintCount,
+            rowsCountAll: sprintCount,
             rowsCountOnCurrentPage: projectsRows.length,
             data: projectsRows
           };

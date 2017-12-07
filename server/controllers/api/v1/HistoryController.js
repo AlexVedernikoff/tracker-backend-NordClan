@@ -1,6 +1,6 @@
 const createError = require('http-errors');
-const models = require('../models');
-const historyService = require('../services/history/index');
+const models = require('../../../models');
+const historyService = require('../../../services/history/index');
 
 exports.list = async function(req, res, next){
   if (req.query.currentPage && !req.query.currentPage.match(/^\d+$/)) return next(createError(400, 'currentPage must be int'));
