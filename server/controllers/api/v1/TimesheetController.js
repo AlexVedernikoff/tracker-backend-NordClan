@@ -1,11 +1,13 @@
 const createError = require('http-errors');
 const _ = require('underscore');
 const moment = require('moment');
-const models = require('../models');
-const queries = require('../models/queries');
-const TimesheetDraftController = require('../controllers/TimesheetDraftController');
-const Sequelize = require('../orm/index');
-const { timesheetsList } = require('../services/timesheet/index');
+const models = require('../../../models');
+const queries = require('../../../models/queries');
+
+//TODO не надо использовать в контроллере другой контроллер
+const TimesheetDraftController = require('./TimesheetDraftController');
+const Sequelize = require('../../../orm/index');
+const { timesheetsList } = require('../../../services/timesheet/index');
 
 exports.getTimesheets = getTimesheets;
 
@@ -169,7 +171,6 @@ exports.getTracksAll = async function (req, res, next) {
     const dateArr = getDateArray(req.query.startDate, req.query.endDate);
     console.log(dateArr);
 
-
     await Promise.all(dateArr.map(async (onDate) => {
       req.query.onDate = onDate; // Здесь и далее потанцеиальная опастность использования объектов в req
       const tracks = await getTracks(req, res, next);
@@ -229,7 +230,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
       });
     }
 
-    tmp = await _setAdditionalInfo(tmp, req);
+    tmp = await setAdditionalInfo(tmp, req);
     Object.assign(tmp, { spentTime: req.body.spentTime });
 
     if (!await queries.timesheet.isNeedCreateTimesheet(tmp)) {
@@ -247,7 +248,7 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
   }
 };
 
-async function _setAdditionalInfo (tmp, req) {
+async function setAdditionalInfo (tmp, req) {
   tmp.userRoleId = null;
   tmp.isBillible = false;
   tmp.onDate = moment().format('YYYY-MM-DD');
@@ -428,6 +429,7 @@ exports.updateDraft = async function (req, res, next) {
     res.json(result);
 
   } catch (e) {
+    console.log(e);
     return next(createError(e));
   }
 };

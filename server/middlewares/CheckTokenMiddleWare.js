@@ -35,7 +35,7 @@ exports.checkToken = function (req, res, next) {
   } catch (err) {
     return next(createError(403, 'Can not parse access token - it is not valid'));
   }
-  
+
   User
     .findOne({
       where: {
@@ -87,10 +87,10 @@ exports.checkToken = function (req, res, next) {
       if(user.dataValues.department[0])  user.dataValues.department = user.dataValues.department[0].name;
 
       req.user = user;
+
       return next();
     })
     .catch((err) => next(err));
-  
 };
 
 exports.createJwtToken = function (user) {

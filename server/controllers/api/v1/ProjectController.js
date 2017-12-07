@@ -2,14 +2,10 @@ const createError = require('http-errors');
 const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
-const models = require('../models');
-const Project = require('../models').Project;
-const Tag = require('../models').Tag;
-const ItemTag = require('../models').ItemTag;
-const Portfolio = require('../models').Portfolio;
-const Sprint = require('../models').Sprint;
-const queries = require('../models/queries');
-
+const models = require('../../../models');
+const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
+const queries = require('../../../models/queries');
+const ProjectsChannel = require('../../../channels/Projects');
 
 exports.create = function (req, res, next){
   if (req.body.tags) {
@@ -51,7 +47,10 @@ exports.create = function (req, res, next){
         .then(() => {
           if (!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
         })
-        .then(() => res.json({id: model.id}));
+        .then(() => {
+          ProjectsChannel.sendAction('create', model, res.io, model.id);
+          res.status(200);
+        });
     })
     .catch((err) => {
       next(err);
@@ -198,10 +197,11 @@ exports.update = function (req, res, next){
                 transaction: t
               })
               .then((model)=>{
+                const updatedParams = { ...req.body, id: model.id };
+                ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
                 res.json(model);
               });
           });
-
       });
   })
     .catch((err) => {
@@ -363,13 +363,13 @@ exports.list = function (req, res, next){
     [Sequelize.literal(`(SELECT fact_start_date
                                 FROM sprints as t
                                 WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL 
+                                AND t.deleted_at IS NULL
                                 ORDER BY fact_start_date ASC
                                 LIMIT 1)`), 'dateStartFirstSprint'], // Дата начала превого спринта у проекта
     [Sequelize.literal(`(SELECT fact_finish_date
                                 FROM sprints as t
                                 WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL 
+                                AND t.deleted_at IS NULL
                                 ORDER BY fact_start_date DESC
                                 LIMIT 1)`), 'dateFinishLastSprint'] // Дата завершения последнего спринта у проекта
   ]);
@@ -450,12 +450,9 @@ exports.list = function (req, res, next){
                   if (row.currentSprints && row.currentSprints[0]) { // преобразую спринты
                     row.currentSprints = [row.currentSprints[0]];
                   }
-
                   projects[key].dataValues = row;
                 }
-
               }
-
 
               const responseObject = {
                 currentPage: +req.query.currentPage,
@@ -466,11 +463,8 @@ exports.list = function (req, res, next){
                 data: projects
               };
               res.json(responseObject);
-
             });
-
         });
     })
     .catch(err => next(err));
-
 };

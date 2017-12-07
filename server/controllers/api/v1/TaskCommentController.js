@@ -1,6 +1,6 @@
 const createError = require('http-errors');
-const models = require('../models');
-const queries = require('../models/queries');
+const models = require('../../../models');
+const queries = require('../../../models/queries');
 
 exports.create = async function(req, res, next){
   req.checkParams('taskId', 'taskId must be int').isInt();

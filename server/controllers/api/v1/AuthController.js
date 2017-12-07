@@ -1,13 +1,12 @@
 const createError = require('http-errors');
 const moment = require('moment');
 const ldap = require('ldapjs');
-const Auth = require('../middlewares/CheckTokenMiddleWare');
-const SystemAuth = require('../middlewares/CheckSystemTokenMiddleWare');
-const User = require('../models').User;
-const Token = require('../models').Token;
-const SystemToken = require('../models').SystemToken;
-const queries = require('../models/queries');
-const config = require('.././configs');
+const Auth = require('../../../middlewares/CheckTokenMiddleWare');
+const SystemAuth = require('../../../middlewares/CheckSystemTokenMiddleWare');
+const models = require('../../../models');
+const { User, Token, SystemToken } = models;
+const queries = require('../../../models/queries');
+const config = require('../../../configs');
 
 const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
 
@@ -159,18 +158,4 @@ function userLogout (req, res, next) {
 
 function isSystemUser (req) {
   return req.body.isSystemUser;
-}
-
-function extractHostname (url) {
-  let hostname;
-  if (url.indexOf('://') > -1) {
-    hostname = url.split('/')[2];
-  } else {
-    hostname = url.split('/')[0];
-  }
-  //find & remove port number
-  hostname = hostname.split(':')[0];
-  //find & remove "?"
-  hostname = hostname.split('?')[0];
-  return hostname;
 }

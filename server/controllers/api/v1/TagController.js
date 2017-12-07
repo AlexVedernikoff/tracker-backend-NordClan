@@ -1,7 +1,7 @@
 const createError = require('http-errors');
-const models = require('../models');
-const queries = require('../models/queries');
-const StringHelper = require('../components/StringHelper');
+const models = require('../../../models');
+const queries = require('../../../models/queries');
+const StringHelper = require('../../../components/StringHelper');
 
 exports.list = async function(req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
@@ -147,7 +147,7 @@ exports.autocompliter = function(req, res, next){
           });
           res.json(resultResponse);
         });
-      
+
     })
     .catch((err) => next(createError(err)));
 };
