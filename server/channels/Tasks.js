@@ -1,20 +1,6 @@
-const User = require('../../models').User;
+const { sendActionCreator } = require('./Channel');
 
-module.exports = {
-  sendAction: async (type, data, socketIO) => {
-    const action = getAction(type, data);
-    const users = await User.findAll();
-
-    //TODO вместо filter брать сразу из бд готовую выборку
-    users
-      .filter(selectUsers)
-      .forEach(user => {
-        emit(socketIO, action, user.id);
-      });
-  }
-};
-
-function getAction(type, data) {
+function getAction (type, data) {
   const actions = {
     update: {
       type: 'TASK_CHANGE_REQUEST_SUCCESS',
@@ -35,12 +21,9 @@ function getAction(type, data) {
   return actions[type];
 }
 
-//TODO будет использоваться для разделения доступа
-function selectUsers(user) {
-  return true;
-}
-
-function emit(socketIO, action, userId) {
+function emit (socketIO, action, userId) {
   const channel = `task_user_${userId}`;
   socketIO.emit(channel, action);
 }
+
+exports.sendAction = sendActionCreator(getAction, emit);

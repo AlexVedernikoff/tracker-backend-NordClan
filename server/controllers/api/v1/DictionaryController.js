@@ -1,6 +1,6 @@
 const createError = require('http-errors');
-const StringHelper = require('../components/StringHelper');
-const models = require('../models');
+const StringHelper = require('../../../components/StringHelper');
+const models = require('../../../models');
 
 exports.status = function (req, res, next){
   if (!req.params.entity) return next(createError(400, 'entity need'));

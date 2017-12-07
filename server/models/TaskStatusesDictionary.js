@@ -49,7 +49,7 @@ module.exports = function (sequelize, DataTypes) {
     TaskStatuses.CLOSED_STATUS
   ];
   TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = _.filter(TaskStatuses.values, obj => obj.createDraftByCron === true).map(el => el.id);
-  TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS = _.filter(TaskStatuses.values, obj => obj.createDraftByChangesTaskStatus === true).map(el => el.id);
+  TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS = _.filter(TaskStatuses.values, obj => obj.createDraftByChangesTaskStatus === true).map(el => el.id);
 
   return TaskStatuses;
 };

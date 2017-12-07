@@ -1,6 +1,5 @@
 const createError = require('http-errors');
-const models = require('../models');
-const queries = require('../models/queries');
+const models = require('../../../models');
 const moment = require('moment');
 
 /**
@@ -18,10 +17,8 @@ exports.createDraft = function (req, res, next, t = null, isContinue) {
       res.json(draftsheetModel);
     })
     .catch((err) => {
-      console.error(createError(err));
       return next(createError(err));
     });
-
 };
 
 /**
@@ -118,5 +115,3 @@ exports.getDrafts = async function (req, res, next) {
     return next(createError(err));
   }
 };
-
-

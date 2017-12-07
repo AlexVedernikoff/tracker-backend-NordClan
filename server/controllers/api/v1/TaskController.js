@@ -1,14 +1,12 @@
 const createError = require('http-errors');
 const _ = require('underscore');
-const models = require('../models');
-const Task = require('../models').Task;
-const Tag = require('../models').Tag;
-const ItemTag = require('../models').ItemTag;
-const queries = require('../models/queries');
+const models = require('../../../models');
+const { Task, Tag, ItemTag } = models;
+const queries = require('../../../models/queries');
 const moment = require('moment');
-const TimesheetDraftController = require('./TimesheetDraftController');
-const TimesheetController = require('./TimesheetController');
-const TasksChannel = require('../channels/Tasks/Tasks');
+const TimesheetService = require('../../../services/timesheets');
+const TasksChannel = require('../../../channels/Tasks');
+const TimesheetsChannel = require('../../../channels/Timesheets');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -33,7 +31,7 @@ exports.create = async function (req, res, next) {
     .then((model) => {
       return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
         .then(() => {
-          TasksChannel.sendAction('create', model, res.io);
+          TasksChannel.sendAction('create', model, res.io, model.projectId);
           res.json(model);
         });
     })
@@ -127,40 +125,34 @@ exports.read = function (req, res, next) {
 
 };
 
-
 exports.update = async function (req, res, next) {
-  let t;
+  let transaction;
 
   try {
     req.checkParams('id', 'id must be int').isInt();
     const validationResult = await req.getValidationResult();
     if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-
     const attributes = ['id', 'statusId', 'performerId', 'projectId'].concat(Object.keys(req.body));
-    const now = moment().format('YYYY-MM-DD');
     const resultResponse = {};
     const taskId = req.params.id;
     let { body } = req;
-    t = await models.sequelize.transaction();
-    let timesheet = [];
-    let draftsheet = [];
+    transaction = await models.sequelize.transaction();
 
-
-    let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction: t, lock: 'UPDATE' });
+    let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction, lock: 'UPDATE' });
     if (!task) {
-      t.rollback();
+      transaction.rollback();
       return next(createError(404));
     }
 
     if (!req.user.canReadProject(task.projectId)) {
-      t.rollback();
+      transaction.rollback();
       return next(createError(403, 'Access denied'));
     }
 
     if (+task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS) { // Изменяю только статус если его передали закрытой задаче
       if (!body.statusId) {
-        t.rollback();
+        transaction.rollback();
         return next(createError(400, 'Task is closed'));
       }
       body = { statusId: body.statusId };
@@ -175,7 +167,7 @@ exports.update = async function (req, res, next) {
 
     // Получение исполнителя
     if (+body.performerId > 0) {
-      resultResponse.performer = await models.User.findByPrimary(body.performerId, { attributes: models.User.defaultSelect, transaction: t });
+      resultResponse.performer = await models.User.findByPrimary(body.performerId, { attributes: models.User.defaultSelect, transaction });
     }
 
     // сброс задаче в беклог
@@ -187,23 +179,20 @@ exports.update = async function (req, res, next) {
       body.sprintId = null;
     }
 
-
     // Обнуляю отца
     if (+body.parentId === 0) {
       resultResponse.parentTask = null;
       body.parentId = null;
     }
 
-
     // Обновление задачи
-    task = await task.updateAttributes(body, { transaction: t });
-
+    task = await task.updateAttributes(body, { transaction });
 
     // Если хотели изменить спринт, присылаю его обратно
     if (+body.sprintId > 0) {
       const taskSprint = await Task.findByPrimary(req.params.id, {
         attributes: ['id'],
-        transaction: t,
+        transaction,
         include: [
           {
             as: 'sprint',
@@ -212,49 +201,39 @@ exports.update = async function (req, res, next) {
           }
         ]
       });
-      if (taskSprint.sprint) resultResponse.sprint = taskSprint.sprint;
+      if (taskSprint.sprint) {
+        resultResponse.sprint = taskSprint.sprint;
+      }
     }
 
+    const now = moment().format('YYYY-MM-DD');
+    const needCreateDraft = await TimesheetService.isNeedCreateDraft({ req, task, now });
 
-    // Вариант если мы передали статус задачи, то ищем если созданные драфты
-    if (body.statusId) {
-      // Не нравится мне этот кусок кода
-      req.query.taskStatusId = req.body.statusId;
-      req.query.userId = task.dataValues.performerId;
-      req.query.taskId = task.dataValues.id;
-      req.query.onDate = now;
+    if (needCreateDraft) {
+      const taskWithUser = await queries.task.findTaskWithUser(taskId, transaction);
+      const projectUserRoles = await queries.projectUsers.getUserRolesByProject(taskWithUser.projectId, taskWithUser.performerId, transaction);
 
-      timesheet = await TimesheetController.getTimesheets(req, res, next);
-      draftsheet = await TimesheetDraftController.getDrafts(req, res, next);
-
-    }
-
-    if (isNeedCreateDraft({ body, task, timesheet, draftsheet })) {
-      const reqForDraft = {
-        ...req,
-        body: {
-          taskId: task.dataValues.id,
-          userId: task.dataValues.performerId,
-          onDate: now,
-          typeId: 1,
-          taskStatusId: task.dataValues.statusId,
-          isVisible: true
-        }
+      const draftParams = {
+        taskId: task.id,
+        userId: task.performerId,
+        onDate: now,
+        typeId: 1,
+        taskStatusId: task.dataValues.statusId,
+        isVisible: true
       };
 
-      await TimesheetDraftController.createDraft(reqForDraft, res, next, t, true);
+      const draft = await TimesheetService.createDraft(draftParams, req.user.id, transaction);
 
       const updatedFields = {
         ...resultResponse,
         id: task.id,
-        statusId: body.statusId ? +body.statusId : task.statusId
+        statusId: body.statusId || task.statusId
       };
 
-      t.commit();
-      TasksChannel.sendAction('update', updatedFields, res.io);
+      TimesheetsChannel.sendAction('create', draft, res.io, req.user.id);
+      TasksChannel.sendAction('update', updatedFields, res.io, task.projectId);
+
       res.json(updatedFields);
-
-
     } else {
 
       // Получаю измененные поля
@@ -264,18 +243,15 @@ exports.update = async function (req, res, next) {
 
       resultResponse.id = task.id;
 
-      t.commit();
-      TasksChannel.sendAction('update', resultResponse, res.io);
+      transaction.commit();
+      TasksChannel.sendAction('update', resultResponse, res.io, task.projectId);
       res.json(resultResponse);
     }
-
-
   } catch (e) {
-    if (t) await t.rollback();
+    transaction.rollback();
     return next(createError(e));
   }
 };
-
 
 exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
@@ -295,7 +271,6 @@ exports.delete = function (req, res, next) {
     .catch((err) => {
       next(err);
     });
-
 };
 
 exports.list = function (req, res, next) {
@@ -439,7 +414,6 @@ exports.list = function (req, res, next) {
     attributes: ['prefix']
   };
 
-
   const includeForSelect = [];
   includeForSelect.push(includeAuthor);
   includeForSelect.push(includePerformer);
@@ -450,7 +424,6 @@ exports.list = function (req, res, next) {
   const includeForCount = [];
   if (req.query.tags) includeForCount.push(includeTagConst);
   if (req.query.performerId) includeForCount.push(includePerformer);
-
 
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
@@ -532,7 +505,6 @@ exports.list = function (req, res, next) {
                 data: tasks
               };
               res.json(responseObject);
-
             });
         });
     })
@@ -540,12 +512,3 @@ exports.list = function (req, res, next) {
       next(err);
     });
 };
-
-function isNeedCreateDraft (options) {
-  const { body, task, draftsheet, timesheet} = options;
-
-  return !!((draftsheet.length === 0 && timesheet.length === 0)
-    && body.statusId
-    && (task.performerId || body.performerId)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_TATUS.indexOf(parseInt(body.statusId)));
-}
