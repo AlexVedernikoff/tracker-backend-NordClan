@@ -15,9 +15,9 @@ function getAction (type, data) {
     //здесь отрефакторить
     create: {
       type: 'TASK_CREATE_REQUEST_SUCCESS',
-      projectId: data.projectId,
-      sprintId: data.sprintId,
-      taskId: data.taskId,
+      projectId: data ? data.projectId : null,
+      sprintId: data ? data.sprintId : null,
+      taskId: data ? data.taskId : null,
       task: data
     }
   };

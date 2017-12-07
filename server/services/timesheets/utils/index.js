@@ -1,4 +1,3 @@
-const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
@@ -101,7 +100,6 @@ function getDateRange (startDate, endDate) {
 
 exports.getDateRange = getDateRange;
 
-//TODO remove req from args
 exports.isNeedCreateDraft = async (body, task, now, isSystemUser) => {
   const performerId = task.performerId || body.performerId;
 

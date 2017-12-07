@@ -1,6 +1,7 @@
 const { list } = require('./list');
 const { create } = require('./create');
 const { createDraft } = require('./createDraft');
+const { getDraft } = require('./createDraft');
 const { destroy } = require('./destroy');
 const { getTracksAll } = require('./getTracksAll');
 const { update } = require('./update');
@@ -15,5 +16,6 @@ module.exports = {
   list,
   update,
   updateDraft,
-  isNeedCreateDraft
+  isNeedCreateDraft,
+  getDraft
 };

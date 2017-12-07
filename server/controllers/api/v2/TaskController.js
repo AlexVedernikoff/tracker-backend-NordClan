@@ -61,13 +61,28 @@ exports.update = async function (req, res, next) {
 
   TasksService
     .update(req.body, taskId, req.user, req.isSystemUser)
-    .then(({ updatedTask, updatedFields, createdDraft }) => {
-      TimesheetsChannel.sendAction('create', createdDraft, res.io, req.user.id);
-      TasksChannel.sendAction('setActiveTask', updatedTask, res.io, updatedTask.projectId);
-      TasksChannel.sendAction('update', updatedFields, res.io, updatedTask.projectId);
-      res.json(updatedFields);
-    });
+    .then(({ updatedTasks, activeTask, createdDraft, projectId }) => {
+      sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
+      res.sendStatus(200);
+    })
+    .catch(e => next(createError(e)));
 };
+
+function sendUpdates (io, userId, updatedTasks, activeTask, createdDraft, projectId) {
+  if (createdDraft) {
+    TimesheetsChannel.sendAction('create', createdDraft, io, userId);
+  }
+
+  console.log(activeTask);
+
+  if (activeTask) {
+    TasksChannel.sendAction('setActiveTask', activeTask, io, projectId);
+  }
+
+  updatedTasks.forEach(updatedTask => {
+    TasksChannel.sendAction('update', updatedTask.dataValues, io, projectId);
+  });
+}
 
 exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));

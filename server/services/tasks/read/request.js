@@ -1,5 +1,5 @@
 const models = require('../../../models');
-const { Task, Tag, ItemTag } = this.props;
+const { Task, Tag, ItemTag } = models;
 
 exports.findByPrimary = (id) => {
   return Task.findByPrimary(id, {
