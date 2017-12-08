@@ -4,7 +4,6 @@ const models = require('../../../models');
 const { Task, Tag, ItemTag } = models;
 const queries = require('../../../models/queries');
 const TasksChannel = require('../../../channels/Tasks');
-const PlayerChannel = require('../../../channels/Player');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
 
@@ -73,7 +72,7 @@ function sendUpdates (io, userId, updatedTasks, activeTask, createdDraft, projec
   }
 
   if (activeTask) {
-    PlayerChannel.sendAction('setActiveTask', activeTask, io, userId);
+    TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
   }
 
   updatedTasks.forEach(updatedTask => {
@@ -326,10 +325,10 @@ exports.list = function (req, res, next) {
 
               const activeTasks = await TasksService.getActiveTasks(req.user.id);
               if (activeTasks.length !== 0) {
-                PlayerChannel.sendAction('setActiveTask', activeTasks[0], res.io, req.user.id);
+                TimesheetsChannel.sendAction('setActiveTask', activeTasks[0], res.io, req.user.id);
               } else {
                 const lastActiveTask = await TasksService.getLastActiveTask(req.user.id);
-                PlayerChannel.sendAction('setActiveTask', lastActiveTask, res.io, req.user.id);
+                TimesheetsChannel.sendAction('setActiveTask', lastActiveTask, res.io, req.user.id);
               }
 
               const responseObject = {
