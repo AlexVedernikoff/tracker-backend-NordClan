@@ -9,7 +9,7 @@ exports.create = async (req, res, next) => {
     .create(timesheetParams)
     .then((timesheet) => {
       TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
-      res.json(timesheet);
+      res.end();
     })
     .catch(e => {
       return next(createError(e));
@@ -77,7 +77,7 @@ exports.update = async (req, res, next) => {
     .update(req.body)
     .then(timesheet => {
       TimesheetsChannel.sendAction('update', timesheet, res.io, req.user.id);
-      res.json(timesheet);
+      res.end();
     })
     .catch(e => {
       return next(createError(e));
@@ -117,7 +117,7 @@ exports.updateDraft = async function (req, res, next) {
     .updateDraft(req.body, draftId)
     .then(timesheet => {
       TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
-      res.json(timesheet);
+      res.end();
     })
     .catch(e => {
       return next(createError(e));

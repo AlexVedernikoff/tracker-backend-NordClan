@@ -16,7 +16,7 @@ async function update (body, taskId, user, isSystemUser) {
   const updatedAttributes = await originTask.updateAttributes(taskParams, { transaction });
   const updatedTask = await appendAdditionalFields(updatedAttributes);
 
-  const createdDraft = await createDraftIfNeeded(body, originTask, isSystemUser, transaction, user);
+  const createdDraft = await createDraftIfNeeded(body, originTask, isSystemUser, transaction);
 
   const { activeTask, stoppedTasks } = updatedTask.dataValues.statusId
     ? await updateTasksStatuses(updatedTask, originTask)
@@ -93,7 +93,7 @@ async function appendAdditionalFields (updatedAttributes, body, taskId) {
   return fields;
 }
 
-async function createDraftIfNeeded (body, task, isSystemUser, transaction, user) {
+async function createDraftIfNeeded (body, task, isSystemUser, transaction) {
   const now = moment().format('YYYY-MM-DD');
   const needCreateDraft = await TimesheetService.isNeedCreateDraft(body, task, now, isSystemUser);
 
@@ -107,7 +107,7 @@ async function createDraftIfNeeded (body, task, isSystemUser, transaction, user)
   };
 
   if (needCreateDraft) {
-    await TimesheetService.createDraft(draftParams, user.id, transaction);
+    await TimesheetService.createDraft(draftParams, transaction);
   }
 
   transaction.commit();

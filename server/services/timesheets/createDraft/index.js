@@ -1,4 +1,3 @@
-const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
