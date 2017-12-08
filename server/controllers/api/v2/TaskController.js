@@ -3,9 +3,8 @@ const _ = require('underscore');
 const models = require('../../../models');
 const { Task, Tag, ItemTag } = models;
 const queries = require('../../../models/queries');
-const moment = require('moment');
-const TimesheetService = require('../../../services/timesheets');
 const TasksChannel = require('../../../channels/Tasks');
+const PlayerChannel = require('../../../channels/Player');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
 
@@ -73,10 +72,8 @@ function sendUpdates (io, userId, updatedTasks, activeTask, createdDraft, projec
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);
   }
 
-  console.log(activeTask);
-
   if (activeTask) {
-    TasksChannel.sendAction('setActiveTask', activeTask, io, projectId);
+    PlayerChannel.sendAction('setActiveTask', activeTask, io, userId);
   }
 
   updatedTasks.forEach(updatedTask => {
@@ -317,7 +314,7 @@ exports.list = function (req, res, next) {
               include: includeForCount,
               group: ['Task.id']
             })
-            .then((count) => {
+            .then(async (count) => {
               const projectCount = count.length;
 
               if (prefixNeed) {
@@ -325,6 +322,14 @@ exports.list = function (req, res, next) {
                   task.dataValues.prefix = task.project.prefix;
                   delete task.dataValues.project;
                 });
+              }
+
+              const activeTasks = await TasksService.getActiveTasks(req.user.id);
+              if (activeTasks.length !== 0) {
+                PlayerChannel.sendAction('setActiveTask', activeTasks[0], res.io, req.user.id);
+              } else {
+                const lastActiveTask = await TasksService.getLastActiveTask(req.user.id);
+                PlayerChannel.sendAction('setActiveTask', lastActiveTask, res.io, req.user.id);
               }
 
               const responseObject = {

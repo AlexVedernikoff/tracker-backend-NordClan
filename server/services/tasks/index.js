@@ -1,7 +1,9 @@
-const { update } = require('./update');
+const { update, getActiveTasks, getLastActiveTask } = require('./update');
 const { read } = require('./read');
 
 module.exports = {
   update,
-  read
+  read,
+  getActiveTasks,
+  getLastActiveTask
 };

@@ -3,7 +3,7 @@ const moment = require('moment');
 const { Task, Sprint, Project } = models;
 const TimesheetService = require('../../timesheets');
 
-exports.update = async (body, taskId, user, isSystemUser) => {
+async function update (body, taskId, user, isSystemUser) {
   const originTask = await getOriginTask(taskId, body);
   const { error } = validateTask(originTask, body, user);
   if (error) {
@@ -14,7 +14,7 @@ exports.update = async (body, taskId, user, isSystemUser) => {
   const taskParams = getTaskParams(body);
 
   const updatedAttributes = await originTask.updateAttributes(taskParams, { transaction });
-  const updatedTask = await appendAditionalFields(updatedAttributes);
+  const updatedTask = await appendAdditionalFields(updatedAttributes);
 
   const createdDraft = await createDraftIfNeeded(body, originTask, isSystemUser, transaction, user);
 
@@ -28,7 +28,7 @@ exports.update = async (body, taskId, user, isSystemUser) => {
     activeTask,
     projectId: originTask.projectId
   };
-};
+}
 
 async function getOriginTask (taskId, body) {
   const attributes = ['id', 'statusId', 'performerId', 'projectId'].concat(Object.keys(body));
@@ -63,7 +63,7 @@ function getTaskParams (body) {
   return params;
 }
 
-async function appendAditionalFields (updatedAttributes, body, taskId) {
+async function appendAdditionalFields (updatedAttributes, body, taskId) {
   const fields = { ...updatedAttributes, id: taskId };
 
   if (fields.performerId && fields.performerId > 0) {
@@ -123,7 +123,8 @@ async function updateTasksStatuses (updatedTask, originTask) {
     ? await getActiveTasks(performerId)
     : [];
 
-  const activeTask = activeTasks.find(t => t.id === updatedTask.dataValues.id);
+  const activeTask = activeTasks.find(task => task.id === updatedTask.dataValues.id)
+    || await getLastActiveTask(performerId);
 
   const stoppedTasksIds = activeTasks
     .filter(task => task.id !== updatedTask.dataValues.id)
@@ -132,6 +133,22 @@ async function updateTasksStatuses (updatedTask, originTask) {
   const stoppedTasks = await stopTasks(stoppedTasksIds);
 
   return { activeTask, stoppedTasks };
+}
+
+async function getLastActiveTask (performerId) {
+  return await Task.findOne({
+    where: {
+      performerId
+    },
+    order: [['updated_at', 'DESC']],
+    include: [
+      {
+        as: 'project',
+        model: Project,
+        attributes: ['prefix']
+      }
+    ]
+  });
 }
 
 async function getActiveTasks (performerId) {
@@ -179,3 +196,9 @@ function validateTask (task, body, user) {
 
   return {};
 }
+
+module.exports = {
+  update,
+  getActiveTasks,
+  getLastActiveTask
+};
