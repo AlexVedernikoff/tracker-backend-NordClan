@@ -18,7 +18,7 @@ async function update (body, taskId, user, isSystemUser) {
 
   const createdDraft = await createDraftIfNeeded(body, originTask, isSystemUser, transaction);
 
-  const { activeTask, stoppedTasks } = updatedTask.dataValues.statusId
+  const { activeTask, stoppedTasks } = body.statusId
     ? await updateTasksStatuses(updatedTask, originTask)
     : { stoppedTasks: [] };
 
