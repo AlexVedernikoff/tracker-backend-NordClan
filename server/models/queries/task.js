@@ -17,7 +17,6 @@ exports.findOneActiveTask = function (taskId, attributes = ['id', 'factExecution
 
 };
 
-
 exports.findTaskWithUser = function (taskId, t = null) {
   return models.Task
     .findOne({

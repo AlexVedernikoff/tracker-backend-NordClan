@@ -1,14 +1,14 @@
-const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
 
 exports.createDraft = async (params, userId, transaction) => {
-  const draft = await models.TimesheetDraft.create(params, { returning: true, transaction });
-  transaction.commit();
+  await models.TimesheetDraft.create(params, { returning: true, transaction });
+};
 
+exports.getDraft = async ({ userId, taskId, onDate }) => {
   const include = ['task', 'taskStatus', 'projectMaginActivity'];
-  const extensibleDraft = await queries.timesheetDraft.findDraft({userId, taskId: draft.taskId, onDate: draft.onDate}, include);
+  const extensibleDraft = await queries.timesheetDraft.findDraft({userId, taskId, onDate}, include);
   const transformedDraft = transformDraft(extensibleDraft);
   return transformedDraft;
 };
