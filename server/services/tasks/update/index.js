@@ -127,8 +127,12 @@ async function updateTasksStatuses (updatedTask, originTask) {
     || await getLastActiveTask(performerId);
 
   const stoppedTasksIds = activeTasks
-    .filter(task => task.id !== updatedTask.dataValues.id)
-    .map(task => task.id);
+    .reduce((acc, task) => {
+      if (task.id !== updatedTask.dataValues.id) {
+        acc.push(task.id);
+      }
+      return acc;
+    }, []);
 
   const stoppedTasks = await stopTasks(stoppedTasksIds);
 
