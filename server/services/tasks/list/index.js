@@ -30,8 +30,8 @@ exports.list = async function (req) {
     req.query.currentPage = 1;
   }
 
-  const { includeForCount, includeForSelect } = await createInclude(req.query.tags, prefixNeed, req.query.performerId);
-  const queryWhere = createWhere(req);
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(req.query.tags, prefixNeed, req.query.performerId);
+  const queryWhere = createWhereForRequest(req);
   const queryAttributes = req.query.fields
     ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields))
     : '';
@@ -86,7 +86,7 @@ exports.list = async function (req) {
   return { allTask: responseObject, activeTask };
 };
 
-function createWhere (req) {
+function createWhereForRequest (req) {
   const where = {
     deletedAt: { $eq: null } // IS NULL
   };
@@ -147,7 +147,7 @@ function createWhere (req) {
   return where;
 }
 
-async function createInclude (tagsParams, prefixNeed, performerId) {
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId) {
   const parsedTags = tagsParams
     ? tagsParams.split(',').map((el) => el.toString().trim().toLowerCase())
     : null;
