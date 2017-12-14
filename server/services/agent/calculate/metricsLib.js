@@ -1,63 +1,8 @@
-const TaskStatusesDictionary = require('../../models').TaskStatusesDictionary;
+const { TaskStatusesDictionary } = require('../../../models');
 
 module.exports = function (metricsTypeId, input){
 
   let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId, totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks, laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal;
-
-  /*
-    (id типа метрики). (название метрики) = (метод расчета метрики)
-
-    // Метрики по проекту
-
-    1. Дата начала проекта
-    2. Дата завершения проекта
-    3. Бюджет проекта без РР (часы)
-    4. Бюджет проекта с РР (часы)
-    5. Burndown по проекту без РР = [Бюджет прокта без РР]-[Списаное время на текущую дату]
-    6. Burndown по проекту с РР = [Бюджет прокта c РР]-[Списаное время на текущую дату]
-    7. Количество открытых багов = [Количество открытых задач Тип = Баг]
-    8. Количество открытых багов от Заказчика = [Количество открытых задач Тип = Баг от Клиента]
-    9. Количество открытых регрессионных багов = [Количество открытых задач Тип = Регрес.баг]
-
-    // Информация по ролям
-
-    10. % часов затраченных на роль 1(Account) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    11. % часов затраченных на роль 2(PM) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    12. % часов затраченных на роль 3(UX) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    13. % часов затраченных на роль 4(Аналитик) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    14. % часов затраченных на роль 5(Back) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    15. % часов затраченных на роль 6(Front) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    16. % часов затраченных на роль 7(Mobile) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    17. % часов затраченных на роль 8(TeamLead(Code review)) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    18. % часов затраченных на роль 9(QA) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    19. % часов затраченных на роль 10(Unbillable) = [Часы списанные на проект людьми с ролью Х]/[Часы списанные на проект всеми участниками проекта]*100%
-    20. часы затраченные на роль 1(Account) = [Часы списанные на проект людьми с ролью Х]
-    21. часы затраченные на роль 2(PM) = [Часы списанные на проект людьми с ролью Х]
-    22. часы затраченные на роль 3(UX) = [Часы списанные на проект людьми с ролью Х]
-    23. часы затраченные на роль 4(Аналитик) = [Часы списанные на проект людьми с ролью Х]
-    24. часы затраченные на роль 5(Back) = [Часы списанные на проект людьми с ролью Х]
-    25. часы затраченные на роль 6(Front) = [Часы списанные на проект людьми с ролью Х]
-    26. часы затраченные на роль 7(Mobile) = [Часы списанные на проект людьми с ролью Х]
-    27. часы затраченные на роль 8(TeamLead(Code review)) = [Часы списанные на проект людьми с ролью Х]
-    28. часы затраченные на роль 9(QA) = [Часы списанные на проект людьми с ролью Х]
-    29. часы затраченные на роль 10(Unbillable) = [Часы списанные на проект людьми с ролью Х]
-
-    // Метрики по спринтам
-
-    30. Burndown по спринтам без РР = [Бюджет спринта без РР]-[Списаное время на текущий спринт на текущую дату]
-    31. Burndown по спринтам с РР = [Бюджет спринта с РР]-[Списаное время на текущий спринт на текущую дату]
-    32. Динамика закрытия фич (с учетом трудозатрат) = [Сумма трудозатрат (по оценке) по всем фичам спринта]-[Сумма трудозатрат (по оценке) по ЗАКРЫТЫМ фичам спринта у которых была оценка]
-    33. Трудозатрат на фичи без оценки = [Сумма трудозатрат по ЗАКРЫТЫМ фичам спринта у которых нет оценки]
-    34. Динамика списания времени на фичи = [Сумма трудозатрат списанных на фичи спринта]
-
-    35. Количество открытых задач типа 1(Фича) = [Количество открытых задач типа Х в выбранном спринте]
-    36. Количество открытых задач типа 2(Доп. Фича) = [Количество открытых задач типа Х в выбранном спринте]
-    37. Количество открытых задач типа 3(Баг) = [Количество открытых задач типа Х в выбранном спринте]
-    38. Количество открытых задач типа 4(Регрес. Баг) = [Количество открытых задач типа Х в выбранном спринте]
-    39. Количество открытых задач типа 5(Баг от клиента) = [Количество открытых задач типа Х в выбранном спринте]
-
-    40. Количество фич без оценки = [Количество задач Тип = Фича, без проставленной оценки]
-  */
 
   switch (metricsTypeId){
   case (1):
@@ -107,7 +52,7 @@ module.exports = function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          projectBurndown -= task.factExecutionTime;
+          projectBurndown -= parseInt(task.factExecutionTime);
         });
       });
     }
@@ -127,7 +72,7 @@ module.exports = function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          projectRiskBurndown -= task.factExecutionTime;
+          projectRiskBurndown -= parseInt(task.factExecutionTime);
         });
       });
     }
@@ -267,7 +212,9 @@ module.exports = function (metricsTypeId, input){
         sprint.tasks.forEach(function (task){
           input.project.users.forEach(function (user){
             if (!task.factExecutionTime) return;
-            if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) totalTimeSpentWithRole += task.factExecutionTime;
+            if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) {
+              totalTimeSpentWithRole += parseInt(task.factExecutionTime);
+            }
           });
 
         });
@@ -287,7 +234,7 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime) return;
-        sprintBurndown -= task.factExecutionTime;
+        sprintBurndown -= parseInt(task.factExecutionTime);
       });
     }
     return Promise.resolve({
@@ -304,7 +251,7 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime) return;
-        sprintBurndown -= task.factExecutionTime;
+        sprintBurndown -= parseInt(task.factExecutionTime);
       });
     }
     return Promise.resolve({
@@ -323,10 +270,11 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.plannedExecutionTime) return;
-        laborCostsTotal += task.plannedExecutionTime;
-        if (task.typeId === 1) laborCostsClosedTasks += task.plannedExecutionTime;
+        laborCostsTotal += parseInt(task.plannedExecutionTime);
+        if (task.typeId === 1) laborCostsClosedTasks += parseInt(task.plannedExecutionTime);
       });
     }
+
     closedTasksDynamics = laborCostsTotal - laborCostsClosedTasks;
     return Promise.resolve({
       'typeId': metricsTypeId,
@@ -364,7 +312,7 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime || task.typeId !== 1) return;
-        laborCostsTotal += task.factExecutionTime;
+        laborCostsTotal += parseInt(task.factExecutionTime);
       });
     }
     return Promise.resolve({

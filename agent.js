@@ -1,3 +1,3 @@
-const agent = require('./server/services/agent');
+const agent = require('./server/services/agent/index');
 
-agent.run();
+agent.calculate();
