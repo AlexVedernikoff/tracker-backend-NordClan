@@ -21,6 +21,7 @@ exports.getTracksAll = async (req, res, next) => {
   const endDate = req.query.endDate;
   const params = {
     id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+    userId: req.user.id,
     taskStatusId: req.body.statusId,
     taskId: req.body.taskId,
     onDate: req.onDate
