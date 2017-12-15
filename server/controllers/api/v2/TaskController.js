@@ -105,7 +105,7 @@ exports.list = function (req, res, next) {
   TasksService
     .list(req)
     .then(async ({ allTask, activeTask }) => {
-      TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
+      // TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
       res.json(allTask);
     })
     .catch((e) => {

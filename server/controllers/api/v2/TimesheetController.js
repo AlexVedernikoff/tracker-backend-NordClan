@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const TimesheetService = require('../../../services/timesheets');
+const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 
 exports.create = async (req, res, next) => {
@@ -27,9 +28,15 @@ exports.getTracksAll = async (req, res, next) => {
     onDate: req.onDate
   };
 
+  const activeTasks = await TasksService.getActiveTasks(req.user.id);
+  const activeTask = activeTasks.length !== 0
+    ? activeTasks[0]
+    : await TasksService.getLastActiveTask(req.user.id);
+
   TimesheetService
     .getTracksAll(startDate, endDate, params)
     .then(tracks => {
+      TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
       res.json(tracks);
     })
     .catch(e => {

@@ -6,9 +6,9 @@ exports.createDraft = async (params, userId, transaction) => {
   await models.TimesheetDraft.create(params, { returning: true, transaction });
 };
 
-exports.getDraft = async ({ userId, taskId, onDate }) => {
+exports.getDraft = async (params) => {
   const include = ['task', 'taskStatus', 'projectMaginActivity'];
-  const extensibleDraft = await queries.timesheetDraft.findDraft({userId, taskId, onDate}, include);
+  const extensibleDraft = await queries.timesheetDraft.findDraft(params, include);
   const transformedDraft = transformDraft(extensibleDraft);
   return transformedDraft;
 };
