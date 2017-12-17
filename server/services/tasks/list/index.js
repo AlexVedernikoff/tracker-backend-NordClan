@@ -8,8 +8,14 @@ exports.list = async function (req) {
 
   if (req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
-    if (req.query.fields.indexOf('prefix') !== -1) prefixNeed = true;
-    if (prefixNeed) req.query.fields.splice(req.query.fields.indexOf('prefix'), 1);
+
+    if (req.query.fields.indexOf('prefix') !== -1) {
+      prefixNeed = true;
+    }
+
+    if (prefixNeed) {
+      req.query.fields.splice(req.query.fields.indexOf('prefix'), 1);
+    }
 
     Task.checkAttributes(req.query.fields);
   }
@@ -24,13 +30,68 @@ exports.list = async function (req) {
     req.query.currentPage = 1;
   }
 
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(req.query.tags, prefixNeed, req.query.performerId);
+  const queryWhere = createWhereForRequest(req);
+  const queryAttributes = req.query.fields
+    ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields))
+    : '';
+
+  const queryOffset = req.query.currentPage > 0
+    ? req.query.pageSize * (req.query.currentPage - 1)
+    : 0;
+
+  const tasks = await Task.findAll({
+    attributes: queryAttributes,
+    limit: req.query.pageSize,
+    offset: queryOffset,
+    include: includeForSelect,
+    where: queryWhere,
+    subQuery: true,
+    order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
+      + ', "sprint"."fact_start_date" ASC'
+      + ', "Task"."statusId" ASC'
+      + ', "Task"."prioritiesId" ASC'
+      + ', "Task"."name" ASC')
+  });
+
+  const count = await Task.count({
+    where: queryWhere,
+    include: includeForCount,
+    group: ['Task.id']
+  });
+
+  const projectCount = count.length;
+
+  if (prefixNeed) {
+    tasks.forEach((task) => {
+      task.dataValues.prefix = task.project.prefix;
+      delete task.dataValues.project;
+    });
+  }
+
+  const activeTasks = await getActiveTasks(req.user.id);
+  const activeTask = activeTasks.length !== 0
+    ? activeTasks[0]
+    : await getLastActiveTask(req.user.id);
+
+  const responseObject = {
+    currentPage: req.query.currentPage,
+    pagesCount: (req.query.pageSize) ? Math.ceil(projectCount / req.query.pageSize) : 1,
+    pageSize: (req.query.pageSize) ? req.query.pageSize : projectCount,
+    rowsCountAll: projectCount,
+    rowsCountOnCurrentPage: tasks.length,
+    data: tasks
+  };
+
+  return { allTask: responseObject, activeTask };
+};
+
+function createWhereForRequest (req) {
   const where = {
     deletedAt: { $eq: null } // IS NULL
   };
 
-  if (+req.query.performerId) {
-    where.performerId = +req.query.performerId;
-  }
+  where.performerId = req.query.performerId || req.user.id;
 
   if (req.query.name) {
     where.name = {
@@ -63,10 +124,6 @@ exports.list = async function (req) {
     };
   }
 
-  if (req.query.tags) {
-    req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
-  }
-
   if (req.query.projectId) {
     where.projectId = {
       in: req.query.projectId.toString().split(',').map((el) => el.trim())
@@ -86,6 +143,14 @@ exports.list = async function (req) {
       };
     }
   }
+
+  return where;
+}
+
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId) {
+  const parsedTags = tagsParams
+    ? tagsParams.split(',').map((el) => el.toString().trim().toLowerCase())
+    : null;
 
   const includeAuthor = {
     as: 'author',
@@ -125,7 +190,7 @@ exports.list = async function (req) {
     attributes: [],
     where: {
       name: {
-        $or: req.query.tags
+        $or: parsedTags
       }
     },
     through: {
@@ -140,104 +205,45 @@ exports.list = async function (req) {
     attributes: ['prefix']
   };
 
-  const includeForSelect = [];
-  includeForSelect.push(includeAuthor);
-  includeForSelect.push(includePerformer);
-  includeForSelect.push(includeSprint);
-  includeForSelect.push(includeTagSelect);
+  const includeForSelect = [ includeAuthor, includePerformer, includeSprint, includeTagSelect ];
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];
-  if (req.query.tags) includeForCount.push(includeTagConst);
-  if (req.query.performerId) includeForCount.push(includePerformer);
+  if (parsedTags) {
+    includeForCount.push(includeTagConst);
 
-  return Promise.resolve()
-  // Фильтрация по тегам ищем id тегов
-    .then(() => {
-      if (req.query.tags) {
-        return Tag
-          .findAll({
-            where: {
-              name: {
-                $in: req.query.tags
-              }
-            }
-          });
+    const tags = await Tag.findAll({
+      where: {
+        name: {
+          $in: parsedTags
+        }
       }
-
-      return [];
-    })
-  // Включаем фильтрация по тегам в запрос
-    .then((tags) => {
-      tags.forEach(tag => {
-        includeForSelect.push({
-          association: Task.hasOne(models.ItemTag, {
-            as: 'itemTag' + tag.id,
-            foreignKey: {
-              name: 'taggableId',
-              field: 'taggable_id'
-            },
-            scope: {
-              taggable: 'task'
-            }
-          }),
-          attributes: [],
-          required: true,
-          where: {
-            tag_id: tag.id
-          }
-        });
-      });
-    })
-    .then(() => {
-      return Task
-        .findAll({
-          attributes: req.query.fields ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields)) : '',
-          limit: req.query.pageSize,
-          offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
-          include: includeForSelect,
-          where: where,
-          subQuery: true,
-          order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
-            + ', "sprint"."fact_start_date" ASC'
-            + ', "Task"."statusId" ASC'
-            + ', "Task"."prioritiesId" ASC'
-            + ', "Task"."name" ASC')
-        })
-        .then(tasks => {
-
-          return Task
-            .count({
-              where: where,
-              include: includeForCount,
-              group: ['Task.id']
-            })
-            .then(async (count) => {
-              const projectCount = count.length;
-
-              if (prefixNeed) {
-                tasks.forEach((task) => {
-                  task.dataValues.prefix = task.project.prefix;
-                  delete task.dataValues.project;
-                });
-              }
-
-              const activeTasks = await getActiveTasks(req.user.id);
-              const activeTask = activeTasks.length !== 0
-                ? activeTasks[0]
-                : await getLastActiveTask(req.user.id);
-
-              const responseObject = {
-                currentPage: +req.query.currentPage,
-                pagesCount: (req.query.pageSize) ? Math.ceil(projectCount / req.query.pageSize) : 1,
-                pageSize: (req.query.pageSize) ? req.query.pageSize : projectCount,
-                rowsCountAll: projectCount,
-                rowsCountOnCurrentPage: tasks.length,
-                data: tasks
-              };
-
-              return { allTask: responseObject, activeTask };
-            });
-        });
     });
-};
+
+    tags.forEach(tag => {
+      includeForSelect.push({
+        association: Task.hasOne(models.ItemTag, {
+          as: 'itemTag' + tag.id,
+          foreignKey: {
+            name: 'taggableId',
+            field: 'taggable_id'
+          },
+          scope: {
+            taggable: 'task'
+          }
+        }),
+        attributes: [],
+        required: true,
+        where: {
+          tag_id: tag.id
+        }
+      });
+    });
+  }
+
+  if (performerId) {
+    includeForCount.push(includePerformer);
+  }
+
+  return { includeForCount, includeForSelect };
+}
