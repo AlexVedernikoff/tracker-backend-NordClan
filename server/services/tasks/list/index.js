@@ -106,6 +106,12 @@ function createWhereForRequest (req) {
     };
   }
 
+  if (req.query.authorId && +req.query.authorId !== 0) {
+    where.authorId = {
+      in: req.query.authorId.toString().split(',').map((el) => el.trim())
+    };
+  }
+
   if (req.query.prioritiesId) {
     where.prioritiesId = {
       in: req.query.prioritiesId.toString().split(',').map((el) => el.trim())
