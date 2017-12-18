@@ -664,6 +664,12 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'authorId',
+            type: 'integer',
+            description: 'можно разделять через ","',
+            in: 'query'
+          },
+          {
             name: 'prioritiesId',
             type: 'integer',
             description: 'можно разделять через ","',
