@@ -52,7 +52,7 @@ module.exports = function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          projectBurndown -= parseInt(task.factExecutionTime);
+          projectBurndown -= parseFloat(task.factExecutionTime) || 0;
         });
       });
     }
@@ -72,7 +72,7 @@ module.exports = function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          projectRiskBurndown -= parseInt(task.factExecutionTime);
+          projectRiskBurndown -= parseFloat(task.factExecutionTime) || 0;
         });
       });
     }
@@ -213,7 +213,7 @@ module.exports = function (metricsTypeId, input){
           input.project.users.forEach(function (user){
             if (!task.factExecutionTime) return;
             if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) {
-              totalTimeSpentWithRole += parseInt(task.factExecutionTime);
+              totalTimeSpentWithRole += parseFloat(task.factExecutionTime) || 0;
             }
           });
 
@@ -234,7 +234,7 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime) return;
-        sprintBurndown -= parseInt(task.factExecutionTime);
+        sprintBurndown -= parseFloat(task.factExecutionTime) || 0;
       });
     }
     return Promise.resolve({
@@ -251,7 +251,7 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime) return;
-        sprintBurndown -= parseInt(task.factExecutionTime);
+        sprintBurndown -= parseFloat(task.factExecutionTime) || 0;
       });
     }
     return Promise.resolve({
@@ -270,8 +270,8 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.plannedExecutionTime) return;
-        laborCostsTotal += parseInt(task.plannedExecutionTime);
-        if (task.typeId === 1) laborCostsClosedTasks += parseInt(task.plannedExecutionTime);
+        laborCostsTotal += parseFloat(task.plannedExecutionTime) || 0;
+        if (task.typeId === 1) laborCostsClosedTasks += parseFloat(task.plannedExecutionTime) || 0;
       });
     }
 
@@ -312,7 +312,7 @@ module.exports = function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime || task.typeId !== 1) return;
-        laborCostsTotal += parseInt(task.factExecutionTime);
+        laborCostsTotal += parseFloat(task.factExecutionTime) || 0;
       });
     }
     return Promise.resolve({
