@@ -23,51 +23,59 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     });
 };
 
-exports.getTimesheet = function (timesheetId) {
-  return models.Timesheet
-    .findOne({
-      required: true,
-      where: {
-        id: timesheetId
+exports.getTimesheet = function async (params) {
+  return models.Timesheet.findOne({
+    where: params,
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: false,
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          },
+          {
+            as: 'taskStatus',
+            model: models.TaskStatusesDictionary,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          }
+        ]
       },
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'isVisible'],
-      include: [
-        {
-          as: 'task',
-          model: models.Task,
-          required: false,
-          attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
-          paranoid: false,
-          include: [
-            {
-              as: 'project',
-              model: models.Project,
-              required: false,
-              attributes: ['id', 'name'],
-              paranoid: false
-            }
-          ]
-        },
-        {
-          as: 'project',
-          model: models.Project,
-          required: false,
-          attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
-    })
-    .then((model) => {
-      if (!model) {
-        return createError('User can\'t change timesheet');
+      {
+        as: 'taskStatus',
+        model: models.TaskStatusesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      },
+      {
+        as: 'projectMaginActivity',
+        model: models.Project,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
       }
+    ]
+  }).then((model) => {
+    if (!model) {
+      return createError('User can\'t change timesheet');
+    }
 
-      if (model.dataValues.task && model.dataValues.task.dataValues.project) {
-        model.dataValues.project = model.dataValues.task.dataValues.project;
-        delete model.dataValues.task.dataValues.project;
-      }
-      return model;
-    });
+    if (model.dataValues.task && model.dataValues.task.dataValues.project) {
+      model.dataValues.project = model.dataValues.task.dataValues.project;
+      delete model.dataValues.task.dataValues.project;
+    }
+    return model;
+  });
 };
 
 

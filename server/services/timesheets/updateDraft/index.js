@@ -30,34 +30,7 @@ async function createTimesheet (params, draftId) {
 
   await transaction.commit();
 
-  const timesheet = await Timesheet.findOne({
-    where: timesheetParams,
-    include: [
-      {
-        as: 'task',
-        model: models.Task,
-        required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
-        paranoid: false,
-        include: [
-          {
-            as: 'project',
-            model: models.Project,
-            required: false,
-            attributes: ['id', 'name'],
-            paranoid: false
-          }
-        ]
-      },
-      {
-        as: 'project',
-        model: models.Project,
-        required: false,
-        attributes: ['id', 'name'],
-        paranoid: false
-      }
-    ]
-  });
+  const timesheet = queries.timesheet.getTimesheet(timesheetParams);
 
   return timesheet;
 }

@@ -38,8 +38,14 @@ async function getOriginTask (taskId, body) {
       include: [
         {
           as: 'project',
-          model: Project,
-          attributes: ['prefix']
+          model: Project
+        },
+        {
+          as: 'taskStatus',
+          model: models.TaskStatusesDictionary,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false
         }
       ]
     });
