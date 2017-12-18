@@ -70,7 +70,6 @@ function getConditions (query) {
 async function getTimesheets (conditions) {
   const queryParams = getConditions(conditions);
   const timesheets = await queries.timesheet.all(queryParams);
-  console.log(timesheets);
   return timesheets.map(timesheet => transformTimesheet(timesheet));
 }
 
