@@ -38,7 +38,9 @@ module.exports = function (err, req, res, next) {
 
 function sendError (res, err) {
   let status = err.status || err.statusCode || 500;
-  if (status < 400) status = 500;
+  if (status < 400) {
+    status = 500;
+  }
   res.statusCode = status;
 
   const body = {
@@ -46,7 +48,9 @@ function sendError (res, err) {
   };
 
   // show the stacktrace when not in production
-  if (!production) body.stack = err.stack;
+  if (!production) {
+    body.stack = err.stack;
+  }
 
   // internal server errors
   if (status >= 500) {
@@ -59,9 +63,15 @@ function sendError (res, err) {
   // client errors
   body.message = err.message;
 
-  if (err.code) body.code = err.code;
-  if (err.name) body.name = err.name;
-  if (err.type) body.type = err.type;
+  if (err.code) {
+    body.code = err.code;
+  }
+  if (err.name) {
+    body.name = err.name;
+  }
+  if (err.type) {
+    body.type = err.type;
+  }
 
   res.json(body);
 }
