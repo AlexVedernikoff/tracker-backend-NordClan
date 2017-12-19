@@ -13,10 +13,9 @@ async function update (body, taskId, user) {
   const taskParams = getTaskParams(body);
   const updatedAttributes = await originTask.updateAttributes(taskParams);
   const updatedTask = await appendAdditionalFields(updatedAttributes);
-  const transaction = await models.sequelize.transaction();
 
   const createdDraft = body.statusId
-    ? await createDraftIfNeeded(originTask, body.statusId, transaction)
+    ? await createDraftIfNeeded(originTask, body.statusId)
     : null;
 
   const { activeTask, stoppedTasks } = body.statusId
@@ -100,7 +99,7 @@ async function appendAdditionalFields (updatedAttributes, body, taskId) {
   return fields;
 }
 
-async function createDraftIfNeeded (task, statusId, transaction) {
+async function createDraftIfNeeded (task, statusId) {
   const onDate = moment().format('YYYY-MM-DD');
   const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
 
@@ -114,10 +113,8 @@ async function createDraftIfNeeded (task, statusId, transaction) {
   };
 
   if (needCreateDraft) {
-    await TimesheetService.createDraft(draftParams, transaction);
+    await TimesheetService.createDraft(draftParams);
   }
-
-  transaction.commit();
 
   return needCreateDraft
     ? await TimesheetService.getDraft(draftParams)

@@ -1,8 +1,8 @@
 const models = require('../../../models');
 const moment = require('moment');
 
-exports.createDraft = async (params, transaction) => {
-  await models.TimesheetDraft.create(params, { returning: true, transaction });
+exports.createDraft = async (params) => {
+  await models.TimesheetDraft.create(params, { returning: true });
 };
 
 exports.getDraft = async (params) => {

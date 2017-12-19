@@ -23,7 +23,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     });
 };
 
-exports.getTimesheet = function async (params) {
+exports.getTimesheet = function (params) {
   return models.Timesheet.findOne({
     where: params,
     include: [
