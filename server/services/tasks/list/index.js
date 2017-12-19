@@ -69,11 +69,6 @@ exports.list = async function (req) {
     });
   }
 
-  const activeTasks = await getActiveTasks(req.user.id);
-  const activeTask = activeTasks.length !== 0
-    ? activeTasks[0]
-    : await getLastActiveTask(req.user.id);
-
   const responseObject = {
     currentPage: req.query.currentPage,
     pagesCount: (req.query.pageSize) ? Math.ceil(projectCount / req.query.pageSize) : 1,
@@ -83,7 +78,7 @@ exports.list = async function (req) {
     data: tasks
   };
 
-  return { allTask: responseObject, activeTask };
+  return responseObject;
 };
 
 function createWhereForRequest (req) {

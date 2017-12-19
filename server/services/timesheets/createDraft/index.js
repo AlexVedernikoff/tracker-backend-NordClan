@@ -1,15 +1,55 @@
 const models = require('../../../models');
-const queries = require('../../../models/queries');
 const moment = require('moment');
 
-exports.createDraft = async (params, userId, transaction) => {
-  await models.TimesheetDraft.create(params, { returning: true, transaction });
+exports.createDraft = async (params) => {
+  await models.TimesheetDraft.create(params, { returning: true });
 };
 
-exports.getDraft = async ({ userId, taskId, onDate }) => {
-  const include = ['task', 'taskStatus', 'projectMaginActivity'];
-  const extensibleDraft = await queries.timesheetDraft.findDraft({userId, taskId, onDate}, include);
-  const transformedDraft = transformDraft(extensibleDraft);
+exports.getDraft = async (params) => {
+  const draft = await models.TimesheetDraft.findOne({
+    where: params,
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: false,
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          },
+          {
+            as: 'taskStatus',
+            model: models.TaskStatusesDictionary,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          }
+        ]
+      },
+      {
+        as: 'taskStatus',
+        model: models.TaskStatusesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      },
+      {
+        as: 'projectMaginActivity',
+        model: models.Project,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      }
+    ]
+  });
+
+  const transformedDraft = transformDraft(draft);
   return transformedDraft;
 };
 

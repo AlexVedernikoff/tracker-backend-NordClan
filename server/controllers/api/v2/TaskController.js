@@ -104,11 +104,6 @@ exports.list = function (req, res, next) {
 
   TasksService
     .list(req)
-    .then(async ({ allTask, activeTask }) => {
-      TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
-      res.json(allTask);
-    })
-    .catch((e) => {
-      next(createError(e));
-    });
+    .then(tasks => res.json(tasks))
+    .catch((e) => next(createError(e)));
 };
