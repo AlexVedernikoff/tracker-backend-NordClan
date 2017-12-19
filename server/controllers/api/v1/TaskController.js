@@ -10,6 +10,7 @@ const TimesheetsChannel = require('../../../channels/Timesheets');
 const userSubscriptionEvents = require('../services/userSubscriptionEvents');
 
 exports.create = async function (req, res, next) {
+  console.log('!!!TaskController','create begin');
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
@@ -28,10 +29,13 @@ exports.create = async function (req, res, next) {
     model.authorId = req.user.id;
   });
 
+  console.log('!!!TaskController','try create');
+
   try {
     const createdTaskModel = await Task.create(req.body);
     await queries.tag.saveTagsForModel(createdTaskModel, req.body.tags, 'task');
     TasksChannel.sendAction('create', createdTaskModel, res.io);
+    console.log('!!!TaskController','exec event');
     await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: createdTaskModel.id });
     res.json(createdTaskModel);
   } catch (err){
@@ -125,6 +129,8 @@ exports.read = function (req, res, next) {
 };
 
 exports.update = async function (req, res, next) {
+  console.log('!TaskController','update begin');
+
   let transaction;
 
   try {
@@ -139,6 +145,8 @@ exports.update = async function (req, res, next) {
     transaction = await models.sequelize.transaction();
     const isStateChanged = (body.statusId);
     const isPerformerAssigned = (body.performerId);
+    console.log('!TaskController','isStateChanged',isStateChanged);
+    console.log('!TaskController','isPerformerAssigned',isPerformerAssigned);
 
     let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction, lock: 'UPDATE' });
     if (!task) {

@@ -7,7 +7,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     name: {
-      type: DataTypes.STRING(30),
+      type: DataTypes.STRING(255),
       trim: true,
       allowNull: false
     }

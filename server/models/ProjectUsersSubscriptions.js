@@ -16,7 +16,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     projectEventId: {
       field: 'project_event_id',
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
         isInt: true

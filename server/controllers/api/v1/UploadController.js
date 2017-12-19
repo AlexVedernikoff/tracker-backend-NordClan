@@ -11,10 +11,10 @@ const stringHelper = require('../../../components/StringHelper');
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 10;
 
-exports.delete = async function(req, res, next) {
+exports.delete = async function (req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('id').trim();
-  req.checkParams('entity', 'entity must be \'task\' or \'project\'' ).isIn(['task',  'project']);
+  req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req.checkParams('attachmentId', 'entityId must be int').isInt();
   const validationResult = await req.getValidationResult();
@@ -47,7 +47,7 @@ exports.delete = async function(req, res, next) {
 
 };
 
-exports.upload = function(req, res, next) {
+exports.upload = function (req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('entityId').trim();
   req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
@@ -81,9 +81,9 @@ exports.upload = function(req, res, next) {
           }
 
 
-          const uploadDir = '/uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' +  classicRandom(3);
+          const uploadDir = '/uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' + classicRandom(3);
           const absoluteUploadDir = path.join(__dirname, '../../public/' + uploadDir);
-          let files = [];
+          const files = [];
 
           mkdirp(absoluteUploadDir, (err) => {
             if (err) return createError(err);
@@ -106,7 +106,7 @@ exports.upload = function(req, res, next) {
             form.on('end', function (err) {
               if (err) return next(createError(err));
 
-              let promises = [];
+              const promises = [];
               files.forEach((file) => {
                 const newPath = path.join(form.uploadDir, file.name);
 
@@ -131,7 +131,7 @@ exports.upload = function(req, res, next) {
                             type: file.type.match(/^(.*)\//)[1],
                             size: file.size,
                             path: uploadDir + '/' + file.name,
-                            previewPath: previewPath ? previewPath : null,
+                            previewPath: previewPath ? previewPath : null
                           });
                       });
                       return promise;
@@ -168,15 +168,14 @@ exports.upload = function(req, res, next) {
     });
 };
 
-function classicRandom(n){
-  let result ='', abd ='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', aL = abd.length;
-  while(result.length < n)
-    result += abd[Math.random() * aL|0];
+function classicRandom (n){
+  let result = '', abd = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', aL = abd.length;
+  while (result.length < n) {result += abd[Math.random() * aL | 0];}
 
   return result;
 }
 
-function cropImage(file, uploadDir, newPath) {
+function cropImage (file, uploadDir, newPath) {
   return new Promise(function (resolve, reject) {
     gm(newPath)
       .size({}, function (err, size) {
@@ -188,7 +187,7 @@ function cropImage(file, uploadDir, newPath) {
             this.resize(200, null);
           }
         }
-        let preview = uploadDir + '/200-' + file.name;
+        const preview = uploadDir + '/200-' + file.name;
         this.write('./public/' + preview, function (err) {
           if (err) reject(err);
           resolve(preview);

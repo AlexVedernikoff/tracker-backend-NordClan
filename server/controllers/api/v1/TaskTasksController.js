@@ -2,10 +2,10 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
-exports.create = async function(req, res, next) {
-  if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
-  if(!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
-  if(!req.body.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be int'));
+exports.create = async function (req, res, next) {
+  if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
+  if (!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
+  if (!req.body.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be int'));
 
   let t;
   try {
@@ -49,10 +49,10 @@ exports.create = async function(req, res, next) {
 };
 
 
-exports.delete = async function(req, res, next) {
-  if(!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
-  if(!req.params.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
-  if(!req.params.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
+exports.delete = async function (req, res, next) {
+  if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
+  if (!req.params.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
+  if (!req.params.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
 
   let t;
   try {
@@ -76,9 +76,8 @@ exports.delete = async function(req, res, next) {
           lock: 'UPDATE'
         })
         .then(model => {
-          if(model) return model.destroy({ transaction: t });
-        })
-      ,
+          if (model) return model.destroy({ transaction: t });
+        }),
       models.TaskTasks.destroy({
         where: {
           taskId: req.params.linkedTaskId,

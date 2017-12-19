@@ -1,7 +1,7 @@
 const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
-const userSubscriptionEvents = require('../services/userSubscriptionEvents');
+const userSubscriptionEvents = require('../../../services/userSubscriptionEvents');
 
 exports.create = async function (req, res, next){
   req.checkParams('taskId', 'taskId must be int').isInt();

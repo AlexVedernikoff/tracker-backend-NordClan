@@ -1,7 +1,9 @@
 const email = require('../email');
-const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../models');
+const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 
 module.exports = async function (eventId, input){
+
+  console.log('!userSubscriptionEvents', eventId, JSON.stringify(input));
 
   const emails = [];
   let receivers, task, comment;

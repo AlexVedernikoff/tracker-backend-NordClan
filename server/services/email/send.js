@@ -21,6 +21,8 @@ module.exports.send = async function (input){
   if (input.text) mailOptions.text = input.text;
   if (input.html) mailOptions.html = input.html;
 
+  console.log('!sendMail', JSON.stringify(mailOptions));
+
   const result = await transporter.sendMail(mailOptions);
 
   transporter.close();
