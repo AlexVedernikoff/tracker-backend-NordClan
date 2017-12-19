@@ -49,7 +49,7 @@ exports.create = function (req, res, next){
         })
         .then(() => {
           ProjectsChannel.sendAction('create', model, res.io, model.id);
-          res.status(200);
+          res.json(model);
         });
     })
     .catch((err) => {
