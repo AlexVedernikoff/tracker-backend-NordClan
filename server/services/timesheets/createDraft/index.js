@@ -1,12 +1,12 @@
 const models = require('../../../models');
 const moment = require('moment');
 
-exports.createDraft = async (params, userId, transaction) => {
+exports.createDraft = async (params, transaction) => {
   await models.TimesheetDraft.create(params, { returning: true, transaction });
 };
 
 exports.getDraft = async (params) => {
-  const timesheet = await models.TimesheetDraft.findOne({
+  const draft = await models.TimesheetDraft.findOne({
     where: params,
     include: [
       {
@@ -49,7 +49,7 @@ exports.getDraft = async (params) => {
     ]
   });
 
-  const transformedDraft = transformDraft(timesheet);
+  const transformedDraft = transformDraft(draft);
   return transformedDraft;
 };
 
