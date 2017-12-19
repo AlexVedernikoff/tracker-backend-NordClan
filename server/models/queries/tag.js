@@ -3,7 +3,7 @@ const models = require('../');
 
 exports.name = 'tag';
 
-exports.getAllTagsByModel = function(modelName, modelId, t = null) {
+exports.getAllTagsByModel = function (modelName, modelId, t = null) {
   return models[modelName]
     .findByPrimary(modelId, {
       attributes: ['id'],
@@ -18,16 +18,16 @@ exports.getAllTagsByModel = function(modelName, modelId, t = null) {
             attributes: []
           },
           order: [
-            ['name', 'ASC'],
-          ],
+            ['name', 'ASC']
+          ]
         }
-      ],
+      ]
     })
     .then((model) => {
-      if(!model) return createError(404, 'taggable model not found');
-      let row = model.dataValues;
+      if (!model) return createError(404, 'taggable model not found');
+      const row = model.dataValues;
       let result = [];
-      if(row.tags){
+      if (row.tags){
         result = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
       }
 
@@ -36,15 +36,15 @@ exports.getAllTagsByModel = function(modelName, modelId, t = null) {
 };
 
 // Обработчик тегов при создании записи проекта, задачи
-exports.saveTagsForModel = function(Model, tagsString, taggable) {
+exports.saveTagsForModel = function (Model, tagsString, taggable) {
   let tags = [];
-  if(tagsString) {
+  if (tagsString) {
     tags = tagsString.toString().split(',');
   }
 
   let chain = Promise.resolve();
 
-  tags.forEach(function(itemTag) {
+  tags.forEach(function (itemTag) {
     chain = chain.then(() => {
       return models.Tag
         .findOrCreate({where: {name: itemTag.toString().trim().toLowerCase()} })
@@ -59,7 +59,7 @@ exports.saveTagsForModel = function(Model, tagsString, taggable) {
             });
         })
         .catch((err) => {
-          if(err) throw createError(err);
+          if (err) throw createError(err);
         });
     });
   });

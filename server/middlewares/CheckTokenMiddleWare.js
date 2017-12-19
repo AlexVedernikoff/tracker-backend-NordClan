@@ -8,7 +8,6 @@ const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
-const _ = require('underscore');
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -21,12 +20,12 @@ exports.checkToken = function (req, res, next) {
     return next(createError(401, 'Need authorization'));
   }
 
-  if(isSystemUser(req)) {
+  if (isSystemUser(req)) {
     return next();
   }
 
   try {
-    authorization = req.cookies.authorization? req.cookies.authorization : req.headers.authorization;
+    authorization = req.cookies.authorization ? req.cookies.authorization : req.headers.authorization;
 
     token = authorization.split(' ')[1];
     decoded = jwt.decode(token, tokenSecret);
@@ -40,7 +39,7 @@ exports.checkToken = function (req, res, next) {
     .findOne({
       where: {
         login: decoded.user.login,
-        active: 1,
+        active: 1
       },
       attributes: User.defaultSelect,
       include: [
@@ -60,13 +59,13 @@ exports.checkToken = function (req, res, next) {
           as: 'usersProjects',
           model: ProjectUsers,
           attributes: ['projectId', 'rolesIds'],
-          required: false,
+          required: false
         },
         {
           as: 'authorsProjects',
           model: Project,
           attributes: ['id'],
-          required: false,
+          required: false
         },
         {
           model: models.Department,
@@ -76,15 +75,17 @@ exports.checkToken = function (req, res, next) {
           through: {
             model: models.UserDepartments,
             attributes: []
-          },
-        },
+          }
+        }
       ]
     })
     .then((user) => {
-      if(!user) {
+      if (!user) {
         return next(createError(401, 'No found user or access in the system. Or access token has expired'));
       }
-      if(user.dataValues.department[0])  user.dataValues.department = user.dataValues.department[0].name;
+      if (user.dataValues.department[0]) {
+        user.dataValues.department = user.dataValues.department[0].name;
+      }
 
       req.user = user;
 
@@ -101,12 +102,11 @@ exports.createJwtToken = function (user) {
   return {token: jwt.encode(payload, tokenSecret), expires: payload.expires};
 };
 
-function doesAuthorizationExist(req) {
+function doesAuthorizationExist (req) {
   return ((req.headers['system-authorization'] || req.cookies['system-authorization'])
-    ||
-    (req.headers.authorization || req.cookies.authorization));
+    || (req.headers.authorization || req.cookies.authorization));
 }
 
-function isSystemUser(req) {
+function isSystemUser (req) {
   return (req.headers['system-authorization'] || req.cookies['system-authorization']);
 }

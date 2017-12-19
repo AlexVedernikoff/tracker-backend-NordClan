@@ -1,15 +1,55 @@
-const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
-const queries = require('../../../models/queries');
 const moment = require('moment');
 
-exports.createDraft = async (params, userId, transaction) => {
-  const draft = await models.TimesheetDraft.create(params, { returning: true, transaction });
-  transaction.commit();
+exports.createDraft = async (params) => {
+  await models.TimesheetDraft.create(params, { returning: true });
+};
 
-  const include = ['task', 'taskStatus', 'projectMaginActivity'];
-  const extensibleDraft = await queries.timesheetDraft.findDraft({userId, taskId: draft.taskId, onDate: draft.onDate}, include);
-  const transformedDraft = transformDraft(extensibleDraft);
+exports.getDraft = async (params) => {
+  const draft = await models.TimesheetDraft.findOne({
+    where: params,
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: false,
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          },
+          {
+            as: 'taskStatus',
+            model: models.TaskStatusesDictionary,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          }
+        ]
+      },
+      {
+        as: 'taskStatus',
+        model: models.TaskStatusesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      },
+      {
+        as: 'projectMaginActivity',
+        model: models.Project,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      }
+    ]
+  });
+
+  const transformedDraft = transformDraft(draft);
   return transformedDraft;
 };
 
