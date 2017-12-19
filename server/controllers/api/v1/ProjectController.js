@@ -87,6 +87,11 @@ exports.read = function (req, res, next){
           as: 'sprints',
           model: Sprint,
           attributes: ['id', 'name', 'factStartDate', 'factFinishDate', 'statusId', 'allottedTime',
+            [Sequelize.literal(`(SELECT sum(t.fact_execution_time)
+                                FROM tasks as t
+                                WHERE t.project_id = "Project"."id"
+                                AND t.sprint_id = "sprints"."id"
+                                AND t.deleted_at IS NULL)`), 'spentTime'], // Потраченное время на спринт
             [Sequelize.literal(`(SELECT count(*)
                                 FROM tasks as t
                                 WHERE t.project_id = "Project"."id"
