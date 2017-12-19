@@ -45,7 +45,7 @@ async function getTimesheets (req, res, next) {
 
     const timesheets = await models.Timesheet.findAll({
       where: where,
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
       order: [
         ['createdAt', 'ASC']
       ],
@@ -250,14 +250,14 @@ exports.setDraftTimesheetTime = async function (req, res, next) {
 
 async function setAdditionalInfo (tmp, req) {
   tmp.userRoleId = null;
-  tmp.isBillible = false;
+  tmp.isBillable = false;
   tmp.onDate = moment().format('YYYY-MM-DD');
 
   if (tmp.projectId) {
     const roles = await queries.projectUsers.getUserRolesByProject();
 
     if (roles) {
-      tmp.isBillible = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
+      tmp.isBillable = !!~roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
       const index = roles.indexOf(models.ProjectRolesDictionary.UNBILLABLE_ID);
       if (index > -1) roles.splice(index, 1);
       tmp.userRoleId = roles;
