@@ -80,10 +80,10 @@ exports.upload = function(req, res, next) {
             return next(createError(403, 'Access denied'));
           }
 
-
-          const uploadDir = '/uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' +  classicRandom(3);
-          const absoluteUploadDir = path.join(__dirname, '../../public/' + uploadDir);
-          let files = [];
+          const appDir = path.dirname(require.main.filename);
+          const uploadDir = 'uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' +  classicRandom(3);
+          const absoluteUploadDir = appDir + '/public/' + uploadDir;
+          const files = [];
 
           mkdirp(absoluteUploadDir, (err) => {
             if (err) return createError(err);
