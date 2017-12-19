@@ -11,6 +11,7 @@
       },
       "env_production": {
         "NODE_ENV": "production",
+        "watch": false,
         "PORT": 4000
       }
     }

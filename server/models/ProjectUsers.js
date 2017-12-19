@@ -70,11 +70,19 @@ module.exports = function (sequelize, DataTypes) {
         name: 'projectUserId',
         field: 'project_user_id'
       }});
-  };
 
-  /* Управление созданием и удалением магических активностей */
-  ProjectUsers.addHook('afterCreate', 'createDraftMagicActivity', hooks.createDraftMagicActivity);
-  ProjectUsers.addHook('afterDestroy', 'destroyDraftMagicActivity', hooks.destroyDraftMagicActivity);
+    ProjectUsers.hasOne(models.Timesheet, {
+      as: 'timesheet',
+      targetKey: {
+        name: 'userId',
+        field: 'user_id'
+      },
+      foreignKey: {
+        name: 'userId',
+        field: 'user_id'
+      }
+    });
+  };
 
   ProjectUsers.addHistoryForProject();
 

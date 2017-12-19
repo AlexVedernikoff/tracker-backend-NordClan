@@ -1,20 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const ProjectController = require('../controllers/ProjectController');
-const PortfolioController = require('../controllers/PortfolioController');
-const SprintController = require('../controllers/SprintController');
-const TaskController = require('../controllers/TaskController');
-const AuthController = require('../controllers/AuthController');
-const TagController = require('../controllers/TagController');
-const UserController = require('../controllers/UserController');
-const DictionaryController = require('../controllers/DictionaryController');
-const ProjectUsersController = require('../controllers/ProjectUsersController');
-const TaskTasksController = require('../controllers/TaskTasksController');
-const UploadController = require('../controllers/UploadController');
-const TimesheetController = require('../controllers/TimesheetController');
-const CommentController = require('../controllers/TaskCommentController');
-const HistoryController = require('../controllers/HistoryController');
-const TimesheetDraftController = require('../controllers/TimesheetDraftController');
+const ProjectController = require('../controllers/api/v1/ProjectController');
+const PortfolioController = require('../controllers/api/v1/PortfolioController');
+const SprintController = require('../controllers/api/v1/SprintController');
+const TaskController = require('../controllers/api/v2/TaskController');
+const AuthController = require('../controllers/api/v1/AuthController');
+const TagController = require('../controllers/api/v1/TagController');
+const UserController = require('../controllers/api/v1/UserController');
+const DictionaryController = require('../controllers/api/v1/DictionaryController');
+const ProjectUsersController = require('../controllers/api/v1/ProjectUsersController');
+const TaskTasksController = require('../controllers/api/v1/TaskTasksController');
+const UploadController = require('../controllers/api/v1/UploadController');
+const TimesheetController = require('../controllers/api/v2/TimesheetController');
+const CommentController = require('../controllers/api/v1/TaskCommentController');
+const HistoryController = require('../controllers/api/v1/HistoryController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 
 // Auth
@@ -69,12 +68,12 @@ router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), Tas
 router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
 
 // Timesheets
-router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create.bind(TimesheetController));
+router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
-router.put('/timesheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.update.bind(TimesheetController));
+router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);
 router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);
-router.put('/draftsheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.updateDraft.bind(TimesheetController));
+router.put('/draftsheet/', GlobalAccess.can('timesheet', 'update'), TimesheetController.updateDraft);
 
 // Comments
 router.post('/task/:taskId/comment', GlobalAccess.can('comment', 'create'), CommentController.create);

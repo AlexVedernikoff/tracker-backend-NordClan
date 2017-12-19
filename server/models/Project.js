@@ -109,9 +109,7 @@ module.exports = function (sequelize, DataTypes) {
   });
 
   Project.addHook('afterFind', ModelsHooks.deleteUnderscoredTimeStampsAttributes);
-
   Project.addHook('beforeUpdate', ProjectHooks.setCompletedAtIfNeed);
-  Project.addHook('beforeCreate', ProjectHooks.setCompletedAtIfNeed);
 
   Project.associate = function (models) {
 

@@ -4,11 +4,11 @@ module.exports = {
   db: {
     postgres: {
       host: process.env.DATABASE_HOST || 'localhost',
-      port: 5432,
+      port: process.env.DATABASE_PORT || 5432,
       dialect: 'postgres',
-      name: 'sim-track',
-      username: 'postgres',
-      password: '123456'
+      name: process.env.DATABASE_NAME || 'sim-track',
+      username: process.env.DATABASE_USERNAME || 'postgres',
+      password: process.env.DATABASE_PASSWORD || '123456'
     }
   },
   ps: {

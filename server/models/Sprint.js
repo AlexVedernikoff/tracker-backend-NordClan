@@ -1,6 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Sprint = sequelize.define('Sprint', {
     id: {
       type: DataTypes.INTEGER,
@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
     name: {
@@ -34,7 +34,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATEONLY,
       defaultValue: null,
       validate: {
-        isDate: true,
+        isDate: true
       }
     },
     factFinishDate: {
@@ -42,12 +42,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATEONLY,
       defaultValue: null,
       validate: {
-        isDate: true,
+        isDate: true
       }
     },
     allottedTime: {
       field: 'allotted_time',
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(10, 2),
       defaultValue: null,
       validate: {
         isFloat: true
@@ -56,7 +56,22 @@ module.exports = function(sequelize, DataTypes) {
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
+    },
+    budget: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: null,
+      validate: {
+        isFloat: true
+      }
+    },
+    riskBudget: {
+      field: 'risk_budget',
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: null,
+      validate: {
+        isFloat: true
+      }
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
@@ -67,23 +82,26 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: true,
     tableName: 'sprints',
     hooks: {
-      afterFind: function(model) {
+      afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
     }
 
   });
 
-  Sprint.associate = function(models) {
+  Sprint.associate = function (models) {
     Sprint.belongsTo(models.Project, {foreignKey: {
       name: 'projectId',
       field: 'project_id'
     }});
 
-    Sprint.hasMany(models.Task, {foreignKey: {
-      name: 'sprintId',
-      field: 'sprint_id'
-    }});
+    Sprint.hasMany(models.Task, {
+      as: 'tasks',
+      foreignKey: {
+        name: 'sprintId',
+        field: 'sprint_id'
+      }
+    });
 
     Sprint.belongsToMany(models.Tag, {
       as: 'tags',
@@ -113,7 +131,7 @@ module.exports = function(sequelize, DataTypes) {
 
   };
 
-  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime'];
+  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'budget', 'riskBudget'];
 
   Sprint.addHistoryForProject();
 

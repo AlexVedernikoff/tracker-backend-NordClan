@@ -13,7 +13,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
         userId: userId,
         statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS
       },
-      attributes: ['id', 'typeId', 'taskId', 'onDate', 'statusId', 'spentTime']
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'statusId', 'spentTime']
     })
     .then((model) => {
       if (!model) {
@@ -21,7 +21,6 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
       }
       return model;
     });
-
 };
 
 exports.getTimesheet = function (timesheetId) {
@@ -31,7 +30,7 @@ exports.getTimesheet = function (timesheetId) {
       where: {
         id: timesheetId
       },
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId'],
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'isVisible'],
       include: [
         {
           as: 'task',
@@ -59,7 +58,10 @@ exports.getTimesheet = function (timesheetId) {
       ]
     })
     .then((model) => {
-      if (!model) return createError(404, 'User can\'t change timesheet');
+      if (!model) {
+        return createError('User can\'t change timesheet');
+      }
+
       if (model.dataValues.task && model.dataValues.task.dataValues.project) {
         model.dataValues.project = model.dataValues.task.dataValues.project;
         delete model.dataValues.task.dataValues.project;
@@ -102,3 +104,99 @@ exports.isNeedCreateTimesheet = async function (options) {
 
   return true;
 };
+
+exports.all = async function (conditions) {
+  return await models.Timesheet.findAll({
+    where: conditions,
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
+    order: [
+      ['createdAt', 'ASC']
+    ],
+    include: [
+      {
+        as: 'task',
+        model: models.Task,
+        required: false,
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        paranoid: false,
+        include: [
+          {
+            as: 'project',
+            model: models.Project,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          },
+          {
+            as: 'taskStatus',
+            model: models.TaskStatusesDictionary,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          }
+        ]
+      },
+      {
+        as: 'taskStatus',
+        model: models.TaskStatusesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      },
+      {
+        as: 'projectMaginActivity',
+        model: models.Project,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      }
+    ]
+  });
+};
+
+exports.findOne = function (where) {
+  return models.Timesheet
+    .findOne({
+      required: true,
+      where,
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillible', 'userRoleId', 'taskStatusId', 'statusId', 'isVisible'],
+      include: [
+        {
+          as: 'task',
+          model: models.Task,
+          required: false,
+          attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+          paranoid: false,
+          include: [
+            {
+              as: 'project',
+              model: models.Project,
+              required: false,
+              attributes: ['id', 'name'],
+              paranoid: false
+            }
+          ]
+        },
+        {
+          as: 'project',
+          model: models.Project,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false
+        }
+      ]
+    })
+    .then((model) => {
+      if (!model) {
+        return createError('User can\'t change timesheet');
+      }
+
+      if (model.dataValues.task && model.dataValues.task.dataValues.project) {
+        model.dataValues.project = model.dataValues.task.dataValues.project;
+        delete model.dataValues.task.dataValues.project;
+      }
+      return model;
+    });
+};
+
+

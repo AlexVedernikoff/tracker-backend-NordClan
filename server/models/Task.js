@@ -42,24 +42,12 @@ module.exports = function (sequelize, DataTypes) {
     plannedExecutionTime: {
       field: 'planned_execution_time',
       type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
-      isDecimal: {
-        isFloat: true
-      },
-      get: function () {
-        return +('' + this.getDataValue('plannedExecutionTime'));
-      }
+      defaultValue: 0
     },
     factExecutionTime: {
       field: 'fact_execution_time',
       type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
-      isDecimal: {
-        isFloat: true
-      },
-      get: function () {
-        return +('' + this.getDataValue('factExecutionTime'));
-      }
+      defaultValue: 0
     },
     prioritiesId: {
       field: 'priorities_id',
@@ -109,15 +97,6 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'statusId',
         field: 'status_id',
-        allowNull: false
-      }
-    });
-
-    Task.belongsTo(models.TaskTypesDictionary, {
-      as: 'type',
-      foreignKey: {
-        name: 'typeId',
-        field: 'type_id',
         allowNull: false
       }
     });
@@ -203,6 +182,14 @@ module.exports = function (sequelize, DataTypes) {
     Task.hasMany(models.TaskAttachments, {
       as: 'attachments',
       foreignKey: 'task_id'
+    });
+
+    Task.hasOne(models.Timesheet, {
+      as: 'timesheet',
+      foreignKey: {
+        name: 'taskId',
+        field: 'task_id'
+      }
     });
 
   };

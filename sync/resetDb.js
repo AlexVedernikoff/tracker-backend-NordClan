@@ -1,6 +1,6 @@
 const models = require('../server/models');
 
-const Models  = [
+const Models = [
   // models.ProjectRolesDictionary,
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
@@ -18,6 +18,8 @@ const Models  = [
   // models.UserDepartments,
   // models.Token,
   // models.SystemToken,
+  // models.Metrics,
+  // models.MetricTypesDictionary,
 
   // models.ProjectUsers,
   // models.ProjectAttachments,
@@ -27,7 +29,7 @@ const Models  = [
   // models.Timesheet,
   // models.TimesheetDraft,
   // models.ModelHistory,
-  models.ProjectHistory,
+  //models.ProjectHistory,
   // models.TaskTasks,
   // models.ItemTag,
   // models.ItemTag,
@@ -35,7 +37,7 @@ const Models  = [
   // models.Comment
 ];
 
-const dictionariesModels  = [
+const dictionariesModels = [
   // models.ProjectStatusesDictionary,
   // models.SprintStatusesDictionary,
   // models.TaskStatusesDictionary,
@@ -43,18 +45,19 @@ const dictionariesModels  = [
   // models.ProjectRolesDictionary,
   // models.TimesheetTypesDictionary,
   // models.TimesheetStatusesDictionary,
+  // models.MetricTypesDictionary,
 ];
 
 
 (() => {
   let chain = Promise.resolve();
-  Models.forEach(function(Model) {
+  Models.forEach(function (Model) {
     chain = chain
       .then(() => Model.sync({force: true}));
   });
 
 
-  dictionariesModels.forEach(function(model) {
+  dictionariesModels.forEach(function (model) {
     chain = chain
       .then(() => {
         return model.destroy({where: {}})
