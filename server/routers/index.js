@@ -14,6 +14,7 @@ const UploadController = require('../controllers/api/v1/UploadController');
 const TimesheetController = require('../controllers/api/v2/TimesheetController');
 const CommentController = require('../controllers/api/v1/TaskCommentController');
 const HistoryController = require('../controllers/api/v1/HistoryController');
+const MetricsController = require('../controllers/api/v2/MetricsController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 
 // Auth
@@ -97,5 +98,7 @@ router.delete('/:entity(project|task)/:entityId/attachment/:attachmentId', Globa
 
 // History
 router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history', 'list'), HistoryController.list);
+
+router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
 module.exports = router;
