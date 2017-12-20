@@ -7,10 +7,8 @@ const moment = require('moment');
 const TimesheetService = require('../../../services/timesheets');
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
-const userSubscriptionEvents = require('../services/userSubscriptionEvents');
 
 exports.create = async function (req, res, next) {
-  console.log('!!!TaskController','create begin');
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
@@ -29,18 +27,17 @@ exports.create = async function (req, res, next) {
     model.authorId = req.user.id;
   });
 
-  console.log('!!!TaskController','try create');
-
-  try {
-    const createdTaskModel = await Task.create(req.body);
-    await queries.tag.saveTagsForModel(createdTaskModel, req.body.tags, 'task');
-    TasksChannel.sendAction('create', createdTaskModel, res.io);
-    console.log('!!!TaskController','exec event');
-    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: createdTaskModel.id });
-    res.json(createdTaskModel);
-  } catch (err){
-    next(err);
-  }
+  Task.create(req.body)
+    .then((model) => {
+      return queries.tag.saveTagsForModel(model, req.body.tags, 'task')
+        .then(() => {
+          TasksChannel.sendAction('create', model, res.io, model.projectId);
+          res.json(model);
+        });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 exports.read = function (req, res, next) {
@@ -129,8 +126,6 @@ exports.read = function (req, res, next) {
 };
 
 exports.update = async function (req, res, next) {
-  console.log('!TaskController','update begin');
-
   let transaction;
 
   try {
@@ -143,10 +138,6 @@ exports.update = async function (req, res, next) {
     const taskId = req.params.id;
     let { body } = req;
     transaction = await models.sequelize.transaction();
-    const isStateChanged = (body.statusId);
-    const isPerformerAssigned = (body.performerId);
-    console.log('!TaskController','isStateChanged',isStateChanged);
-    console.log('!TaskController','isPerformerAssigned',isPerformerAssigned);
 
     let task = await Task.findByPrimary(taskId, { attributes: attributes, transaction, lock: 'UPDATE' });
     if (!task) {
@@ -241,8 +232,6 @@ exports.update = async function (req, res, next) {
 
       TimesheetsChannel.sendAction('create', draft, res.io, req.user.id);
       TasksChannel.sendAction('update', updatedFields, res.io, task.projectId);
-      if (isPerformerAssigned) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id });
-      if (isStateChanged) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId: task.id });
 
       res.json(updatedFields);
     } else {
@@ -256,8 +245,6 @@ exports.update = async function (req, res, next) {
 
       transaction.commit();
       TasksChannel.sendAction('update', resultResponse, res.io, task.projectId);
-      if (isPerformerAssigned) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id });
-      if (isStateChanged) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId: task.id });
       res.json(resultResponse);
     }
   } catch (e) {

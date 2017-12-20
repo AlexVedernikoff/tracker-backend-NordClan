@@ -13,10 +13,7 @@ services:
       - "5432"
 
   app:
-    build:
-      context: .
-      args: 
-        network: host
+    build: .
     container_name: sim_back
     environment:
       DATABASE_HOST: db
@@ -31,6 +28,8 @@ services:
       - db
     links:
       - db
+    extra_hosts:
+      - "auth.simbirsoft:192.168.20.15"
 
   web:
     build: ./../sim-track

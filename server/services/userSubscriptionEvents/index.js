@@ -1,39 +1,37 @@
 const email = require('../email');
+const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 
 module.exports = async function (eventId, input){
-
-  console.log('!userSubscriptionEvents', eventId, JSON.stringify(input));
-
   const emails = [];
   let receivers, task, comment;
 
   switch (eventId){
 
-  case (1):
+  case (1): // need to rework rolesIds
     // event description : new task added to project
     // receivers : project's PM and QA (which has subscription)
     // input = { taskId }
 
-    task = await getTask(input.taskId);
+    /*task = await getTask(input.taskId);
     receivers = await ProjectUsers.findAll({
-      attributes: ProjectUsers.defaultSelect,
+      // attributes: [],
       include: [
         {
           as: 'user',
           model: User,
-          attributes: User.defaultSelect
+          //attributes: User.defaultSelect
         },
         {
           as: 'subscriptions',
           model: ProjectUsersSubscriptions,
-          attributes: ProjectUsersSubscriptions.defaultSelect
+          //attributes: ProjectUsersSubscriptions.defaultSelect
         }
       ],
       where: {
         projectId: task.project.id,
         rolesIds: {
-          $contains: [ProjectRolesDictionary.values[1].id, ProjectRolesDictionary.values[8].id]// PM QA
+          $contains: [ProjectRolesDictionary.values[1].id+'', ProjectRolesDictionary.values[8].id+'']// PM QA TODO
         }
       }
     });
@@ -46,7 +44,7 @@ module.exports = async function (eventId, input){
         'subject': emailTemplate.subject,
         'html': emailTemplate.body
       });
-    });
+    });*/
 
     break;
 
@@ -77,20 +75,19 @@ module.exports = async function (eventId, input){
 
     task = await getTask(input.taskId);
     comment = await Comment.findByPrimary(input.commentId, {
-      attributes: Comment.defaultSelect,
       include: [
         {
           as: 'author',
           model: User,
-          attributes: User.defaultSelect
         }
       ]
     });
-    receivers = [task.author, task.performer];
+    plainComment = comment.get({'plain' : true});
+    receivers = task.author.id === task.performer.id ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (user){
       if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
-      const emailTemplate = email.template('newTaskComment', { task });
+      const emailTemplate = email.template('newTaskComment', { task, comment });
       emails.push({
         'receiver': user.emailPrimary,
         'subject': emailTemplate.subject,
@@ -106,7 +103,7 @@ module.exports = async function (eventId, input){
     // input = { taskId }
 
     task = await getTask(input.taskId);
-    receivers = [task.author, task.performer];
+    receivers = task.author.id === task.performer.id ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (user){
       if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
@@ -120,7 +117,7 @@ module.exports = async function (eventId, input){
 
     break;
 
-  case (5):
+  case (5): // need to implement that on backend
     // event description : task comment has mention
     // receivers : mentioned user (which has subscription)
     break;
@@ -139,51 +136,40 @@ module.exports = async function (eventId, input){
 };
 
 function isUserSubscribed (eventId, projectUser){
-  //return (projectUser.subscriptions && projectUser.subscriptions.indexOf(eventId) !== -1);
-  return true;
+  return (projectUser.subscriptions && _.find(projectUser.subscriptions, { projectEventId : eventId}) );
 }
 
 function getTask (id){
   return Task.findByPrimary(id, {
-    attributes: Task.defaultSelect,
     include: [
       {
         as: 'taskStatus',
-        model: TaskStatusesDictionary,
-        attributes: TaskStatusesDictionary.defaultSelect
+        model: TaskStatusesDictionary
       },
       {
         as: 'type',
-        model: TaskTypesDictionary,
-        attributes: TaskTypesDictionary.defaultSelect
+        model: TaskTypesDictionary
       },
       {
         as: 'project',
-        model: Project,
-        attributes: Project.defaultSelect
+        model: Project
       },
       {
         as: 'sprint',
-        model: Sprint,
-        attributes: Sprint.defaultSelect
+        model: Sprint
       },
       {
         as: 'author',
         model: User,
-        attributes: User.defaultSelect,
         include: [
           {
             as: 'usersProjects',
             model: ProjectUsers,
-            attributes: ProjectUsers.defaultSelect,
-            where: {
-              projectId: Sequelize.col('task.projectId')
-            },
+            where: Sequelize.literal('"author.usersProjects"."project_id"="Task"."project_id"'),
             include: [
               {
                 as: 'subscriptions',
-                model: ProjectUsersSubscriptions,
-                attributes: ProjectUsersSubscriptions.defaultSelect
+                model: ProjectUsersSubscriptions
               }
             ]
           }
@@ -192,20 +178,15 @@ function getTask (id){
       {
         as: 'performer',
         model: User,
-        attributes: User.defaultSelect,
         include: [
           {
             as: 'usersProjects',
             model: ProjectUsers,
-            attributes: ProjectUsers.defaultSelect,
-            where: {
-              projectId: Sequelize.col('task.projectId')
-            },
+            where: Sequelize.literal('"performer.usersProjects"."project_id"="Task"."project_id"'),
             include: [
               {
                 as: 'subscriptions',
-                model: ProjectUsersSubscriptions,
-                attributes: ProjectUsersSubscriptions.defaultSelect
+                model: ProjectUsersSubscriptions
               }
             ]
           }

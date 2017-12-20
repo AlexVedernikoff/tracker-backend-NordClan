@@ -28,7 +28,7 @@ module.exports = {
   },
   email: {
     enabled: false,
-    service: 'serviceHere',
+    service: 'serviceHere', // example : "Yandex"
     login: 'mail@here.ru',
     password: 'passwordHere',
     title: 'SimTrack',

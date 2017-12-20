@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('../../configs').email;
 
-module.exports.send = async function (input){
+module.exports = async function (input){
   if (!config.enabled) return { 'message': 'email service disabled' };
 
   const transporter = nodemailer.createTransport({
