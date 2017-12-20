@@ -24,7 +24,7 @@ exports.delete = async function (req, res, next) {
   const modelFileName = modelName + 'Attachments';
   models[modelFileName]
     .findByPrimary(req.params.attachmentId, {
-      attributes: req.params.entity === 'project' ? ['id', 'projectId'] : ['id'],
+      attributes: req.params.entity === 'project' ? ['id', 'projectId'] : ['id', 'taskId'],
       include: req.params.entity === 'task'
         ? [
           {
