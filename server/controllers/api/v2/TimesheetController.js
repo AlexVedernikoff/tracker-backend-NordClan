@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const TimesheetService = require('../../../services/timesheets');
+const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 
 exports.create = async (req, res, next) => {
@@ -9,7 +10,7 @@ exports.create = async (req, res, next) => {
     .create(timesheetParams)
     .then((timesheet) => {
       TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
-      res.json(timesheet);
+      res.end();
     })
     .catch(e => {
       return next(createError(e));
@@ -21,14 +22,21 @@ exports.getTracksAll = async (req, res, next) => {
   const endDate = req.query.endDate;
   const params = {
     id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
+    userId: req.user.id,
     taskStatusId: req.body.statusId,
     taskId: req.body.taskId,
     onDate: req.onDate
   };
 
+  const activeTasks = await TasksService.getActiveTasks(req.user.id);
+  const activeTask = activeTasks.length !== 0
+    ? activeTasks[0]
+    : await TasksService.getLastActiveTask(req.user.id);
+
   TimesheetService
     .getTracksAll(startDate, endDate, params)
     .then(tracks => {
+      TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
       res.json(tracks);
     })
     .catch(e => {
@@ -77,7 +85,7 @@ exports.update = async (req, res, next) => {
     .update(req.body)
     .then(timesheet => {
       TimesheetsChannel.sendAction('update', timesheet, res.io, req.user.id);
-      res.json(timesheet);
+      res.end();
     })
     .catch(e => {
       return next(createError(e));
@@ -117,7 +125,7 @@ exports.updateDraft = async function (req, res, next) {
     .updateDraft(req.body, draftId)
     .then(timesheet => {
       TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
-      res.json(timesheet);
+      res.end();
     })
     .catch(e => {
       return next(createError(e));

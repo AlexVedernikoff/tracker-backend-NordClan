@@ -1,4 +1,3 @@
-const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
 
@@ -43,7 +42,11 @@ function getScales (tracks) {
 exports.getScales = getScales;
 
 function getConditions (query) {
-  const conditions = {};
+  const conditions = {
+    userId: {
+      $eq: query.userId
+    }
+  };
 
   if (query.onDate) {
     conditions.onDate = { $eq: new Date(query.onDate) };

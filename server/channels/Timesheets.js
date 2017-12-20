@@ -16,6 +16,10 @@ function getAction (type, data) {
     destroy: {
       type: 'DELETE_TIMESHEET_SUCCESS',
       timesheet: data
+    },
+    setActiveTask: {
+      type: 'GET_ACTIVE_TASK',
+      task: data
     }
   };
 

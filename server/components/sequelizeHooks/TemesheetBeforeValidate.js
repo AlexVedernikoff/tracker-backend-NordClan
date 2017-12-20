@@ -9,7 +9,7 @@ exports.index = async (instance, options) => {
 
 
   if (isMagicActivityNoProject(instance)) {
-    instance.isBillible = false;
+    instance.isBillable = false;
 
   } else if (isMagicActivityWithProject(instance)) {
     const projectUsers = await models.ProjectUsers.findOne({
@@ -19,7 +19,7 @@ exports.index = async (instance, options) => {
       attributes: ['id', 'rolesIds'],
       transaction: t
     });
-    instance.isBillible = isBillible(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
+    instance.isBillable = isBillable(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
     instance.userRoleId = getRoles(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
 
   } else if (isImplementation(instance)) {
@@ -35,7 +35,7 @@ exports.index = async (instance, options) => {
       attributes: ['id', 'rolesIds'],
       transaction: t
     });
-    instance.isBillible = isBillible(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
+    instance.isBillable = isBillable(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
     instance.userRoleId = getRoles(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
 
   }
@@ -55,7 +55,7 @@ function isImplementation (instance) {
 }
 
 
-function isBillible (projectUsers, UNBILLABLE_ID) {
+function isBillable (projectUsers, UNBILLABLE_ID) {
   if (projectUsers && projectUsers.rolesIds) {
     return !~projectUsers.rolesIds.indexOf(UNBILLABLE_ID);
   }

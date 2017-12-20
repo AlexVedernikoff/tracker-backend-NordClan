@@ -5,7 +5,8 @@ const queries = require('../../../models/queries');
 //TODO рефакторинг - подумать над транзакциями
 exports.update = async (params) => {
   await models.Timesheet.update(params, { where: { id: params.sheetId } });
-  const timesheet = await queries.timesheet.getTimesheet(params.sheetId);
+  const timesheet = await queries.timesheet.getTimesheet({ id: params.sheetId });
+
   const transaction = await Sequelize.transaction();
 
   try {

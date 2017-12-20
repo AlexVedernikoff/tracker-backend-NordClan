@@ -31,7 +31,7 @@ exports.create = async (params) => {
   });
 
   await transaction.commit();
-  const timesheetWithTask = await queries.timesheet.getTimesheet(timesheet.id);
+  const timesheetWithTask = await queries.timesheet.getTimesheet({ id: timesheet.id });
   timesheetWithTask.dataValues.isDraft = false;
 
   return timesheetWithTask;

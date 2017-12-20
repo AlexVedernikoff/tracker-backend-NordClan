@@ -44,8 +44,8 @@ module.exports = function (sequelize, DataTypes) {
       trim: true,
       allowNull: true
     },
-    isBillible: {
-      field: 'is_billible',
+    isBillable: {
+      field: 'is_billable',
       type: DataTypes.BOOLEAN,
       allowNull: false
     },
