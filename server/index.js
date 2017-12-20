@@ -59,11 +59,6 @@ exports.run = function () {
     next();
   });
 
-  app.use((req, res, next) => {
-    console.log('!!!REQUEST', new Date(), req.path, req.method, JSON.stringify(req.body), JSON.stringify(req.query));
-    next();
-  });
-
   app.use('/api/v1', routes);
   app.use(errorHandlerMiddleWare);
 
