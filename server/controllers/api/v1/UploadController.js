@@ -90,7 +90,7 @@ exports.upload = function (req, res, next) {
           if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') {
             return next(createError(400, 'Task is closed'));
           }
-          if (req.params.entity === 'task' && !(req.user.isUserOfProject(model.task.projectId) || req.user.isGlobalAdmin)) {
+          if (req.params.entity === 'task' && !(req.user.isUserOfProject(model.projectId) || req.user.isGlobalAdmin)) {
             return next(createError(403, 'Access denied'));
           }
 
@@ -177,7 +177,8 @@ exports.upload = function (req, res, next) {
 
           });
 
-        });
+        })
+        .catch((err) => next(err));
 
     });
 };
