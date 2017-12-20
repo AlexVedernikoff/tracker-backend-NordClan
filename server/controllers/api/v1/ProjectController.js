@@ -45,7 +45,9 @@ exports.create = function (req, res, next){
 
       return queries.tag.saveTagsForModel(model, req.body.tags, 'project')
         .then(() => {
-          if (!req.body.portfolioId && req.body.portfolioName) return queries.project.savePortfolioToProject(model, req.body.portfolioName);
+          if (!req.body.portfolioId && req.body.portfolioName) {
+            return queries.project.savePortfolioToProject(model, req.body.portfolioName);
+          }
         })
         .then(() => {
           ProjectsChannel.sendAction('create', model, res.io, model.id);
@@ -161,14 +163,16 @@ exports.update = function (req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
-  const attributes = ['id', 'portfolioId', 'statusId'].concat(Object.keys(req.body));
-  let portfolioIdOld;
+  const attributes = Object.keys(req.body)
+    .filter(key => key !== 'portfolioName')
+    .concat(['id', 'portfolioId', 'statusId']);
 
+  let portfolioIdOld;
 
   return models.sequelize.transaction(function (t) {
     return Project
       .findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
-      .then((project) => {
+      .then(async (project) => {
         if (!project) {
           return next(createError(404));
         }
@@ -179,13 +183,27 @@ exports.update = function (req, res, next){
           portfolioIdOld = project.portfolioId;
         }
 
+        const needCreateNewPortfolio = !req.body.portfolioId && req.body.portfolioName;
+        if (needCreateNewPortfolio) {
+          const portfolioParams = {
+            name: req.body.portfolioName,
+            authorId: req.user.id
+          };
+
+          const portfolio = await Portfolio.create(portfolioParams, { returning: true });
+
+          delete req.body.portfolioName;
+          req.body.portfolioId = portfolio.id;
+        }
 
         return project
           .updateAttributes(req.body, { transaction: t })
           .then(()=>{
 
             // Запускаю проверку портфеля на пустоту и его удаление
-            if (portfolioIdOld) queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+            if (portfolioIdOld) {
+              queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+            }
 
             // Отсылаю ответ модель с проектом
             return Project
