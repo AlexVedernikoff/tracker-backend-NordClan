@@ -1,5 +1,6 @@
 const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
+const { Timesheet, TimesheetDraft } = models;
 const queries = require('../../../models/queries');
 
 exports.updateDraft = async function (params, draftId) {
@@ -10,36 +11,28 @@ exports.updateDraft = async function (params, draftId) {
 async function createTimesheet (params, draftId) {
   const transaction = await Sequelize.transaction();
 
-  const draft = await queries.timesheetDraft.findDraft({id: draftId});
+  const draft = await TimesheetDraft.findById(draftId);
   updateTaskTime(draft, params, transaction);
 
-  const needCreateTimesheet = await queries.timesheet.isNeedCreateTimesheet(draft);
-  if (!needCreateTimesheet) {
-    await transaction.rollback();
-    throw new Error(`Some timesheet already exists on date ${draft.onDate}`);
-  }
+  const { onDate, typeId, taskStatusId, userId, taskId } = draft.dataValues;
 
-  const timesheetParams = Object
-    .entries(draft.dataValues)
-    .reduce((acc, [key, value]) => {
-      if (key !== 'id') {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
+  const timesheetParams = {
+    onDate,
+    typeId,
+    taskStatusId,
+    userId,
+    taskId,
+    spentTime: params.spentTime
+  };
 
-  await models.Timesheet.create({...timesheetParams, spentTime: params.spentTime}, { transaction });
+  await models.Timesheet.create(timesheetParams, { transaction });
   await models.TimesheetDraft.destroy({ where: { id: draft.id }, transaction });
 
   await transaction.commit();
 
-  const where = {
-    taskId: draft.taskId,
-    onDate: draft.onDate
-  };
+  const timesheet = queries.timesheet.getTimesheet(timesheetParams);
 
-  const task = await queries.timesheet.findOne(where);
-  return task;
+  return timesheet;
 }
 
 async function updateTaskTime (draft, params, transaction) {

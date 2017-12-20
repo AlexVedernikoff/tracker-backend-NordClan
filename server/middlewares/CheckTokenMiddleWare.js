@@ -8,7 +8,6 @@ const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
-const _ = require('underscore');
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -84,7 +83,9 @@ exports.checkToken = function (req, res, next) {
       if (!user) {
         return next(createError(401, 'No found user or access in the system. Or access token has expired'));
       }
-      if (user.dataValues.department[0]) user.dataValues.department = user.dataValues.department[0].name;
+      if (user.dataValues.department[0]) {
+        user.dataValues.department = user.dataValues.department[0].name;
+      }
 
       req.user = user;
 

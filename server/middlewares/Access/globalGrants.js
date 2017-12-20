@@ -60,6 +60,9 @@ const USER = {
     'delete': true,
     'list': true,
     'trackAll': true
+  },
+  metrics: {
+    'list': true
   }
 };
 

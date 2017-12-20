@@ -3,7 +3,7 @@ const moment = require('moment');
 const { Task, Sprint, Project } = models;
 const TimesheetService = require('../../timesheets');
 
-async function update (body, taskId, user, isSystemUser) {
+async function update (body, taskId, user) {
   const originTask = await getOriginTask(taskId, body);
   const { error } = validateTask(originTask, body, user);
   if (error) {
@@ -13,7 +13,10 @@ async function update (body, taskId, user, isSystemUser) {
   const taskParams = getTaskParams(body);
   const updatedAttributes = await originTask.updateAttributes(taskParams);
   const updatedTask = await appendAdditionalFields(updatedAttributes);
-  const createdDraft = await createDraftIfNeeded(body, originTask, isSystemUser);
+
+  const createdDraft = body.statusId
+    ? await createDraftIfNeeded(originTask, body.statusId)
+    : null;
 
   const { activeTask, stoppedTasks } = body.statusId
     ? await updateTasksStatuses(updatedTask, originTask)
@@ -35,8 +38,14 @@ async function getOriginTask (taskId, body) {
       include: [
         {
           as: 'project',
-          model: Project,
-          attributes: ['prefix']
+          model: Project
+        },
+        {
+          as: 'taskStatus',
+          model: models.TaskStatusesDictionary,
+          required: false,
+          attributes: ['id', 'name'],
+          paranoid: false
         }
       ]
     });
@@ -90,16 +99,16 @@ async function appendAdditionalFields (updatedAttributes, body, taskId) {
   return fields;
 }
 
-async function createDraftIfNeeded (body, task, isSystemUser) {
-  const now = moment().format('YYYY-MM-DD');
-  const needCreateDraft = await TimesheetService.isNeedCreateDraft(body, task, now, isSystemUser);
+async function createDraftIfNeeded (task, statusId) {
+  const onDate = moment().format('YYYY-MM-DD');
+  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
 
   const draftParams = {
     taskId: task.id,
     userId: task.performerId,
-    onDate: now,
+    onDate,
     typeId: 1,
-    taskStatusId: task.statusId,
+    taskStatusId: statusId,
     isVisible: true
   };
 
