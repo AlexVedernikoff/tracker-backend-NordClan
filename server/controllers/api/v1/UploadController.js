@@ -11,29 +11,43 @@ const stringHelper = require('../../../components/StringHelper');
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 10;
 
-exports.delete = async function(req, res, next) {
+exports.delete = async function (req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('id').trim();
-  req.checkParams('entity', 'entity must be \'task\' or \'project\'' ).isIn(['task',  'project']);
+  req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req.checkParams('attachmentId', 'entityId must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-  if (req.params.entity === 'project' && !req.user.canUpdateProject(req.params.id)) {
-    return next(createError(403, 'Access denied'));
-  }
-
   const modelName = stringHelper.firstLetterUp(req.params.entity);
   const modelFileName = modelName + 'Attachments';
   models[modelFileName]
     .findByPrimary(req.params.attachmentId, {
-      attributes: req.params.entity === 'project' ? ['id'] : ['id', 'projectId']
+      attributes: req.params.entity === 'project' ? ['id', 'projectId'] : ['id'],
+      include: req.params.entity === 'task'
+        ? [
+          {
+            as: 'task',
+            model: models.Task,
+            attributes: ['projectId']
+          }
+        ]
+        : []
     })
     .then(model => {
-      if (req.params.entity === 'task' && !req.user.canReadProject(model.projectId)) {
+      if (!model) {
+        return next(createError(404));
+      }
+
+      if (req.params.entity === 'task' && !(req.user.isUserOfProject(model.task.projectId) || req.user.isGlobalAdmin)) {
         return next(createError(403, 'Access denied'));
       }
+
+      if (req.params.entity === 'project' && !req.user.canUpdateProject(model.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
+
       if (model) return model.destroy();
     })
     .then(()=>{
@@ -47,7 +61,7 @@ exports.delete = async function(req, res, next) {
 
 };
 
-exports.upload = function(req, res, next) {
+exports.upload = function (req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('entityId').trim();
   req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
@@ -76,12 +90,12 @@ exports.upload = function(req, res, next) {
           if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') {
             return next(createError(400, 'Task is closed'));
           }
-          if (req.params.entity === 'task' && !req.user.canReadProject(model.projectId)) {
+          if (req.params.entity === 'task' && !(req.user.isUserOfProject(model.task.projectId) || req.user.isGlobalAdmin)) {
             return next(createError(403, 'Access denied'));
           }
 
           const appDir = path.dirname(require.main.filename);
-          const uploadDir = 'uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' +  classicRandom(3);
+          const uploadDir = 'uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' + classicRandom(3);
           const absoluteUploadDir = appDir + '/public/' + uploadDir;
           const files = [];
 
