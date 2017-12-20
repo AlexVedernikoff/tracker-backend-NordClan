@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     fileName: {
       field: 'file_name',
@@ -32,12 +32,12 @@ module.exports = function(sequelize, DataTypes) {
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     size: {
       field: 'size',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     type: {
       type: DataTypes.STRING(20),
@@ -58,6 +58,17 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
+
+  TaskAttachments.associate = function (models) {
+    TaskAttachments.belongsTo(models.Task, {
+      as: 'task',
+      foreignKey: {
+        name: 'taskId',
+        field: 'task_id',
+        allowNull: false
+      }
+    });
+  };
 
   TaskAttachments.defaultSelect = ['id', 'fileName', 'path', 'previewPath', 'size', 'type', 'deletedAt'];
 

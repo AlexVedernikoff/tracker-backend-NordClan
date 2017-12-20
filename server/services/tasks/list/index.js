@@ -1,7 +1,6 @@
 const models = require('../../../models');
 const _ = require('underscore');
 const { Task, Tag, ItemTag } = models;
-const { getActiveTasks, getLastActiveTask } = require('../update');
 
 exports.list = async function (req) {
   let prefixNeed = false;
@@ -30,7 +29,11 @@ exports.list = async function (req) {
     req.query.currentPage = 1;
   }
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(req.query.tags, prefixNeed, req.query.performerId);
+  const tags = typeof req.query.tags === 'string'
+    ? req.query.tags.split(',')
+    : req.query.tags;
+
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId);
   const queryWhere = createWhereForRequest(req);
   const queryAttributes = req.query.fields
     ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields))
@@ -86,7 +89,13 @@ function createWhereForRequest (req) {
     deletedAt: { $eq: null } // IS NULL
   };
 
-  where.performerId = req.query.performerId || req.user.id;
+  if (!req.query.projectId && !req.query.performerId) {
+    where.performerId = req.user.id;
+  }
+
+  if (req.query.performerId) {
+    where.performerId = req.query.performerId;
+  }
 
   if (req.query.name) {
     where.name = {
@@ -150,7 +159,7 @@ function createWhereForRequest (req) {
 
 async function createIncludeForRequest (tagsParams, prefixNeed, performerId) {
   const parsedTags = tagsParams
-    ? tagsParams.split(',').map((el) => el.toString().trim().toLowerCase())
+    ? tagsParams.map((el) => el.toString().trim().toLowerCase())
     : null;
 
   const includeAuthor = {
