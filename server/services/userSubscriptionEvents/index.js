@@ -1,6 +1,6 @@
 const email = require('../email');
 const _ = require('underscore');
-const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
+const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary/*, ProjectRolesDictionary*/ } = require('../../models');
 
 module.exports = async function (eventId, input){
   const emails = [];
@@ -78,11 +78,10 @@ module.exports = async function (eventId, input){
       include: [
         {
           as: 'author',
-          model: User,
+          model: User
         }
       ]
     });
-    plainComment = comment.get({'plain' : true});
     receivers = task.author.id === task.performer.id ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (user){
@@ -107,7 +106,7 @@ module.exports = async function (eventId, input){
 
     receivers.forEach(function (user){
       if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
-      const emailTemplate = email.template('newTaskComment', { task });
+      const emailTemplate = email.template('taskStatusChange', { task });
       emails.push({
         'receiver': user.emailPrimary,
         'subject': emailTemplate.subject,
@@ -136,7 +135,7 @@ module.exports = async function (eventId, input){
 };
 
 function isUserSubscribed (eventId, projectUser){
-  return (projectUser.subscriptions && _.find(projectUser.subscriptions, { projectEventId : eventId}) );
+  return (projectUser.subscriptions && _.find(projectUser.subscriptions, { projectEventId: eventId}));
 }
 
 function getTask (id){
