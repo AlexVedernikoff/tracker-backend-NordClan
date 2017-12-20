@@ -1,7 +1,6 @@
 const models = require('../../../models');
 const _ = require('underscore');
 const { Task, Tag, ItemTag } = models;
-const { getActiveTasks, getLastActiveTask } = require('../update');
 
 exports.list = async function (req) {
   let prefixNeed = false;
@@ -86,7 +85,13 @@ function createWhereForRequest (req) {
     deletedAt: { $eq: null } // IS NULL
   };
 
-  where.performerId = req.query.performerId || req.user.id;
+  if (!req.query.projectId && !req.query.performerId) {
+    where.performerId = req.user.id;
+  }
+
+  if (req.query.performerId) {
+    where.performerId = req.query.performerId;
+  }
 
   if (req.query.name) {
     where.name = {
@@ -150,7 +155,7 @@ function createWhereForRequest (req) {
 
 async function createIncludeForRequest (tagsParams, prefixNeed, performerId) {
   const parsedTags = tagsParams
-    ? tagsParams.split(',').map((el) => el.toString().trim().toLowerCase())
+    ? tagsParams.map((el) => el.toString().trim().toLowerCase())
     : null;
 
   const includeAuthor = {
