@@ -29,7 +29,11 @@ exports.list = async function (req) {
     req.query.currentPage = 1;
   }
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(req.query.tags, prefixNeed, req.query.performerId);
+  const tags = typeof req.query.tags === 'string'
+    ? req.query.tags.split(',')
+    : req.query.tags;
+
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId);
   const queryWhere = createWhereForRequest(req);
   const queryAttributes = req.query.fields
     ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields))
