@@ -1,14 +1,15 @@
 const taskRequests = require('./request');
+const createError = require('http-errors');
 
 exports.read = async (id, user) => {
   const task = await taskRequests.findByPrimary(id);
 
   if (!task) {
-    throw new Error('Task not found');
+    throw createError(404, 'Task not found');
   }
 
   if (!user.canReadProject(task.projectId)) {
-    throw new Error('Access denied');
+    throw createError(403, 'Access denied');
   }
 
   if (task.tags) {
