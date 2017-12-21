@@ -1,4 +1,5 @@
 const hooks = require('../components/sequelizeHooks/draftMagicActivity');
+const _ = require('underscore');
 
 module.exports = function (sequelize, DataTypes) {
   const ProjectUsers = sequelize.define('ProjectUsers', {
@@ -51,7 +52,21 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: true,
     updatedAt: false,
     paranoid: true,
-    tableName: 'project_users'
+    tableName: 'project_users',
+    hooks: {
+      beforeFind: function (options) {
+        if (!options.include) {
+          options.include = [];
+        }
+        if (!_.find(options.include, { as: 'roles' })) {
+          options.include.push({
+            as: 'roles',
+            model: sequelize.models.ProjectUsersRoles
+          });
+        }
+        return options;
+      }
+    }
   });
 
   ProjectUsers.associate = function (models) {
