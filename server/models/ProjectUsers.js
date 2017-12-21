@@ -16,6 +16,16 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    rolesIds: {
+      type: DataTypes.VIRTUAL,
+      get: function (i){
+        const roles = this.get('roles');
+        if (!roles) {
+          return null;
+        }
+        return JSON.stringify(roles.map((projectUsersRole) => projectUsersRole.projectRoleId));
+      }
+    },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
@@ -58,6 +68,14 @@ module.exports = function (sequelize, DataTypes) {
         name: 'projectId',
         field: 'project_id'
       }});
+
+    ProjectUsers.hasMany(models.ProjectUsersRoles, {
+      as: 'roles',
+      foreignKey: {
+        name: 'projectUserId',
+        field: 'project_user_id'
+      }
+    });
 
     ProjectUsers.hasOne(models.Timesheet, {
       as: 'timesheet',
