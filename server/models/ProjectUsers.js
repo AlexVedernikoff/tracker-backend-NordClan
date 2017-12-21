@@ -24,11 +24,6 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
-    rolesIds: {
-      field: 'roles_ids',
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
