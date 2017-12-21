@@ -5,7 +5,7 @@ const globalGrants = require('./globalGrants');
 exports.can = (resource, action) => {
   return (req, res, next) => {
     try {
-      const role = req.user.dataValues.globalRole;
+      const role = req.user.globalRole;
       const permission = getPermission(role, resource, action);
 
       if (permission) {
