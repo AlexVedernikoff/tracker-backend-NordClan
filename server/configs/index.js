@@ -25,5 +25,6 @@ module.exports = {
     login: 'systemUser',
     password: 'N}q6gF7L',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
-  }
+  },
+  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
 };
