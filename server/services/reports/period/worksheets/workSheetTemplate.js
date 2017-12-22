@@ -23,6 +23,10 @@ class WorkSheetTemplate {
     get _name() {
         return '';
     }
+
+    get _rows() {
+        return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    }
 }
 
 module.exports = WorkSheetTemplate;

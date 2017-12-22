@@ -1,7 +1,7 @@
 const {Timesheet, Task, User, Project} = require('../../../models');
 const _ = require('lodash');
 const Excel = require('exceljs');
-const { ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
+const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 
 exports.getReport = async function (criteria, projectId) {
     const {startDate, endDate} = validateCriteria(criteria);
@@ -35,29 +35,29 @@ exports.getReport = async function (criteria, projectId) {
         info: {project, range: {startDate, endDate}},
         byTasks: _(timeSheets)
             .groupBy('taskId')
-            .map((v) => _(v)
-                .transform((t, usr) => {
-                    if (!_.has(t, 'task')) {
-                        t.task = usr.task
-                    }
-                    if (!_.has(t, 'users')) {
-                        t.users = []
-                    }
-                    t.users.push(usr)
-                }, {})),
+            .map((v) => _.transform(v, (t, usr) => {
+                if (!_.has(t, 'task')) {
+                    t.task = usr.task.dataValues
+                }
+                if (!_.has(t, 'users')) {
+                    t.users = []
+                }
+                t.users.push(usr)
+            }, {}))
+            .value(),
 
         byUser: _(timeSheets)
             .groupBy('userId')
-            .map((v) => _(v)
-                .transform((t, tsk) => {
-                    if (!_.has(t, 'user')) {
-                        t.user = tsk.user
-                    }
-                    if (!_.has(t, 'tasks')) {
-                        t.tasks = []
-                    }
-                    t.tasks.push(tsk)
-                }, {})),
+            .map((v) => _.transform(v, (t, tsk) => {
+                if (!_.has(t, 'user')) {
+                    t.user = tsk.user.dataValues
+                }
+                if (!_.has(t, 'tasks')) {
+                    t.tasks = []
+                }
+                t.tasks.push(tsk)
+            }, {}))
+            .value(),
     };
     return generateExcellDocument(data);
 };
@@ -72,9 +72,9 @@ function generateExcellDocument(data) {
     workbook.views = [
         {
             x: 0, y: 0, width: 10000, height: 20000,
-            firstSheet: 0, activeTab: 1, visibility: 'visible'
+            firstSheet: 0, activeTab: 0, visibility: 'visible'
         }
-    ]
+    ];
     const byUserSheet = new ByUserWorkSheet(workbook, data);
     const byTaskSheet = new ByTaskWorkSheet(workbook, data);
     byUserSheet.init();
