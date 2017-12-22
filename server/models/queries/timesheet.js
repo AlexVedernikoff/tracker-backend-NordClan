@@ -80,10 +80,11 @@ exports.getTimesheet = function (params) {
 
 
 exports.isNeedCreateTimesheet = async function (options) {
-  const { onDate, typeId, taskId, projectId, taskStatusId } = options;
+  const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
 
   const where = {
     onDate,
+    userId,
     typeId
   };
 
