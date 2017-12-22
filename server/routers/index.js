@@ -9,6 +9,7 @@ const TagController = require('../controllers/api/v1/TagController');
 const UserController = require('../controllers/api/v1/UserController');
 const DictionaryController = require('../controllers/api/v1/DictionaryController');
 const ProjectUsersController = require('../controllers/api/v1/ProjectUsersController');
+const ReportsController = require('../controllers/api/v1/ReportsController');
 const TaskTasksController = require('../controllers/api/v1/TaskTasksController');
 const UploadController = require('../controllers/api/v1/UploadController');
 const TimesheetController = require('../controllers/api/v2/TimesheetController');
@@ -42,6 +43,9 @@ router.get('/project', GlobalAccess.can('project', 'read'), ProjectController.li
 router.post('/project/:projectId/users', GlobalAccess.can('projectUsers', 'create'), ProjectUsersController.create);
 router.get('/project/:projectId/users', GlobalAccess.can('projectUsers', 'list'), ProjectUsersController.list);
 router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUsers', 'delete'), ProjectUsersController.delete);
+
+// Project reports
+router.post('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
 
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
