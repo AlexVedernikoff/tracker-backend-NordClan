@@ -11,9 +11,13 @@ exports.byPeriod = async (req, res, next) => {
     }
 
     try {
-        const report = await ReportsService.byPeriod.getReport(req.body, req.params.projectId);
-        res.json(report);
-    } catch(err) {
+        const {startDate, endDate} = req.query;
+        const workbook = await ReportsService.byPeriod.getReport({startDate, endDate}, req.params.projectId);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+        res.setHeader("Content-Disposition", "attachment; filename=" + "Report.xlsx");
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
         next(createError(err));
     }
 };

@@ -1,6 +1,7 @@
-const queries = require('../../../models/queries');
 const {Timesheet, Task, User, Project} = require('../../../models');
 const _ = require('lodash');
+const Excel = require('exceljs');
+const { ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 
 exports.getReport = async function (criteria, projectId) {
     const {startDate, endDate} = validateCriteria(criteria);
@@ -58,8 +59,28 @@ exports.getReport = async function (criteria, projectId) {
                     t.tasks.push(tsk)
                 }, {})),
     };
-    return data;
+    return generateExcellDocument(data);
 };
+
+function generateExcellDocument(data) {
+    const workbook = new Excel.Workbook();
+    workbook.creator = 'SimTrack';
+    workbook.lastModifiedBy = 'SimTrack';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+    workbook.lastPrinted = new Date();
+    workbook.views = [
+        {
+            x: 0, y: 0, width: 10000, height: 20000,
+            firstSheet: 0, activeTab: 1, visibility: 'visible'
+        }
+    ]
+    const byUserSheet = new ByUserWorkSheet(workbook, data);
+    const byTaskSheet = new ByTaskWorkSheet(workbook, data);
+    byUserSheet.init();
+    byTaskSheet.init();
+    return workbook;
+}
 
 function validateCriteria(criteria) {
     const paramsChecker = {
