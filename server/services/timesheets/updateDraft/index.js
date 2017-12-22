@@ -4,6 +4,26 @@ const queries = require('../../../models/queries');
 
 exports.updateDraft = async (params, draftId) => {
   const draft = await TimesheetDraft.findById(draftId);
+  const updatedDraft = await TimesheetDraft.update(params, {
+    where: { id: draftId },
+    returning: true
+  });
+
+  const { createdTimesheet, updatedTask } = params.spentTime
+    ? await updateDraftTime(draft, params)
+    : {};
+
+  return {
+    updatedDraft: {
+      ...updatedDraft[1][0].dataValues,
+      isDraft: true
+    },
+    createdTimesheet,
+    updatedTask
+  };
+};
+
+async function updateDraftTime (draft, params) {
   const updatedTask = await getUpdatedTask(draft, params);
 
   const { onDate, typeId, taskStatusId, userId, taskId } = draft.dataValues;
@@ -23,7 +43,7 @@ exports.updateDraft = async (params, draftId) => {
   const createdTimesheet = await queries.timesheet.getTimesheet(timesheetParams);
 
   return { createdTimesheet, updatedTask };
-};
+}
 
 async function getUpdatedTask (draft, params) {
   const factExecutionTime = models.sequelize.literal(`"fact_execution_time" + ${params.spentTime}`);

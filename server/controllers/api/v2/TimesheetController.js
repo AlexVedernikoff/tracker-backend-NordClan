@@ -129,9 +129,19 @@ exports.updateDraft = async function (req, res, next) {
 
   TimesheetService
     .updateDraft(req.body, draftId)
-    .then(({ createdTimesheet, updatedTask }) => {
-      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
-      TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
+    .then(({ updatedDraft, createdTimesheet, updatedTask }) => {
+      if (updatedDraft) {
+        TimesheetsChannel.sendAction('update', updatedDraft, res.io, req.user.id);
+      }
+
+      if (createdTimesheet) {
+        TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+      }
+
+      if (updatedTask) {
+        TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
+      }
+
       res.end();
     })
     .catch(e => {
