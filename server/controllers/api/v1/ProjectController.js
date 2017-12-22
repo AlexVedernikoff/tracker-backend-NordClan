@@ -66,6 +66,8 @@ exports.read = function (req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
+  console.log(0);
+
   Project
     .findByPrimary(req.params.id, {
       order: [
@@ -120,7 +122,13 @@ exports.read = function (req, res, next){
           through: {
             as: 'projectUsers',
             model: models.ProjectUsers,
-            attributes: ['rolesIds']
+            attributes: models.ProjectUsers.defaultSelect,
+            include: [
+              {
+                as: 'roles',
+                model: models.ProjectUsersRoles
+              }
+            ]
           }
         },
         {
@@ -135,22 +143,23 @@ exports.read = function (req, res, next){
     })
     .then((model) => {
       if (!model) return next(createError(404));
-
+      console.log(1);
       if (model.users) {
         model.users.forEach((user, key) => {
           model.users[key] = {
             id: user.id,
             fullNameRu: user.fullNameRu,
-            roles: queries.projectUsers.getTransRolesToObject(JSON.parse(user.projectUsers.rolesIds))
+            roles: queries.projectUsers.getTransRolesToObject(user.projectUsers.roles)
           };
         });
       }
-
+      console.log(2);
       if (model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
       delete model.dataValues.portfolioId;
       res.json(model.dataValues);
     })
     .catch((err) => {
+      console.log('!!!! error here', err);
       next(err);
     });
 

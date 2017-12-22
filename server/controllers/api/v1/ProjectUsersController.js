@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
+const _ = require('underscore');
 
 exports.create = async function (req, res, next){
   if (!(Number.isInteger(+req.params.projectId) && +req.params.projectId > 0)) {
@@ -28,14 +29,28 @@ exports.create = async function (req, res, next){
 
   const options = {
     where: { projectId, userId, deletedAt: null },
-    defaults: { rolesIds, projectId, userId }
+    defaults: { projectId, userId }
   };
 
   models.ProjectUsers
     .findOrCreate(options)
     .spread(async (user, created) => {
-      if (!created) {
-        await user.updateAttributes({ rolesIds });
+      const projectUsersRolesData = [];
+      
+      rolesIds.forEach((projectRoleId) => {
+        if ( !created && _.find(user.roles, {projectRoleId}) ) {
+          return;
+        }
+        projectUsersRolesData.push({
+          projectUserId: projectUser.id,
+          projectRoleId
+        });
+      })
+
+      if (projectUsersRolesData.length > 0) {
+        await models.sequelize.transaction(function (t){
+          return models.ProjectUsersRoles.bulkCreate(projectUsersRolesData, {transaction: t});
+        });
       }
 
       const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, ['userId', 'rolesIds']);
@@ -53,9 +68,9 @@ function parseRolesIds (rolesIds) {
         return null;
       }
     });
-    return JSON.stringify(roles);
+    return roles;
   }
-  return JSON.stringify([]);
+  return [];
 }
 
 exports.delete = function (req, res, next){

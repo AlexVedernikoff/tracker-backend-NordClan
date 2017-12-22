@@ -58,7 +58,13 @@ exports.checkToken = function (req, res, next) {
         {
           as: 'usersProjects',
           model: ProjectUsers,
-          attributes: ['projectId', 'rolesIds'],
+          attributes: ['projectId'],
+          include: [
+            {
+              as: 'roles',
+              model: models.ProjectUsersRoles
+            }
+          ],
           required: false
         },
         {

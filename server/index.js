@@ -18,6 +18,10 @@ const io = require('socket.io')(server, {
 });
 
 exports.run = function() {
+  app.use(function(req,res,next){
+    console.log('!!!!!!!!!!!!! REQUEST', req.method, req.path, req.body, req.query);
+    next();
+  })
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(bodyParser.json());
   app.use(expressValidator());

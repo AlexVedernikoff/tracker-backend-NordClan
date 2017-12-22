@@ -1,4 +1,5 @@
 const { TaskStatusesDictionary } = require('../../../models');
+const _ = require('underscore');
 
 module.exports = function (metricsTypeId, input){
 
@@ -166,7 +167,7 @@ module.exports = function (metricsTypeId, input){
           if (!task.factExecutionTime) return;
           totalTimeSpent += task.factExecutionTime;
           input.project.users.forEach(function (user){
-            if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) totalTimeSpentWithRole += task.factExecutionTime;
+            if (user.id === task.performerId && _.find(user.projectUser.roles, {projectRoleId : roleId})) totalTimeSpentWithRole += task.factExecutionTime;
           });
         });
       });
@@ -212,7 +213,7 @@ module.exports = function (metricsTypeId, input){
         sprint.tasks.forEach(function (task){
           input.project.users.forEach(function (user){
             if (!task.factExecutionTime) return;
-            if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) {
+            if (user.id === task.performerId && _.find(user.projectUser.roles, {projectRoleId : roleId})) {
               totalTimeSpentWithRole += parseFloat(task.factExecutionTime) || 0;
             }
           });

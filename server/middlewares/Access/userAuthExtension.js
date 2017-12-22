@@ -53,7 +53,7 @@ function getProjectsRoles (user) {
 
   const usersProjects = user.dataValues.usersProjects.map(o => o.dataValues);
   usersProjects.map(project => {
-    const rolesIds = JSON.parse(project.rolesIds) || [];
+    const rolesIds = project.roles.map((role) => role.projectRoleId);
     const isAdmin = rolesIds.some(id => models.ProjectRolesDictionary.ADMIN_IDS.indexOf(id) !== -1);
 
     if (isAdmin) {
