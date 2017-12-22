@@ -8,8 +8,6 @@ const { User, Token, SystemToken } = models;
 const queries = require('../../../models/queries');
 const config = require('../../../configs');
 
-const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
-
 exports.login = function (req, res, next){
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
 
@@ -37,7 +35,7 @@ exports.login = function (req, res, next){
 
   function authLdap (user, password) {
     const client = ldap.createClient({
-      url: ldapUrl
+      url: config.ldapUrl
     });
 
     client.bind('cn=' + user.ldapLogin + ',cn=People,dc=simbirsoft', password, function (err) {
