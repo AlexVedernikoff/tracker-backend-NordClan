@@ -23,7 +23,8 @@ module.exports = {
   },
   systemAuth: {
     login: 'systemUser',
-    password: 'N}q6gF7L',
+    password: process.env.SYSTEMUSER_PASSWORD || '5REhSX',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
-  }
+  },
+  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
 };

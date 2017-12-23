@@ -61,6 +61,14 @@ module.exports = {
       message: 'удалил(-а) пользователя {user} из проекта',
       entities: ['project_user.user']
     },
+    CREATE_PROJECTATTACHMENT: {
+      message: 'прикрепил(-а) файл',
+      entities: []
+    },
+    SET_PROJECTATTACHMENT_DELETED_AT: {
+      message: 'удалил(-а) файл',
+      entities: []
+    },
     CREATE_ITEMTAG: {
       message: 'добавил(-а) тег \'{tag}\''
     },
