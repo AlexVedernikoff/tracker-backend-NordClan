@@ -13,7 +13,7 @@ exports.getReport = async function (criteria, projectId) {
     });
     const timeSheets = await Timesheet.findAll({
         where: queryParams,
-        attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime'],
+        attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate'],
         include: [
             {
                 as: 'task',
@@ -42,7 +42,7 @@ exports.getReport = async function (criteria, projectId) {
                 if (!_.has(t, 'users')) {
                     t.users = []
                 }
-                t.users.push(usr)
+                t.users.push(usr.dataValues)
             }, {}))
             .value(),
 
