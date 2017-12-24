@@ -1,5 +1,6 @@
 const {Timesheet, Task, User, Project} = require('../../../models');
 const _ = require('lodash');
+const moment = require('moment');
 const Excel = require('exceljs');
 const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 
@@ -104,6 +105,10 @@ function validateCriteria(criteria) {
 
     if (errors.length > 0) {
         throw generateMessage(errors);
+    }
+
+    if (moment(criteria.startDate).isAfter(moment(criteria.endDate))) {
+        throw 'Incorrect date range';
     }
 
     return {
