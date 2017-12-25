@@ -34,5 +34,18 @@ exports.create = async (params) => {
   const timesheetWithTask = await queries.timesheet.getTimesheet({ id: timesheet.id });
   timesheetWithTask.dataValues.isDraft = false;
 
-  return timesheetWithTask;
+  return transformTimesheet(timesheetWithTask);
 };
+
+function transformTimesheet (timesheet) {
+  if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.project) {
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project, isDraft: false });
+    delete timesheet.dataValues.task.dataValues.project;
+  }
+  if (timesheet.dataValues.projectMaginActivity) {
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+    delete timesheet.dataValues.projectMaginActivity;
+  }
+  timesheet.dataValues.onDate = timesheet.onDate;
+  return timesheet.dataValues;
+}

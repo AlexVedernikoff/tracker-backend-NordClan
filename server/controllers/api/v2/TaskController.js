@@ -4,6 +4,7 @@ const { Task } = models;
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
+const TimesheetService = require('../../../services/timesheets');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -106,4 +107,17 @@ exports.list = function (req, res, next) {
     .list(req)
     .then(tasks => res.json(tasks))
     .catch((e) => next(createError(e)));
+};
+
+exports.getSpentTime = async function (req, res, next) {
+    if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+    TasksService.read(req.params.id, req.user)
+        .then(() => {
+            return TimesheetService
+                .getTaskSpent(req.params.id)
+                .then((model) => {
+                    res.json(model);
+                })
+        })
+        .catch((err) => next(createError(err)));
 };
