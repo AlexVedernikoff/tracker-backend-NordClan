@@ -17,7 +17,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     })
     .then((model) => {
       if (!model) {
-        throw createError(404, 'User can\'t change timesheet');
+        throw createError(400, 'User can\'t change timesheet');
       }
       return model;
     });

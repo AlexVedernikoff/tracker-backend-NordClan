@@ -1,7 +1,16 @@
 const models = require('../../../models');
+const queries = require('../../../models/queries');
 
-exports.update = async (params) => {
-  const oldTimesheet = await models.Timesheet.findById(params.sheetId);
+exports.update = async (req) => {
+  let oldTimesheet;
+  const params = req.body;
+
+  if (req.isSystemUser) {
+    oldTimesheet = await models.Timesheet.findById(params.sheetId);
+  } else {
+    oldTimesheet = await queries.timesheet.canUserChangeTimesheet(req.user.id, params.sheetId);
+  }
+
   const updatedTimesheet = await models.Timesheet.update(params, {
     where: { id: params.sheetId },
     include: setInclude(),
