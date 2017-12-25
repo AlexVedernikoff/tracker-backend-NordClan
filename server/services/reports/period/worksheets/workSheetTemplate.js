@@ -12,7 +12,7 @@ class WorkSheetTemplate {
         this._prefix = this._data.info.project.prefix;
         this._lastIndexRow = 3;
         this._tottalSpent = 0;
-        this._tableRows.map((row, index) => {
+        this._tableColumns.map((row, index) => {
             const address = this._rows[index] + this._lastIndexRow;
             this._worksheet
                 .getColumn(this._rows[index])
@@ -28,17 +28,16 @@ class WorkSheetTemplate {
     _setHeader(sheet, info) {
         const dateFrom = moment(info.range.startDate).locale('ru').format('DD MMMM YYYY');
         const dateTo = moment(info.range.endDate).locale('ru').format('DD MMMM YYYY');
-        sheet.mergeCells('A1:G1');
-
         const font = {name: 'Calibri', color: {argb: 'F44546A'}, bold: true};
         const border = {bottom: {style: 'medium'}};
 
+        sheet.mergeCells(`${this._rows[0]}1:${this._rows[this._tableColumns.length - 1]}1`);
         const project = sheet.getCell('A1');
         project.value = `Отчет по проекту ${info.project.name}`;
         project.font = {size: 15, ...font};
         project.border = {color: {argb: 'F44546A'}, ...border};
 
-        sheet.mergeCells('A2:G2');
+        sheet.mergeCells(`${this._rows[0]}2:${this._rows[this._tableColumns.length - 1]}2`);
         const period = sheet.getCell('A2');
         period.value = `Период: ${dateFrom} - ${dateTo}`;
         period.font = {size: 13, ...font};
@@ -47,6 +46,10 @@ class WorkSheetTemplate {
 
     get _name() {
         return '';
+    }
+
+    get _tableColumns() {
+        return [];
     }
 
     get _rows() {

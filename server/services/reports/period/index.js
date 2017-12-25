@@ -60,7 +60,12 @@ exports.getReport = async function (criteria, projectId) {
             }, {}))
             .value(),
     };
-    return generateExcellDocument(data);
+    return {
+        workbook: generateExcellDocument(data),
+        options: {
+            fileName: `${project.name} - ${startDate} - ${endDate}`
+        }
+    };
 };
 
 function generateExcellDocument(data) {

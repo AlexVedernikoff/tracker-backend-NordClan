@@ -36,7 +36,7 @@ class ByUserWorkSheet extends WorkSheetTemplate {
 
     _writeUserRow(task) {
         this._lastIndexRow++;
-        this._tableRows.forEach((v, i) => {
+        this._tableColumns.forEach((v, i) => {
             const cell = this._worksheet.getCell(this._rows[i] + this._lastIndexRow);
             cell
                 .value = v.calculate(task);
@@ -47,11 +47,11 @@ class ByUserWorkSheet extends WorkSheetTemplate {
 
     _writeSummary(tasks) {
         this._lastIndexRow++;
-        const index = this._tableRows.findIndex(v => v.isSummary);
+        const index = this._tableColumns.findIndex(v => v.isSummary);
         if (~index) {
             const cell = this._worksheet.getCell(this._rows[index] + this._lastIndexRow);
             cell
-                .alignment = this._tableRows[index].alignment || {};
+                .alignment = this._tableColumns[index].alignment || {};
             cell
                 .value = tasks.reduce((count, task) => count + Number(task.spentTime), 0)
                 .toFixed(2)
@@ -62,13 +62,13 @@ class ByUserWorkSheet extends WorkSheetTemplate {
 
     _writeTottalSummary() {
         this._lastIndexRow++;
-        const index = this._tableRows.findIndex(v => v.isSummary);
+        const index = this._tableColumns.findIndex(v => v.isSummary);
         if (~index) {
             this._worksheet.getCell(this._rows[index - 1] + this._lastIndexRow)
                 .value = 'Общая сумма:';
             const cell = this._worksheet.getCell(this._rows[index] + this._lastIndexRow);
             cell
-                .alignment = this._tableRows[index].alignment || {};
+                .alignment = this._tableColumns[index].alignment || {};
             cell
                 .value = this._tottalSpent
                 .toFixed(2)
@@ -77,7 +77,7 @@ class ByUserWorkSheet extends WorkSheetTemplate {
         }
     }
 
-    get _tableRows() {
+    get _tableColumns() {
         return [
             {calculate: () => '', text: '', width: 3},
             {calculate: d => `${this._prefix}_${d.task.id}`, text: '#'},
