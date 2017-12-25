@@ -4,6 +4,8 @@ const { Task } = models;
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
+const userSubscriptionEvents = require('../../../services/userSubscriptionEvents');
+const TimesheetService = require('../../../services/timesheets');
 
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
@@ -24,15 +26,14 @@ exports.create = async function (req, res, next) {
     model.authorId = req.user.id;
   });
 
-  TasksService
-    .create(req.body)
-    .then(task => {
-      TasksChannel.sendAction('create', task, res.io, task.projectId);
-      res.json(task);
-    })
-    .catch(e => {
-      next(createError(e));
-    });
+  try {
+    const task = await TasksService.create(req.body);
+    TasksChannel.sendAction('create', task, res.io, task.projectId);
+    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id });
+    res.json(task);
+  } catch (err) {
+    next(createError(err));
+  }
 };
 
 exports.read = function (req, res, next) {
@@ -53,13 +54,18 @@ exports.update = async function (req, res, next) {
 
   const taskId = req.params.id;
 
-  TasksService
-    .update(req.body, taskId, req.user, req.isSystemUser)
-    .then(({ updatedTasks, activeTask, createdDraft, projectId }) => {
-      sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-      res.sendStatus(200);
-    })
-    .catch(e => next(createError(e)));
+  const isStateChanged = (req.body.statusId);
+  const isPerformerAssigned = (req.body.performerId);
+
+  try {
+    const result = { updatedTasks, activeTask, createdDraft, projectId } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
+    sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
+    if (isPerformerAssigned) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId });
+    if (isStateChanged) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId });
+    res.sendStatus(200);
+  } catch (err) {
+    next(createError(err));
+  }
 };
 
 function sendUpdates (io, userId, updatedTasks, activeTask, createdDraft, projectId) {
@@ -106,4 +112,17 @@ exports.list = function (req, res, next) {
     .list(req)
     .then(tasks => res.json(tasks))
     .catch((e) => next(createError(e)));
+};
+
+exports.getSpentTime = async function (req, res, next) {
+    if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+    TasksService.read(req.params.id, req.user)
+        .then(() => {
+            return TimesheetService
+                .getTaskSpent(req.params.id)
+                .then((model) => {
+                    res.json(model);
+                })
+        })
+        .catch((err) => next(createError(err)));
 };

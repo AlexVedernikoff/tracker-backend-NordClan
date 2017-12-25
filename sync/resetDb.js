@@ -20,8 +20,10 @@ const Models = [
   // models.SystemToken,
   // models.Metrics,
   // models.MetricTypesDictionary,
+  // models.ProjectEventsDictionary,
 
   // models.ProjectUsers,
+  // models.ProjectUsersSubscriptions
   // models.ProjectAttachments,
   // models.TaskAttachments,
 
@@ -46,6 +48,7 @@ const dictionariesModels = [
   // models.TimesheetTypesDictionary,
   // models.TimesheetStatusesDictionary,
   // models.MetricTypesDictionary,
+  // models.ProjectEventsDictionary
 ];
 
 
