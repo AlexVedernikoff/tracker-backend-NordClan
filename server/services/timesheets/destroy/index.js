@@ -1,32 +1,37 @@
-const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
 exports.destroy = async (timesheetIds, userId) => {
-  const transaction = await Sequelize.transaction();
+  const deletedTimesheets = await Promise.all(timesheetIds
+    .map(async (id) => await destroyTimesheet(id, userId)));
 
-  try {
-    const deletedTimesheets = await Promise.all(timesheetIds
-      .map(async (id) => await destroyTimesheet(id, userId, transaction)));
-
-    transaction.commit();
-    return deletedTimesheets.filter(timesheet => timesheet);
-  } catch (e) {
-    await transaction.rollback();
-    throw e;
-  }
+  return deletedTimesheets
+    .filter(({ deletedTimesheet }) => deletedTimesheet);
 };
 
-async function destroyTimesheet (id, userId, transaction) {
-  const timesheetModel = await queries.timesheet.canUserChangeTimesheet(userId, id);
+async function destroyTimesheet (id, userId) {
+  const timesheet = await queries.timesheet.canUserChangeTimesheet(userId, id);
 
-  if (timesheetModel.taskId && timesheetModel.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION) {
-    const task = await queries.task.findOneActiveTask(timesheetModel.taskId, ['id', 'factExecutionTime'], transaction);
-    const factExecutionTime = models.sequelize.literal(`"fact_execution_time" - ${timesheetModel.spentTime}`);
-    await models.Task.update({ factExecutionTime }, { where: { id: task.id }, transaction });
-  }
+  const needUpdateTask = timesheet.taskId
+    && timesheet.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION;
 
-  await timesheetModel.destroy({transaction});
+  const updatedTask = needUpdateTask
+    ? await updateTask(timesheet)
+    : null;
 
-  return timesheetModel;
+  await timesheet.destroy();
+
+  return {
+    deletedTimesheet: timesheet,
+    updatedTask: updatedTask[1][0].dataValues
+  };
+}
+
+async function updateTask (timesheet) {
+  const task = await queries.task.findOneActiveTask(timesheet.taskId, ['id', 'factExecutionTime']);
+  const factExecutionTime = models.sequelize.literal(`"fact_execution_time" - ${timesheet.spentTime}`);
+  return await models.Task.update({ factExecutionTime }, {
+    where: { id: task.id },
+    returning: true
+  });
 }
