@@ -53,6 +53,18 @@ exports.create = async function (req, res, next){
         });
       }
 
+      if (created) {
+        const projectUsersSubscriptionsData = models.ProjectEventsDictionary.values.map((projectEvent) => {
+          return {
+            projectUserId: user.id,
+            projectEventId: projectEvent.id
+          };
+        });
+        await models.sequelize.transaction(function (t){
+          return models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData, {transaction: t});
+        });
+      }
+
       const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, ['userId', 'rolesIds']);
       res.json(allProjectUsers);
     })
@@ -86,24 +98,33 @@ exports.delete = function (req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
-  return models.sequelize.transaction(function (t) {
-    return models.ProjectUsers
-      .findOne({where: {
-        projectId: req.params.projectId,
-        userId: req.params.userId,
-        deletedAt: null
-      }, transaction: t, lock: 'UPDATE' })
-      .then((projectUser) => {
-        if (!projectUser) { return next(createError(404)); }
-
-        return projectUser.destroy({ transaction: t })
-          .then(()=>{
-            return queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t)
-              .then((users) => {
-                res.json(users);
-              });
-          });
+  return models.sequelize.transaction(async function (t) {
+    const projectUser = await models.ProjectUsers
+      .findOne({
+        where: {
+          projectId: req.params.projectId,
+          userId: req.params.userId,
+          deletedAt: null
+        },
+        transaction: t,
+        lock: 'UPDATE'
       });
+
+    if (!projectUser) {
+      return next(createError(404));
+    }
+
+    await models.ProjectUsersSubscriptions.destroy({
+      where: {
+        projectUserId: projectUser.id
+      },
+      transaction: t
+    });
+
+    await projectUser.destroy({ transaction: t });
+
+    const users = await queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t);
+    res.json(users);
   })
     .catch((err) => {
       next(err);

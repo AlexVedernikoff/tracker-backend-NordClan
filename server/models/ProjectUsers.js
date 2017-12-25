@@ -92,6 +92,14 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
+    ProjectUsers.hasMany(models.ProjectUsersSubscriptions, {
+      as: 'subscriptions',
+      foreignKey: {
+        name: 'projectUserId',
+        field: 'project_user_id'
+      }
+    });
+
     ProjectUsers.hasOne(models.Timesheet, {
       as: 'timesheet',
       targetKey: {
