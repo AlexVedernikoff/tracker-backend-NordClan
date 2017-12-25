@@ -17,14 +17,14 @@ const io = require('socket.io')(server, {
   path: '/api/v1/socket'
 });
 
-exports.run = function() {
+exports.run = function () {
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(bodyParser.json());
   app.use(expressValidator());
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({extended: false}));
 
-  app.get('/api/v1/swagger/spec.js', function(req, res) {
+  app.get('/api/v1/swagger/spec.js', function (req, res) {
     res.send(require('../swaggerSpec.js'));
   });
 
@@ -33,28 +33,28 @@ exports.run = function() {
     swaggerVersion: '2.0',
     swaggerURL: '/api/v1/swagger',
     swaggerUI: './public/swagger/',
-    basePath: '/api/v1/swagger',
+    basePath: '/api/v1/swagger'
   }));
 
   app.use(checkTokenMiddleWare);
   app.use(checkSystemTokenMiddleWare);
   app.use(Access.middleware);
-  app.all('*', function(req, res, next){
+  app.all('*', function (req, res, next){
     sequelize.context = { user: req.user };
     next();
   });
 
-  app.all('*', function(req, res, next){
+  app.all('*', function (req, res, next){
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin? req.headers.origin: '*');
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin ? req.headers.origin : '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
     next();
   });
 
-  app.use(function(req, res, next){
+  app.use(function (req, res, next){
     res.io = io;
     next();
   });
@@ -62,7 +62,7 @@ exports.run = function() {
   app.use('/api/v1', routes);
   app.use(errorHandlerMiddleWare);
 
-  app.get('*', function(req, res){
+  app.get('*', function (req, res){
     res.status(404).json({
       status: 404,
       message: 'Page Not Found',

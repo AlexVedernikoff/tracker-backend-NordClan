@@ -17,7 +17,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     })
     .then((model) => {
       if (!model) {
-        throw createError(404, 'User can\'t change timesheet');
+        throw createError(403, 'User can\'t change timesheet');
       }
       return model;
     });
@@ -133,7 +133,7 @@ exports.all = async function (conditions) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -156,7 +156,7 @@ exports.all = async function (conditions) {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'prefix'],
         paranoid: false
       }
     ]

@@ -28,6 +28,8 @@ services:
       - db
     links:
       - db
+    extra_hosts:
+      - "auth.simbirsoft:192.168.20.15"
 
   web:
     build: ./../sim-track
