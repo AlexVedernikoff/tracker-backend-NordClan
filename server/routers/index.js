@@ -71,6 +71,7 @@ router.delete('/task/:id', GlobalAccess.can('task', 'delete'), TaskController.de
 router.get('/task', GlobalAccess.can('task', 'list'), TaskController.list);
 router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
+router.get('/task/:id/spent/', GlobalAccess.can('task', 'read'), TaskController.getSpentTime);
 
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
