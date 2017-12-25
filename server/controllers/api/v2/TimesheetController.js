@@ -83,7 +83,7 @@ exports.update = async (req, res, next) => {
   }
 
   TimesheetService
-    .update(req.body)
+    .update(req)
     .then(({ updatedTimesheet, updatedTask }) => {
       TimesheetsChannel.sendAction('update', updatedTimesheet, res.io, req.user.id);
 
