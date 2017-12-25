@@ -29,28 +29,53 @@ exports.create = async function (req, res, next){
 
   const options = {
     where: { projectId, userId, deletedAt: null },
+    include: [
+      {
+        as: 'roles',
+        model: models.ProjectUsersRoles
+      }
+    ],
     defaults: { projectId, userId }
   };
 
   models.ProjectUsers
     .findOrCreate(options)
     .spread(async (user, created) => {
-      const projectUsersRolesData = [];
-      
-      rolesIds.forEach((projectRoleId) => {
-        if ( !created && _.find(user.roles, {projectRoleId}) ) {
-          return;
-        }
-        projectUsersRolesData.push({
-          projectUserId: projectUser.id,
-          projectRoleId
-        });
-      })
 
-      if (projectUsersRolesData.length > 0) {
-        await models.sequelize.transaction(function (t){
-          return models.ProjectUsersRoles.bulkCreate(projectUsersRolesData, {transaction: t});
+      if (rolesIds.length > 0) {
+        const deleteRoles = [];
+        const createRoles = [];
+
+        models.ProjectRolesDictionary.values.forEach((projectRole) => {
+          if (rolesIds.indexOf(projectRole.id) === -1) {
+            deleteRoles.push(projectRole.id);
+          } else if (!_.find(user.roles, { projectRoleId: projectRole.id })) {
+            createRoles.push({
+              projectUserId: user.id,
+              projectRoleId: projectRole.id
+            });
+          }
         });
+
+        if (deleteRoles.length > 0) {
+          await models.sequelize.transaction(function (t){
+            return models.ProjectUsersRoles.destroy({
+              where: {
+                projectUserId: user.id,
+                projectRoleId: {
+                  '$in': deleteRoles
+                }
+              },
+              transaction: t
+            });
+          });
+        }
+
+        if (createRoles.length > 0) {
+          await models.sequelize.transaction(function (t){
+            return models.ProjectUsersRoles.bulkCreate(createRoles, {transaction: t});
+          });
+        }
       }
 
       if (created) {
@@ -115,6 +140,13 @@ exports.delete = function (req, res, next){
     }
 
     await models.ProjectUsersSubscriptions.destroy({
+      where: {
+        projectUserId: projectUser.id
+      },
+      transaction: t
+    });
+
+    await models.ProjectUsersRoles.destroy({
       where: {
         projectUserId: projectUser.id
       },

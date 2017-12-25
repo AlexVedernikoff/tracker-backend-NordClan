@@ -17,12 +17,7 @@ const io = require('socket.io')(server, {
   path: '/api/v1/socket'
 });
 
-exports.run = function() {
-  app.use(function(req,res,next){
-    console.log('!!!!!!!!!!!!! REQUEST', req.method, req.path, req.body, req.query);
-    next();
-  })
-
+exports.run = function () {
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(bodyParser.json());
   app.use(expressValidator());

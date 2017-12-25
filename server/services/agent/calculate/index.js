@@ -108,6 +108,21 @@ async function getMetrics (){
             }
           ]
         }
+      },
+      {
+        as: 'projectUsers',
+        model: ProjectUsers,
+        attributes: ProjectUsers.defaultSelect,
+        include: [
+          {
+            as: 'user',
+            model: User
+          },
+          {
+            as: 'roles',
+            model: ProjectUsersRoles
+          }
+        ]
       }
     ],
     subQuery: true
