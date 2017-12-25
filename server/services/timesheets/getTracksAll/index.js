@@ -1,5 +1,6 @@
 const queries = require('../../../models/queries');
 const moment = require('moment');
+const { ProjectUsers, Project } = require('../../../models');
 
 exports.getTracksAll = async (startDate, endDate, params) => {
   const dateRange = getDateRange(startDate, endDate);
@@ -15,6 +16,8 @@ exports.getTracksAll = async (startDate, endDate, params) => {
     acc[onDate] = { tracks, scales };
     return acc;
   }, {});
+
+  formatTracksData.availableProjects = await getAvailableProjects(params.userId);
 
   return formatTracksData;
 };
@@ -124,6 +127,22 @@ function getDateRange (startDate, endDate) {
   return Array.from({ length: difference + 1 }, (_, v) => v).map(i => {
     return moment(endDate).subtract(i, 'd').format(dateFormat);
   });
+}
+
+async function getAvailableProjects (userId) {
+  const projects = await ProjectUsers.findAll({
+    where: { userId },
+    attributes: ['id'],
+    include: [
+      {
+        as: 'project',
+        model: Project,
+        attributes: ['name']
+      }
+    ]
+  });
+
+  return projects;
 }
 
 exports.getDateRange = getDateRange;
