@@ -98,9 +98,13 @@ function createWhereForRequest (req) {
   }
 
   if (req.query.name) {
-    where.name = {
-      $iLike: '%' + req.query.name + '%'
-    };
+    if (+req.query.name > 0) {
+      where.id = req.query.name;
+    } else {
+      where.name = {
+        $iLike: '%' + req.query.name + '%'
+      };
+    }
   }
 
   // Если +req.query.statusId === 0 или указан спринт вывожу все статусы, если указаны конкретные вывожу их.
