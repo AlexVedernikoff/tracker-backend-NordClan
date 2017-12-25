@@ -36,27 +36,27 @@ exports.getReport = async function (criteria, projectId) {
         info: {project, range: {startDate, endDate}},
         byTasks: _(timeSheets)
             .groupBy('taskId')
-            .map((v) => _.transform(v, (t, usr) => {
-                if (!_.has(t, 'task')) {
-                    t.task = usr.task.dataValues
+            .map(timeSheet => _.transform(timeSheet, (resultObject, user) => {
+                if (!_.has(resultObject, 'task')) {
+                    resultObject.task = user.task.dataValues
                 }
-                if (!_.has(t, 'users')) {
-                    t.users = []
+                if (!_.has(resultObject, 'users')) {
+                    resultObject.users = []
                 }
-                t.users.push(usr.dataValues)
+                resultObject.users.push(user.dataValues)
             }, {}))
             .value(),
 
         byUser: _(timeSheets)
             .groupBy('userId')
-            .map((v) => _.transform(v, (t, tsk) => {
-                if (!_.has(t, 'user')) {
-                    t.user = tsk.user.dataValues
+            .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
+                if (!_.has(resultObject, 'user')) {
+                    resultObject.user = task.user.dataValues
                 }
-                if (!_.has(t, 'tasks')) {
-                    t.tasks = []
+                if (!_.has(resultObject, 'tasks')) {
+                    resultObject.tasks = []
                 }
-                t.tasks.push(tsk)
+                resultObject.tasks.push(task)
             }, {}))
             .value(),
     };
@@ -72,8 +72,13 @@ function generateExcellDocument(data) {
     workbook.lastPrinted = new Date();
     workbook.views = [
         {
-            x: 0, y: 0, width: 10000, height: 20000,
-            firstSheet: 0, activeTab: 0, visibility: 'visible'
+            x: 0,
+            y: 0,
+            width: 10000,
+            height: 20000,
+            firstSheet: 0,
+            activeTab: 0,
+            visibility: 'visible'
         }
     ];
     const byUserSheet = new ByUserWorkSheet(workbook, data);
