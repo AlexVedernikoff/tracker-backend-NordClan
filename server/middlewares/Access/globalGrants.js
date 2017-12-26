@@ -29,7 +29,8 @@ const USER = {
     'create': true,
     'read': true,
     'update': true,
-    'list': true
+    'list': true,
+    'delete': true
   },
   task: {
     'create': true,
@@ -74,10 +75,6 @@ module.exports = {
     ...USER,
     project: {
       ...USER.project,
-      'delete': true
-    },
-    sprint: {
-      ...USER.sprint,
       'delete': true
     },
     task: {

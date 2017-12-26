@@ -5,12 +5,21 @@ const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksChannel = require('../../../channels/Tasks');
 
 exports.create = async (req, res, next) => {
-  const timesheetParams = { ...req.body, userId: req.user.id };
+  const timesheetParams = {
+    ...req.body,
+    userId: req.user.id,
+    taskStatusId: req.body.taskStatusId || 2
+  };
 
   TimesheetService
     .create(timesheetParams)
-    .then((timesheet) => {
-      TimesheetsChannel.sendAction('create', timesheet, res.io, req.user.id);
+    .then(({ createdTimesheet, updatedTask }) => {
+      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+
+      if (updatedTask) {
+        TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
+      }
+
       res.end();
     })
     .catch(e => {
@@ -83,7 +92,7 @@ exports.update = async (req, res, next) => {
   }
 
   TimesheetService
-    .update(req.body)
+    .update(req)
     .then(({ updatedTimesheet, updatedTask }) => {
       TimesheetsChannel.sendAction('update', updatedTimesheet, res.io, req.user.id);
 
@@ -110,8 +119,12 @@ exports.delete = async (req, res, next) => {
   TimesheetService
     .destroy(timesheetIds, req.user.id)
     .then(timesheets => {
-      timesheets.forEach(timesheet => {
-        TimesheetsChannel.sendAction('destroy', timesheet, res.io, req.user.id);
+      timesheets.forEach(({ deletedTimesheet, updatedTask }) => {
+        TimesheetsChannel.sendAction('destroy', deletedTimesheet, res.io, req.user.id);
+
+        if (updatedTask) {
+          TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
+        }
       });
       res.end();
     })
