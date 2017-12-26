@@ -1,49 +1,50 @@
 const { TaskStatusesDictionary } = require('../../../models');
+const moment = require('moment');
 
-module.exports = function (metricsTypeId, input){
+module.exports = async function (metricsTypeId, input){
 
-  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId, totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks, laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal;
+  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId, totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks, laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures;
 
   switch (metricsTypeId){
   case (1):
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': input.project.createdAt,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (2):
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': input.project.completedAt,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (3):
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': input.project.budget,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (4):
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': input.project.riskBudget,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (5):
     projectBurndown = input.project.budget || 0;
@@ -56,14 +57,14 @@ module.exports = function (metricsTypeId, input){
         });
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': projectBurndown,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (6):
     projectRiskBurndown = input.project.riskBudget || 0;
@@ -76,14 +77,14 @@ module.exports = function (metricsTypeId, input){
         });
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': projectRiskBurndown,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (7):
     totalBugsAmount = 0;
@@ -92,14 +93,14 @@ module.exports = function (metricsTypeId, input){
         totalBugsAmount += sprint.activeBugsAmount;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': totalBugsAmount,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (8):
     totalClientBugsAmount = 0;
@@ -108,14 +109,14 @@ module.exports = function (metricsTypeId, input){
         totalClientBugsAmount += sprint.clientBugsAmount;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': totalClientBugsAmount,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (9):
     totalRegressionBugsAmount = 0;
@@ -124,14 +125,14 @@ module.exports = function (metricsTypeId, input){
         totalRegressionBugsAmount += sprint.regressionBugsAmount;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': totalRegressionBugsAmount,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (10):
   case (11):
@@ -173,14 +174,14 @@ module.exports = function (metricsTypeId, input){
     }
     totalTimeSpentInPercent = (totalTimeSpentWithRole / totalTimeSpent) * 100 || 0;
     totalTimeSpentInPercent = parseFloat(totalTimeSpentInPercent.toFixed(2));
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': totalTimeSpentInPercent,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (20):
   case (21):
@@ -220,14 +221,14 @@ module.exports = function (metricsTypeId, input){
         });
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': totalTimeSpentWithRole,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
-    });
+    };
 
   case (30):
     sprintBurndown = input.sprint.budget || 0;
@@ -237,14 +238,14 @@ module.exports = function (metricsTypeId, input){
         sprintBurndown -= parseFloat(task.factExecutionTime) || 0;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': sprintBurndown,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
 
   case (31):
     sprintBurndown = input.sprint.riskBudget || 0;
@@ -254,14 +255,14 @@ module.exports = function (metricsTypeId, input){
         sprintBurndown -= parseFloat(task.factExecutionTime) || 0;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': sprintBurndown,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
 
   case (32):
     closedTasksDynamics = 0;
@@ -276,14 +277,14 @@ module.exports = function (metricsTypeId, input){
     }
 
     closedTasksDynamics = laborCostsTotal - laborCostsClosedTasks;
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': closedTasksDynamics,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
 
   case (33):
     laborCostsWithoutRating = 0;
@@ -298,14 +299,14 @@ module.exports = function (metricsTypeId, input){
         laborCostsWithoutRating += task.factExecutionTime;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': laborCostsWithoutRating,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
 
   case (34):
     laborCostsTotal = 0;
@@ -315,14 +316,14 @@ module.exports = function (metricsTypeId, input){
         laborCostsTotal += parseFloat(task.factExecutionTime) || 0;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': laborCostsTotal,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
 
   case (35):
   case (36):
@@ -344,14 +345,14 @@ module.exports = function (metricsTypeId, input){
         openedTasksAmount++;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': openedTasksAmount,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
 
   case (40):
     unratedFeaturesTotal = 0;
@@ -361,14 +362,42 @@ module.exports = function (metricsTypeId, input){
         unratedFeaturesTotal++;
       });
     }
-    return Promise.resolve({
+    return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
       'value': unratedFeaturesTotal,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
       'userId': null
-    });
+    };
+
+  case (41):
+    unsceduledOpenedFeatures = 0;
+    console.log('SPRINT : ' + input.sprint.name + ' ' + input.sprint.id, ' задач : ' + input.sprint.tasks.length);
+    if (input.sprint.tasks.length > 0){
+      input.sprint.tasks.forEach(function (task){
+        console.log('sprint id : ' + input.sprint.name + ' task id : ' + task.id + ' history : ' + task.history.length);
+        if (
+          moment(task.createdAt).isBefore(input.sprint.factStartDate)
+          || task.typeId !== 1
+          || (
+            task.history
+            && task.history.length > 0
+            && moment(task.history[task.history.length - 1].createdAt).isBefore(input.sprint.factStartDate)
+          )
+        ) return;
+        console.log('!!!!!!!!!!!!!!!! unsceduledOpenedFeatures');
+        unsceduledOpenedFeatures++;
+      });
+    }
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': unsceduledOpenedFeatures,
+      'projectId': input.project.id,
+      'sprintId': input.sprint.id,
+      'userId': null
+    };
 
   default:
     break;

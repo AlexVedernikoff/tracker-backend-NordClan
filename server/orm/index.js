@@ -8,7 +8,7 @@ const sequelize = new Sequelize(config.db.postgres.name, config.db.postgres.user
   dialect: config.db.postgres.dialect,
   port: config.db.postgres.port,
   logging: function (text) {
-    sequelizeLogger(`${moment().format('YYYY-MM-DD HH:mm:ss:SSS')} - ${text}`);
+    //sequelizeLogger(`${moment().format('YYYY-MM-DD HH:mm:ss:SSS')} - ${text}`);
   },
   isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED,
   pool: {

@@ -1,6 +1,6 @@
 const moment = require('moment');
 
-const { Project, ProjectUsers, Sprint, Task, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
+const { Project, ProjectUsers, Sprint, Task, TaskHistory, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -90,6 +90,16 @@ async function getMetrics (){
                 $eq: null
               }
             },
+            include: [
+              {
+                as: 'history',
+                model: TaskHistory,
+                where: {
+                  field: 'sprintId'
+                },
+                required: false
+              }
+            ],
             required: false
           }
         ]
@@ -135,7 +145,7 @@ async function getMetrics (){
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint){
         MetricTypesDictionary.values.forEach(function (value){
-          if (value.id < 30 || value.id > 40) return;
+          if (value.id < 30 || value.id > 41) return;
           projectMetricsTasks.push(metricsLib(value.id, {
             project: plainProject,
             sprint,
