@@ -33,7 +33,9 @@ module.exports = {
     password: 'passwordHere',
     title: 'SimTrack',*/
     templateBaseUrl: 'http://sim-track.simbirsoft',
-    'enabled': process.env.EMAIL_ENABLED || false,
+    'enabled': process.env.EMAIL_ENABLED && process.env.EMAIL_ENABLED === 'true'
+      ? true
+      : false,
     'service': 'Yandex',
     'login': 'notif@modport.ru',
     'password': 'eggplan4',
