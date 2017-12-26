@@ -137,7 +137,7 @@ async function getAvailableProjects (userId) {
       {
         as: 'project',
         model: Project,
-        attributes: ['name']
+        attributes: ['id', 'name', 'prefix']
       }
     ]
   });
