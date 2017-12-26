@@ -7,7 +7,7 @@ exports.create = async (params) => {
     throw new Error(`Some timesheet already exists on date ${params.onDate}`);
   }
 
-  //TODO fix typeId type on front
+  //TODO с фронта приходит typeId и как строка и как число
   const isNeedUpdateTask = params.taskId
     && parseInt(params.typeId) === models.TimesheetTypesDictionary.IMPLEMENTATION;
 
@@ -19,8 +19,20 @@ exports.create = async (params) => {
   const createdTimesheet = await queries.timesheet.getTimesheet({ id });
   createdTimesheet.isDraft = false;
 
-  return { createdTimesheet, updatedTask };
+  return {
+    createdTimesheet: transformTimesheet(createdTimesheet),
+    updatedTask
+  };
 };
+
+function transformTimesheet (timesheet) {
+  if (timesheet.dataValues.projectMaginActivity) {
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+    delete timesheet.dataValues.projectMaginActivity;
+  }
+  timesheet.dataValues.onDate = timesheet.onDate;
+  return timesheet.dataValues;
+}
 
 async function updateTask (params) {
   const task = await queries.task.findOneActiveTask(params.taskId, ['id', 'factExecutionTime']);
