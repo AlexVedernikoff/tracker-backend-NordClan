@@ -99,13 +99,23 @@ exports.update = function (req, res, next){
 exports.delete = function (req, res, next){
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
-  Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId'] })
+  Sprint.findByPrimary(req.params.id, { attributes: ['id', 'projectId', [Sequelize.literal(`(SELECT count(t.id)
+                                FROM tasks as t
+                                WHERE t.project_id = "Sprint"."project_id"
+                                AND t.sprint_id = "Sprint"."id"
+                                AND t.status_id NOT IN (${models.TaskStatusesDictionary.CLOSED_STATUS})
+                                AND t.deleted_at IS NULL)`), 'taskCount']] })
     .then((model) => {
       if (!model) {
         return next(createError(404));
       }
+
       if (!req.user.canUpdateProject(model.projectId)) {
         return next(createError(403, 'Access denied'));
+      }
+
+      if (+model.taskCount > 0) {
+        return next(createError(400, 'Can\'t delete sprint when it have exists tasks'));
       }
 
       return model.destroy()
