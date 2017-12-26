@@ -111,7 +111,7 @@ function appendInclude (entities) {
           as: 'project',
           model: models.Project,
           required: false,
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name', 'prefix'],
           paranoid: false
         },
         {

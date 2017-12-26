@@ -38,7 +38,7 @@ exports.getTimesheet = function (params) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -61,7 +61,7 @@ exports.getTimesheet = function (params) {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'prefix'],
         paranoid: false
       }
     ]
@@ -74,10 +74,10 @@ exports.getTimesheet = function (params) {
       model.dataValues.project = model.dataValues.task.dataValues.project;
       delete model.dataValues.task.dataValues.project;
     }
+
     return model;
   });
 };
-
 
 exports.isNeedCreateTimesheet = async function (options) {
   const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
@@ -181,7 +181,7 @@ exports.findOne = function (where) {
               as: 'project',
               model: models.Project,
               required: false,
-              attributes: ['id', 'name'],
+              attributes: ['id', 'name', 'prefix'],
               paranoid: false
             }
           ]
@@ -190,7 +190,7 @@ exports.findOne = function (where) {
           as: 'project',
           model: models.Project,
           required: false,
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name', 'prefix'],
           paranoid: false
         }
       ]
@@ -207,5 +207,3 @@ exports.findOne = function (where) {
       return model;
     });
 };
-
-
