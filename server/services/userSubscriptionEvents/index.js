@@ -85,7 +85,7 @@ module.exports = async function (eventId, input){
         }
       ]
     });
-    receivers = task.author.id === task.performer.id ? [task.author] : [task.author, task.performer];
+    receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (user){
       if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
@@ -105,10 +105,10 @@ module.exports = async function (eventId, input){
     // input = { taskId }
 
     task = await getTask(input.taskId);
-    receivers = task.author.id === task.performer.id ? [task.author] : [task.author, task.performer];
+    receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (user){
-      if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
+      if (!user.usersProjects || user.usersProjects.length === 0 || !isUserSubscribed(eventId, user.usersProjects[0])) return;
       const emailTemplate = email.template('taskStatusChange', { task });
       emails.push({
         'receiver': user.emailPrimary,
