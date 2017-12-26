@@ -682,6 +682,7 @@ module.exports = {
           },
           {
             name: 'performerId',
+            description: '0 если без исполнителя',
             type: 'integer',
             in: 'query'
           },
