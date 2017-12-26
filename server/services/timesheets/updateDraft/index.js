@@ -4,26 +4,30 @@ const queries = require('../../../models/queries');
 
 exports.updateDraft = async (params, draftId) => {
   const draft = await TimesheetDraft.findById(draftId);
+  const updatedDraft = !params.spentTime
+    ? await updateDraft(params, draftId)
+    : null;
+
+  const { createdTimesheet, updatedTask } = params.spentTime
+    ? await createTimesheet(draft, params)
+    : {};
+
+  return { updatedDraft, createdTimesheet, updatedTask };
+};
+
+async function updateDraft (params, draftId) {
   const updatedDraft = await TimesheetDraft.update(params, {
     where: { id: draftId },
     returning: true
   });
 
-  const { createdTimesheet, updatedTask } = params.spentTime
-    ? await updateDraftTime(draft, params)
-    : {};
-
   return {
-    updatedDraft: {
-      ...updatedDraft[1][0].dataValues,
-      isDraft: true
-    },
-    createdTimesheet,
-    updatedTask
+    ...updatedDraft[1][0].dataValues,
+    isDraft: true
   };
-};
+}
 
-async function updateDraftTime (draft, params) {
+async function createTimesheet (draft, params) {
   const updatedTask = await getUpdatedTask(draft, params);
 
   const { onDate, typeId, taskStatusId, userId, taskId } = draft.dataValues;
@@ -37,12 +41,15 @@ async function updateDraftTime (draft, params) {
     spentTime: params.spentTime
   };
 
-  await Timesheet.create(timesheetParams);
+  const timesheet = await Timesheet.create(timesheetParams, { returning: true });
+  const createdTimesheet = await queries.timesheet.getTimesheet(timesheet.id);
+
   await TimesheetDraft.destroy({ where: { id: draft.id } });
 
-  const createdTimesheet = await queries.timesheet.getTimesheet(timesheetParams);
-
-  return { createdTimesheet, updatedTask };
+  return {
+    createdTimesheet: createdTimesheet,
+    updatedTask
+  };
 }
 
 async function getUpdatedTask (draft, params) {
