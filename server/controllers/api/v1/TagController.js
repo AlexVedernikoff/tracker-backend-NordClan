@@ -3,8 +3,8 @@ const models = require('../../../models');
 const queries = require('../../../models/queries');
 const StringHelper = require('../../../components/StringHelper');
 
-exports.list = async function(req, res, next){
-  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
+exports.list = async function (req, res, next){
+  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
@@ -26,8 +26,8 @@ exports.list = async function(req, res, next){
     });
 };
 
-exports.create = async function(req, res, next){
-  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
+exports.create = async function (req, res, next){
+  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   req.checkBody('tag', 'tag must be more then 2 chars').isLength({min: 2});
   const validationResult = await req.getValidationResult();
@@ -50,7 +50,7 @@ exports.create = async function(req, res, next){
     return models[StringHelper.firstLetterUp(req.params.taggable)]
       .findByPrimary(req.params.taggableId, { attributes: ['id'], transaction: t })
       .then((model) => {
-        if(!model) return next(createError(404, 'taggable model not found'));
+        if (!model) return next(createError(404, 'taggable model not found'));
 
         return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable)
           .then(() => {
@@ -63,8 +63,8 @@ exports.create = async function(req, res, next){
   });
 };
 
-exports.delete = async function(req, res, next){
-  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task', 'project']);
+exports.delete = async function (req, res, next){
+  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   req.checkParams('tag', 'tag must be more then 1 char').isLength({min: 1});
   const validationResult = await req.getValidationResult();
@@ -87,16 +87,16 @@ exports.delete = async function(req, res, next){
     return models.Tag
       .find({where: {name: req.params.tag.trim()}, attributes: ['id'], transaction: t })
       .then((tag) => {
-        if(!tag) return next(createError(404, 'tag not found'));
+        if (!tag) return next(createError(404, 'tag not found'));
 
         return models.ItemTag
           .findOne({ where: {
             tagId: tag.dataValues.id,
             taggableId: req.params.taggableId,
-            taggable: req.params.taggable,
+            taggable: req.params.taggable
           }, transaction: t, lock: 'UPDATE' })
           .then((item) => {
-            if(!item) return next(createError(404, 'ItemTag not found'));
+            if (!item) return next(createError(404, 'ItemTag not found'));
             return item
               .destroy({transaction: t})
               .then(() => {
@@ -111,14 +111,14 @@ exports.delete = async function(req, res, next){
   });
 };
 
-exports.autocompliter = function(req, res, next){
-  let resultResponse = [];
+exports.autocompliter = function (req, res, next){
+  const resultResponse = [];
 
-  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'' ).isIn(['task',  'project']);
+  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkQuery('tagName', 'tag must be more then 2 chars').isLength({min: 2});
   req.getValidationResult()
     .then((validationResult) => {
-      if(!validationResult.isEmpty()) return next(createError(400, validationResult));
+      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
       return models.Tag.findAll({
         distinct: 'name',
@@ -127,7 +127,7 @@ exports.autocompliter = function(req, res, next){
         where: {
           name: {
             $iLike: '%' + req.query.tagName + '%'
-          },
+          }
         },
         include: [
           {
@@ -137,9 +137,9 @@ exports.autocompliter = function(req, res, next){
             required: true,
             where: {
               taggable: req.params.taggable.trim()
-            },
+            }
           }
-        ],
+        ]
       })
         .then((tags)=>{
           tags.forEach((tag) => {

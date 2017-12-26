@@ -93,14 +93,20 @@ function createWhereForRequest (req) {
     where.performerId = req.user.id;
   }
 
-  if (req.query.performerId) {
+  if (+req.query.performerId === 0) {
+    where.performerId = { $eq: null }; // IS NULL
+  } else if (req.query.performerId) {
     where.performerId = req.query.performerId;
   }
 
   if (req.query.name) {
-    where.name = {
-      $iLike: '%' + req.query.name + '%'
-    };
+    if (+req.query.name > 0) {
+      where.id = req.query.name;
+    } else {
+      where.name = {
+        $iLike: '%' + req.query.name + '%'
+      };
+    }
   }
 
   // Если +req.query.statusId === 0 или указан спринт вывожу все статусы, если указаны конкретные вывожу их.

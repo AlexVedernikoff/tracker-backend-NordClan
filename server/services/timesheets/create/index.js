@@ -1,4 +1,3 @@
-const Sequelize = require('../../../orm/index');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
@@ -8,31 +7,42 @@ exports.create = async (params) => {
     throw new Error(`Some timesheet already exists on date ${params.onDate}`);
   }
 
-  const transaction = await Sequelize.transaction();
-
+  //TODO с фронта приходит typeId и как строка и как число
   const isNeedUpdateTask = params.taskId
-    && params.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION;
+    && parseInt(params.typeId) === models.TimesheetTypesDictionary.IMPLEMENTATION;
 
-  if (isNeedUpdateTask) {
-    const task = await queries.task.findOneActiveTask(params.taskId,
-      ['id', 'factExecutionTime'],
-      transaction);
+  const updatedTask = isNeedUpdateTask
+    ? await updateTask(params)
+    : null;
 
-    await models.Task.update({
-      factExecutionTime: models.sequelize.literal(`"fact_execution_time" + ${params.spentTime}`)
-    }, {
-      where: { id: task.id },
-      transaction
-    });
+  const { id } = await models.Timesheet.create(params);
+  const createdTimesheet = await queries.timesheet.getTimesheet({ id });
+  createdTimesheet.isDraft = false;
+
+  return {
+    createdTimesheet: transformTimesheet(createdTimesheet),
+    updatedTask
+  };
+};
+
+function transformTimesheet (timesheet) {
+  if (timesheet.dataValues.projectMaginActivity) {
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+    delete timesheet.dataValues.projectMaginActivity;
   }
+  timesheet.dataValues.onDate = timesheet.onDate;
+  return timesheet.dataValues;
+}
 
-  const timesheet = await models.Timesheet.create(params, {
-    transaction
+async function updateTask (params) {
+  const task = await queries.task.findOneActiveTask(params.taskId, ['id', 'factExecutionTime']);
+
+  const updatedTask = await models.Task.update({
+    factExecutionTime: models.sequelize.literal(`"fact_execution_time" + ${params.spentTime}`)
+  }, {
+    where: { id: task.id },
+    returning: true
   });
 
-  await transaction.commit();
-  const timesheetWithTask = await queries.timesheet.getTimesheet({ id: timesheet.id });
-  timesheetWithTask.dataValues.isDraft = false;
-
-  return timesheetWithTask;
-};
+  return updatedTask[1][0].dataValues;
+}

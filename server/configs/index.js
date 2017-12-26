@@ -23,7 +23,21 @@ module.exports = {
   },
   systemAuth: {
     login: 'systemUser',
-    password: 'N}q6gF7L',
+    password: process.env.SYSTEMUSER_PASSWORD || '5REhSX',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
-  }
+  },
+  email: {
+    /*enabled: false,
+    service: 'serviceHere', // example : "Yandex"
+    login: 'mail@here.ru',
+    password: 'passwordHere',
+    title: 'SimTrack',*/
+    templateBaseUrl: 'http://sim-track.simbirsoft',
+    'enabled': true,
+    'service': 'Yandex',
+    'login': 'notif@modport.ru',
+    'password': 'eggplan4',
+    'title': 'SimTrack'
+  },
+  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
 };

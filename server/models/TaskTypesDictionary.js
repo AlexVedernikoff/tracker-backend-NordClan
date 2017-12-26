@@ -39,5 +39,7 @@ module.exports = function (sequelize, DataTypes) {
     {id: 5, name: 'Баг от клиента'}
   ];
 
+  TaskTypes.defaultSelect = ['id', 'name'];
+
   return TaskTypes;
 };

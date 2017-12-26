@@ -19,7 +19,7 @@ exports.findDraftSheet = async function (userId, id) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -68,7 +68,7 @@ exports.all = async function (conditions) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -91,7 +91,7 @@ exports.all = async function (conditions) {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'prefix'],
         paranoid: false
       }
     ]
@@ -111,7 +111,7 @@ function appendInclude (entities) {
           as: 'project',
           model: models.Project,
           required: false,
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name', 'prefix'],
           paranoid: false
         },
         {

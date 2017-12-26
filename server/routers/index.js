@@ -9,6 +9,7 @@ const TagController = require('../controllers/api/v1/TagController');
 const UserController = require('../controllers/api/v1/UserController');
 const DictionaryController = require('../controllers/api/v1/DictionaryController');
 const ProjectUsersController = require('../controllers/api/v1/ProjectUsersController');
+const ReportsController = require('../controllers/api/v1/ReportsController');
 const TaskTasksController = require('../controllers/api/v1/TaskTasksController');
 const UploadController = require('../controllers/api/v1/UploadController');
 const TimesheetController = require('../controllers/api/v2/TimesheetController');
@@ -43,6 +44,9 @@ router.post('/project/:projectId/users', GlobalAccess.can('projectUsers', 'creat
 router.get('/project/:projectId/users', GlobalAccess.can('projectUsers', 'list'), ProjectUsersController.list);
 router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUsers', 'delete'), ProjectUsersController.delete);
 
+// Project reports
+router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
+
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
 router.put('/portfolio/:id', GlobalAccess.can('portfolio', 'update'), PortfolioController.update);
@@ -67,6 +71,7 @@ router.delete('/task/:id', GlobalAccess.can('task', 'delete'), TaskController.de
 router.get('/task', GlobalAccess.can('task', 'list'), TaskController.list);
 router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
+router.get('/task/:id/spent/', GlobalAccess.can('task', 'read'), TaskController.getSpentTime);
 
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);

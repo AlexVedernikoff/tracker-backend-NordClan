@@ -1,7 +1,7 @@
 const createError = require('http-errors');
 const models = require('../../../models');
 
-exports.me = function(req, res, next){
+exports.me = function (req, res, next){
   try {
     res.json(req.user);
   } catch (e) {
@@ -9,7 +9,7 @@ exports.me = function(req, res, next){
   }
 };
 
-exports.read = async function(req, res, next){
+exports.read = async function (req, res, next){
   try {
     req.sanitize('id').trim();
     req.checkParams('id', 'id must be int').notEmpty().isInt();
@@ -38,9 +38,9 @@ exports.read = async function(req, res, next){
         ]
       });
 
-    if(!user) return next(createError(404, 'User not found'));
+    if (!user) return next(createError(404, 'User not found'));
 
-    if(user.dataValues.department[0]) {
+    if (user.dataValues.department[0]) {
       user.dataValues.department = user.dataValues.department[0].name;
     }
 
@@ -51,7 +51,7 @@ exports.read = async function(req, res, next){
   }
 };
 
-exports.autocomplete = function(req, res, next) {
+exports.autocomplete = function (req, res, next) {
   req.sanitize('userName').trim();
   req.checkQuery('userName', 'userName must be not empty').notEmpty();
   req.getValidationResult()

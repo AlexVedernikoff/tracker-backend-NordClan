@@ -101,6 +101,15 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
+    Task.belongsTo(models.TaskTypesDictionary, {
+      as: 'type',
+      foreignKey: {
+        name: 'typeId',
+        field: 'type_id',
+        allowNull: false
+      }
+    });
+
     Task.belongsTo(models.Task, {
       as: 'parentTask',
       foreignKey: {

@@ -39,4 +39,4 @@ INSERT INTO metric_types VALUES (36, 'Количество открытых за
 INSERT INTO metric_types VALUES (37, 'Количество открытых задач типа 3(Баг)');
 INSERT INTO metric_types VALUES (38, 'Количество открытых задач типа 4(Регрес. Баг)');
 INSERT INTO metric_types VALUES (39, 'Количество открытых задач типа 5(Баг от клиента)');
-INSERT INTO metric_types VALUES (40, 'Количество фич без оценки);
+INSERT INTO metric_types VALUES (40, 'Количество фич без оценки');

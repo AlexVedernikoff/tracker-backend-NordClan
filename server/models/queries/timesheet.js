@@ -17,7 +17,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     })
     .then((model) => {
       if (!model) {
-        throw createError(404, 'User can\'t change timesheet');
+        throw createError(403, 'User can\'t change timesheet');
       }
       return model;
     });
@@ -38,7 +38,7 @@ exports.getTimesheet = function (params) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -61,7 +61,7 @@ exports.getTimesheet = function (params) {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'prefix'],
         paranoid: false
       }
     ]
@@ -74,16 +74,17 @@ exports.getTimesheet = function (params) {
       model.dataValues.project = model.dataValues.task.dataValues.project;
       delete model.dataValues.task.dataValues.project;
     }
+
     return model;
   });
 };
 
-
 exports.isNeedCreateTimesheet = async function (options) {
-  const { onDate, typeId, taskId, projectId, taskStatusId } = options;
+  const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
 
   const where = {
     onDate,
+    userId,
     typeId
   };
 
@@ -132,7 +133,7 @@ exports.all = async function (conditions) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -155,7 +156,7 @@ exports.all = async function (conditions) {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'prefix'],
         paranoid: false
       }
     ]
@@ -180,7 +181,7 @@ exports.findOne = function (where) {
               as: 'project',
               model: models.Project,
               required: false,
-              attributes: ['id', 'name'],
+              attributes: ['id', 'name', 'prefix'],
               paranoid: false
             }
           ]
@@ -189,7 +190,7 @@ exports.findOne = function (where) {
           as: 'project',
           model: models.Project,
           required: false,
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name', 'prefix'],
           paranoid: false
         }
       ]
@@ -206,5 +207,3 @@ exports.findOne = function (where) {
       return model;
     });
 };
-
-
