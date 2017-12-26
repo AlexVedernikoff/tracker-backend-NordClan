@@ -93,7 +93,9 @@ function createWhereForRequest (req) {
     where.performerId = req.user.id;
   }
 
-  if (req.query.performerId) {
+  if (+req.query.performerId === 0) {
+    where.performerId = { $eq: null }; // IS NULL
+  } else if (req.query.performerId) {
     where.performerId = req.query.performerId;
   }
 
