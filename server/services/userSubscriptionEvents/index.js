@@ -1,6 +1,6 @@
 const email = require('../email');
 const _ = require('underscore');
-const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary/*, ProjectRolesDictionary*/ } = require('../../models');
+const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 
 module.exports = async function (eventId, input){
   const emails = [];
@@ -8,43 +8,46 @@ module.exports = async function (eventId, input){
 
   switch (eventId){
 
-  case (1): // need to rework rolesIds
+  case (1):
     // event description : new task added to project
     // receivers : project's PM and QA (which has subscription)
     // input = { taskId }
 
-    /*task = await getTask(input.taskId);
+    task = await getTask(input.taskId);
     receivers = await ProjectUsers.findAll({
-      // attributes: [],
       include: [
         {
           as: 'user',
-          model: User,
-          //attributes: User.defaultSelect
+          model: User
         },
         {
           as: 'subscriptions',
-          model: ProjectUsersSubscriptions,
-          //attributes: ProjectUsersSubscriptions.defaultSelect
+          model: ProjectUsersSubscriptions
+        },
+        {
+          as: 'roles',
+          model: ProjectUsersRoles,
+          where: {
+            projectRoleId: {
+              '$in': [ProjectRolesDictionary.values[1].id, ProjectRolesDictionary.values[8].id]// PM QA
+            }
+          }
         }
       ],
       where: {
-        projectId: task.project.id,
-        rolesIds: {
-          $contains: [ProjectRolesDictionary.values[1].id+'', ProjectRolesDictionary.values[8].id+'']// PM QA TODO
-        }
+        projectId: task.project.id
       }
     });
 
     receivers.forEach(function (projectUser){
-      if (!isUserSubscribed(eventId, projectUser)) return;
+      if (!isUserSubscribed(eventId, projectUser.get({ plain: true }))) return;
       const emailTemplate = email.template('newTaskForQAPM', { task });
       emails.push({
         'receiver': projectUser.user.emailPrimary,
         'subject': emailTemplate.subject,
         'html': emailTemplate.body
       });
-    });*/
+    });
 
     break;
 
@@ -170,7 +173,8 @@ function getTask (id){
                 as: 'subscriptions',
                 model: ProjectUsersSubscriptions
               }
-            ]
+            ],
+            required: false
           }
         ]
       },
@@ -187,7 +191,8 @@ function getTask (id){
                 as: 'subscriptions',
                 model: ProjectUsersSubscriptions
               }
-            ]
+            ],
+            required: false
           }
         ]
       }
