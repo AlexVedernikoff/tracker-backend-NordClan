@@ -10,28 +10,27 @@ exports.destroy = async (timesheetIds, userId) => {
 };
 
 async function destroyTimesheet (id, userId) {
-  const timesheet = await queries.timesheet.canUserChangeTimesheet(userId, id);
+  const deletedTimesheet = await queries.timesheet.canUserChangeTimesheet(userId, id);
 
-  const needUpdateTask = timesheet.taskId
-    && timesheet.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION;
+  const needUpdateTask = deletedTimesheet.taskId
+    && deletedTimesheet.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION;
 
   const updatedTask = needUpdateTask
-    ? await updateTask(timesheet)
+    ? await updateTask(deletedTimesheet)
     : null;
 
-  await timesheet.destroy();
+  await deletedTimesheet.destroy();
 
-  return {
-    deletedTimesheet: timesheet,
-    updatedTask: updatedTask[1][0].dataValues
-  };
+  return { deletedTimesheet, updatedTask };
 }
 
 async function updateTask (timesheet) {
   const task = await queries.task.findOneActiveTask(timesheet.taskId, ['id', 'factExecutionTime']);
   const factExecutionTime = models.sequelize.literal(`"fact_execution_time" - ${timesheet.spentTime}`);
-  return await models.Task.update({ factExecutionTime }, {
+  const updatedTask = await models.Task.update({ factExecutionTime }, {
     where: { id: task.id },
     returning: true
   });
+
+  return updatedTask[1][0].dataValues;
 }

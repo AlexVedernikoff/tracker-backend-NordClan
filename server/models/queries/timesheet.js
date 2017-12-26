@@ -38,7 +38,7 @@ exports.getTimesheet = function (params) {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -65,19 +65,27 @@ exports.getTimesheet = function (params) {
         paranoid: false
       }
     ]
-  }).then((model) => {
-    if (!model) {
+  }).then((timesheet) => {
+    if (!timesheet) {
       return createError('User can\'t change timesheet');
     }
 
-    if (model.dataValues.task && model.dataValues.task.dataValues.project) {
-      model.dataValues.project = model.dataValues.task.dataValues.project;
-      delete model.dataValues.task.dataValues.project;
+    //TODO очень плохой callback, надо бы переделать
+    if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.project) {
+      Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project, isDraft: false });
+      const prefix = timesheet.dataValues.task.dataValues.project.dataValues.prefix;
+      timesheet.dataValues.project.prefix = prefix;
+      delete timesheet.dataValues.task.dataValues.project;
     }
-    return model;
+    if (timesheet.dataValues.projectMaginActivity) {
+      Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+      delete timesheet.dataValues.projectMaginActivity;
+    }
+    timesheet.dataValues.onDate = timesheet.onDate;
+
+    return timesheet.dataValues;
   });
 };
-
 
 exports.isNeedCreateTimesheet = async function (options) {
   const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;

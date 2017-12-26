@@ -15,36 +15,22 @@ exports.create = async (params) => {
     ? await updateTask(params)
     : null;
 
-  const timesheet = await models.Timesheet.create(params);
-  const timesheetWithTask = await queries.timesheet.getTimesheet({ id: timesheet.id });
-  timesheetWithTask.dataValues.isDraft = false;
+  const { id } = await models.Timesheet.create(params);
+  const createdTimesheet = await queries.timesheet.getTimesheet({ id });
+  createdTimesheet.isDraft = false;
 
-  return {
-    createdTimesheet: transformTimesheet(timesheetWithTask),
-    updatedTask: updatedTask[1][0].dataValues
-  };
+  return { createdTimesheet, updatedTask };
 };
 
 async function updateTask (params) {
   const task = await queries.task.findOneActiveTask(params.taskId, ['id', 'factExecutionTime']);
 
-  return await models.Task.update({
+  const updatedTask = await models.Task.update({
     factExecutionTime: models.sequelize.literal(`"fact_execution_time" + ${params.spentTime}`)
   }, {
     where: { id: task.id },
     returning: true
   });
-}
 
-function transformTimesheet (timesheet) {
-  if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.project) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project, isDraft: false });
-    delete timesheet.dataValues.task.dataValues.project;
-  }
-  if (timesheet.dataValues.projectMaginActivity) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
-    delete timesheet.dataValues.projectMaginActivity;
-  }
-  timesheet.dataValues.onDate = timesheet.onDate;
-  return timesheet.dataValues;
+  return updatedTask[1][0].dataValues;
 }
