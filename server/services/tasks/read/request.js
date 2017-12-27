@@ -43,7 +43,15 @@ exports.findByPrimary = (id) => {
           model: models.TaskTasks,
           attributes: []
         },
-        attributes: ['id', 'name']
+        attributes: ['id', 'name'],
+        where: {
+          statusId: {
+            $ne: models.TaskStatusesDictionary.CANCELED_STATUS
+          },
+          deletedAt: {
+            $eq: null
+          }
+        }
       },
       {
         as: 'sprint',
