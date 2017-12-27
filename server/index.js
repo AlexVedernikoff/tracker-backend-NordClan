@@ -39,10 +39,6 @@ exports.run = function () {
   app.use(checkTokenMiddleWare);
   app.use(checkSystemTokenMiddleWare);
   app.use(Access.middleware);
-  app.all('*', function (req, res, next){
-    sequelize.context = { user: req.user };
-    next();
-  });
 
   app.all('*', function (req, res, next){
     res.setHeader('Content-Type', 'application/json');

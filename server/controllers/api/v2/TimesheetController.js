@@ -141,7 +141,7 @@ exports.updateDraft = async function (req, res, next) {
   const draftId = req.params.sheetId || req.body.sheetId || req.query.sheetId;
 
   TimesheetService
-    .updateDraft(req.body, draftId)
+    .updateDraft(req.body, draftId, req.user.id)
     .then(({ updatedDraft, createdTimesheet, updatedTask }) => {
       if (updatedDraft) {
         TimesheetsChannel.sendAction('update', updatedDraft, res.io, req.user.id);

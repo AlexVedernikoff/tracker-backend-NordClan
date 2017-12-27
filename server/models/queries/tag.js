@@ -36,7 +36,7 @@ exports.getAllTagsByModel = function (modelName, modelId, t = null) {
 };
 
 // Обработчик тегов при создании записи проекта, задачи
-exports.saveTagsForModel = function (Model, tagsString, taggable) {
+exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
   let tags = [];
   if (tagsString) {
     tags = tagsString.toString().split(',');
@@ -55,7 +55,8 @@ exports.saveTagsForModel = function (Model, tagsString, taggable) {
                 tagId: tag.id,
                 taggableId: Model.id,
                 taggable: taggable
-              }
+              },
+              historyAuthorId: userId
             });
         })
         .catch((err) => {

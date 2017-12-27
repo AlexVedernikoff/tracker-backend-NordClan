@@ -52,7 +52,7 @@ exports.create = async function (req, res, next){
       .then((model) => {
         if (!model) return next(createError(404, 'taggable model not found'));
 
-        return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable)
+        return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable, req.user.id)
           .then(() => {
             return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id, t)
               .then((tags) => {
@@ -98,7 +98,7 @@ exports.delete = async function (req, res, next){
           .then((item) => {
             if (!item) return next(createError(404, 'ItemTag not found'));
             return item
-              .destroy({transaction: t})
+              .destroy({transaction: t, historyAuthorId: req.user.id})
               .then(() => {
                 return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId, t)
                   .then((tags) => {
