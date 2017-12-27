@@ -408,6 +408,37 @@ module.exports = {
         ]
       }
     },
+    '/project/:projectId/reports/period': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить файл - отчёт по пользователям и задачам за заданный период в формате xlsx',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'startDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'endDate',
+            description: 'yyyy-mm-dd',
+            type: 'string',
+            format: 'date',
+            in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
 
 
     '/portfolio': {
@@ -1168,6 +1199,21 @@ module.exports = {
             description: 'Тег для поиска',
             type: 'string',
             in: 'query',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/task/{taskId}/spent': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'Получить затраченное время по всем активностям задачи',
+        parameters: [
+          {
+            name: 'taskId',
+            type: 'integer',
+            in: 'path',
             required: true
           }
         ],
