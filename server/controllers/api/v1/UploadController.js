@@ -48,7 +48,7 @@ exports.delete = async function (req, res, next) {
         return next(createError(403, 'Access denied'));
       }
 
-      if (model) return model.destroy();
+      if (model) return model.destroy({ historyAuthorId: req.user.id });
     })
     .then(()=>{
       return queries.file.getFilesByModel(modelFileName, req.params.entityId);

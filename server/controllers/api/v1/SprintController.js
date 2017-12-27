@@ -80,7 +80,7 @@ exports.update = function (req, res, next){
           return next(createError(403, 'Access denied'));
         }
 
-        return model.updateAttributes(req.body, { transaction: t })
+        return model.updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
           .then((updatedModel)=>{
             return queries.sprint.allSprintsByProject(updatedModel.projectId, Sprint.defaultSelect, t)
               .then((sprints) => {
@@ -118,7 +118,7 @@ exports.delete = function (req, res, next){
         return next(createError(400, 'Can\'t delete sprint when it have exists tasks'));
       }
 
-      return model.destroy()
+      return model.destroy({ historyAuthorId: req.user.id })
         .then(()=>{
           return queries.sprint.allSprintsByProject(model.projectId)
             .then((sprints) => {

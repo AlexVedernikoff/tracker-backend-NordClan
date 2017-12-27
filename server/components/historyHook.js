@@ -1,9 +1,9 @@
 const _ = require('underscore');
 const { historyHandler } = require('./historyHandler');
 
-module.exports = function(sequelize) {
+module.exports = function (sequelize) {
   _.extend(sequelize.Model.prototype, {
-    addHistoryForTask: function() {
+    addHistoryForTask: function () {
       const entity = 'Task';
       const handler = historyHandler(sequelize, entity);
 
@@ -14,7 +14,7 @@ module.exports = function(sequelize) {
       return this;
     },
 
-    addHistoryForProject: function() {
+    addHistoryForProject: function () {
       const entity = 'Project';
       const handler = historyHandler(sequelize, entity);
 
@@ -23,6 +23,6 @@ module.exports = function(sequelize) {
       this.addHook('afterUpdate', handler.onUpdate);
       this.addHook('afterDestroy', handler.onUpdate);
       return this;
-    },
+    }
   });
 };
