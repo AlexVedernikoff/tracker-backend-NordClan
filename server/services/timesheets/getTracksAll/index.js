@@ -1,5 +1,6 @@
 const queries = require('../../../models/queries');
 const moment = require('moment');
+const { ProjectUsers, Project } = require('../../../models');
 
 exports.getTracksAll = async (startDate, endDate, params) => {
   const dateRange = getDateRange(startDate, endDate);
@@ -15,6 +16,8 @@ exports.getTracksAll = async (startDate, endDate, params) => {
     acc[onDate] = { tracks, scales };
     return acc;
   }, {});
+
+  formatTracksData.availableProjects = await getAvailableProjects(params.userId);
 
   return formatTracksData;
 };
@@ -75,14 +78,16 @@ async function getTimesheets (conditions) {
 
 function transformTimesheet (timesheet) {
   if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.project) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project, isDraft: false });
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project });
     delete timesheet.dataValues.task.dataValues.project;
   }
   if (timesheet.dataValues.projectMaginActivity) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues });
     delete timesheet.dataValues.projectMaginActivity;
   }
+
   timesheet.dataValues.onDate = timesheet.onDate;
+  timesheet.dataValues.isDraft = false;
   return timesheet.dataValues;
 }
 
@@ -124,6 +129,22 @@ function getDateRange (startDate, endDate) {
   return Array.from({ length: difference + 1 }, (_, v) => v).map(i => {
     return moment(endDate).subtract(i, 'd').format(dateFormat);
   });
+}
+
+async function getAvailableProjects (userId) {
+  const projects = await ProjectUsers.findAll({
+    where: { userId },
+    attributes: ['id'],
+    include: [
+      {
+        as: 'project',
+        model: Project,
+        attributes: ['id', 'name', 'prefix']
+      }
+    ]
+  });
+
+  return projects;
 }
 
 exports.getDateRange = getDateRange;
