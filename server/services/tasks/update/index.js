@@ -11,7 +11,7 @@ async function update (body, taskId, user) {
   }
 
   const taskParams = getTaskParams(body);
-  const updatedAttributes = await originTask.updateAttributes(taskParams);
+  const updatedAttributes = await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
   const updatedTask = await appendAdditionalFields(updatedAttributes);
 
   const createdDraft = body.statusId

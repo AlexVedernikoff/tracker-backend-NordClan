@@ -86,7 +86,7 @@ exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   TasksService
-    .destroy(req.params.id)
+    .destroy(req.params.id, res.user.id)
     .then(() => {
       res.end();
     })

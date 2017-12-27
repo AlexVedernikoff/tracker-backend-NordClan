@@ -117,6 +117,7 @@ exports.read = function (req, res, next){
           as: 'projectUsers',
           model: models.ProjectUsers,
           attributes: models.ProjectUsers.defaultSelect,
+          separate: true,
           include: [
             {
               as: 'user',
@@ -203,7 +204,7 @@ exports.update = function (req, res, next){
         }
 
         return project
-          .updateAttributes(req.body, { transaction: t })
+          .updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
           .then(()=>{
 
             // Запускаю проверку портфеля на пустоту и его удаление
@@ -247,7 +248,7 @@ exports.delete = function (req, res, next){
     .then((project) => {
       if (!project) { return next(createError(404)); }
 
-      return project.destroy()
+      return project.destroy({ historyAuthorId: req.user.id })
         .then(()=>{
           res.end();
         });
