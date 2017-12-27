@@ -30,9 +30,9 @@ module.exports = {
     enabled: process.env.EMAIL_ENABLED && process.env.EMAIL_ENABLED === 'true'
       ? true
       : false,
-    service: 'serviceHere', // example : "Yandex"
-    login: 'mail@here.ru',
-    password: 'passwordHere',
+    service: 'Yandex',
+    login: 'sim-track@simbirsoft.com',
+    password: 'AP2y2CHU',
     title: 'SimTrack',
     templateBaseUrl: 'http://sim-track.simbirsoft'
   },
