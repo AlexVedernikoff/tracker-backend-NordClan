@@ -19,6 +19,10 @@ exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesI
           as: 'user',
           model: models.User,
           attributes: ['id', 'firstNameRu', 'lastNameRu'],
+        },
+        {
+          as: 'roles',
+          model: models.ProjectUsersRoles
         }
       ],
       order: [
@@ -28,11 +32,10 @@ exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesI
     })
     .then((projectUsers) => {
       projectUsers.forEach((projectUser) => {
-        const rolesIds = JSON.parse(projectUser.rolesIds);
         response.push({
           id: projectUser.user.id,
           fullNameRu: projectUser.user.fullNameRu,
-          roles: getTransRolesToObject(rolesIds),
+          roles: getTransRolesToObject(projectUser.roles),
         });
       });
 
@@ -51,12 +54,18 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
         userId: userId,
         deletedAt: null
       },
+      include: [
+        {
+          as: 'roles',
+          model: models.ProjectUsersRoles
+        }
+      ],
       transaction: t
     })
     .then((projectUsers) => {
       let rolesIds;
       projectUsers.forEach((projectUser) => {
-        rolesIds = projectUser.dataValues.rolesIds.split(',');
+        rolesIds = projectUser.roles.map((role) => role.projectRoleId);
       });
       return rolesIds;
     });
@@ -66,7 +75,7 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 
 function getTransRolesToObject(rolesIds) {
   const result = {};
-  if (rolesIds) rolesIds = rolesIds.map((el) => +el);
+  if (rolesIds) rolesIds = rolesIds.map((role) => role.projectRoleId);
 
   models.ProjectRolesDictionary.values.forEach(el => {
     result[el.code] = (rolesIds) ?

@@ -182,17 +182,6 @@ module.exports = function (sequelize, DataTypes) {
       constraints: false
     });
 
-    Project.belongsToMany(models.User, {
-      as: 'users',
-      through: {
-        as: 'projectUsers',
-        model: models.ProjectUsers,
-        unique: false
-      },
-      foreignKey: 'project_id',
-      constraints: false
-    });
-
     Project.belongsToMany(models.Tag, {
       as: 'tagForQuery',
       through: {
@@ -206,7 +195,10 @@ module.exports = function (sequelize, DataTypes) {
       constraints: false
     });
 
-    Project.hasOne(models.ProjectUsers);
+    Project.hasMany(models.ProjectUsers, {
+      as: 'projectUsers',
+      foreignKey: 'project_id'
+    });
 
 
     Project.hasMany(models.ProjectAttachments, {
