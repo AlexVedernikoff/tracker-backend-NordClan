@@ -78,14 +78,16 @@ async function getTimesheets (conditions) {
 
 function transformTimesheet (timesheet) {
   if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.project) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project, isDraft: false });
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.task.dataValues.project });
     delete timesheet.dataValues.task.dataValues.project;
   }
   if (timesheet.dataValues.projectMaginActivity) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues });
     delete timesheet.dataValues.projectMaginActivity;
   }
+
   timesheet.dataValues.onDate = timesheet.onDate;
+  timesheet.dataValues.isDraft = false;
   return timesheet.dataValues;
 }
 

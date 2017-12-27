@@ -27,9 +27,8 @@ async function updateDraft (params, draftId) {
 }
 
 async function createTimesheet (params, draftId, userId) {
-  const { timesheetParams, draft, updatedTask } = await getTimesheetParams(params, draftId, userId);
+  const { timesheetParams, updatedTask } = await getTimesheetParams(params, draftId, userId);
 
-  console.log(timesheetParams);
   const timesheet = await Timesheet.create(timesheetParams, { returning: true });
   const createdTimesheet = await queries.timesheet.getTimesheet(timesheet.id);
 
@@ -45,10 +44,12 @@ async function createTimesheet (params, draftId, userId) {
 
 function transformTimesheet (timesheet) {
   if (timesheet.dataValues.projectMaginActivity) {
-    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues, isDraft: false });
+    Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues });
     delete timesheet.dataValues.projectMaginActivity;
   }
+
   timesheet.dataValues.onDate = timesheet.onDate;
+  timesheet.dataValues.isDraft = false;
   return timesheet.dataValues;
 }
 
@@ -56,29 +57,27 @@ function transformTimesheet (timesheet) {
 async function getTimesheetParams (params, draftId, userId) {
   if (isDraftForMagicActivity(draftId)) {
     delete params.id;
+
     return {
-      timesheetParams: {
-        ...params,
-        userId
-      }
+      timesheetParams: { ...params, userId }
     };
-  } else {
-    const draft = await TimesheetDraft.findById(draftId);
-    const updatedTask = await getUpdatedTask(draft, params);
-
-    const { onDate, typeId, taskStatusId, taskId } = draft.dataValues;
-
-    const timesheetParams = {
-      onDate,
-      typeId,
-      taskStatusId,
-      userId,
-      taskId,
-      spentTime: params.spentTime
-    };
-
-    return { updatedTask, timesheetParams };
   }
+
+  const draft = await TimesheetDraft.findById(draftId);
+  const updatedTask = await getUpdatedTask(draft, params);
+
+  const { onDate, typeId, taskStatusId, taskId } = draft.dataValues;
+
+  const timesheetParams = {
+    onDate,
+    typeId,
+    taskStatusId,
+    userId,
+    taskId,
+    spentTime: params.spentTime
+  };
+
+  return { updatedTask, timesheetParams };
 }
 
 function isDraftForMagicActivity (draftId) {
