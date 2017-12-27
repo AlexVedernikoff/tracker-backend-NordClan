@@ -27,7 +27,9 @@ module.exports = {
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
   email: {
-    enabled: process.env.EMAIL_ENABLED || false,
+    enabled: process.env.EMAIL_ENABLED && process.env.EMAIL_ENABLED === 'true'
+      ? true
+      : false,
     service: 'serviceHere', // example : "Yandex"
     login: 'mail@here.ru',
     password: 'passwordHere',
