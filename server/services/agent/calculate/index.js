@@ -1,6 +1,5 @@
 const moment = require('moment');
-
-const { Project, ProjectUsers, Sprint, Task, TaskHistory, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
+const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, TaskHistory, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -76,8 +75,29 @@ async function getMetrics (){
         attributes: User.defaultSelect,
         through: {
           as: 'projectUser',
-          model: ProjectUsers
+          model: ProjectUsers,
+          include: [
+            {
+              as: 'roles',
+              model: ProjectUsersRoles
+            }
+          ]
         }
+      },
+      {
+        as: 'projectUsers',
+        model: ProjectUsers,
+        attributes: ProjectUsers.defaultSelect,
+        include: [
+          {
+            as: 'user',
+            model: User
+          },
+          {
+            as: 'roles',
+            model: ProjectUsersRoles
+          }
+        ]
       }
     ],
     subQuery: true
@@ -93,12 +113,6 @@ async function getMetrics (){
         plainProject.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
         plainProject.sprints[sprintKey].clientBugsAmount = parseInt(sprint.clientBugsAmount, 10);
         plainProject.sprints[sprintKey].regressionBugsAmount = parseInt(sprint.regressionBugsAmount, 10);
-      });
-    }
-    if (plainProject.users.length > 0){
-      plainProject.users.forEach(function (user, userKey){
-        if (!user.projectUser.rolesIds) return;
-        plainProject.users[userKey].projectUser.rolesIds = JSON.parse(user.projectUser.rolesIds);
       });
     }
     MetricTypesDictionary.values.forEach(function (value){

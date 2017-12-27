@@ -25,6 +25,7 @@ const Models = [
   // models.ProjectUsers,
   // models.ProjectUsersSubscriptions
   // models.ProjectAttachments,
+  // models.ProjectUsersRoles,
   // models.TaskAttachments,
 
   // models.TimesheetTypesDictionary,
