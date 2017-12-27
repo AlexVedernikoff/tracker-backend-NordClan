@@ -411,7 +411,7 @@ module.exports = {
     '/project/:projectId/reports/period': {
       get: {
         tags: ['Projects'],
-        summary: 'Получить файл - отчёт по пользователям и задачам за заданный период в формате xlsx',
+        summary: 'Получить файл - отчёт за период',
         parameters: [
           {
             name: 'projectId',
@@ -1208,7 +1208,7 @@ module.exports = {
     '/task/{taskId}/spent': {
       get: {
         tags: ['Tasks'],
-        summary: 'Получить затраченное время по всем активностям задачи',
+        summary: 'Получить затраченное время по активностям задачи',
         parameters: [
           {
             name: 'taskId',
