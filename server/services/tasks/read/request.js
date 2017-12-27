@@ -34,7 +34,7 @@ exports.findByPrimary = (id) => {
       {
         as: 'subTasks',
         model: models.Task,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'statusId'],
         where: {
           statusId: {
             $ne: models.TaskStatusesDictionary.CANCELED_STATUS
@@ -52,7 +52,7 @@ exports.findByPrimary = (id) => {
           model: models.TaskTasks,
           attributes: []
         },
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'statusId'],
         where: {
           statusId: {
             $ne: models.TaskStatusesDictionary.CANCELED_STATUS
