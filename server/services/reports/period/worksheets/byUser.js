@@ -55,7 +55,6 @@ class ByUserWorkSheet extends WorkSheetTemplate {
       cell
         .value = tasks.reduce((count, task) => count + Number(task.spentTime), 0)
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
@@ -72,7 +71,6 @@ class ByUserWorkSheet extends WorkSheetTemplate {
       cell
         .value = Number(this._tottalSpent)
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }

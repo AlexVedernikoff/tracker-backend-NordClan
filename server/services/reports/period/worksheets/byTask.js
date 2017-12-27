@@ -38,7 +38,6 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
         .getCell(this._rows[planIndex] + this._lastIndexRow)
         .value = Number(task.plannedExecutionTime)
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
@@ -83,7 +82,6 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       cell
         .value = tottalTaskTime
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
@@ -100,7 +98,6 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       cell
         .value = Number(this._tottalSpent)
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
