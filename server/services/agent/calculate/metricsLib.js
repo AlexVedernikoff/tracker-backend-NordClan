@@ -1,4 +1,5 @@
 const { TaskStatusesDictionary } = require('../../../models');
+const _ = require('underscore');
 
 module.exports = function (metricsTypeId, input){
 
@@ -159,14 +160,14 @@ module.exports = function (metricsTypeId, input){
     totalTimeSpent = 0;
     totalTimeSpentWithRole = 0;
     totalTimeSpentInPercent = 0;
-    if (input.project.sprints.length > 0 && input.project.users.length > 0){
+    if (input.project.sprints.length > 0 && input.project.projectUsers.length > 0){
       input.project.sprints.forEach(function (sprint){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
           totalTimeSpent += task.factExecutionTime;
-          input.project.users.forEach(function (user){
-            if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) totalTimeSpentWithRole += task.factExecutionTime;
+          input.project.projectUsers.forEach(function (projectUser){
+            if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) totalTimeSpentWithRole += task.factExecutionTime;
           });
         });
       });
@@ -206,13 +207,13 @@ module.exports = function (metricsTypeId, input){
     };
     roleId = rolesIdsConf[metricsTypeId.toString()];
     totalTimeSpentWithRole = 0;
-    if (input.project.sprints.length > 0 && input.project.users.length > 0){
+    if (input.project.sprints.length > 0 && input.project.projectUsers.length > 0){
       input.project.sprints.forEach(function (sprint){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
-          input.project.users.forEach(function (user){
+          input.project.projectUsers.forEach(function (projectUser){
             if (!task.factExecutionTime) return;
-            if (user.id === task.performerId && user.projectUser.rolesIds.indexOf(roleId) !== -1) {
+            if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) {
               totalTimeSpentWithRole += parseFloat(task.factExecutionTime) || 0;
             }
           });
