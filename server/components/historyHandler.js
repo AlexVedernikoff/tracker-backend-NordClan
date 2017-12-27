@@ -53,7 +53,7 @@ exports.historyHandler = function (sequelize, historyModel) {
         userId: userId,
         [modelIdProperty]: modelId,
         action: 'create'
-      }, { logging: (text) => {console.log(text);} }).catch((err) => {
+      }).catch((err) => {
         createError(err);
       });
     },
