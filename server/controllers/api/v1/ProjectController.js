@@ -117,6 +117,7 @@ exports.read = function (req, res, next){
           as: 'projectUsers',
           model: models.ProjectUsers,
           attributes: models.ProjectUsers.defaultSelect,
+          separate: true,
           include: [
             {
               as: 'user',
