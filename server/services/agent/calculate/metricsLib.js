@@ -1,5 +1,6 @@
 const { TaskStatusesDictionary } = require('../../../models');
 const moment = require('moment');
+const _ = require('underscore');
 
 module.exports = async function (metricsTypeId, input){
 
@@ -90,7 +91,10 @@ module.exports = async function (metricsTypeId, input){
     totalBugsAmount = 0;
     if (input.project.sprints.length > 0){
       input.project.sprints.forEach(function (sprint){
-        totalBugsAmount += sprint.activeBugsAmount;
+        const bugs = _.filter(sprint.tasks, (task) => {
+          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2);
+        });
+        totalBugsAmount += bugs.length;
       });
     }
     return {
@@ -106,7 +110,10 @@ module.exports = async function (metricsTypeId, input){
     totalClientBugsAmount = 0;
     if (input.project.sprints.length > 0){
       input.project.sprints.forEach(function (sprint){
-        totalClientBugsAmount += sprint.clientBugsAmount;
+        const clientBugs = _.filter(sprint.tasks, (task) => {
+          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 5);
+        });
+        totalClientBugsAmount += clientBugs.length;
       });
     }
     return {
@@ -122,7 +129,10 @@ module.exports = async function (metricsTypeId, input){
     totalRegressionBugsAmount = 0;
     if (input.project.sprints.length > 0){
       input.project.sprints.forEach(function (sprint){
-        totalRegressionBugsAmount += sprint.regressionBugsAmount;
+        const regressionBugs = _.filter(sprint.tasks, (task) => {
+          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 4);
+        });
+        totalRegressionBugsAmount += regressionBugs.length;
       });
     }
     return {
@@ -272,7 +282,7 @@ module.exports = async function (metricsTypeId, input){
       input.sprint.tasks.forEach(function (task){
         if (!task.plannedExecutionTime) return;
         laborCostsTotal += parseFloat(task.plannedExecutionTime) || 0;
-        if (task.typeId === 1) laborCostsClosedTasks += parseFloat(task.plannedExecutionTime) || 0;
+        if (task.typeId === 1 && task.statusId === TaskStatusesDictionary.CLOSED_STATUS) laborCostsClosedTasks += parseFloat(task.plannedExecutionTime) || 0;
       });
     }
 
@@ -341,7 +351,7 @@ module.exports = async function (metricsTypeId, input){
     openedTasksAmount = 0;
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
-        if (task.statusId === TaskStatusesDictionary.CLOSED_STATUS || task.typeId !== taskTypeId) return;
+        if (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) !== -1 || task.typeId !== taskTypeId) return;
         openedTasksAmount++;
       });
     }
@@ -373,21 +383,21 @@ module.exports = async function (metricsTypeId, input){
 
   case (41):
     unsceduledOpenedFeatures = 0;
-    console.log('SPRINT : ' + input.sprint.name + ' ' + input.sprint.id, ' задач : ' + input.sprint.tasks.length);
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
-        console.log('sprint id : ' + input.sprint.name + ' task id : ' + task.id + ' history : ' + task.history.length);
         if (
-          moment(task.createdAt).isBefore(input.sprint.factStartDate)
-          || task.typeId !== 1
-          || (
-            task.history
-            && task.history.length > 0
-            && moment(task.history[task.history.length - 1].createdAt).isBefore(input.sprint.factStartDate)
+          task.typeId === 1
+          && (
+            moment(task.createdAt).isAfter(input.sprint.factStartDate)
+            || (
+              task.history
+              && task.history.length > 0
+              && moment(task.history[task.history.length - 1].createdAt).isAfter(input.sprint.factStartDate)
+            )
           )
-        ) return;
-        console.log('!!!!!!!!!!!!!!!! unsceduledOpenedFeatures');
-        unsceduledOpenedFeatures++;
+        ){
+          unsceduledOpenedFeatures++;
+        }
       });
     }
     return {

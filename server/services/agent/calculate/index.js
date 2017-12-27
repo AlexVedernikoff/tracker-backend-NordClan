@@ -45,47 +45,13 @@ async function getMetrics (){
       {
         as: 'sprints',
         model: Sprint,
-        attributes: Sprint.defaultSelect.concat([
-          [
-            Sequelize.literal(`(SELECT count(*)
-                FROM tasks as t
-                WHERE t.project_id = "Project"."id"
-                AND t.sprint_id = "sprints"."id"
-                AND t.deleted_at IS NULL
-                AND t.type_id = '2'
-                AND t.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES}))`),
-            'activeBugsAmount'
-          ], // Количество открытых задач Тип = Баг
-          [
-            Sequelize.literal(`(SELECT count(*)
-                FROM tasks as t
-                WHERE t.project_id = "Project"."id"
-                AND t.sprint_id = "sprints"."id"
-                AND t.deleted_at IS NULL
-                AND t.type_id = '5'
-                AND t.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES}))`),
-            'clientBugsAmount'
-          ], // Количество открытых задач Тип = Баг от Клиента
-          [
-            Sequelize.literal(`(SELECT count(*)
-                FROM tasks as t
-                WHERE t.project_id = "Project"."id"
-                AND t.sprint_id = "sprints"."id"
-                AND t.deleted_at IS NULL
-                AND t.type_id = '4'
-                AND t.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES}))`),
-            'regressionBugsAmount'
-          ] // Количество открытых задач Тип = Регрес.баг
-        ]),
+        attributes: Sprint.defaultSelect,
         include: [
           {
             as: 'tasks',
             model: Task,
             attributes: Task.defaultSelect,
             where: {
-              statusId: {
-                $in: TaskStatusesDictionary.DONE_STATUSES
-              },
               deletedAt: {
                 $eq: null
               }
