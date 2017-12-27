@@ -28,20 +28,21 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       .mergeCells(`${this._rows[0] + this._lastIndexRow}:${this._rows[2] + this._lastIndexRow}`);
     this._worksheet
       .getCell(this._rows[0] + this._lastIndexRow)
-      .value = `${this._prefix}_${task.id} - ${task.name}`;
+      .value = task.isMagic ? `${task.name}` : `${this._prefix}-${task.id} - ${task.name}`;
+    if (task.isMagic) {
+      return;
+    }
     const planIndex = this._tableColumns.findIndex(row => row.ref === 'hoursPlan');
     if (~planIndex) {
       this._worksheet
         .getCell(this._rows[planIndex] + this._lastIndexRow)
-        .value = task.plannedExecutionTime
+        .value = Number(task.plannedExecutionTime)
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
 
   _writeUsersRows (users) {
-    // this._lastIndexRow++;
     let totalTaskTime = 0;
     _(users)
       .groupBy('userId')
@@ -50,7 +51,9 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       .map(timeSheets =>
         _.transform(timeSheets, (result, ts) => {
           result.fullNameRu = ts.user.fullNameRu;
-          result.comment += '- ' + ts.comment + '\r\n';
+          if (ts.comment) {
+            result.comment += '- ' + ts.comment + '\r\n';
+          }
           result.spentTime += Number(ts.spentTime);
         }, {role: 'who?', comment: '', spentTime: 0, fullNameRu: ''})
       )
@@ -79,7 +82,6 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       cell
         .value = tottalTaskTime
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
@@ -94,9 +96,8 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       cell
         .alignment = this._tableColumns[index].alignment || {};
       cell
-        .value = this._tottalSpent
+        .value = Number(this._tottalSpent)
           .toFixed(2)
-          .toString()
           .replace('.', ',');
     }
   }
@@ -107,7 +108,7 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       {calculate: d => d.fullNameRu, text: 'Исполнитель', width: 25},
       // TODO: awaiting role feature
       // {calculate: () => 'Role?', text: 'Роль', width: 13},
-      {calculate: d => d.comment, text: 'Описание', width: 23, alignment: {wrapText: true}},
+      {calculate: d => d.comment, text: 'Описание', width: 40, alignment: {wrapText: true}},
       {calculate: () => '', text: 'Hours Plan', width: 13, alignment: {wrapText: true}, ref: 'hoursPlan'},
       {
         calculate: d => {

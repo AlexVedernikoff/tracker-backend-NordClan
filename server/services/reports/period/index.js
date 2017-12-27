@@ -1,4 +1,4 @@
-const {Timesheet, Task, User, Project} = require('../../../models');
+const {Timesheet, Task, User, Project, TimesheetTypesDictionary} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
@@ -12,9 +12,9 @@ exports.getReport = async function (criteria, projectId) {
     where: {id: {$eq: projectId}},
     attributes: ['id', 'name', 'prefix']
   });
-  const timeSheets = await Timesheet.findAll({
+  const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
-    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate'],
+    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId'],
     include: [
       {
         as: 'task',
@@ -29,8 +29,33 @@ exports.getReport = async function (criteria, projectId) {
         required: false,
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
         paranoid: false
+      },
+      {
+        as: 'type',
+        model: TimesheetTypesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
       }
     ]
+  });
+  const timeSheets = timeSheetsDbData.map(timeSheet => {
+    const data = timeSheet.dataValues;
+    Object.assign(data, {user: data.user.dataValues});
+    if (!data.taskId) {
+      const type = data.type.dataValues;
+      Object.assign(data, {
+        taskId: -type.id,
+        task: {
+          name: type.name,
+          id: type.id,
+          isMagic: true
+        }
+      });
+    } else {
+      Object.assign(data, {task: data.task.dataValues});
+    }
+    return data;
   });
   const data = {
     info: {project, range: {startDate, endDate}},
@@ -38,12 +63,12 @@ exports.getReport = async function (criteria, projectId) {
       .groupBy('taskId')
       .map(timeSheet => _.transform(timeSheet, (resultObject, user) => {
         if (!_.has(resultObject, 'task')) {
-          resultObject.task = user.task.dataValues;
+          resultObject.task = user.task;
         }
         if (!_.has(resultObject, 'users')) {
           resultObject.users = [];
         }
-        resultObject.users.push(user.dataValues);
+        resultObject.users.push(user);
       }, {}))
       .value(),
 
@@ -51,7 +76,7 @@ exports.getReport = async function (criteria, projectId) {
       .groupBy('userId')
       .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
         if (!_.has(resultObject, 'user')) {
-          resultObject.user = task.user.dataValues;
+          resultObject.user = task.user;
         }
         if (!_.has(resultObject, 'tasks')) {
           resultObject.tasks = [];
@@ -118,7 +143,7 @@ function validateCriteria (criteria) {
   }
 
   if (moment(criteria.startDate).isAfter(moment(criteria.endDate))) {
-    throw 'Incorrect date range';
+    throw new Error('Incorrect date range');
   }
 
   return {
