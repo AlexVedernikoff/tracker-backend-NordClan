@@ -31,7 +31,8 @@ exports.read = function (req, res, next){
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Sprint.findByPrimary(req.params.id, {
-    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt', 'projectId', 'authorId',
+    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
+      'projectId', 'authorId', 'budget', 'riskBudget',
       [Sequelize.literal(`(SELECT count(*)
                                 FROM tasks as t
                                 WHERE t.project_id = "Sprint"."project_id"

@@ -516,42 +516,43 @@ module.exports = {
         summary: 'Создать спринт',
         parameters: [
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'projectId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'factStartDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'factFinishDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'allottedTime',
-            type: 'numeric',
-            in: 'formData'
+            in: 'body',
+            name: 'sprint',
+            description: 'The sprint to create.',
+            schema: {
+              type: 'object',
+              required: ['name', 'projectId', 'factStartDate', 'factFinishDate'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                projectId: {
+                  type: 'integer',
+                  example: 1
+                },
+                factStartDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                factFinishDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                allottedTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                budget: {
+                  type: 'number',
+                  example: 1.55
+                },
+                riskBudget: {
+                  type: 'number',
+                  example: 1.55
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -573,42 +574,46 @@ module.exports = {
       },
       put: {
         tags: ['Sprints'],
-        summary: 'Изменить конкретный портфель',
+        summary: 'Изменить конкретный спринт',
         parameters: [
           {
-            name: 'sprintId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'projectId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'name',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'factStartDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData'
-          },
-          {
-            name: 'factFinishDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData'
-          },
-          {
-            name: 'allottedTime',
-            type: 'numeric',
-            in: 'formData'
+            in: 'body',
+            name: 'sprint',
+            description: 'The sprint to update.',
+            schema: {
+              type: 'object',
+              required: ['sprintId'],
+              properties: {
+                sprintId: {
+                  type: 'integer',
+                  example: 1
+                },
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                factStartDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                factFinishDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                allottedTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                budget: {
+                  type: 'number',
+                  example: 1.55
+                },
+                riskBudget: {
+                  type: 'number',
+                  example: 1.55
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
