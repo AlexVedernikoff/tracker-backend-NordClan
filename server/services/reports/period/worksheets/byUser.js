@@ -70,7 +70,7 @@ class ByUserWorkSheet extends WorkSheetTemplate {
       cell
         .alignment = this._tableColumns[index].alignment || {};
       cell
-        .value = this._tottalSpent
+        .value = Number(this._tottalSpent)
           .toFixed(2)
           .toString()
           .replace('.', ',');
@@ -80,9 +80,9 @@ class ByUserWorkSheet extends WorkSheetTemplate {
   get _tableColumns () {
     return [
       {calculate: () => '', text: '', width: 3},
-      {calculate: d => `${this._prefix}_${d.task.id}`, text: '#'},
-      {calculate: d => d.task.name, text: 'Задача', width: 50},
-      {calculate: d => d.comment, text: 'Описание', width: 23, alignment: {wrapText: true}},
+      {calculate: d => d.task.isMagic ? '' : `${this._prefix}-${d.task.id}`, text: '#'},
+      {calculate: d => d.task.name, text: 'Задача', width: 50, alignment: {wrapText: true}},
+      {calculate: d => d.comment, text: 'Описание', width: 40, alignment: {wrapText: true}},
       {calculate: d => d.onDate, text: 'Дата', width: 13},
       {
         calculate: d => {
