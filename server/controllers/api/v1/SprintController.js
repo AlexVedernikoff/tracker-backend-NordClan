@@ -114,8 +114,8 @@ exports.delete = function (req, res, next){
         return next(createError(403, 'Access denied'));
       }
 
-      if (+model.taskCount > 0) {
-        return next(createError(400, 'Can\'t delete sprint when it have exists tasks'));
+      if (+model.dataValues.taskCount > 0) {
+        return next(createError(400, 'Can\'t delete sprint when it have exists tasks', { type: 'sprintHasActiveTasks' }));
       }
 
       return model.destroy({ historyAuthorId: req.user.id })
