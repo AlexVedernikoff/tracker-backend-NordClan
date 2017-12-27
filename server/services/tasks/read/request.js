@@ -34,7 +34,7 @@ exports.findByPrimary = (id) => {
       {
         as: 'subTasks',
         model: models.Task,
-        attributes: ['id', 'name']
+        attributes: ['id', 'name', 'statusId']
       },
       {
         as: 'linkedTasks',
@@ -43,7 +43,7 @@ exports.findByPrimary = (id) => {
           model: models.TaskTasks,
           attributes: []
         },
-        attributes: ['id', 'name']
+        attributes: ['id', 'name', 'statusId']
       },
       {
         as: 'sprint',
