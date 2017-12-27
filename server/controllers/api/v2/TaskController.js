@@ -86,7 +86,7 @@ exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   TasksService
-    .destroy(req.params.id)
+    .destroy(req.params.id, res.user.id)
     .then(() => {
       res.end();
     })
@@ -115,14 +115,14 @@ exports.list = function (req, res, next) {
 };
 
 exports.getSpentTime = async function (req, res, next) {
-    if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
-    TasksService.read(req.params.id, req.user)
-        .then(() => {
-            return TimesheetService
-                .getTaskSpent(req.params.id)
-                .then((model) => {
-                    res.json(model);
-                })
-        })
-        .catch((err) => next(createError(err)));
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+  TasksService.read(req.params.id, req.user)
+    .then(() => {
+      return TimesheetService
+        .getTaskSpent(req.params.id)
+        .then((model) => {
+          res.json(model);
+        });
+    })
+    .catch((err) => next(createError(err)));
 };

@@ -106,7 +106,7 @@ exports.delete = function (req, res, next){
       transaction: t
     });
 
-    await projectUser.destroy({ transaction: t });
+    await projectUser.destroy({ transaction: t, historyAuthorId: req.user.id });
 
     const users = await queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t);
     res.json(users);

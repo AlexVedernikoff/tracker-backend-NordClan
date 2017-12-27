@@ -1,16 +1,16 @@
-const excludeFileds =  ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId', 'completedAt', 'completed_at'];
+const excludeFileds = ['id', 'updated_at', 'updatedAt', 'createdAt', 'created_at', 'authorId', 'completedAt', 'completed_at'];
 const createError = require('http-errors');
 const _ = require('underscore');
 const { diffBetweenObjects } = require('./utils');
 
-exports.historyHandler = function(sequelize, historyModel) {
-  function getHistoryModelId(model, entity) {
+exports.historyHandler = function (sequelize, historyModel) {
+  function getHistoryModelId (model, entity) {
     const modelIdProperty = `${historyModel.toLowerCase()}Id`;
     const modelId = model[modelIdProperty] || model.id;
     return entity === 'ItemTag' ? model.taggableId : modelId;
   }
 
-  function getHistories(diffObj, model, modelNameForm, userId, modelId, entity) {
+  function getHistories (diffObj, model, modelNameForm, userId, modelId, entity) {
     const modelIdProperty = `${historyModel.toLowerCase()}Id`;
     return Object.keys(diffObj).map((key) => {
       const type = modelNameForm.attributes[key].type.key;
@@ -36,8 +36,12 @@ exports.historyHandler = function(sequelize, historyModel) {
   }
 
   return {
-    onCreate: function(model) {
-      const userId = model.$modelOptions.sequelize.context.user.id;
+    onCreate: function (model, instance) {
+      const userId = model.authorId
+        ? model.authorId
+        : instance.transaction.options.historyAuthorId;
+
+
       const modelIdProperty = `${historyModel.toLowerCase()}Id`;
       const entity = this.options.name.singular;
       const modelId = getHistoryModelId(model, entity);
@@ -48,29 +52,30 @@ exports.historyHandler = function(sequelize, historyModel) {
         entityId: model.id,
         userId: userId,
         [modelIdProperty]: modelId,
-        action: 'create',
-      }).catch((err) => {
+        action: 'create'
+      }, { logging: (text) => {console.log(text);} }).catch((err) => {
         createError(err);
       });
     },
 
-    onUpdate: function(model) {
-      const diffObj = diffBetweenObjects(model.dataValues, model._previousDataValues, excludeFileds);
-      if(_.isEmpty(diffObj)) return;
+    onUpdate: function (model, instance) {
+      const userId = instance.historyAuthorId;
 
-      const userId = model.$modelOptions.sequelize.context.user.id;
-      const modelNameForm = sequelize.models[this.options.name.plural] ||
-        sequelize.models[this.options.name.singular];
+      const diffObj = diffBetweenObjects(model.dataValues, model._previousDataValues, excludeFileds);
+      if (_.isEmpty(diffObj)) return;
+
+      const modelNameForm = sequelize.models[this.options.name.plural]
+        || sequelize.models[this.options.name.singular];
 
       const entity = this.options.name.singular;
       const modelId = getHistoryModelId(model, entity);
 
-      const histories = getHistories(diffObj, model, modelNameForm , userId, modelId, entity);
+      const histories = getHistories(diffObj, model, modelNameForm, userId, modelId, entity);
       const modelName = `${historyModel}History`;
 
       sequelize.models[modelName].bulkCreate(histories)
         .catch((err) => {
-          if(err) throw createError(err);
+          if (err) throw createError(err);
         });
     }
   };

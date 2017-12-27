@@ -25,7 +25,8 @@ exports.create = async function (req, res, next) {
           linkedTaskId: req.body.linkedTaskId
         },
         attributes: ['id'],
-        transaction: t
+        transaction: t,
+        historyAuthorId: req.user.id
       }),
       models.TaskTasks.findOrCreate({
         where: {
@@ -33,7 +34,8 @@ exports.create = async function (req, res, next) {
           linkedTaskId: req.params.taskId
         },
         attributes: ['id'],
-        transaction: t
+        transaction: t,
+        historyAuthorId: req.user.id
       })
     ]);
 
@@ -76,14 +78,15 @@ exports.delete = async function (req, res, next) {
           lock: 'UPDATE'
         })
         .then(model => {
-          if (model) return model.destroy({ transaction: t });
+          if (model) return model.destroy({ transaction: t, historyAuthorId: req.user.id });
         }),
       models.TaskTasks.destroy({
         where: {
           taskId: req.params.linkedTaskId,
           linkedTaskId: req.params.taskId
         },
-        transaction: t
+        transaction: t,
+        historyAuthorId: req.user.id
       })
     ]);
 
