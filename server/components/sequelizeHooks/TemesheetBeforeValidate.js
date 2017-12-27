@@ -3,6 +3,8 @@
 * При создании тайм шита вставляем в запись недостающие данные
 * */
 
+const _ = require('underscore');
+
 exports.index = async (instance, options) => {
   const models = instance.$modelOptions.sequelize.models;
   const t = options.transaction;
@@ -16,7 +18,13 @@ exports.index = async (instance, options) => {
       where: {
         projectId: instance.projectId
       },
-      attributes: ['id', 'rolesIds'],
+      attributes: ['id'],
+      include: [
+        {
+          as: 'roles',
+          model: models.ProjectUsersRoles
+        }
+      ],
       transaction: t
     });
     instance.isBillable = isBillable(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
@@ -32,7 +40,13 @@ exports.index = async (instance, options) => {
       where: {
         projectId: task.projectId
       },
-      attributes: ['id', 'rolesIds'],
+      attributes: ['id'],
+      include: [
+        {
+          as: 'roles',
+          model: models.ProjectUsersRoles
+        }
+      ],
       transaction: t
     });
     instance.isBillable = isBillable(projectUsers, models.ProjectRolesDictionary.UNBILLABLE_ID);
@@ -56,15 +70,15 @@ function isImplementation (instance) {
 
 
 function isBillable (projectUsers, UNBILLABLE_ID) {
-  if (projectUsers && projectUsers.rolesIds) {
-    return !~projectUsers.rolesIds.indexOf(UNBILLABLE_ID);
+  if (projectUsers && projectUsers.roles) {
+    return !_.find(projectUsers.roles, { projectRoleId : UNBILLABLE_ID });
   }
   return true;
 }
 
 function getRoles (projectUsers, UNBILLABLE_ID) {
-  if (projectUsers && projectUsers.rolesIds) {
-    const roles = JSON.parse(projectUsers.rolesIds);
+  if (projectUsers && projectUsers.roles) {
+    const roles = projectUsers.roles.map((role) => role.projectRoleId);
     const index = roles.indexOf(UNBILLABLE_ID);
     if (index > -1) roles.splice(index, 1);
     return JSON.stringify(roles);
