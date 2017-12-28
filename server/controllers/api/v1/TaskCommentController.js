@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const userSubscriptionEvents = require('../../../services/userSubscriptionEvents');
+const moment = require('moment');
 
 exports.create = async function (req, res, next){
   req.checkParams('taskId', 'taskId must be int').isInt();
@@ -42,7 +43,7 @@ exports.update = function (req, res, next){
           attributes: ['id', 'projectId']
         }), models.Comment
         .findByPrimary(req.params.commentId, {
-          attributes: ['id', 'deletedAt', 'authorId']
+          attributes: ['id', 'deletedAt', 'authorId', 'createdAt']
         })]);
     })
     .then(([task, comment])=>{
@@ -57,6 +58,11 @@ exports.update = function (req, res, next){
       }
       if (comment.authorId !== req.user.id && !req.user.isGlobalAdmin) {
         return next(createError(403, 'User is not an author of comment'));
+      }
+
+      const isTooLateForEdit = moment().diff(comment.createdAt, 'minutes') >= 10;
+      if (isTooLateForEdit) {
+        return next(createError(400, 'Too late for changes'));
       }
 
       const { text } = req.body;
