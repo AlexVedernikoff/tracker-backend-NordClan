@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
+const _ = require('underscore');
 
 exports.create = async function (req, res, next){
   if (!(Number.isInteger(+req.params.projectId) && +req.params.projectId > 0)) {
@@ -28,14 +29,53 @@ exports.create = async function (req, res, next){
 
   const options = {
     where: { projectId, userId, deletedAt: null },
-    defaults: { rolesIds, projectId, userId }
+    include: [
+      {
+        as: 'roles',
+        model: models.ProjectUsersRoles
+      }
+    ],
+    defaults: { projectId, userId }
   };
 
   models.ProjectUsers
     .findOrCreate(options)
     .spread(async (user, created) => {
-      if (!created) {
-        await user.updateAttributes({ rolesIds });
+
+      if (rolesIds.length > 0) {
+        const deleteRoles = [];
+        const createRoles = [];
+
+        models.ProjectRolesDictionary.values.forEach((projectRole) => {
+          if (rolesIds.indexOf(projectRole.id) === -1) {
+            deleteRoles.push(projectRole.id);
+          } else if (!_.find(user.roles, { projectRoleId: projectRole.id })) {
+            createRoles.push({
+              projectUserId: user.id,
+              projectRoleId: projectRole.id
+            });
+          }
+        });
+
+        if (deleteRoles.length > 0) {
+          await models.sequelize.transaction(function (t){
+            return models.ProjectUsersRoles.destroy({
+              where: {
+                projectUserId: user.id,
+                projectRoleId: {
+                  '$in': deleteRoles
+                }
+              },
+              transaction: t
+            });
+          });
+        }
+
+        if (createRoles.length > 0) {
+          await models.sequelize.transaction(function (t){
+            return models.ProjectUsersRoles.bulkCreate(createRoles, {transaction: t});
+          });
+        }
       }
 
       if (created) {
@@ -65,9 +105,9 @@ function parseRolesIds (rolesIds) {
         return null;
       }
     });
-    return JSON.stringify(roles);
+    return roles;
   }
-  return JSON.stringify([]);
+  return [];
 }
 
 exports.delete = function (req, res, next){
@@ -106,7 +146,14 @@ exports.delete = function (req, res, next){
       transaction: t
     });
 
-    await projectUser.destroy({ transaction: t });
+    await models.ProjectUsersRoles.destroy({
+      where: {
+        projectUserId: projectUser.id
+      },
+      transaction: t
+    });
+
+    await projectUser.destroy({ transaction: t, historyAuthorId: req.user.id });
 
     const users = await queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t);
     res.json(users);

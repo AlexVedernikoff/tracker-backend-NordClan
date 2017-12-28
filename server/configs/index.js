@@ -27,19 +27,12 @@ module.exports = {
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
   email: {
-    /*enabled: false,
-    service: 'serviceHere', // example : "Yandex"
-    login: 'mail@here.ru',
-    password: 'passwordHere',
-    title: 'SimTrack',*/
-    templateBaseUrl: 'http://sim-track.simbirsoft',
-    'enabled': process.env.EMAIL_ENABLED && process.env.EMAIL_ENABLED === 'true'
-      ? true
-      : false,
-    'service': 'Yandex',
-    'login': 'notif@modport.ru',
-    'password': 'eggplan4',
-    'title': 'SimTrack'
+    enabled: process.env.EMAIL_ENABLED === 'true',
+    service: 'Yandex',
+    login: 'sim-track@simbirsoft.com',
+    password: 'AP2y2CHU',
+    title: 'SimTrack',
+    templateBaseUrl: 'http://sim-track.simbirsoft'
   },
   ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
 };

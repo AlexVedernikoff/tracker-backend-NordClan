@@ -1,5 +1,3 @@
-const hooks = require('../components/sequelizeHooks/draftMagicActivity');
-
 module.exports = function (sequelize, DataTypes) {
   const ProjectUsers = sequelize.define('ProjectUsers', {
     id: {
@@ -16,6 +14,16 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    rolesIds: {
+      type: DataTypes.VIRTUAL,
+      get: function (){
+        const roles = this.get('roles');
+        if (!roles) {
+          return JSON.stringify([]);
+        }
+        return JSON.stringify(roles.map((projectUsersRole) => projectUsersRole.projectRoleId));
+      }
+    },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
@@ -23,11 +31,6 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true
       }
-    },
-    rolesIds: {
-      field: 'roles_ids',
-      type: DataTypes.STRING,
-      allowNull: true
     },
     authorId: {
       field: 'author_id',
@@ -64,12 +67,21 @@ module.exports = function (sequelize, DataTypes) {
         field: 'project_id'
       }});
 
+    ProjectUsers.hasMany(models.ProjectUsersRoles, {
+      as: 'roles',
+      foreignKey: {
+        name: 'projectUserId',
+        field: 'project_user_id'
+      }
+    });
+
     ProjectUsers.hasMany(models.ProjectUsersSubscriptions, {
       as: 'subscriptions',
       foreignKey: {
         name: 'projectUserId',
         field: 'project_user_id'
-      }});
+      }
+    });
 
     ProjectUsers.hasOne(models.Timesheet, {
       as: 'timesheet',

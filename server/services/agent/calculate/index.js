@@ -1,6 +1,5 @@
 const moment = require('moment');
-
-const { Project, ProjectUsers, Sprint, Task, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
+const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, TaskHistory, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -45,51 +44,27 @@ async function getMetrics (){
       {
         as: 'sprints',
         model: Sprint,
-        attributes: Sprint.defaultSelect.concat([
-          [
-            Sequelize.literal(`(SELECT count(*)
-                FROM tasks as t
-                WHERE t.project_id = "Project"."id"
-                AND t.sprint_id = "sprints"."id"
-                AND t.deleted_at IS NULL
-                AND t.type_id = '2'
-                AND t.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES}))`),
-            'activeBugsAmount'
-          ], // Количество открытых задач Тип = Баг
-          [
-            Sequelize.literal(`(SELECT count(*)
-                FROM tasks as t
-                WHERE t.project_id = "Project"."id"
-                AND t.sprint_id = "sprints"."id"
-                AND t.deleted_at IS NULL
-                AND t.type_id = '5'
-                AND t.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES}))`),
-            'clientBugsAmount'
-          ], // Количество открытых задач Тип = Баг от Клиента
-          [
-            Sequelize.literal(`(SELECT count(*)
-                FROM tasks as t
-                WHERE t.project_id = "Project"."id"
-                AND t.sprint_id = "sprints"."id"
-                AND t.deleted_at IS NULL
-                AND t.type_id = '4'
-                AND t.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES}))`),
-            'regressionBugsAmount'
-          ] // Количество открытых задач Тип = Регрес.баг
-        ]),
+        attributes: Sprint.defaultSelect,
         include: [
           {
             as: 'tasks',
             model: Task,
             attributes: Task.defaultSelect,
             where: {
-              statusId: {
-                $in: TaskStatusesDictionary.DONE_STATUSES
-              },
               deletedAt: {
                 $eq: null
               }
             },
+            include: [
+              {
+                as: 'history',
+                model: TaskHistory,
+                where: {
+                  field: 'sprintId'
+                },
+                required: false
+              }
+            ],
             required: false
           }
         ]
@@ -100,8 +75,29 @@ async function getMetrics (){
         attributes: User.defaultSelect,
         through: {
           as: 'projectUser',
-          model: ProjectUsers
+          model: ProjectUsers,
+          include: [
+            {
+              as: 'roles',
+              model: ProjectUsersRoles
+            }
+          ]
         }
+      },
+      {
+        as: 'projectUsers',
+        model: ProjectUsers,
+        attributes: ProjectUsers.defaultSelect,
+        include: [
+          {
+            as: 'user',
+            model: User
+          },
+          {
+            as: 'roles',
+            model: ProjectUsersRoles
+          }
+        ]
       }
     ],
     subQuery: true
@@ -119,12 +115,6 @@ async function getMetrics (){
         plainProject.sprints[sprintKey].regressionBugsAmount = parseInt(sprint.regressionBugsAmount, 10);
       });
     }
-    if (plainProject.users.length > 0){
-      plainProject.users.forEach(function (user, userKey){
-        if (!user.projectUser.rolesIds) return;
-        plainProject.users[userKey].projectUser.rolesIds = JSON.parse(user.projectUser.rolesIds);
-      });
-    }
     MetricTypesDictionary.values.forEach(function (value){
       if (value.id > 29) return;
       projectMetricsTasks.push(metricsLib(value.id, {
@@ -135,7 +125,7 @@ async function getMetrics (){
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint){
         MetricTypesDictionary.values.forEach(function (value){
-          if (value.id < 30 || value.id > 40) return;
+          if (value.id < 30 || value.id > 41) return;
           projectMetricsTasks.push(metricsLib(value.id, {
             project: plainProject,
             sprint,

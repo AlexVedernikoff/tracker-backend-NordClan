@@ -43,7 +43,7 @@ module.exports = function (templateName, input){
     subject = `Новый комментарий к задаче ${i.task.project.name} - ${i.task.id}: ${i.task.name}`;
 
     body
-        = `<h2>${i.comment.author.fullNameRu} оставил комментарий к задаче<br>
+        = `<h2>${i.comment.author.fullNameRu} оставил(-а) комментарий к задаче<br>
         ${i.task.id}: ${i.task.name}</h2>
         <p>${i.comment.text}</p>
         <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" target="_blank">Перейти к задаче</a>`;
@@ -55,7 +55,7 @@ module.exports = function (templateName, input){
 
     body
         = `<h2>Задача ${i.task.id}: ${i.task.name} переведена в статус<br>
-        ${i.task.taskStatus}</h2>
+        ${i.task.taskStatus.name}</h2>
         <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" target="_blank">Перейти к задаче</a>`;
 
     break;

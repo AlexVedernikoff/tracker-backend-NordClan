@@ -31,7 +31,8 @@ exports.read = function (req, res, next){
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Sprint.findByPrimary(req.params.id, {
-    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt', 'projectId', 'authorId',
+    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
+      'projectId', 'authorId', 'budget', 'riskBudget',
       [Sequelize.literal(`(SELECT count(*)
                                 FROM tasks as t
                                 WHERE t.project_id = "Sprint"."project_id"
@@ -80,7 +81,7 @@ exports.update = function (req, res, next){
           return next(createError(403, 'Access denied'));
         }
 
-        return model.updateAttributes(req.body, { transaction: t })
+        return model.updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
           .then((updatedModel)=>{
             return queries.sprint.allSprintsByProject(updatedModel.projectId, Sprint.defaultSelect, t)
               .then((sprints) => {
@@ -114,11 +115,11 @@ exports.delete = function (req, res, next){
         return next(createError(403, 'Access denied'));
       }
 
-      if (+model.taskCount > 0) {
-        return next(createError(400, 'Can\'t delete sprint when it have exists tasks'));
+      if (+model.dataValues.taskCount > 0) {
+        return next(createError(400, 'Can\'t delete sprint when it have exists tasks', { type: 'sprintHasActiveTasks' }));
       }
 
-      return model.destroy()
+      return model.destroy({ historyAuthorId: req.user.id })
         .then(()=>{
           return queries.sprint.allSprintsByProject(model.projectId)
             .then((sprints) => {

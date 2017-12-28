@@ -1,0 +1,20 @@
+{
+  "apps": [
+    {
+      "name": "sim-track",
+      "script": "server.js",
+      "instances": "1",
+      "node_args": "--inspect=0.0.0.0:9230",
+      "exec_mode": "fork",
+      "env": {
+        "NODE_ENV": "develop",
+        "watch": true
+      },
+      "env_production": {
+        "NODE_ENV": "production",
+        "watch": false,
+        "PORT": 4000
+      }
+    }
+  ]
+}

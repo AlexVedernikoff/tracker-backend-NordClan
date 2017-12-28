@@ -25,6 +25,10 @@ module.exports = {
       message: 'создал(-а) спринт \'{sprint}\'',
       entities: ['sprint']
     },
+    SET_SPRINT_DELETED_AT: {
+      message: 'удалил(-а) спринт \'{sprint}\'',
+      entities: ['sprint']
+    },
     CHANGE_SPRINT_STATUSID: {
       message: 'изменил(-а) статус спринта {sprint} c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint']

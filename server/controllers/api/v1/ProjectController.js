@@ -88,7 +88,8 @@ exports.read = function (req, res, next){
         {
           as: 'sprints',
           model: Sprint,
-          attributes: ['id', 'name', 'factStartDate', 'factFinishDate', 'statusId', 'allottedTime',
+          attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
+            'projectId', 'authorId', 'budget', 'riskBudget',
             [Sequelize.literal(`(SELECT sum(t.fact_execution_time)
                                 FROM tasks as t
                                 WHERE t.project_id = "Project"."id"
@@ -114,14 +115,21 @@ exports.read = function (req, res, next){
           attributes: ['id', 'name']
         },
         {
-          as: 'users',
-          model: models.User,
-          attributes: ['id', 'firstNameRu', 'lastNameRu'],
-          through: {
-            as: 'projectUsers',
-            model: models.ProjectUsers,
-            attributes: ['rolesIds']
-          }
+          as: 'projectUsers',
+          model: models.ProjectUsers,
+          attributes: models.ProjectUsers.defaultSelect,
+          separate: true,
+          include: [
+            {
+              as: 'user',
+              model: models.User,
+              attributes: ['id', 'firstNameRu', 'lastNameRu']
+            },
+            {
+              as: 'roles',
+              model: models.ProjectUsersRoles
+            }
+          ]
         },
         {
           as: 'attachments',
@@ -135,17 +143,17 @@ exports.read = function (req, res, next){
     })
     .then((model) => {
       if (!model) return next(createError(404));
-
-      if (model.users) {
-        model.users.forEach((user, key) => {
-          model.users[key] = {
-            id: user.id,
-            fullNameRu: user.fullNameRu,
-            roles: queries.projectUsers.getTransRolesToObject(JSON.parse(user.projectUsers.rolesIds))
-          };
+      const usersData = [];
+      if (model.projectUsers) {
+        model.projectUsers.forEach((projectUser) => {
+          usersData.push({
+            id: projectUser.user.id,
+            fullNameRu: projectUser.user.fullNameRu,
+            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles)
+          });
         });
       }
-
+      model.dataValues.users = usersData;
       if (model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
       delete model.dataValues.portfolioId;
       res.json(model.dataValues);
@@ -197,7 +205,7 @@ exports.update = function (req, res, next){
         }
 
         return project
-          .updateAttributes(req.body, { transaction: t })
+          .updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
           .then(()=>{
 
             // Запускаю проверку портфеля на пустоту и его удаление
@@ -241,7 +249,7 @@ exports.delete = function (req, res, next){
     .then((project) => {
       if (!project) { return next(createError(404)); }
 
-      return project.destroy()
+      return project.destroy({ historyAuthorId: req.user.id })
         .then(()=>{
           res.end();
         });

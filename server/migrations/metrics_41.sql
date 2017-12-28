@@ -1,0 +1,1 @@
+INSERT INTO metric_types VALUES (41, 'Количество открытых фич вне плана');
