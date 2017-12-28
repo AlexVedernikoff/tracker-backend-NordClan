@@ -27,7 +27,7 @@ module.exports = (onDate) => ({
           required: true,
           attributes: [],
           where: {
-            userId: models.sequelize.literal('"project.ProjectUser"."user_id" = "Task"."performer_id"') // Только для пользователя который состоит в проекте
+            userId: models.sequelize.literal('"project.projectUsers"."user_id" = "Task"."performer_id"') // Только для пользователя который состоит в проекте
           }
         }
       ]
