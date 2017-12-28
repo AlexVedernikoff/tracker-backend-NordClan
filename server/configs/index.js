@@ -27,9 +27,7 @@ module.exports = {
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
   email: {
-    enabled: process.env.EMAIL_ENABLED && process.env.EMAIL_ENABLED === 'true'
-      ? true
-      : false,
+    enabled: true,
     service: 'Yandex',
     login: 'sim-track@simbirsoft.com',
     password: 'AP2y2CHU',
