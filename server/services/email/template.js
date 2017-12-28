@@ -55,7 +55,7 @@ module.exports = function (templateName, input){
 
     body
         = `<h2>Задача ${i.task.id}: ${i.task.name} переведена в статус<br>
-        ${i.task.taskStatus}</h2>
+        ${i.task.taskStatus.name}</h2>
         <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" target="_blank">Перейти к задаче</a>`;
 
     break;

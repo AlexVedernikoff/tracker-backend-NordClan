@@ -17,11 +17,12 @@ services:
     container_name: sim_back
     environment:
       DATABASE_HOST: db
-    command: ["/app/wait-for.sh", "15", "pm2-docker", "start", "--auto-exit", "--env", "development", "processes.json"]
+    command: ["/app/wait-for.sh", "15", "pm2-docker", "start", "--auto-exit", "--env", "development", "processes-debug.json"]
     volumes:
       - .:/app
     ports:
       - 8000:8080
+      - 9230:9230
     expose:
       - "8080"
     depends_on:
