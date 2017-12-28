@@ -30,7 +30,7 @@ build_docker_be_debug:
   image: docker:stable
   stage: docker
   script:
-    - cp ci/Dockerfile.be ./
+    - cp ci/Dockerfile.debug.be ./
     - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.debug.be .
   only:
     - develop
