@@ -4,4 +4,4 @@ RUN mkdir -p /app
 RUN npm install pm2 -g
 COPY . /app
 WORKDIR /app
-RUN npm install
+RUN npm install && npm rebuild

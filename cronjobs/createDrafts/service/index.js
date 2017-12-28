@@ -24,7 +24,9 @@ module.exports = () => {
         await models.TimesheetDraft.bulkCreate(entities, { transaction });
         await transaction.commit();
       } catch (e) {
-        transaction.rollback();
+        if (transaction) {
+          transaction.rollback();
+        }
         throw createError(e);
       }
     }
