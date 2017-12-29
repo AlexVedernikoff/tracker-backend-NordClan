@@ -47,7 +47,7 @@ function getTaskParams (body) {
     params.parentId = null;
   }
 
-  if (params.factExecutionTime) {
+  if ('factExecutionTime' in params) {
     delete params.factExecutionTime;
   }
 
