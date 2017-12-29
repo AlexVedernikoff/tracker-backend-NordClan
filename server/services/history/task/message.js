@@ -96,12 +96,26 @@ function declarativeHandlers() {
     {
       name: 'create Task',
       statement: (model) => {
-        return model.action === 'create' && model.entity === 'Task';
+        return model.action === 'create' && model.entity === 'Task' && model.entityId === model.taskId;
       },
       answer: (model) => {
         return {
           message: `создал(-а) ${entityWord.create} '${model.task.name}'`,
           entities: {}
+        };
+      }
+    },
+    {
+      name: 'create Subtask',
+      statement: (model) => {
+        return model.action === 'create' && model.entity === 'Task' && model.entityId !== model.taskId;
+      },
+      answer: (model) => {
+        return {
+          message: `создал(-а) под${entityWord.create} {subTask}`,
+          entities: {
+            subTask: model.subTask
+          }
         };
       }
     },

@@ -56,6 +56,20 @@ exports.historyHandler = function (sequelize, historyModel) {
       }).catch((err) => {
         createError(err);
       });
+
+      // Сведения о созданной подзадаче в родительской задаче
+      if (entity === 'Task' && model.parentId > 0) {
+        sequelize.models[modelName].create({
+          entity: entity,
+          entityId: modelId,
+          userId: userId,
+          [modelIdProperty]: model.parentId,
+          action: 'create'
+        }).catch((err) => {
+          createError(err);
+        });
+      }
+
     },
 
     onUpdate: function (model, instance) {
