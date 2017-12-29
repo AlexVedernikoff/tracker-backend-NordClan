@@ -1,18 +1,20 @@
 const models = require('../../../models');
 const moment = require('moment');
-const { Task, Sprint, Project } = models;
+const { Task, Project } = models;
 const TimesheetService = require('../../timesheets');
+const { findByPrimary } = require('./request');
 
 async function update (body, taskId, user) {
-  const originTask = await getOriginTask(taskId, body);
+  const originTask = await findByPrimary(taskId);
   const { error } = validateTask(originTask, body, user);
   if (error) {
     throw new Error(error);
   }
 
   const taskParams = getTaskParams(body);
-  const updatedAttributes = await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
-  const updatedTask = await appendAdditionalFields(updatedAttributes);
+  await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
+
+  const updatedTask = await findByPrimary(taskId);
 
   const createdDraft = body.statusId
     ? await createDraftIfNeeded(originTask, body.statusId)
@@ -30,27 +32,6 @@ async function update (body, taskId, user) {
   };
 }
 
-async function getOriginTask (taskId, body) {
-  const attributes = ['id', 'statusId', 'performerId', 'projectId'].concat(Object.keys(body));
-  return await Task.findByPrimary(taskId,
-    {
-      attributes,
-      include: [
-        {
-          as: 'project',
-          model: Project
-        },
-        {
-          as: 'taskStatus',
-          model: models.TaskStatusesDictionary,
-          required: false,
-          attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
-    });
-}
-
 function getTaskParams (body) {
   const params = { ...body };
 
@@ -66,37 +47,11 @@ function getTaskParams (body) {
     params.parentId = null;
   }
 
+  if ('factExecutionTime' in params) {
+    delete params.factExecutionTime;
+  }
+
   return params;
-}
-
-async function appendAdditionalFields (updatedAttributes, body, taskId) {
-  const fields = { ...updatedAttributes, id: taskId };
-
-  if (fields.performerId && fields.performerId > 0) {
-    const performer = await models.User.findByPrimary(body.performerId, { attributes: models.User.defaultSelect });
-    fields.performer = performer;
-  }
-
-  if (fields.sprintId === 0) {
-    fields.sprint = {
-      id: 0,
-      name: 'Backlog'
-    };
-  }
-
-  if (fields.parentId === 0) {
-    fields.parentTask = null;
-  }
-
-  if (fields.sprintId && fields.sprintId > 0) {
-    const sprint = await Sprint.findByPrimary(body.sprintId, {
-      attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
-    });
-
-    fields.sprint = sprint;
-  }
-
-  return fields;
 }
 
 async function createDraftIfNeeded (task, statusId) {

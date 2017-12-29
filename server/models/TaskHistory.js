@@ -189,6 +189,15 @@ module.exports = function(sequelize, DataTypes) {
       constraints: false,
     });
 
+    TaskHistory.belongsTo(models.Task, {
+      as: 'subTask',
+      foreignKey: {
+        name: 'entityId',
+        field: 'entity_id'
+      },
+      constraints: false
+    });
+
   };
 
   return TaskHistory;
