@@ -3,7 +3,7 @@ const router = express.Router();
 const ProjectController = require('../controllers/api/v1/ProjectController');
 const PortfolioController = require('../controllers/api/v1/PortfolioController');
 const SprintController = require('../controllers/api/v1/SprintController');
-const TaskController = require('../controllers/api/v2/TaskController');
+const TaskController = require('../controllers/api/v1/TaskController');
 const AuthController = require('../controllers/api/v1/AuthController');
 const TagController = require('../controllers/api/v1/TagController');
 const UserController = require('../controllers/api/v1/UserController');
@@ -12,11 +12,16 @@ const ProjectUsersController = require('../controllers/api/v1/ProjectUsersContro
 const ReportsController = require('../controllers/api/v1/ReportsController');
 const TaskTasksController = require('../controllers/api/v1/TaskTasksController');
 const UploadController = require('../controllers/api/v1/UploadController');
-const TimesheetController = require('../controllers/api/v2/TimesheetController');
+const TimesheetController = require('../controllers/api/v1/TimesheetController');
 const CommentController = require('../controllers/api/v1/TaskCommentController');
 const HistoryController = require('../controllers/api/v1/HistoryController');
-const MetricsController = require('../controllers/api/v2/MetricsController');
+const MetricsController = require('../controllers/api/v1/MetricsController');
+const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
+
+router.get('/milestones', MilestonesController.list);
+router.post('/milestones/:id', MilestonesController.list);
+router.delete('/milestones/:id', MilestonesController.list);
 
 // Auth
 router.post('/auth/login', AuthController.login);
