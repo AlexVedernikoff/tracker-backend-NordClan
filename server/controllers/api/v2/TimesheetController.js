@@ -11,6 +11,10 @@ exports.create = async (req, res, next) => {
     taskStatusId: req.body.taskStatusId || 2
   };
 
+  if (req.body.spentTime && req.body.spentTime < 0) {
+    return next(createError(400, 'spentTime wrong'));
+  }
+
   TimesheetService
     .create(timesheetParams)
     .then(({ createdTimesheet, updatedTask }) => {
