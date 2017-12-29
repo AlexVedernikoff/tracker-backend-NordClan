@@ -1,5 +1,6 @@
 const queries = require('../../../models/queries');
 const moment = require('moment');
+const exactMath = require('exact-math');
 const { ProjectUsers, Project } = require('../../../models');
 
 exports.getTracksAll = async (startDate, endDate, params) => {
@@ -30,16 +31,13 @@ async function getTracks (params) {
 }
 
 function getScales (tracks) {
-  const scales = tracks
+  return tracks
     .reduce((acc, track) => {
       acc[track.typeId] = acc[track.typeId] || 0;
-      const spentTime = track.spentTime ? parseInt(track.spentTime) : 0;
-      acc[track.typeId] += spentTime;
-      acc.all += spentTime;
+      acc[track.typeId] = exactMath.add(acc[track.typeId], track.spentTime);
+      acc.all = exactMath.add(acc.all, track.spentTime);
       return acc;
     }, { all: 0 });
-
-  return scales;
 }
 
 exports.getScales = getScales;
@@ -132,7 +130,7 @@ function getDateRange (startDate, endDate) {
 }
 
 async function getAvailableProjects (userId) {
-  const projects = await ProjectUsers.findAll({
+  return await ProjectUsers.findAll({
     where: { userId },
     attributes: ['id'],
     include: [
@@ -143,8 +141,6 @@ async function getAvailableProjects (userId) {
       }
     ]
   });
-
-  return projects;
 }
 
 exports.getDateRange = getDateRange;
