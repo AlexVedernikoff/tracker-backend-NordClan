@@ -1,23 +1,21 @@
 const createError = require('http-errors');
-const { Milestones } = require('../../../models');
+const { Milestone } = require('../../../models');
 
-exports.list = (req, res, next) => {
-  Milestones
-    .findAll({ where: { projectId: req.params.projectId }})
+exports.create = (req, res, next) => {
+  const params = {
+    ...req.body,
+    done: false
+  };
+
+  Milestone
+    .create(params)
     .then(milestones => res.json(milestones))
     .catch(e => next(createError(e)));
 };
 
 exports.update = (req, res, next) => {
-  Milestones
-    .update(req.params, { where: { id: req.params.id }, returning: true })
-    .then(milestone => res.json(milestone))
-    .catch(e => next(createError(e)));
-};
-
-exports.delete = async (req, res, next) => {
-  Milestones
-    .delete({ where: { id: req.params.id }, returning: true })
-    .then(milestone => res.json(milestone))
+  Milestone
+    .update(req.body, { where: { id: req.params.id }, returning: true })
+    .then(milestone => res.json(milestone[1][0]))
     .catch(e => next(createError(e)));
 };

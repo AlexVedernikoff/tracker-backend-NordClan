@@ -19,9 +19,8 @@ const MetricsController = require('../controllers/api/v1/MetricsController');
 const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 
-router.get('/milestones', MilestonesController.list);
-router.post('/milestones/:id', MilestonesController.list);
-router.delete('/milestones/:id', MilestonesController.list);
+router.post('/milestones', MilestonesController.create);
+router.put('/milestones/:id', MilestonesController.update);
 
 // Auth
 router.post('/auth/login', AuthController.login);

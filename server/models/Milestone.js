@@ -10,12 +10,12 @@ module.exports = function (sequelize, DataTypes) {
         models.Metrics.belongsTo(models.Project, {
           as: 'project',
           foreignKey: {
-            name: 'projectId',
-            field: 'project_id'
+            name: 'projectId'
           }
         });
       }
     }
   });
+
   return Milestone;
 };

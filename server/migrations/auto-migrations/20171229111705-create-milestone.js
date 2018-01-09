@@ -16,6 +16,9 @@ module.exports = {
       done: {
         type: Sequelize.BOOLEAN
       },
+      projectId: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
