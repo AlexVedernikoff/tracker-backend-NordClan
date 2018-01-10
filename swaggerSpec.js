@@ -425,7 +425,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           },
           {
             name: 'endDate',
@@ -433,7 +433,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           }
         ],
         responses: responsesCodes

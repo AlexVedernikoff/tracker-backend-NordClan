@@ -12,34 +12,37 @@ class WorkSheetTemplate {
     this._prefix = this._data.info.project.prefix;
     this._lastIndexRow = 3;
     this._tottalSpent = 0;
-    this._tableColumns.map((row, index) => {
-      const address = this._rows[index] + this._lastIndexRow;
+    this._tableColumns.map((column, index) => {
+      const address = this._columns[index] + this._lastIndexRow;
       this._worksheet
-        .getColumn(this._rows[index])
-        .width = row.width;
+        .getColumn(this._columns[index])
+        .width = column.width;
       const headerCell = this._worksheet.getCell(address);
       headerCell
-        .value = row.text;
+        .value = column.text;
       headerCell
         .border = {bottom: {style: 'medium'}, color: {argb: 'FA2b8E1'}};
+      if (column.numFmt) {
+        this._worksheet.getColumn(this._columns[index]).numFmt = '0.00';
+      }
     });
   }
 
   _setHeader (sheet, info) {
-    const dateFrom = moment(info.range.startDate).locale('ru').format('DD MMMM YYYY');
-    const dateTo = moment(info.range.endDate).locale('ru').format('DD MMMM YYYY');
+    const dateFrom = info.range.startDate && moment(info.range.startDate).locale('ru').format('DD MMMM YYYY');
+    const dateTo = info.range.endDate && moment(info.range.endDate).locale('ru').format('DD MMMM YYYY');
     const font = {name: 'Calibri', color: {argb: 'F44546A'}, bold: true};
     const border = {bottom: {style: 'medium'}};
 
-    sheet.mergeCells(`${this._rows[0]}1:${this._rows[this._tableColumns.length - 1]}1`);
+    sheet.mergeCells(`${this._columns[0]}1:${this._columns[this._tableColumns.length - 1]}1`);
     const project = sheet.getCell('A1');
     project.value = `Отчет по проекту ${info.project.name}`;
     project.font = {size: 15, ...font};
     project.border = {color: {argb: 'F44546A'}, ...border};
 
-    sheet.mergeCells(`${this._rows[0]}2:${this._rows[this._tableColumns.length - 1]}2`);
+    sheet.mergeCells(`${this._columns[0]}2:${this._columns[this._tableColumns.length - 1]}2`);
     const period = sheet.getCell('A2');
-    period.value = `Период: ${dateFrom} - ${dateTo}`;
+    period.value = `Период: ${dateFrom && dateTo ? (dateFrom + ' - ' + dateTo) : 'За весь проект'}`;
     period.font = {size: 13, ...font};
     period.border = {color: {argb: 'FA2b8E1'}, ...border};
   }
@@ -52,7 +55,7 @@ class WorkSheetTemplate {
     return [];
   }
 
-  get _rows () {
+  get _columns () {
     return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   }
 }

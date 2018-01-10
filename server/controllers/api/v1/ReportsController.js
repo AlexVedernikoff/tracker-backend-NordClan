@@ -12,7 +12,10 @@ exports.byPeriod = async (req, res, next) => {
 
   try {
     const {startDate, endDate} = req.query;
-    const { workbook, options } = await ReportsService.byPeriod.getReport({startDate, endDate}, req.params.projectId);
+    const {workbook, options} = await ReportsService.byPeriod
+      .getReport(req.params.projectId, startDate && endDate && {
+        startDate, endDate
+      });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
     await workbook.xlsx.write(res);
