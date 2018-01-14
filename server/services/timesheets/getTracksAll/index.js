@@ -34,8 +34,8 @@ function getScales (tracks) {
   return tracks
     .reduce((acc, track) => {
       acc[track.typeId] = acc[track.typeId] || 0;
-      acc[track.typeId] = exactMath.add(acc[track.typeId], track.spentTime);
-      acc.all = exactMath.add(acc.all, track.spentTime);
+      acc[track.typeId] = exactMath.add(acc[track.typeId], track.spentTime || 0);
+      acc.all = exactMath.add(acc.all, track.spentTime || 0);
       return acc;
     }, { all: 0 });
 }
