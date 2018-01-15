@@ -11,8 +11,16 @@ async function update (body, taskId, user) {
     throw new Error(error);
   }
 
+  const oldPerformer = originTask.performerId;
+  const oldStatus = originTask.statusId;
+
   const taskParams = getTaskParams(body);
   await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
+
+  const changedTaskData = {
+    'performerId' : (originTask.performerId !== oldPerformer),
+    'statusId' : (originTask.statusId !== oldStatus)
+  };
 
   const updatedTask = await findByPrimary(taskId);
 
@@ -28,7 +36,8 @@ async function update (body, taskId, user) {
     updatedTasks: [ updatedTask, ...stoppedTasks ],
     createdDraft,
     activeTask,
-    projectId: originTask.projectId
+    projectId: originTask.projectId,
+    changedTaskData
   };
 }
 
