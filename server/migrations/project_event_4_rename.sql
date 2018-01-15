@@ -1,0 +1,1 @@
+UPDATE project_events SET "name" = 'Задача завершена' WHERE "id" = 4;

@@ -2,7 +2,7 @@ const config = require('../../configs').email;
 
 module.exports = function (templateName, input){
 
-  let subject, body;
+  let subject, body, lastComment;
   const i = input;
 
   switch (templateName){
@@ -67,15 +67,118 @@ module.exports = function (templateName, input){
     break;
 
   case ('newTaskForPerformer'):
-    subject = `Вам назначена новая задача: ${i.task.project.name} - ${i.task.id}: ${i.task.name}`;
 
-    body = `<h2>Вам назначена новая задача:<br>
-      ${i.task.id}: ${i.task.name}</h2>
-      ${i.task.description ? `<h3><strong>Описание задачи:</strong><br>${i.task.description}</h3>` : '' }
-      <p><strong>Тип задачи</strong> : ${i.task.type.name}</p>
-      <p><strong>Приоритет задачи</strong> : ${i.task.prioritiesId}</p>
-      ${i.task.plannedExecutionTime ? `<p><strong>Планируемое время выполнения</strong> : ${i.task.plannedExecutionTime}</p>` : ''}
-      <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" target="_blank">Перейти к задаче</a>`;
+    switch (i.task.statusId){
+    case (1): //new
+      subject = `${i.task.project.name}. Вам назначена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
+      break;
+    case (3): //develop stop
+      subject = `${i.task.project.name}. Вам в разработку поставлена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
+      // TODO вам в разработку в Х раз поставлена задача
+      break;
+    case (5): //code review stop
+      subject = `${i.task.project.name}. Вам на кодревью поставлена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
+      break;
+    case (7): //qa stop
+      subject = `${i.task.project.name}. Вам на проверку поставлена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
+      break;
+    default:
+      break;
+    }
+
+    body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+        <body>
+          <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
+            <tr>
+              <td>
+                <span style="font-size: 13px;">
+                  В проекте
+                  <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
+                    ${i.task.project.name + ' '}
+                  </a>`;
+
+    switch (i.task.statusId){
+    case (1): //new
+    case (3): //develop stop
+      body += 'на вас назначена задача';
+      break;
+    case (5): //code review stop
+    case (7): //qa stop
+      body += 'на проверку назначена задача';
+      break;
+    default:
+      break;
+    }
+
+    body += `</span>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td>
+                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 25px;" target="_blank">
+                  ${i.task.project.prefix}-${i.task.id} | ${i.task.name}
+                </a>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px;"></td></tr>`
+            + (i.task.description ? '<tr><td><span style="font-weight: normal;line-height: 19px;">' + i.task.description + '</span></td></tr>' : '')
+            + `<tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px;">
+                <span style="font-weight: bold; font-style: italic;">Приоритет задачи:</span>
+                ${ getTaskPriorityName(i.task.prioritiesId) }
+                <br>
+                <span style="font-weight: bold; font-style: italic;">Автор задачи:</span>
+                ${i.task.author.fullNameRu}`;
+
+    // TODO
+    /*switch(i.task.statusId){
+    case(1): //new
+    case(3): //develop stop
+      break;
+    case(5): //code review stop
+    case(7): //qa stop
+      body += '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span>' + getTaskPrevPerformer(i.task);
+      break;
+    default:
+      break;
+    }*/
+
+    body += `</td>
+            </tr>`;
+
+    if (i.task.comments && i.task.comments.length > 0) {
+      lastComment = getTaskLastComment(i.task);
+      body += `<tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px;">
+                <span style="font-weight: bold; font-style: italic;">${lastComment.author.fullNameRu}:</span>
+                <br>
+                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${lastComment.id}" style="font-weight: bold; font-style: italic; color: #2d4154;" target="_blank">
+                  ${lastComment.text}
+                </a>
+              </td>
+            </tr>`;
+    }
+
+    body += `<tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
+                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
+                <br>
+                Это письмо отправлено из
+                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
+                  SimTrack
+                </a>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>`;
 
     break;
 
@@ -111,7 +214,9 @@ module.exports = function (templateName, input){
               <td style="font-weight: normal;line-height: 19px;">
                 <span style="font-weight: bold; font-style: italic;">${i.comment.author.fullNameRu}:</span>
                 <br>
-                ${i.comment.text}
+                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}" style="font-weight: bold; font-style: italic; color: #2d4154;" target="_blank">
+                  ${i.comment.text}
+                </a>
               </td>
             </tr>
             <tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
@@ -132,13 +237,75 @@ module.exports = function (templateName, input){
 
     break;
 
-  case ('taskStatusChange'):
-    subject = `Изменение статуса задачи: ${i.task.project.name} - ${i.task.id}: ${i.task.name}`;
+  case ('taskCompleted'):
+    subject = `${i.task.project.name}. Готова задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
 
-    body
-        = `<h2>Задача ${i.task.id}: ${i.task.name} переведена в статус<br>
-        ${i.task.taskStatus.name}</h2>
-        <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" target="_blank">Перейти к задаче</a>`;
+    body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+        <body>
+          <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
+            <tr>
+              <td>
+                <span style="font-size: 13px;">
+                  В проекте
+                  <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
+                    ${i.task.project.name + ' '}
+                  </a>
+                  готова задача:
+                </span>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td>
+                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 25px;" target="_blank">
+                  ${i.task.project.prefix}-${i.task.id} | ${i.task.name}
+                </a>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px;"></td></tr>`
+            + (i.task.description ? '<tr><td><span style="font-weight: normal;line-height: 19px;">' + i.task.description + '</span></td></tr>' : '')
+            + `<tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px;">
+                <span style="font-weight: bold; font-style: italic;">Приоритет задачи:</span>
+                ${ getTaskPriorityName(i.task.prioritiesId) }
+                <br>
+                <span style="font-weight: bold; font-style: italic;">Автор задачи:</span>
+                ${i.task.author.fullNameRu}
+              </td>
+            </tr>`;
+
+    if (i.task.comments && i.task.comments.length > 0) {
+      lastComment = getTaskLastComment(i.task);
+      body += `<tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px;">
+                <span style="font-weight: bold; font-style: italic;">${lastComment.author.fullNameRu}:</span>
+                <br>
+                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${lastComment.id}" style="font-weight: bold; font-style: italic; color: #2d4154;" target="_blank">
+                  ${lastComment.text}
+                </a>
+              </td>
+            </tr>`;
+    }
+
+    body += `<tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
+                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
+                <br>
+                Это письмо отправлено из
+                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
+                  SimTrack
+                </a>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>`;
 
     break;
 
@@ -173,3 +340,12 @@ function getTaskPriorityName (num){
     return;
   }
 }
+
+function getTaskLastComment (task){
+  return task.comments[task.comments.length - 1];
+}
+
+// TODO
+/*function getTaskPrevPerformer(task){
+
+}*/
