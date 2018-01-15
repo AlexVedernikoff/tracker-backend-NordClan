@@ -55,14 +55,11 @@ exports.update = async function (req, res, next) {
 
   const taskId = req.params.id;
 
-  const isStateChanged = (req.body.statusId);
-  const isPerformerAssigned = (req.body.performerId);
-
   try {
-    const { updatedTasks, activeTask, createdDraft, projectId } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
+    const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (isPerformerAssigned) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId });
-    if (isStateChanged) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId });
+    if (changedTaskData.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId });
+    if (changedTaskData.statusId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId });
     res.sendStatus(200);
   } catch (err) {
     next(createError(err));
