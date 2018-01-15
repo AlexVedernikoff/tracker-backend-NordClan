@@ -15,7 +15,9 @@
     "db:restore": "./pg_db/restore_dump.sh",
     "db:dump": "./pg_db/base_dump.sh",
     "restart": "./restart.sh",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "migrate": "node_modules/.bin/sequelize db:migrate",
+    "rollback": "node_modules/.bin/sequelize db:migrate:undo"
   },
   "lint-staged": {
     "*.js": [
