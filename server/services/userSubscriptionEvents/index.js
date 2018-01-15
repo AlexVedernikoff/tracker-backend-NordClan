@@ -6,11 +6,13 @@ module.exports = async function (eventId, input){
   const emails = [];
   let receivers, task, comment;
 
+  console.log('event', eventId);
+
   switch (eventId){
 
   case (1):
     // event description : new task added to project
-    // receivers : project's PM and QA (which has subscription)
+    // receivers : project's PM and QA
     // input = { taskId }
 
     task = await getTask(input.taskId);
@@ -53,7 +55,7 @@ module.exports = async function (eventId, input){
 
   case (2):
     // event description : task assigned to performer
-    // receivers : task performer (which has subscription)
+    // receivers : task performer
     // input = { taskId }
 
     task = await getTask(input.taskId);
@@ -73,18 +75,11 @@ module.exports = async function (eventId, input){
 
   case (3):
     // event description : new comment to task
-    // receivers : task author, task performer (which has subscription)
+    // receivers : task author, task performer
     // input = { taskId, commentId }
 
     task = await getTask(input.taskId);
-    comment = await Comment.findByPrimary(input.commentId, {
-      include: [
-        {
-          as: 'author',
-          model: User
-        }
-      ]
-    });
+    comment = _.find(task.comments, { id: input.commentId });
     receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (user){
@@ -100,16 +95,39 @@ module.exports = async function (eventId, input){
     break;
 
   case (4):
-    // event description : task status changed
-    // receivers : task author, task performer (which has subscription)
+    // event description : task status changed to done
+    // receivers : PM
     // input = { taskId }
 
     task = await getTask(input.taskId);
-    receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
+    receivers = await ProjectUsers.findAll({
+      include: [
+        {
+          as: 'user',
+          model: User
+        },
+        {
+          as: 'subscriptions',
+          model: ProjectUsersSubscriptions
+        },
+        {
+          as: 'roles',
+          model: ProjectUsersRoles,
+          where: {
+            projectRoleId: {
+              '$in': [ProjectRolesDictionary.values[1].id]// PM
+            }
+          }
+        }
+      ],
+      where: {
+        projectId: task.project.id
+      }
+    });
 
     receivers.forEach(function (user){
       if (!user.usersProjects || user.usersProjects.length === 0 || !isUserSubscribed(eventId, user.usersProjects[0])) return;
-      const emailTemplate = email.template('taskStatusChange', { task });
+      const emailTemplate = email.template('taskCompleted', { task });
       emails.push({
         'receiver': user.emailPrimary,
         'subject': emailTemplate.subject,
@@ -159,6 +177,16 @@ function getTask (id){
       {
         as: 'sprint',
         model: Sprint
+      },
+      {
+        as: 'comments',
+        model: Comment,
+        include: [
+          {
+            as: 'author',
+            model: User
+          }
+        ]
       },
       {
         as: 'author',
