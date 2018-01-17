@@ -72,13 +72,16 @@ module.exports = function (templateName, input){
     case (1): //new
       subject = `${i.task.project.name}. Вам назначена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
       break;
+    case (2): //develop play
     case (3): //develop stop
       subject = `${i.task.project.name}. Вам в разработку поставлена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
       // TODO вам в разработку в Х раз поставлена задача
       break;
+    case (4): //code review play
     case (5): //code review stop
       subject = `${i.task.project.name}. Вам на кодревью поставлена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
       break;
+    case (6): //qa play
     case (7): //qa stop
       subject = `${i.task.project.name}. Вам на проверку поставлена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
       break;
@@ -101,10 +104,13 @@ module.exports = function (templateName, input){
 
     switch (i.task.statusId){
     case (1): //new
+    case (2): //develop play
     case (3): //develop stop
       body += 'на вас назначена задача';
       break;
+    case (4): //code review play
     case (5): //code review stop
+    case (6): //qa play
     case (7): //qa stop
       body += 'на проверку назначена задача';
       break;
