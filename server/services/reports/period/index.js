@@ -41,13 +41,6 @@ exports.getReport = async function (projectId, criteria) {
         required: false,
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
         paranoid: false
-      },
-      {
-        as: 'type',
-        model: TimesheetTypesDictionary,
-        required: false,
-        attributes: ['id', 'name'],
-        paranoid: false
       }
     ]
   });
@@ -55,7 +48,7 @@ exports.getReport = async function (projectId, criteria) {
     const data = timeSheet.dataValues;
     Object.assign(data, {user: data.user.dataValues});
     if (!data.taskId) {
-      const type = data.type.dataValues;
+      const type = TimesheetTypesDictionary.values.find(dictionary => dictionary.id === timeSheet.typeId);
       Object.assign(data, {
         taskId: -type.id,
         task: {
