@@ -29,6 +29,7 @@ router.delete('/auth/logout', AuthController.logout);
 // User
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
+router.get('/user/all', GlobalAccess.can('user', 'all'), UserController.all);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 
 // Tags

@@ -93,3 +93,10 @@ exports.autocomplete = function (req, res, next) {
     })
     .catch((err) => next(createError(err)));
 };
+
+exports.all = function (req, res, next) {
+  console.log('  ');
+  console.log(req);
+  console.log('  ');
+  res.end('succes');
+};

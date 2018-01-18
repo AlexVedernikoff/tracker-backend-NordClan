@@ -2,7 +2,8 @@ const USER = {
   user: {
     'autocomplete': true,
     'me': true,
-    'read': true
+    'read': true,
+    'all': true
   },
   tag: {
     'autocompliter': true,
