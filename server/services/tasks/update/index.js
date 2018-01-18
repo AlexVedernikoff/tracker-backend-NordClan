@@ -25,7 +25,7 @@ async function update (body, taskId, user) {
   const updatedTask = await findByPrimary(taskId);
 
   const createdDraft = body.statusId
-    ? await createDraftIfNeeded(originTask, body.statusId)
+    ? await createDraftIfNeeded(originTask, body.statusId, user.id)
     : null;
 
   const { activeTask, stoppedTasks } = body.statusId
@@ -63,10 +63,9 @@ function getTaskParams (body) {
   return params;
 }
 
-async function createDraftIfNeeded (task, statusId) {
+async function createDraftIfNeeded (task, statusId, currentUserId) {
   const onDate = moment().format('YYYY-MM-DD');
-  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
-
+  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate, currentUserId);
   const draftParams = {
     taskId: task.id,
     userId: task.performerId,

@@ -1,8 +1,8 @@
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
-exports.isNeedCreateDraft = async (task, statusId, onDate) => {
-  if (!task.performerId || !task.statusId) {
+exports.isNeedCreateDraft = async (task, statusId, onDate, currentUserId) => {
+  if (task.performerId !== currentUserId || !task.statusId) {
     return false;
   }
 
