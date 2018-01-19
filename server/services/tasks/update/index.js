@@ -72,6 +72,7 @@ async function createDraftIfNeeded (task, statusId, currentUserId) {
     onDate,
     typeId: 1,
     taskStatusId: statusId,
+    projectId: task.projectId,
     isVisible: true
   };
 
