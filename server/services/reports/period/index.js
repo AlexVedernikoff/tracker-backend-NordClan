@@ -4,10 +4,22 @@ const moment = require('moment');
 const Excel = require('exceljs');
 const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 
-exports.getReport = async function (criteria, projectId) {
-  const {startDate, endDate} = validateCriteria(criteria);
-
-  const queryParams = {projectId: {$eq: projectId}, onDate: {$between: [startDate, endDate]}};
+exports.getReport = async function (projectId, criteria) {
+  let startDate;
+  let endDate;
+  if (criteria) {
+    const validCriteria = validateCriteria(criteria);
+    startDate = validCriteria.startDate;
+    endDate = validCriteria.endDate;
+  }
+  const queryParams = {
+    projectId: {$eq: projectId},
+    ...(criteria ? (
+      {
+        onDate: {$between: [startDate, endDate]}
+      }
+    ) : null)
+  };
   const project = await Project.findOne({
     where: {id: {$eq: projectId}},
     attributes: ['id', 'name', 'prefix']
@@ -29,13 +41,6 @@ exports.getReport = async function (criteria, projectId) {
         required: false,
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
         paranoid: false
-      },
-      {
-        as: 'type',
-        model: TimesheetTypesDictionary,
-        required: false,
-        attributes: ['id', 'name'],
-        paranoid: false
       }
     ]
   });
@@ -43,7 +48,7 @@ exports.getReport = async function (criteria, projectId) {
     const data = timeSheet.dataValues;
     Object.assign(data, {user: data.user.dataValues});
     if (!data.taskId) {
-      const type = data.type.dataValues;
+      const type = TimesheetTypesDictionary.values.find(dictionary => dictionary.id === timeSheet.typeId);
       Object.assign(data, {
         taskId: -type.id,
         task: {
@@ -88,7 +93,7 @@ exports.getReport = async function (criteria, projectId) {
   return {
     workbook: generateExcellDocument(data),
     options: {
-      fileName: `${project.name} - ${startDate} - ${endDate}`
+      fileName: `${project.name} - ${criteria ? (startDate + ' - ' + endDate) : 'За весь проект'}`
     }
   };
 };

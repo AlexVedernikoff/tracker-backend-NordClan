@@ -15,7 +15,9 @@
     "db:restore": "./pg_db/restore_dump.sh",
     "db:dump": "./pg_db/base_dump.sh",
     "restart": "./restart.sh",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "migrate": "node_modules/.bin/sequelize db:migrate",
+    "rollback": "node_modules/.bin/sequelize db:migrate:undo"
   },
   "lint-staged": {
     "*.js": [
@@ -34,6 +36,8 @@
     "async": "^2.4.1",
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
+    "exact-math": "^1.0.0",
+    "exceljs": "^0.8.1",
     "express": "^4.15.3",
     "express-validator": "^3.2.0",
     "formidable": "^1.1.1",
@@ -54,8 +58,7 @@
     "socket.io": "^2.0.4",
     "swagger-express": "^1.0.5",
     "winston": "^3.0.0-rc1",
-    "xml2json": "^0.11.0",
-    "exceljs": "^0.8.1"
+    "xml2json": "^0.11.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",

@@ -114,5 +114,13 @@ function additionalEntities() {
       required: false,
       paranoid: false,
     },
+    {
+      as: 'subTask',
+      model: models.Task,
+      where: Sequelize.literal('"TaskHistory"."entity" = \'Task\'' ),
+      attributes: ['id', 'name'],
+      required: false,
+      paranoid: false
+    }
   ];
 }

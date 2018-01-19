@@ -65,6 +65,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: 1
     },
+    projectId: {
+      field: 'project_id',
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     isVisible: {
       field: 'is_visible',
       type: DataTypes.BOOLEAN,

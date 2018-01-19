@@ -125,6 +125,13 @@ module.exports = function (sequelize, DataTypes) {
       field: 'project_id'
     }});
 
+    Project.hasMany(models.Milestone, {
+      as: 'milestones',
+      foreignKey: {
+        name: 'projectId'
+      }
+    });
+
     Project.hasMany(models.Sprint, {
       as: 'sprints',
       foreignKey: {

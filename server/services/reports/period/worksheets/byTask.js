@@ -25,9 +25,9 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
 
   _writeTask (task) {
     this._worksheet
-      .mergeCells(`${this._rows[0] + this._lastIndexRow}:${this._rows[2] + this._lastIndexRow}`);
+      .mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[2] + this._lastIndexRow}`);
     this._worksheet
-      .getCell(this._rows[0] + this._lastIndexRow)
+      .getCell(this._columns[0] + this._lastIndexRow)
       .value = task.isMagic ? `${task.name}` : `${this._prefix}-${task.id} - ${task.name}`;
     if (task.isMagic) {
       return;
@@ -35,10 +35,8 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
     const planIndex = this._tableColumns.findIndex(row => row.ref === 'hoursPlan');
     if (~planIndex) {
       this._worksheet
-        .getCell(this._rows[planIndex] + this._lastIndexRow)
-        .value = Number(task.plannedExecutionTime)
-          .toFixed(2)
-          .replace('.', ',');
+        .getCell(this._columns[planIndex] + this._lastIndexRow)
+        .value = Number(task.plannedExecutionTime);
     }
   }
 
@@ -61,7 +59,7 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
         this._lastIndexRow++;
         totalTaskTime += user.spentTime;
         this._tableColumns.forEach((v, i) => {
-          const cell = this._worksheet.getCell(this._rows[i] + this._lastIndexRow);
+          const cell = this._worksheet.getCell(this._columns[i] + this._lastIndexRow);
           cell
             .value = v.calculate(user);
           cell
@@ -76,13 +74,11 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
     this._lastIndexRow++;
     const index = this._tableColumns.findIndex(v => v.isSummary);
     if (~index) {
-      const cell = this._worksheet.getCell(this._rows[index] + this._lastIndexRow);
+      const cell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
       cell
         .alignment = this._tableColumns[index].alignment || {};
       cell
-        .value = tottalTaskTime
-          .toFixed(2)
-          .replace('.', ',');
+        .value = tottalTaskTime;
     }
   }
 
@@ -90,15 +86,13 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
     this._lastIndexRow++;
     const index = this._tableColumns.findIndex(v => v.isSummary);
     if (~index) {
-      this._worksheet.getCell(this._rows[index - 1] + this._lastIndexRow)
+      this._worksheet.getCell(this._columns[index - 1] + this._lastIndexRow)
         .value = 'Общая сумма:';
-      const cell = this._worksheet.getCell(this._rows[index] + this._lastIndexRow);
+      const cell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
       cell
         .alignment = this._tableColumns[index].alignment || {};
       cell
-        .value = Number(this._tottalSpent)
-          .toFixed(2)
-          .replace('.', ',');
+        .value = Number(this._tottalSpent);
     }
   }
 
@@ -109,18 +103,19 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       // TODO: awaiting role feature
       // {calculate: () => 'Role?', text: 'Роль', width: 13},
       {calculate: d => d.comment, text: 'Описание', width: 40, alignment: {wrapText: true}},
-      {calculate: () => '', text: 'Hours Plan', width: 13, alignment: {wrapText: true}, ref: 'hoursPlan'},
+      {calculate: () => '', text: 'Hours Plan', width: 13, numFmt: '0.00', alignment: {wrapText: true}, ref: 'hoursPlan'},
       {
         calculate: d => {
           const value = Number(d.spentTime);
           this._tottalSpent += value;
-          return value.toFixed(2).toString().replace('.', ',');
+          return value;
         },
+        numFmt: '0.00',
         text: 'Hours all',
         width: 13,
         alignment: {horizontal: 'right'}
       },
-      {calculate: () => '', text: 'Total', width: 13, isSummary: true, alignment: {horizontal: 'right'}}
+      {calculate: () => '', text: 'Total', width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}}
     ];
   }
 

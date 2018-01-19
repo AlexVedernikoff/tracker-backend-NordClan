@@ -1,54 +1,44 @@
 const models = require('../../../models');
 const moment = require('moment');
-const { Task, Sprint, Project } = models;
+const { Task, Project } = models;
 const TimesheetService = require('../../timesheets');
+const { findByPrimary } = require('./request');
 
 async function update (body, taskId, user) {
-  const originTask = await getOriginTask(taskId, body);
+  const originTask = await findByPrimary(taskId);
   const { error } = validateTask(originTask, body, user);
   if (error) {
     throw new Error(error);
   }
 
+  const oldPerformer = originTask.performerId;
+  const oldStatus = originTask.statusId;
+
   const taskParams = getTaskParams(body);
-  const updatedAttributes = await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
-  const updatedTask = await appendAdditionalFields(updatedAttributes);
+  await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
+
+  const changedTaskData = {
+    'performerId': (originTask.performerId !== oldPerformer),
+    'statusId': (originTask.statusId !== oldStatus)
+  };
+
+  const updatedTask = await findByPrimary(taskId);
 
   const createdDraft = body.statusId
-    ? await createDraftIfNeeded(originTask, body.statusId)
+    ? await createDraftIfNeeded(originTask, body.statusId, user.id)
     : null;
 
   const { activeTask, stoppedTasks } = body.statusId
-    ? await updateTasksStatuses(updatedTask, originTask)
+    ? await updateTasksStatuses(updatedTask, originTask, user.id)
     : { stoppedTasks: [] };
 
   return {
     updatedTasks: [ updatedTask, ...stoppedTasks ],
     createdDraft,
     activeTask,
-    projectId: originTask.projectId
+    projectId: originTask.projectId,
+    changedTaskData
   };
-}
-
-async function getOriginTask (taskId, body) {
-  const attributes = ['id', 'statusId', 'performerId', 'projectId'].concat(Object.keys(body));
-  return await Task.findByPrimary(taskId,
-    {
-      attributes,
-      include: [
-        {
-          as: 'project',
-          model: Project
-        },
-        {
-          as: 'taskStatus',
-          model: models.TaskStatusesDictionary,
-          required: false,
-          attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
-    });
 }
 
 function getTaskParams (body) {
@@ -66,49 +56,23 @@ function getTaskParams (body) {
     params.parentId = null;
   }
 
+  if ('factExecutionTime' in params) {
+    delete params.factExecutionTime;
+  }
+
   return params;
 }
 
-async function appendAdditionalFields (updatedAttributes, body, taskId) {
-  const fields = { ...updatedAttributes, id: taskId };
-
-  if (fields.performerId && fields.performerId > 0) {
-    const performer = await models.User.findByPrimary(body.performerId, { attributes: models.User.defaultSelect });
-    fields.performer = performer;
-  }
-
-  if (fields.sprintId === 0) {
-    fields.sprint = {
-      id: 0,
-      name: 'Backlog'
-    };
-  }
-
-  if (fields.parentId === 0) {
-    fields.parentTask = null;
-  }
-
-  if (fields.sprintId && fields.sprintId > 0) {
-    const sprint = await Sprint.findByPrimary(body.sprintId, {
-      attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
-    });
-
-    fields.sprint = sprint;
-  }
-
-  return fields;
-}
-
-async function createDraftIfNeeded (task, statusId) {
+async function createDraftIfNeeded (task, statusId, currentUserId) {
   const onDate = moment().format('YYYY-MM-DD');
-  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
-
+  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate, currentUserId);
   const draftParams = {
     taskId: task.id,
     userId: task.performerId,
     onDate,
     typeId: 1,
     taskStatusId: statusId,
+    projectId: task.projectId,
     isVisible: true
   };
 
@@ -121,14 +85,13 @@ async function createDraftIfNeeded (task, statusId) {
     : null;
 }
 
-async function updateTasksStatuses (updatedTask, originTask) {
-  const performerId = updatedTask.dataValues.performerId || originTask.performerId;
+async function updateTasksStatuses (updatedTask, originTask, currentUserId) {
   const activeTasks = updatedTask.dataValues.statusId
-    ? await getActiveTasks(performerId)
+    ? await getActiveTasks(currentUserId)
     : [];
 
   const activeTask = activeTasks.find(task => task.id === updatedTask.dataValues.id)
-    || await getLastActiveTask(performerId);
+    || await getLastActiveTask(currentUserId);
 
   const stoppedTasksIds = activeTasks
     .reduce((acc, task) => {
@@ -143,10 +106,10 @@ async function updateTasksStatuses (updatedTask, originTask) {
   return { activeTask, stoppedTasks };
 }
 
-async function getLastActiveTask (performerId) {
+async function getLastActiveTask (currentUserId) {
   return await Task.findOne({
     where: {
-      performerId
+      performerId: currentUserId
     },
     order: [['updated_at', 'DESC']],
     include: [
@@ -159,11 +122,11 @@ async function getLastActiveTask (performerId) {
   });
 }
 
-async function getActiveTasks (performerId) {
+async function getActiveTasks (currentUserId) {
   const playStatuses = [2, 4, 6];
   const tasks = await Task.findAll({
     where: {
-      performerId,
+      performerId: currentUserId,
       statusId: {
         $or: playStatuses
       }

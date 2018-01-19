@@ -28,16 +28,16 @@ class ByUserWorkSheet extends WorkSheetTemplate {
 
   _writeUser (userName) {
     this._worksheet
-      .mergeCells(`${this._rows[0] + this._lastIndexRow}:${this._rows[2] + this._lastIndexRow}`);
+      .mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[2] + this._lastIndexRow}`);
     this._worksheet
-      .getCell(this._rows[0] + this._lastIndexRow)
+      .getCell(this._columns[0] + this._lastIndexRow)
       .value = userName;
   }
 
   _writeUserRow (task) {
     this._lastIndexRow++;
     this._tableColumns.forEach((v, i) => {
-      const cell = this._worksheet.getCell(this._rows[i] + this._lastIndexRow);
+      const cell = this._worksheet.getCell(this._columns[i] + this._lastIndexRow);
       cell
         .value = v.calculate(task);
       cell
@@ -49,13 +49,11 @@ class ByUserWorkSheet extends WorkSheetTemplate {
     this._lastIndexRow++;
     const index = this._tableColumns.findIndex(v => v.isSummary);
     if (~index) {
-      const cell = this._worksheet.getCell(this._rows[index] + this._lastIndexRow);
+      const cell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
       cell
         .alignment = this._tableColumns[index].alignment || {};
       cell
-        .value = tasks.reduce((count, task) => count + Number(task.spentTime), 0)
-          .toFixed(2)
-          .replace('.', ',');
+        .value = tasks.reduce((count, task) => count + Number(task.spentTime), 0);
     }
   }
 
@@ -63,15 +61,13 @@ class ByUserWorkSheet extends WorkSheetTemplate {
     this._lastIndexRow++;
     const index = this._tableColumns.findIndex(v => v.isSummary);
     if (~index) {
-      this._worksheet.getCell(this._rows[index - 1] + this._lastIndexRow)
+      this._worksheet.getCell(this._columns[index - 1] + this._lastIndexRow)
         .value = 'Общая сумма:';
-      const cell = this._worksheet.getCell(this._rows[index] + this._lastIndexRow);
+      const cell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
       cell
         .alignment = this._tableColumns[index].alignment || {};
       cell
-        .value = Number(this._tottalSpent)
-          .toFixed(2)
-          .replace('.', ',');
+        .value = Number(this._tottalSpent);
     }
   }
 
@@ -86,13 +82,14 @@ class ByUserWorkSheet extends WorkSheetTemplate {
         calculate: d => {
           const value = Number(d.spentTime);
           this._tottalSpent += value;
-          return value.toFixed(2).toString().replace('.', ',');
+          return value;
         },
         text: 'Hours all',
+        numFmt: '0.00',
         width: 13,
         alignment: {horizontal: 'right'}
       },
-      {calculate: () => '', text: 'Total fact', width: 13, isSummary: true, alignment: {horizontal: 'right'}}
+      {calculate: () => '', text: 'Total fact', width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}}
     ];
   }
 

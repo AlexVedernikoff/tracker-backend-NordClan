@@ -201,6 +201,11 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: 'task_id'
     });
 
+    Task.hasMany(models.Comment, {
+      as: 'comments',
+      foreignKey: 'task_id'
+    });
+
     Task.hasOne(models.Timesheet, {
       as: 'timesheet',
       foreignKey: {

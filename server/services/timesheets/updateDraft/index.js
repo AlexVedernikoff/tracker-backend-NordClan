@@ -66,7 +66,7 @@ async function getTimesheetParams (params, draftId, userId) {
   const draft = await TimesheetDraft.findById(draftId);
   const updatedTask = await getUpdatedTask(draft, params);
 
-  const { onDate, typeId, taskStatusId, taskId } = draft.dataValues;
+  const { onDate, typeId, taskStatusId, taskId, projectId } = draft.dataValues;
 
   const timesheetParams = {
     onDate,
@@ -74,6 +74,7 @@ async function getTimesheetParams (params, draftId, userId) {
     taskStatusId,
     userId,
     taskId,
+    projectId,
     spentTime: params.spentTime
   };
 

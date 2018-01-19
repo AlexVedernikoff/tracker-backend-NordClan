@@ -245,16 +245,24 @@ module.exports = {
             required: true
           },
           {
-            name: 'userId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'rolesIds',
-            type: 'string',
-            description: 'можно разделять через ",". Смотри словарь ролей. Новое значение затерет предыдушие роли пользователя',
-            in: 'formData'
+            in: 'body',
+            name: 'project',
+            description: 'Привязать пользователя к конкретному проекту',
+            schema: {
+              type: 'object',
+              required: ['userId'],
+              properties: {
+                userId: {
+                  type: 'integer',
+                  example: '1'
+                },
+                rolesIds: {
+                  type: 'string',
+                  example: 'string',
+                  description: 'можно разделять через ",". Смотри словарь ролей. Новое значение затерет предыдушие роли пользователя'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -306,11 +314,20 @@ module.exports = {
             required: true
           },
           {
-            name: 'tag',
-            description: 'Тег',
-            type: 'string',
-            in: 'formData',
-            required: true
+            in: 'body',
+            name: 'project',
+            description: 'Создать тег для конкретного проекта',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                tag: {
+                  type: 'string',
+                  example: 'string',
+                  description: 'Тег'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -425,7 +442,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           },
           {
             name: 'endDate',
@@ -433,7 +450,7 @@ module.exports = {
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           }
         ],
         responses: responsesCodes
@@ -490,9 +507,19 @@ module.exports = {
             required: true
           },
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData'
+            in: 'body',
+            name: 'portfolio',
+            description: 'Изменить конкретный портфель',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -746,69 +773,64 @@ module.exports = {
         summary: 'Создать задачу',
         parameters: [
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'projectId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'typeId',
-            type: 'integer',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'parentId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'sprintId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'description',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'plannedExecutionTime',
-            type: 'numeric',
-            in: 'formData'
-          },
-          {
-            name: 'factExecutionTime',
-            type: 'numeric',
-            in: 'formData'
-          },
-          {
-            name: 'prioritiesId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'tags',
-            type: 'string',
-            description: 'можно разделять через ","',
-            in: 'formData'
-          },
-          {
-            name: 'performerId',
-            type: 'integer',
-            in: 'formData'
+            in: 'body',
+            name: 'task',
+            description: 'Создать задачу',
+            schema: {
+              type: 'object',
+              required: ['name', 'projectId', 'statusId', 'typeId'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                projectId: {
+                  type: 'integer',
+                  example: 1
+                },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
+                  type: 'integer',
+                  example: 1
+                },
+                parentId: {
+                  type: 'integer',
+                  example: 1
+                },
+                sprintId: {
+                  type: 'integer',
+                  example: 1
+                },
+                description: {
+                  type: 'string',
+                  example: 'string'
+                },
+                plannedExecutionTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                factExecutionTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                prioritiesId: {
+                  type: 'integer',
+                  example: 1
+                },
+                tags: {
+                  type: 'string',
+                  description: 'можно разделять через ","',
+                  example: 'string'
+                },
+                performerId: {
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -839,68 +861,58 @@ module.exports = {
             required: true
           },
           {
-            name: 'name',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'description',
-            type: 'string',
-            in: 'formData'
-          },
-
-          {
-            name: 'projectId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'plannedExecutionTime',
-            type: 'numeric',
-            in: 'formData'
-          },
-          {
-            name: 'factExecutionTime',
-            type: 'numeric',
-            in: 'formData'
-          },
-          {
-            name: 'typeId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'sprintId',
-            description: '0 чтобы сбросить спринт у задачи',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'parentId',
-            description: '0 чтобы сбросить родительскую задачу',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'prioritiesId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'linkedTasks',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'performerId',
-            description: '0 для того чтобы урать текущего исполнителя',
-            type: 'integer',
-            in: 'formData'
+            in: 'body',
+            name: 'task',
+            description: 'Создать задачу',
+            schema: {
+              type: 'object',
+              required: ['name', 'projectId', 'statusId', 'typeId'],
+              properties: {
+                name: {
+                  type: 'string',
+                  example: 'string'
+                },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
+                  type: 'integer',
+                  example: 1
+                },
+                parentId: {
+                  type: 'integer',
+                  description: '0 чтобы сбросить родительскую задачу',
+                  example: 1
+                },
+                sprintId: {
+                  type: 'integer',
+                  description: '0 чтобы сбросить спринт у задачи',
+                  example: 1
+                },
+                description: {
+                  type: 'string',
+                  example: 'string'
+                },
+                plannedExecutionTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                factExecutionTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                prioritiesId: {
+                  type: 'integer',
+                  example: 1
+                },
+                performerId: {
+                  type: 'integer',
+                  description: '0 для того чтобы убрать текущего исполнителя',
+                  example: 1
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -931,10 +943,19 @@ module.exports = {
             required: true
           },
           {
-            name: 'linkedTaskId',
-            type: 'integer',
-            in: 'formData',
-            required: true
+            in: 'body',
+            name: 'task',
+            description: 'Присвязать к задаче другую задачу',
+            schema: {
+              type: 'object',
+              required: ['linkedTaskId'],
+              properties: {
+                linkedTaskId: {
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -974,11 +995,20 @@ module.exports = {
             required: true
           },
           {
-            name: 'tag',
-            description: 'Тег',
-            type: 'string',
-            in: 'formData',
-            required: true
+            in: 'body',
+            name: 'task',
+            description: 'Создать тег для конкретной задачи',
+            schema: {
+              type: 'object',
+              required: ['tag'],
+              properties: {
+                tag: {
+                  type: 'string',
+                  description: 'Тег',
+                  example: 'string'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1084,16 +1114,23 @@ module.exports = {
             required: true
           },
           {
-            name: 'parentId',
-            type: 'integer',
-            in: 'formData',
-            required: false
-          },
-          {
-            name: 'text',
-            type: 'string',
-            in: 'formData',
-            required: true
+            in: 'body',
+            name: 'task',
+            description: 'Создать комментарий к конкретной задаче',
+            schema: {
+              type: 'object',
+              required: ['text'],
+              properties: {
+                parentId: {
+                  type: 'integer',
+                  example: 1
+                },
+                text: {
+                  type: 'string',
+                  example: 'string'
+                }
+              }
+            }
           }
         ]
       }
@@ -1117,10 +1154,19 @@ module.exports = {
             required: true
           },
           {
-            name: 'text',
-            type: 'string',
-            in: 'formData',
-            required: true
+            in: 'body',
+            name: 'task',
+            description: 'Обновить комментарий к задаче',
+            schema: {
+              type: 'object',
+              required: ['text'],
+              properties: {
+                text: {
+                  type: 'string',
+                  example: 'string'
+                }
+              }
+            }
           }
         ]
       },
@@ -1233,22 +1279,27 @@ module.exports = {
         summary: 'Получить токен авторизации',
         parameters: [
           {
-            name: 'login',
-            type: 'string',
-            in: 'formData',
-            required: true
-          },
-          {
-            name: 'password',
-            type: 'string',
-            in: 'formData',
-            format: 'password',
-            required: true
-          },
-          {
-            name: 'isSystemUser',
-            type: 'boolean',
-            in: 'formData'
+            in: 'body',
+            name: 'auth',
+            description: 'Получить токен авторизации',
+            schema: {
+              type: 'object',
+              required: ['login', 'password'],
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                password: {
+                  type: 'string',
+                  example: 'string'
+                },
+                isSystemUser: {
+                  type: 'boolean',
+                  example: false
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1326,10 +1377,19 @@ module.exports = {
             required: true
           },
           {
-            name: 'isVisible',
-            type: 'boolean',
-            in: 'formData',
-            required: true
+            in: 'body',
+            name: 'timesheetDraft',
+            description: '',
+            schema: {
+              type: 'object',
+              required: ['isVisible'],
+              properties: {
+                isVisible: {
+                  type: 'boolean',
+                  example: false
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1404,51 +1464,51 @@ module.exports = {
         description: 'Использовать для создания тш напряму или через драфт. Если через драфт, то указать sheetId и поле isDraft = true ',
         parameters: [
           {
-            name: 'sheetId',
-            type: 'integer',
-            in: 'path'
-          },
-          {
-            name: 'taskId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'taskStatusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'projectId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'typeId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'spentTime',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'isVisible',
-            type: 'boolean',
-            in: 'formData'
-          },
-          {
-            name: 'comment',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'onDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData'
+            in: 'body',
+            name: 'timesheet',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                sheetId: {
+                  type: 'integer',
+                  example: 1
+                },
+                taskId: {
+                  type: 'integer',
+                  example: 1
+                },
+                taskStatusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                projectId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
+                  type: 'integer',
+                  example: 1
+                },
+                spentTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                isVisible: {
+                  type: 'boolean',
+                  example: false
+                },
+                comment: {
+                  type: 'string',
+                  example: 'string'
+                },
+                onDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1459,42 +1519,45 @@ module.exports = {
         description: 'yyyy-mm-dd',
         parameters: [
           {
-            name: 'sheetId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'spentTime',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'isVisible',
-            type: 'boolean',
-            in: 'formData'
-          },
-          {
-            name: 'comment',
-            type: 'string',
-            in: 'formData'
-          },
-          {
-            name: 'statusId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'onDate',
-            description: 'yyyy-mm-dd',
-            type: 'string',
-            format: 'date',
-            in: 'formData'
-          },
-          {
             name: 'return',
             type: 'string',
             description: 'Вернуть в ответ: "trackList"',
             in: 'query'
+          },
+          {
+            in: 'body',
+            name: 'timesheet',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                sheetId: {
+                  type: 'integer',
+                  example: 1
+                },
+                spentTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                isVisible: {
+                  type: 'boolean',
+                  example: false
+                },
+                comment: {
+                  type: 'string',
+                  example: 'string'
+                },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                onDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1506,25 +1569,33 @@ module.exports = {
         summary: 'Изменение драфта',
         parameters: [
           {
-            name: 'sheetId',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'spentTime',
-            type: 'integer',
-            in: 'formData'
-          },
-          {
-            name: 'isVisible',
-            type: 'boolean',
-            in: 'formData'
-          },
-          {
             name: 'return',
             type: 'string',
             description: 'Вернуть в ответ: "trackList"',
             in: 'query'
+          },
+          {
+            in: 'body',
+            name: 'draftsheet',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                sheetId: {
+                  type: 'integer',
+                  example: 1
+                },
+                spentTime: {
+                  type: 'number',
+                  example: 1.55
+                },
+                isVisible: {
+                  type: 'boolean',
+                  example: false
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes

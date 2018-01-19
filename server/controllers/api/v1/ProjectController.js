@@ -138,6 +138,10 @@ exports.read = function (req, res, next){
           order: [
             ['createdAt', 'ASC']
           ]
+        },
+        {
+          as: 'milestones',
+          model: models.Milestone
         }
       ]
     })
