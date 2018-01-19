@@ -94,9 +94,30 @@ exports.autocomplete = function (req, res, next) {
     .catch((err) => next(createError(err)));
 };
 
-exports.all = function (req, res, next) {
-  console.log('  ');
-  console.log(req);
-  console.log('  ');
-  res.end('succes');
+exports.all = async function (req, res, next) {
+  try {
+
+    const users = await models.User
+      .findAll({
+        where: {
+          active: 1
+        },
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
+      });
+
+    const usersSorted = users.sort((user1, user2) => {
+      if (user1.lastNameRu > user2.lastNameRu){
+        return 1;
+      }
+      if (user1.lastNameRu < user2.lastNameRu) {
+        return -1;
+      }
+      return 0;
+    });
+    res.json(usersSorted);
+
+  } catch (err) {
+    next(err);
+  }
+
 };
