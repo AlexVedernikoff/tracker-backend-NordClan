@@ -7,7 +7,6 @@ exports.isNeedCreateDraft = async (task, statusId, onDate, currentUserId) => {
   }
 
   const queryParams = {
-    taskStatusId: statusId,
     taskId: task.id,
     onDate: new Date(onDate),
     userId: task.performerId
@@ -17,5 +16,5 @@ exports.isNeedCreateDraft = async (task, statusId, onDate, currentUserId) => {
   const drafts = await queries.timesheetDraft.all(queryParams);
 
   return (drafts.length === 0 && timesheets.length === 0)
-    && ~models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS.indexOf(parseInt(statusId));
+    && (models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS.indexOf(parseInt(statusId) > 0));
 };
