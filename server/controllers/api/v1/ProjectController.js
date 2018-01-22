@@ -487,8 +487,6 @@ exports.list = function (req, res, next){
                     row.currentSprints = filteredCurrentSprints.length ? [filteredCurrentSprints[0]] : [row.currentSprints[0]];
                   }
                   projects[key].dataValues = row;
-
-                  // queryFactStartDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD');
                 }
               }
 
