@@ -483,9 +483,12 @@ exports.list = function (req, res, next){
                   delete row.portfolioId;
 
                   if (row.currentSprints && row.currentSprints[0]) { // преобразую спринты
-                    row.currentSprints = [row.currentSprints[0]];
+                    const filteredCurrentSprints = row.currentSprints.filter(sprint => moment().isBetween(moment(sprint.factStartDate), moment(sprint.factFinishDate)));
+                    row.currentSprints = filteredCurrentSprints.length ? [filteredCurrentSprints[0]] : [row.currentSprints[0]];
                   }
                   projects[key].dataValues = row;
+
+                  // queryFactStartDate.$gte = moment(req.query.dateSprintBegin).format('YYYY-MM-DD');
                 }
               }
 
