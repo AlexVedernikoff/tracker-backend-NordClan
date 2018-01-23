@@ -39,6 +39,7 @@ exports.getTracksAll = async (req, res, next) => {
     userId: req.user.id,
     taskStatusId: req.body.statusId,
     taskId: req.body.taskId,
+    sprintId: req.body.sprintId,
     onDate: req.onDate
   };
 

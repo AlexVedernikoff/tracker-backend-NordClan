@@ -62,6 +62,13 @@ function getInclude (userId, userPSId) {
       required: false,
       attributes: ['id', 'name'],
       paranoid: false
+    },
+    {
+      as: 'sprint',
+      model: models.Sprint,
+      required: false,
+      attributes: ['id', 'name'],
+      paranoid: false
     }
   ];
 
