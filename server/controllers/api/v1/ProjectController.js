@@ -88,26 +88,7 @@ exports.read = function (req, res, next){
         {
           as: 'sprints',
           model: Sprint,
-          attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
-            'projectId', 'authorId', 'budget', 'riskBudget',
-            [Sequelize.literal(`(SELECT sum(t.fact_execution_time)
-                                FROM tasks as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.sprint_id = "sprints"."id"
-                                AND t.deleted_at IS NULL)`), 'spentTime'], // Потраченное время на спринт
-            [Sequelize.literal(`(SELECT count(*)
-                                FROM tasks as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.sprint_id = "sprints"."id"
-                                AND t.deleted_at IS NULL
-                                AND t.status_id <> ${models.TaskStatusesDictionary.CANCELED_STATUS})`), 'countAllTasks'], // Все задачи кроме отмененных
-            [Sequelize.literal(`(SELECT count(*)
-                                FROM tasks as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.sprint_id = "sprints"."id"
-                                AND t.deleted_at IS NULL
-                                AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
-          ]
+          attributes: queries.sprint.queryAttributes('sprints')
         },
         {
           as: 'portfolio',
