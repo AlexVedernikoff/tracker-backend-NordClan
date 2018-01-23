@@ -121,3 +121,13 @@ exports.all = async function (req, res, next) {
   }
 
 };
+
+exports.updateUserRole = async function (req, res, next) {
+  console.log(' ');
+  console.log(req.body);
+  console.log(' ');
+  console.log(' ');
+  console.log(req.user.dataValues.globalRole);
+  console.log(' ');
+  res.json(req.body);
+};

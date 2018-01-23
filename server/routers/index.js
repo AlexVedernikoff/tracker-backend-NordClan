@@ -31,6 +31,7 @@ router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), User
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.get('/user/all', GlobalAccess.can('user', 'all'), UserController.all);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
+router.put('/user/', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
 
 // Tags
 router.get('/:taggable(project|task)/tag', GlobalAccess.can('tag', 'autocompliter'), TagController.autocompliter);

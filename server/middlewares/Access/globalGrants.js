@@ -3,7 +3,8 @@ const USER = {
     'autocomplete': true,
     'me': true,
     'read': true,
-    'all': true
+    'all': true,
+    'updateRole': true
   },
   tag: {
     'autocompliter': true,
