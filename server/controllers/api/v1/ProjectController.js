@@ -277,13 +277,13 @@ exports.list = function (req, res, next){
     Project.checkAttributes(req.query.fields);
   }
 
-  if (!req.query.pageSize) {
-    req.query.pageSize = 25;
-  }
+  // if (!req.query.pageSize) {
+  //   req.query.pageSize = 25;
+  // }
 
-  if (!req.query.currentPage) {
-    req.query.currentPage = 1;
-  }
+  // if (!req.query.currentPage) {
+  //   req.query.currentPage = 1;
+  // }
 
   const include = [];
   const where = {};
