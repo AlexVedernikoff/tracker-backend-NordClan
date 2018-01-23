@@ -128,7 +128,7 @@ function createWhereForRequest (req) {
     };
   }
 
-  if (!req.query.statusId) {
+  if (!req.query.statusId && !req.query.allStatuses) {
     where.statusId = {
       $notIn: [9, 10] // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
     };
