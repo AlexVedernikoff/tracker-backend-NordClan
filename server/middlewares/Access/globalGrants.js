@@ -2,9 +2,7 @@ const USER = {
   user: {
     'autocomplete': true,
     'me': true,
-    'read': true,
-    'all': true,
-    'updateRole': true
+    'read': true
   },
   tag: {
     'autocompliter': true,
@@ -87,6 +85,11 @@ module.exports = {
       ...USER.portfolio,
       'list': true,
       'delete': true
+    },
+    user: {
+      ...USER.user,
+      'usersRoles': true,
+      'updateRole': true
     }
   },
   SYSTEM_USER: {

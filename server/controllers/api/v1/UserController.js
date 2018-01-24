@@ -95,7 +95,7 @@ exports.autocomplete = function (req, res, next) {
     .catch((err) => next(createError(err)));
 };
 
-exports.all = async function (req, res, next) {
+exports.getUsersRoles = async function (req, res, next) {
   try {
 
     const users = await models.User
