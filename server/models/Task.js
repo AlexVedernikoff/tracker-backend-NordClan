@@ -206,8 +206,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: 'task_id'
     });
 
-    Task.hasOne(models.Timesheet, {
-      as: 'timesheet',
+    Task.hasMany(models.Timesheet, {
+      as: 'timesheets',
       foreignKey: {
         name: 'taskId',
         field: 'task_id'
