@@ -1,6 +1,7 @@
 const { TaskStatusesDictionary } = require('../../../models');
 const moment = require('moment');
 const _ = require('underscore');
+const exactMath = require('exact-math');
 
 
 module.exports = async function (metricsTypeId, input){
@@ -55,7 +56,7 @@ module.exports = async function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          projectBurndown -= parseFloat(task.factExecutionTime) || 0;
+          projectBurndown = exactMath.sub(projectBurndown, parseFloat(task.factExecutionTime) || 0);
         });
       });
     }
@@ -75,7 +76,7 @@ module.exports = async function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          projectRiskBurndown -= parseFloat(task.factExecutionTime) || 0;
+          projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(task.factExecutionTime) || 0);
         });
       });
     }
@@ -133,7 +134,7 @@ module.exports = async function (metricsTypeId, input){
         const regressionBugs = _.filter(sprint.tasks, (task) => {
           return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 4);
         });
-        totalRegressionBugsAmount += regressionBugs.length;
+        totalRegressionBugsAmount = exactMath.add(totalRegressionBugsAmount, regressionBugs.length);
       });
     }
     return {
@@ -176,14 +177,16 @@ module.exports = async function (metricsTypeId, input){
         if (sprint.tasks.length === 0) return;
         sprint.tasks.forEach(function (task){
           if (!task.factExecutionTime) return;
-          totalTimeSpent += task.factExecutionTime;
+          totalTimeSpent = exactMath.add(totalTimeSpent, task.factExecutionTime);
           input.project.projectUsers.forEach(function (projectUser){
-            if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) totalTimeSpentWithRole += task.factExecutionTime;
+            if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) {
+              totalTimeSpentWithRole = exactMath.add(totalTimeSpentWithRole, task.factExecutionTime);
+            }
           });
         });
       });
     }
-    totalTimeSpentInPercent = (totalTimeSpentWithRole / totalTimeSpent) * 100 || 0;
+    totalTimeSpentInPercent = exactMath.div(totalTimeSpentWithRole, totalTimeSpent) * 100 || 0;
     totalTimeSpentInPercent = parseFloat(totalTimeSpentInPercent.toFixed(2));
     return {
       'typeId': metricsTypeId,
@@ -225,7 +228,7 @@ module.exports = async function (metricsTypeId, input){
           input.project.projectUsers.forEach(function (projectUser){
             if (!task.factExecutionTime) return;
             if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) {
-              totalTimeSpentWithRole += parseFloat(task.factExecutionTime) || 0;
+              totalTimeSpentWithRole = exactMath.add(totalTimeSpentWithRole, parseFloat(task.factExecutionTime) || 0);
             }
           });
 
@@ -246,7 +249,7 @@ module.exports = async function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime) return;
-        sprintBurndown -= parseFloat(task.factExecutionTime) || 0;
+        sprintBurndown = exactMath.sub(sprintBurndown, parseFloat(task.factExecutionTime) || 0);
       });
     }
     return {
@@ -263,7 +266,7 @@ module.exports = async function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime) return;
-        sprintBurndown -= parseFloat(task.factExecutionTime) || 0;
+        sprintBurndown = exactMath.sub(sprintBurndown, parseFloat(task.factExecutionTime) || 0);
       });
     }
     return {
@@ -282,12 +285,14 @@ module.exports = async function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.plannedExecutionTime) return;
-        laborCostsTotal += parseFloat(task.plannedExecutionTime) || 0;
-        if (task.typeId === 1 && task.statusId === TaskStatusesDictionary.CLOSED_STATUS) laborCostsClosedTasks += parseFloat(task.plannedExecutionTime) || 0;
+        laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(task.plannedExecutionTime) || 0);
+        if (task.typeId === 1 && task.statusId === TaskStatusesDictionary.CLOSED_STATUS) {
+          laborCostsClosedTasks = exactMath.add(laborCostsClosedTasks, parseFloat(task.plannedExecutionTime) || 0);
+        }
       });
     }
 
-    closedTasksDynamics = laborCostsTotal - laborCostsClosedTasks;
+    closedTasksDynamics = exactMath.sub(laborCostsTotal, laborCostsClosedTasks);
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -307,7 +312,7 @@ module.exports = async function (metricsTypeId, input){
             || task.statusId !== TaskStatusesDictionary.CLOSED_STATUS
             || !task.factExecutionTime
         ) return;
-        laborCostsWithoutRating += task.factExecutionTime;
+        laborCostsWithoutRating = exactMath.add(laborCostsWithoutRating, task.factExecutionTime);
       });
     }
     return {
@@ -324,7 +329,7 @@ module.exports = async function (metricsTypeId, input){
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
         if (!task.factExecutionTime || task.typeId !== 1) return;
-        laborCostsTotal += parseFloat(task.factExecutionTime) || 0;
+        laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(task.factExecutionTime) || 0);
       });
     }
     return {

@@ -161,7 +161,8 @@ function validateTask (task, body, user) {
     return { error: 'Access denied' };
   }
 
-  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && !body.status) {
+  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS &&
+      (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
     return { error: 'Task is closed' };
   }
 

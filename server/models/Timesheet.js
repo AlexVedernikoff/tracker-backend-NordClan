@@ -100,6 +100,15 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
+    Timesheet.belongsTo(models.Sprint, {
+      as: 'sprint',
+      foreignKey: {
+        name: 'sprintId',
+        field: 'sprint_id',
+        allowNull: false
+      }
+    });
+
     // Устроело, но используется DEPRECATED
     Timesheet.belongsTo(models.Project, {
       as: 'projectMaginActivity',

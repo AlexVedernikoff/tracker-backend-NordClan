@@ -70,21 +70,6 @@ async function getMetrics (){
         ]
       },
       {
-        as: 'users',
-        model: User,
-        attributes: User.defaultSelect,
-        through: {
-          as: 'projectUser',
-          model: ProjectUsers,
-          include: [
-            {
-              as: 'roles',
-              model: ProjectUsersRoles
-            }
-          ]
-        }
-      },
-      {
         as: 'projectUsers',
         model: ProjectUsers,
         attributes: ProjectUsers.defaultSelect,
