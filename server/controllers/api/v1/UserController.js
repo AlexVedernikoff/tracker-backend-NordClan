@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const models = require('../../../models');
+const { User} = models;
 
 exports.me = function (req, res, next){
   try {
@@ -102,19 +103,13 @@ exports.all = async function (req, res, next) {
         where: {
           active: 1
         },
+        order: [
+          ['last_name_ru']
+        ],
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
       });
 
-    const usersSorted = users.sort((user1, user2) => {
-      if (user1.lastNameRu > user2.lastNameRu){
-        return 1;
-      }
-      if (user1.lastNameRu < user2.lastNameRu) {
-        return -1;
-      }
-      return 0;
-    });
-    res.json(usersSorted);
+    res.json(users);
 
   } catch (err) {
     next(err);
@@ -123,11 +118,30 @@ exports.all = async function (req, res, next) {
 };
 
 exports.updateUserRole = async function (req, res, next) {
-  console.log(' ');
-  console.log(req.body);
-  console.log(' ');
-  console.log(' ');
-  console.log(req.user.dataValues.globalRole);
-  console.log(' ');
-  res.json(req.body);
+
+  const { id, globalRole } = req.body;
+
+  return models.sequelize.transaction(function (t) {
+    return User.findByPrimary(id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if (!model) {
+          return next(createError(404));
+        }
+
+        return model.updateAttributes({ globalRole }, { transaction: t })
+          .then((updatedModel)=>{
+            const updatedUser = {
+              id: updatedModel.id,
+              fullNameRu: updatedModel.fullNameRu,
+              firstNameRu: updatedModel.firstNameRu,
+              lastNameRu: updatedModel.lastNameRu,
+              globalRole: updatedModel.globalRole
+            };
+            res.json(updatedUser);
+          });
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
 };
