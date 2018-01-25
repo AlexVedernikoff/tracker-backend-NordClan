@@ -137,6 +137,13 @@ exports.all = async function (conditions) {
             paranoid: false
           },
           {
+            as: 'sprint',
+            model: models.Sprint,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
+          },
+          {
             as: 'taskStatus',
             model: models.TaskStatusesDictionary,
             required: false,
@@ -148,6 +155,13 @@ exports.all = async function (conditions) {
       {
         as: 'taskStatus',
         model: models.TaskStatusesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
+      },
+      {
+        as: 'sprint',
+        model: models.Sprint,
         required: false,
         attributes: ['id', 'name'],
         paranoid: false

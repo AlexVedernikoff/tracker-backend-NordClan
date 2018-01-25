@@ -18,18 +18,18 @@ async function update (body, taskId, user) {
   await originTask.updateAttributes(taskParams, { historyAuthorId: user.id });
 
   const changedTaskData = {
-    'performerId' : (originTask.performerId !== oldPerformer),
-    'statusId' : (originTask.statusId !== oldStatus)
+    'performerId': (originTask.performerId !== oldPerformer),
+    'statusId': (originTask.statusId !== oldStatus)
   };
 
   const updatedTask = await findByPrimary(taskId);
 
   const createdDraft = body.statusId
-    ? await createDraftIfNeeded(originTask, body.statusId)
+    ? await createDraftIfNeeded(originTask, body.statusId, user.id)
     : null;
 
   const { activeTask, stoppedTasks } = body.statusId
-    ? await updateTasksStatuses(updatedTask, originTask)
+    ? await updateTasksStatuses(updatedTask, originTask, user.id)
     : { stoppedTasks: [] };
 
   return {
@@ -63,16 +63,16 @@ function getTaskParams (body) {
   return params;
 }
 
-async function createDraftIfNeeded (task, statusId) {
+async function createDraftIfNeeded (task, statusId, currentUserId) {
   const onDate = moment().format('YYYY-MM-DD');
-  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
-
+  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate, currentUserId);
   const draftParams = {
     taskId: task.id,
     userId: task.performerId,
     onDate,
     typeId: 1,
     taskStatusId: statusId,
+    projectId: task.projectId,
     isVisible: true
   };
 
@@ -85,14 +85,13 @@ async function createDraftIfNeeded (task, statusId) {
     : null;
 }
 
-async function updateTasksStatuses (updatedTask, originTask) {
-  const performerId = updatedTask.dataValues.performerId || originTask.performerId;
+async function updateTasksStatuses (updatedTask, originTask, currentUserId) {
   const activeTasks = updatedTask.dataValues.statusId
-    ? await getActiveTasks(performerId)
+    ? await getActiveTasks(currentUserId)
     : [];
 
   const activeTask = activeTasks.find(task => task.id === updatedTask.dataValues.id)
-    || await getLastActiveTask(performerId);
+    || await getLastActiveTask(currentUserId);
 
   const stoppedTasksIds = activeTasks
     .reduce((acc, task) => {
@@ -107,10 +106,10 @@ async function updateTasksStatuses (updatedTask, originTask) {
   return { activeTask, stoppedTasks };
 }
 
-async function getLastActiveTask (performerId) {
+async function getLastActiveTask (currentUserId) {
   return await Task.findOne({
     where: {
-      performerId
+      performerId: currentUserId
     },
     order: [['updated_at', 'DESC']],
     include: [
@@ -123,11 +122,11 @@ async function getLastActiveTask (performerId) {
   });
 }
 
-async function getActiveTasks (performerId) {
+async function getActiveTasks (currentUserId) {
   const playStatuses = [2, 4, 6];
   const tasks = await Task.findAll({
     where: {
-      performerId,
+      performerId: currentUserId,
       statusId: {
         $or: playStatuses
       }
@@ -162,7 +161,8 @@ function validateTask (task, body, user) {
     return { error: 'Access denied' };
   }
 
-  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && !body.status) {
+  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS &&
+      (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
     return { error: 'Task is closed' };
   }
 

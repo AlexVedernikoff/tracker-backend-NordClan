@@ -65,6 +65,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: 1
     },
+    projectId: {
+      field: 'project_id',
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     isVisible: {
       field: 'is_visible',
       type: DataTypes.BOOLEAN,
@@ -91,6 +96,15 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'taskId',
         field: 'task_id',
+        allowNull: false
+      }
+    });
+
+    Timesheet.belongsTo(models.Sprint, {
+      as: 'sprint',
+      foreignKey: {
+        name: 'sprintId',
+        field: 'sprint_id',
         allowNull: false
       }
     });

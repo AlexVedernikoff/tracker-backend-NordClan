@@ -88,26 +88,7 @@ exports.read = function (req, res, next){
         {
           as: 'sprints',
           model: Sprint,
-          attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
-            'projectId', 'authorId', 'budget', 'riskBudget',
-            [Sequelize.literal(`(SELECT sum(t.fact_execution_time)
-                                FROM tasks as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.sprint_id = "sprints"."id"
-                                AND t.deleted_at IS NULL)`), 'spentTime'], // Потраченное время на спринт
-            [Sequelize.literal(`(SELECT count(*)
-                                FROM tasks as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.sprint_id = "sprints"."id"
-                                AND t.deleted_at IS NULL
-                                AND t.status_id <> ${models.TaskStatusesDictionary.CANCELED_STATUS})`), 'countAllTasks'], // Все задачи кроме отмененных
-            [Sequelize.literal(`(SELECT count(*)
-                                FROM tasks as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.sprint_id = "sprints"."id"
-                                AND t.deleted_at IS NULL
-                                AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
-          ]
+          attributes: queries.sprint.queryAttributes('sprints')
         },
         {
           as: 'portfolio',
@@ -277,13 +258,13 @@ exports.list = function (req, res, next){
     Project.checkAttributes(req.query.fields);
   }
 
-  if (!req.query.pageSize) {
-    req.query.pageSize = 25;
-  }
+  // if (!req.query.pageSize) {
+  //   req.query.pageSize = 25;
+  // }
 
-  if (!req.query.currentPage) {
-    req.query.currentPage = 1;
-  }
+  // if (!req.query.currentPage) {
+  //   req.query.currentPage = 1;
+  // }
 
   const include = [];
   const where = {};
@@ -483,7 +464,8 @@ exports.list = function (req, res, next){
                   delete row.portfolioId;
 
                   if (row.currentSprints && row.currentSprints[0]) { // преобразую спринты
-                    row.currentSprints = [row.currentSprints[0]];
+                    const filteredCurrentSprints = row.currentSprints.filter(sprint => moment().isBetween(moment(sprint.factStartDate), moment(sprint.factFinishDate)));
+                    row.currentSprints = filteredCurrentSprints.length ? [filteredCurrentSprints[0]] : [row.currentSprints[0]];
                   }
                   projects[key].dataValues = row;
                 }

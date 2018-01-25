@@ -7,11 +7,11 @@ exports.updateDraft = async (params, draftId, userId) => {
     ? await updateDraft(params, draftId)
     : null;
 
-  const { createdTimesheet, updatedTask } = params.spentTime
+  const createdTimesheet = params.spentTime
     ? await createTimesheet(params, draftId, userId)
     : {};
 
-  return { updatedDraft, createdTimesheet, updatedTask };
+  return { updatedDraft, createdTimesheet };
 };
 
 async function updateDraft (params, draftId) {
@@ -27,7 +27,7 @@ async function updateDraft (params, draftId) {
 }
 
 async function createTimesheet (params, draftId, userId) {
-  const { timesheetParams, updatedTask } = await getTimesheetParams(params, draftId, userId);
+  const timesheetParams = await getTimesheetParams(params, draftId, userId);
 
   const timesheet = await Timesheet.create(timesheetParams, { returning: true });
   const createdTimesheet = await queries.timesheet.getTimesheet(timesheet.id);
@@ -36,10 +36,7 @@ async function createTimesheet (params, draftId, userId) {
     await TimesheetDraft.destroy({ where: { id: draftId } });
   }
 
-  return {
-    createdTimesheet: transformTimesheet(createdTimesheet),
-    updatedTask
-  };
+  return transformTimesheet(createdTimesheet);
 }
 
 function transformTimesheet (timesheet) {
@@ -57,16 +54,12 @@ function transformTimesheet (timesheet) {
 async function getTimesheetParams (params, draftId, userId) {
   if (isDraftForMagicActivity(draftId)) {
     delete params.id;
-
-    return {
-      timesheetParams: { ...params, userId }
-    };
+    return { ...params, userId };
   }
 
   const draft = await TimesheetDraft.findById(draftId);
-  const updatedTask = await getUpdatedTask(draft, params);
 
-  const { onDate, typeId, taskStatusId, taskId } = draft.dataValues;
+  const { onDate, typeId, taskStatusId, taskId, projectId } = draft.dataValues;
 
   const timesheetParams = {
     onDate,
@@ -74,26 +67,13 @@ async function getTimesheetParams (params, draftId, userId) {
     taskStatusId,
     userId,
     taskId,
+    projectId,
     spentTime: params.spentTime
   };
 
-  return { updatedTask, timesheetParams };
+  return timesheetParams;
 }
 
 function isDraftForMagicActivity (draftId) {
   return typeof draftId === 'string';
-}
-
-async function getUpdatedTask (draft, params) {
-  const factExecutionTime = models.sequelize.literal(`"fact_execution_time" + ${params.spentTime}`);
-  const updatedTask = await Task.update({ factExecutionTime }, {
-    where: { id: draft.taskId },
-    returning: true
-  });
-
-  return {
-    id: updatedTask[1][0].dataValues.id,
-    projectId: updatedTask[1][0].dataValues.projectId,
-    factExecutionTime: updatedTask[1][0].dataValues.factExecutionTime
-  };
 }

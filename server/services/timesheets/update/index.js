@@ -17,31 +17,8 @@ exports.update = async (req) => {
     returning: true
   });
 
-  const needUpdateTaskTime = params.spentTime && oldTimesheet.typeId === models.TimesheetTypesDictionary.IMPLEMENTATION;
-  const updatedTask = needUpdateTaskTime
-    ? await getUpdatedTask(updatedTimesheet, oldTimesheet)
-    : null;
-
-  return {
-    updatedTimesheet: updatedTimesheet[1][0].dataValues,
-    updatedTask
-  };
+  return updatedTimesheet[1][0].dataValues;
 };
-
-async function getUpdatedTask (updatedTimesheet, oldTimesheet) {
-  const diffTime = updatedTimesheet[1][0].dataValues.spentTime - oldTimesheet.spentTime;
-  const factExecutionTime = models.sequelize.literal(`"fact_execution_time" + ${diffTime}`);
-  const updatedTask = await models.Task.update({ factExecutionTime }, {
-    where: { id: updatedTimesheet[1][0].dataValues.taskId },
-    returning: true
-  });
-
-  return {
-    id: updatedTask[1][0].dataValues.id,
-    projectId: updatedTask[1][0].dataValues.projectId,
-    factExecutionTime: updatedTask[1][0].dataValues.factExecutionTime
-  };
-}
 
 function setInclude () {
   return [
