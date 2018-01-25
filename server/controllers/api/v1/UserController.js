@@ -109,7 +109,17 @@ exports.getUsersRoles = async function (req, res, next) {
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
       });
 
-    res.json(users);
+    const usersWithFilteredData = users.map(user => {
+      const {id, firstNameRu, lastNameRu, globalRole} = user;
+      return {
+        id,
+        firstNameRu,
+        lastNameRu,
+        globalRole
+      };
+    });
+
+    res.json(usersWithFilteredData);
 
   } catch (err) {
     next(err);
