@@ -132,9 +132,6 @@ exports.updateUserRole = async function (req, res, next) {
           .then((updatedModel)=>{
             const updatedUser = {
               id: updatedModel.id,
-              fullNameRu: updatedModel.fullNameRu,
-              firstNameRu: updatedModel.firstNameRu,
-              lastNameRu: updatedModel.lastNameRu,
               globalRole: updatedModel.globalRole
             };
             res.json(updatedUser);
