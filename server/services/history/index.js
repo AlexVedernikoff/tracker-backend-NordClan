@@ -26,6 +26,7 @@ module.exports = () => {
       data: histories
         .map(model => {
           const response = messageBuilder[entity](model);
+
           return response ? {
             id: model.id,
             date: model.createdAt,
@@ -44,6 +45,7 @@ module.exports = () => {
       const modelName = `${firstLetterUp(entity)}History`;
       const histories = await models[modelName].findAll(request);
       const countAll = await models[modelName].count(request);
+
       return createResponse(entity, histories, countAll, pageSize, currentPage);
     }
   };
