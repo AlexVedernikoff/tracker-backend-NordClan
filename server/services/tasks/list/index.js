@@ -35,9 +35,13 @@ exports.list = async function (req) {
 
   const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId);
   const queryWhere = createWhereForRequest(req);
-  const queryAttributes = req.query.fields
-    ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields))
-    : '';
+
+  const queryAttributes = {
+    exclude: ['factExecutionTime'],
+    include: [[models.Sequelize.literal(`(SELECT sum(tsh.spent_time)
+                                    FROM timesheets as tsh
+                                    WHERE tsh.task_id = "Task"."id")`), 'factExecutionTime']]
+  };
 
   const queryOffset = req.query.currentPage > 0
     ? req.query.pageSize * (req.query.currentPage - 1)
