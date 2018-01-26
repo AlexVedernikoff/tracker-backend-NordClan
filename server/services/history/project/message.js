@@ -26,7 +26,7 @@ function getResourceName (model, changedProperty) {
 
 function getResources (resource, model, changedProperty) {
   const message = transformMessage(resource.message, changedProperty, model);
-  const properties = transformProperties(model.field, changedProperty);
+  const properties = transformProperties(model.entity, model.field, changedProperty);
   const entitiesName = resource.entities || [];
   const entities = entitiesName.reduce((acc, name) => {
     const key = getKey(name);
@@ -95,11 +95,12 @@ function insertChangedProperties (message, changedProperty) {
   return updatedMessage;
 }
 
-function transformProperties (field, changedProperty) {
+function transformProperties (entity, field, changedProperty) {
   const transformValue = (value) => {
     const dictionary = {
-      statusId: queries.dictionary.getName('ProjectStatusesDictionary', value)
+      [field]: queries.dictionary.getName(`${entity}StatusesDictionary`, value)
     };
+
     return dictionary[field] || value;
   };
 
