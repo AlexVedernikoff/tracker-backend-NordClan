@@ -3,6 +3,7 @@ const moment = require('moment');
 const ldap = require('ldapjs');
 const Auth = require('../../../middlewares/CheckTokenMiddleWare');
 const SystemAuth = require('../../../middlewares/CheckSystemTokenMiddleWare');
+const { userAuthExtension } = require('../../../middlewares/Access/userAuthExtension');
 const models = require('../../../models');
 const { User, Token, SystemToken } = models;
 const queries = require('../../../models/queries');
@@ -20,6 +21,12 @@ exports.login = function (req, res, next){
       login: req.body.login,
       active: 1
     },
+    include: [
+      {
+        as: 'authorsProjects',
+        model: models.Project
+      }
+    ],
     attributes: User.defaultSelect.concat('ldapLogin')
   })
     .then((user) => {
@@ -31,6 +38,24 @@ exports.login = function (req, res, next){
     .catch((err) => {
       next(err);
     });
+
+  function addProjectsRoles (user) {
+    const userId = user.dataValues.id;
+    return models.ProjectUsers.findAll({
+      where: {
+        userId
+      },
+      include: [
+        {
+          as: 'roles',
+          model: models.ProjectUsersRoles
+        }
+      ]
+    }).then(projects => {
+      user.dataValues.usersProjects = projects;
+      return userAuthExtension(user);
+    });
+  }
 
 
   function authLdap (user, password) {
@@ -62,10 +87,13 @@ exports.login = function (req, res, next){
           user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
           delete user.dataValues.ldapLogin;
 
-          res.json({
-            token: token.token,
-            expire: token.expires,
-            user: user.dataValues
+
+          addProjectsRoles(user).then(userWithProject => {
+            res.json({
+              token: token.token,
+              expire: token.expires,
+              user: userWithProject.dataValues
+            });
           });
         })
         .catch((e) => next(createError(e)));
