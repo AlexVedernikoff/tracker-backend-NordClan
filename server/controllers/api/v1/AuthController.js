@@ -25,6 +25,16 @@ exports.login = function (req, res, next){
       {
         as: 'authorsProjects',
         model: models.Project
+      },
+      {
+        as: 'usersProjects',
+        model: models.ProjectUsers,
+        include: [
+          {
+            as: 'roles',
+            model: models.ProjectUsersRoles
+          }
+        ]
       }
     ],
     attributes: User.defaultSelect.concat('ldapLogin')
@@ -38,25 +48,6 @@ exports.login = function (req, res, next){
     .catch((err) => {
       next(err);
     });
-
-  function addProjectsRoles (user) {
-    const userId = user.dataValues.id;
-    return models.ProjectUsers.findAll({
-      where: {
-        userId
-      },
-      include: [
-        {
-          as: 'roles',
-          model: models.ProjectUsersRoles
-        }
-      ]
-    }).then(projects => {
-      user.dataValues.usersProjects = projects;
-      return userAuthExtension(user);
-    });
-  }
-
 
   function authLdap (user, password) {
     const client = ldap.createClient({
@@ -87,13 +78,10 @@ exports.login = function (req, res, next){
           user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
           delete user.dataValues.ldapLogin;
 
-
-          addProjectsRoles(user).then(userWithProject => {
-            res.json({
-              token: token.token,
-              expire: token.expires,
-              user: userWithProject.dataValues
-            });
+          res.json({
+            token: token.token,
+            expire: token.expires,
+            user: userAuthExtension(user)
           });
         })
         .catch((e) => next(createError(e)));
