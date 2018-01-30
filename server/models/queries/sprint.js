@@ -1,6 +1,6 @@
 const models = require('../');
 
-const queryAttributes = function(sprintSource) {
+const queryAttributes = function (sprintSource) {
   return [
     'id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
     'projectId', 'authorId', 'budget', 'riskBudget',
@@ -24,7 +24,6 @@ exports.name = 'sprint';
 exports.queryAttributes = queryAttributes;
 
 exports.allSprintsByProject = function (projectId, attributes = queryAttributes('Sprint'), t = null) {
-
   const result = [];
   return models.Sprint
     .findAll({
@@ -43,6 +42,7 @@ exports.allSprintsByProject = function (projectId, attributes = queryAttributes(
       model.forEach((elModel) => {
         result.push(elModel.dataValues);
       });
+
       return result;
     });
 

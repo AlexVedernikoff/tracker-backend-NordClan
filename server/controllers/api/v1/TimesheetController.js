@@ -19,7 +19,7 @@ exports.create = async (req, res, next) => {
     .create(timesheetParams)
     .then(createdTimesheet => {
       TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
-      res.end();
+      res.json(createdTimesheet);
     })
     .catch(e => {
       return next(createError(e));

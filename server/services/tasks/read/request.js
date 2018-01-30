@@ -1,14 +1,10 @@
 const models = require('../../../models');
+const queries = require('../../../models/queries');
 const { Task, Tag, ItemTag } = models;
 
 exports.findByPrimary = (id) => {
   return Task.findByPrimary(id, {
-    attributes: {
-      include: [[models.Sequelize.literal(`(SELECT sum(tsh.spent_time)
-                                    FROM timesheets as tsh
-                                    WHERE tsh.task_id = "Task"."id")`), 'factExecutionTime']],
-      exclude: ['factExecutionTime']
-    },
+    attributes: queries.task.defaultAttributes,
     include: [
       {
         as: 'tags',
