@@ -25,25 +25,26 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
 
 exports.getTimesheet = function (params) {
   return models.Timesheet.findOne({
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
     where: params,
-    include: [
+    include: include = [
       {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name'],
         paranoid: false,
         include: [
           {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name', 'prefix'],
+            attributes: ['id', 'name'],
             paranoid: false
           },
           {
-            as: 'taskStatus',
-            model: models.TaskStatusesDictionary,
+            as: 'sprint',
+            model: models.Sprint,
             required: false,
             attributes: ['id', 'name'],
             paranoid: false
@@ -51,17 +52,17 @@ exports.getTimesheet = function (params) {
         ]
       },
       {
-        as: 'taskStatus',
-        model: models.TaskStatusesDictionary,
+        as: 'project',
+        model: models.Project,
         required: false,
         attributes: ['id', 'name'],
         paranoid: false
       },
       {
-        as: 'projectMaginActivity',
-        model: models.Project,
+        as: 'sprint',
+        model: models.Sprint,
         required: false,
-        attributes: ['id', 'name', 'prefix'],
+        attributes: ['id', 'name'],
         paranoid: false
       }
     ]
