@@ -59,10 +59,11 @@ async function getTimesheetParams (params, draftId, userId) {
 
   const draft = await TimesheetDraft.findById(draftId);
 
-  const { onDate, typeId, taskStatusId, taskId, projectId } = draft.dataValues;
+  const { onDate, typeId, taskStatusId, taskId, projectId, isVisible } = draft.dataValues;
 
   const timesheetParams = {
     onDate,
+    isVisible,
     typeId,
     taskStatusId,
     userId,

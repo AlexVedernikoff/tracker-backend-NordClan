@@ -14,16 +14,16 @@ exports.update = async (req) => {
     throw createError(404);
   }
 
-  return updatedTimesheet[1][0].dataValues;
+  return updatedTimesheet[1];
 };
 
-function getWhere (reg) {
+function getWhere (req) {
   const where = {
-    id: reg.body.sheetId
+    id: req.body.sheetId
   };
 
-  if (!reg.isSystemUser) {
-    where.userId = reg.user.id;
+  if (!req.isSystemUser) {
+    where.userId = req.user.id;
   }
 
   return where;

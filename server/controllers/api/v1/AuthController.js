@@ -3,6 +3,7 @@ const moment = require('moment');
 const ldap = require('ldapjs');
 const Auth = require('../../../middlewares/CheckTokenMiddleWare');
 const SystemAuth = require('../../../middlewares/CheckSystemTokenMiddleWare');
+const { userAuthExtension } = require('../../../middlewares/Access/userAuthExtension');
 const models = require('../../../models');
 const { User, Token, SystemToken } = models;
 const queries = require('../../../models/queries');
@@ -20,6 +21,22 @@ exports.login = function (req, res, next){
       login: req.body.login,
       active: 1
     },
+    include: [
+      {
+        as: 'authorsProjects',
+        model: models.Project
+      },
+      {
+        as: 'usersProjects',
+        model: models.ProjectUsers,
+        include: [
+          {
+            as: 'roles',
+            model: models.ProjectUsersRoles
+          }
+        ]
+      }
+    ],
     attributes: User.defaultSelect.concat('ldapLogin')
   })
     .then((user) => {
@@ -31,7 +48,6 @@ exports.login = function (req, res, next){
     .catch((err) => {
       next(err);
     });
-
 
   function authLdap (user, password) {
     const client = ldap.createClient({
@@ -65,7 +81,7 @@ exports.login = function (req, res, next){
           res.json({
             token: token.token,
             expire: token.expires,
-            user: user.dataValues
+            user: userAuthExtension(user)
           });
         })
         .catch((e) => next(createError(e)));
