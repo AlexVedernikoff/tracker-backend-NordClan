@@ -23,23 +23,23 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     });
 };
 
-exports.getTimesheet = function (params) {
-  return models.Timesheet.findOne({
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+exports.getTimesheet = async function (params) {
+  const timesheet = await models.Timesheet.findOne({
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'isVisible', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
     where: params,
-    include: include = [
+    include: [
       {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
         paranoid: false,
         include: [
           {
             as: 'project',
             model: models.Project,
             required: false,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'prefix'],
             paranoid: false
           },
           {
@@ -48,8 +48,22 @@ exports.getTimesheet = function (params) {
             required: false,
             attributes: ['id', 'name'],
             paranoid: false
+          },
+          {
+            as: 'taskStatus',
+            model: models.TaskStatusesDictionary,
+            required: false,
+            attributes: ['id', 'name'],
+            paranoid: false
           }
         ]
+      },
+      {
+        as: 'taskStatus',
+        model: models.TaskStatusesDictionary,
+        required: false,
+        attributes: ['id', 'name'],
+        paranoid: false
       },
       {
         as: 'project',
@@ -78,6 +92,7 @@ exports.getTimesheet = function (params) {
 
     return model;
   });
+  return timesheet;
 };
 
 exports.isNeedCreateTimesheet = async function (options) {
