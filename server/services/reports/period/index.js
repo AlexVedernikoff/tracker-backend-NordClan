@@ -1,4 +1,4 @@
-const {Timesheet, Task, User, Project, TimesheetTypesDictionary} = require('../../../models');
+const {Timesheet, Task, User, Project, ProjectRolesDictionary, TimesheetTypesDictionary} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
@@ -26,7 +26,7 @@ exports.getReport = async function (projectId, criteria) {
   });
   const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
-    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId'],
+    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId', 'userRoleId'],
     include: [
       {
         as: 'task',
@@ -65,6 +65,21 @@ exports.getReport = async function (projectId, criteria) {
       Object.assign(data, {task: data.task.dataValues});
     }
     return data;
+  });
+
+  const timeSheetsWithRoles = timeSheets.map((timeSheet) => {
+    // список ролей приходит в виде строки содержащей массив (например "[1, 2, 7]")
+    const userRoleId = timeSheet.userRoleId.replace('[', '').replace(']', '').split(',')
+      .map(item => Number(item))
+      .sort((item1, item2) => item1 - item2);
+    const userRolesNames = userRoleId.map(roleId => {
+      console.log('ProjectRolesDictionary.values', ProjectRolesDictionary.values);
+      return ProjectRolesDictionary.values.find(item => item.id === roleId).name;
+    });
+    return {
+      ...timeSheet,
+      userRolesNames
+    };
   });
 
   const data = {
