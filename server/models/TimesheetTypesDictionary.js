@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const TimesheetTypesDictionary = sequelize.define('TimesheetTypesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -12,14 +12,14 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         len: [1, 15]
       }
-    },
+    }
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
     tableName: 'timesheets_types'
   });
-  
+
   TimesheetTypesDictionary.values = [
     {id: 1, name: 'Implementation'},
     {id: 2, name: 'Совещание'},
@@ -28,7 +28,7 @@ module.exports = function(sequelize, DataTypes) {
     {id: 5, name: 'Отпуск'},
     {id: 6, name: 'Командировка'},
     {id: 7, name: 'Больничный'},
-    {id: 8, name: 'Управление'},
+    {id: 8, name: 'Управление'}
   ];
 
   TimesheetTypesDictionary.IMPLEMENTATION = 1;
@@ -41,7 +41,6 @@ module.exports = function(sequelize, DataTypes) {
   TimesheetTypesDictionary.PRESALE = 8;
 
   TimesheetTypesDictionary.magicActivities = [2, 3, 4, 5, 6, 7, 8];
-  TimesheetTypesDictionary.VALUE = [1,3,4]; // Это тут зачем?
 
   return TimesheetTypesDictionary;
 };
