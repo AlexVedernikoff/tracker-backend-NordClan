@@ -93,15 +93,15 @@ async function updateTasksStatuses (updatedTask, originTask, currentUserId) {
   const activeTask = activeTasks.find(task => task.id === updatedTask.dataValues.id)
     || await getLastActiveTask(currentUserId);
 
-  const stoppedTasksIds = activeTasks
+  const stoppedTasks = activeTasks
     .reduce((acc, task) => {
       if (task.id !== updatedTask.dataValues.id) {
-        acc.push(task.id);
+        acc.push(task);
       }
       return acc;
     }, []);
 
-  const stoppedTasks = await stopTasks(stoppedTasksIds);
+  await stopTasks(stoppedTasks, currentUserId);
 
   return { activeTask, stoppedTasks };
 }
@@ -143,13 +143,14 @@ async function getActiveTasks (currentUserId) {
   return tasks;
 }
 
-async function stopTasks (ids) {
-  if (ids.length > 0) {
-    const stoppedTasks = await Task.update({ statusId: models.sequelize.literal('status_id + 1') },
-      { where: { id: { $or: ids }}, returning: true });
-    return stoppedTasks[1];
+async function stopTasks (tasks, userId) {
+  if (tasks.length > 0) {
+    await Promise.all([
+      tasks.map(task => {
+        task.updateAttributes({ statusId: task.statusId + 1 }, { historyAuthorId: userId });
+      })
+    ]);
   }
-  return [];
 }
 
 function validateTask (task, body, user) {
@@ -161,7 +162,8 @@ function validateTask (task, body, user) {
     return { error: 'Access denied' };
   }
 
-  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && !body.status) {
+  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS &&
+      (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
     return { error: 'Task is closed' };
   }
 

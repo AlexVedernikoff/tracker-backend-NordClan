@@ -65,6 +65,10 @@ function getConditions (query) {
     conditions.taskStatusId = { $eq: query.taskStatusId };
   }
 
+  if (query.sprintId) {
+    conditions.sprintId = { $eq: query.sprintId };
+  }
+
   return conditions;
 }
 
@@ -82,6 +86,10 @@ function transformTimesheet (timesheet) {
   if (timesheet.dataValues.projectMaginActivity) {
     Object.assign(timesheet.dataValues, { project: timesheet.dataValues.projectMaginActivity.dataValues });
     delete timesheet.dataValues.projectMaginActivity;
+  }
+  if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.sprint) {
+    Object.assign(timesheet.dataValues, { sprint: timesheet.dataValues.task.dataValues.sprint });
+    delete timesheet.dataValues.task.dataValues.sprint;
   }
 
   timesheet.dataValues.onDate = timesheet.onDate;

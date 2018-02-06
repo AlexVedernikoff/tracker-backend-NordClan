@@ -42,6 +42,10 @@ exports.getReport = async function (projectId, criteria) {
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
         paranoid: false
       }
+    ],
+    order: [
+      [ { model: User, as: 'user' }, 'fullNameRu', 'ASC' ],
+      [ 'onDate', 'ASC' ]
     ]
   });
   const timeSheets = timeSheetsDbData.map(timeSheet => {
@@ -62,6 +66,7 @@ exports.getReport = async function (projectId, criteria) {
     }
     return data;
   });
+
   const data = {
     info: {project, range: {startDate, endDate}},
     byTasks: _(timeSheets)
@@ -76,7 +81,6 @@ exports.getReport = async function (projectId, criteria) {
         resultObject.users.push(user);
       }, {}))
       .value(),
-
     byUser: _(timeSheets)
       .groupBy('userId')
       .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
@@ -88,8 +92,10 @@ exports.getReport = async function (projectId, criteria) {
         }
         resultObject.tasks.push(task);
       }, {}))
+      .sortBy('user.fullNameRu')
       .value()
   };
+
   return {
     workbook: generateExcellDocument(data),
     options: {

@@ -17,14 +17,9 @@ exports.create = async (req, res, next) => {
 
   TimesheetService
     .create(timesheetParams)
-    .then(({ createdTimesheet, updatedTask }) => {
+    .then(createdTimesheet => {
       TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
-
-      if (updatedTask) {
-        TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
-      }
-
-      res.end();
+      res.json(createdTimesheet);
     })
     .catch(e => {
       return next(createError(e));
@@ -39,6 +34,7 @@ exports.getTracksAll = async (req, res, next) => {
     userId: req.user.id,
     taskStatusId: req.body.statusId,
     taskId: req.body.taskId,
+    sprintId: req.body.sprintId,
     onDate: req.onDate
   };
 
@@ -53,9 +49,7 @@ exports.getTracksAll = async (req, res, next) => {
       TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
       res.json(tracks);
     })
-    .catch(e => {
-      return next(createError(e));
-    });
+    .catch(e => next(createError(e)));
 };
 
 exports.list = async function (req, res, next) {
@@ -97,18 +91,13 @@ exports.update = async (req, res, next) => {
 
   TimesheetService
     .update(req)
-    .then(({ updatedTimesheet, updatedTask }) => {
-      TimesheetsChannel.sendAction('update', updatedTimesheet, res.io, req.user.id);
-
-      if (updatedTask) {
-        TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
-      }
-
+    .then(updatedTimesheets => {
+      updatedTimesheets.map(sheet => {
+        TimesheetsChannel.sendAction('update', sheet, res.io, req.isSystemUser ? sheet.userId : req.user.id);
+      });
       res.end();
     })
-    .catch(e => {
-      return next(createError(e));
-    });
+    .catch(e => next(createError(e)));
 };
 
 exports.delete = async (req, res, next) => {
@@ -123,18 +112,12 @@ exports.delete = async (req, res, next) => {
   TimesheetService
     .destroy(timesheetIds, req.user.id)
     .then(timesheets => {
-      timesheets.forEach(({ deletedTimesheet, updatedTask }) => {
+      timesheets.forEach(deletedTimesheet => {
         TimesheetsChannel.sendAction('destroy', deletedTimesheet, res.io, req.user.id);
-
-        if (updatedTask) {
-          TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
-        }
       });
       res.end();
     })
-    .catch(e => {
-      return next(createError(e));
-    });
+    .catch(e => next(createError(e)));
 };
 
 exports.updateDraft = async function (req, res, next) {
@@ -146,7 +129,7 @@ exports.updateDraft = async function (req, res, next) {
 
   TimesheetService
     .updateDraft(req.body, draftId, req.user.id)
-    .then(({ updatedDraft, createdTimesheet, updatedTask }) => {
+    .then(({updatedDraft, createdTimesheet}) => {
       if (updatedDraft) {
         TimesheetsChannel.sendAction('update', updatedDraft, res.io, req.user.id);
       }
@@ -155,13 +138,7 @@ exports.updateDraft = async function (req, res, next) {
         TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
       }
 
-      if (updatedTask) {
-        TasksChannel.sendAction('update', updatedTask, res.io, updatedTask.projectId);
-      }
-
       res.end();
     })
-    .catch(e => {
-      return next(createError(e));
-    });
+    .catch(e => next(createError(e)));
 };
