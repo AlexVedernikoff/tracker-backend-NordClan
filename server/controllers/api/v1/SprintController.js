@@ -82,7 +82,7 @@ exports.update = function (req, res, next){
 
         return model.updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
           .then((updatedModel)=>{
-            return queries.sprint.allSprintsByProject(updatedModel.projectId, Sprint.defaultSelect, t)
+            return queries.sprint.allSprintsByProject(updatedModel.projectId, queries.sprint.queryAttributes('Sprint'), t)
               .then((sprints) => {
                 res.end(JSON.stringify(sprints));
               });

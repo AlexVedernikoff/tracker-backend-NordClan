@@ -1,4 +1,4 @@
-const {Timesheet, Task, User, Project, TimesheetTypesDictionary} = require('../../../models');
+const {Timesheet, Task, User, Project, ProjectUsers, ProjectUsersRoles, ProjectRolesDictionary, TimesheetTypesDictionary} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
@@ -32,7 +32,7 @@ exports.getReport = async function (projectId, criteria) {
         as: 'task',
         model: Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId'],
         paranoid: false
       },
       {
@@ -40,7 +40,21 @@ exports.getReport = async function (projectId, criteria) {
         model: User,
         required: false,
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
-        paranoid: false
+        paranoid: false,
+        include: [
+          {
+            as: 'usersProjects',
+            model: ProjectUsers,
+            where: { projectId: queryParams.projectId },
+            attributes: ['id', 'rolesIds'],
+            include: [
+              {
+                as: 'roles',
+                model: ProjectUsersRoles
+              }
+            ]
+          }
+        ]
       }
     ],
     order: [
@@ -64,6 +78,15 @@ exports.getReport = async function (projectId, criteria) {
     } else {
       Object.assign(data, {task: data.task.dataValues});
     }
+
+    const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
+    const rolesIds = currentProjectRoles
+      .map(role => role.projectRoleId)
+      .sort((role1, role2) => role1 - role2);
+    const userRolesNames = rolesIds.map(roleId =>
+      ProjectRolesDictionary.values.find(item => item.id === roleId).name).join(', ');
+    delete data.user.usersProjects;
+    data.user.userRolesNames = userRolesNames;
     return data;
   });
 
