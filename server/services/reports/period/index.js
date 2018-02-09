@@ -4,7 +4,7 @@ const moment = require('moment');
 const Excel = require('exceljs');
 const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 
-exports.getReport = async function (projectId, criteria) {
+exports.getReport = async function (projectId, criteria, sprintId) {
   let startDate;
   let endDate;
   if (criteria) {
@@ -14,6 +14,11 @@ exports.getReport = async function (projectId, criteria) {
   }
   const queryParams = {
     projectId: {$eq: projectId},
+    ...(sprintId ? (
+      {
+        sprintId: {$eq: sprintId}
+      }
+    ) : null),
     ...(criteria ? (
       {
         onDate: {$between: [startDate, endDate]}
@@ -26,7 +31,7 @@ exports.getReport = async function (projectId, criteria) {
   });
   const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
-    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId'],
+    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId', 'sprintId'],
     include: [
       {
         as: 'task',
