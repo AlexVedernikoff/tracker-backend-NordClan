@@ -39,7 +39,13 @@ exports.getReport = async function (projectId, criteria) {
         paranoid: false
       }
     ]
-  });
+  }).then(model => ({
+    id: model.dataValues.id,
+    name: model.dataValues.name,
+    prefix: model.dataValues.prefix,
+    sprints: model.sprints ? model.sprints.map(sprint => sprint.dataValues) : null
+  }));
+
   const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
     attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId', 'sprintId'],
@@ -126,10 +132,17 @@ exports.getReport = async function (projectId, criteria) {
         if (!_.has(resultObject, 'user')) {
           resultObject.user = task.user;
         }
-        if (!_.has(resultObject, 'tasks')) {
-          resultObject.tasks = [];
+        if (!_.has(resultObject, 'sprints')) {
+          resultObject.sprints = [...project.sprints];
         }
-        resultObject.tasks.push(task);
+        if (task.sprintId) {
+          resultObject.sprints = [...groupTaskInSprints(resultObject.sprints, task)];
+        } else {
+          if (!_.has(resultObject, 'otherTasks')) {
+            resultObject.otherTasks = [];
+          }
+          resultObject.otherTasks.push(task);
+        }
       }, {}))
       .sortBy('user.fullNameRu')
       .value()
@@ -208,6 +221,27 @@ function checkRegExp (regExp, value) {
   }
 
   return regExp.test(value);
+}
+
+function checkTimesheetInSprint (factStartDate, factFinishDate, spentTimeDate) {
+  return moment(factStartDate).isBefore(spentTimeDate) && moment(spentTimeDate).isBefore(factFinishDate);
+}
+
+function groupTaskInSprints (sprints, task) {
+  const needSprint = sprints.find(item => item.id === task.sprintId);
+  const { factStartDate, factFinishDate } = needSprint;
+  if (checkTimesheetInSprint(factStartDate, factFinishDate, task.onDate)) {
+    if (!_.has(needSprint, 'tasks')) {
+      needSprint.tasks = [];
+    }
+    needSprint.tasks.push(task);
+  } else {
+    if (!_.has(needSprint, 'otherTasks')) {
+      needSprint.otherTasks = [];
+    }
+    needSprint.otherTasks.push(task);
+  }
+  return sprints;
 }
 
 function generateMessage (errors) {
