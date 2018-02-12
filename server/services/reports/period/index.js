@@ -1,12 +1,14 @@
-const {Timesheet, Task, User, Project, ProjectUsers, ProjectUsersRoles, ProjectRolesDictionary, TimesheetTypesDictionary} = require('../../../models');
+const { Timesheet, Task, User, Project, ProjectUsers, ProjectUsersRoles,
+  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
 const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 
-exports.getReport = async function (projectId, criteria, sprintId) {
+exports.getReport = async function (projectId, criteria) {
   let startDate;
   let endDate;
+  const { label, sprintId } = criteria;
   if (criteria) {
     const validCriteria = validateCriteria(criteria);
     startDate = validCriteria.startDate;
@@ -27,7 +29,16 @@ exports.getReport = async function (projectId, criteria, sprintId) {
   };
   const project = await Project.findOne({
     where: {id: {$eq: projectId}},
-    attributes: ['id', 'name', 'prefix']
+    attributes: ['id', 'name', 'prefix'],
+    include: [
+      {
+        as: 'sprints',
+        model: Sprint,
+        required: false,
+        attributes: ['id', 'name', 'factStartDate', 'factFinishDate'],
+        paranoid: false
+      }
+    ]
   });
   const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
@@ -96,7 +107,7 @@ exports.getReport = async function (projectId, criteria, sprintId) {
   });
 
   const data = {
-    info: {project, range: {startDate, endDate}},
+    info: { project, range: {startDate, endDate}, label },
     byTasks: _(timeSheets)
       .groupBy('taskId')
       .map(timeSheet => _.transform(timeSheet, (resultObject, user) => {
