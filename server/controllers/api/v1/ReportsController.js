@@ -17,10 +17,11 @@ exports.byPeriod = async (req, res, next) => {
   try {
     const {startDate, endDate} = req.query;
     const sprintId = req.query.sprintId ? req.query.sprintId : null;
+    const label = req.query.label ? req.query.label : null;
     const {workbook, options} = await ReportsService.byPeriod
       .getReport(req.params.projectId, startDate && endDate && {
-        startDate, endDate
-      }, sprintId);
+        startDate, endDate, label, sprintId
+      });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
     await workbook.xlsx.write(res);
