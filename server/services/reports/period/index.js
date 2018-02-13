@@ -206,17 +206,24 @@ function checkTimesheetInSprint (factStartDate, factFinishDate, spentTimeDate) {
   return moment(factStartDate).isBefore(spentTimeDate) && moment(spentTimeDate).isBefore(factFinishDate);
 }
 
-function groupTimeSheetsInSprint (timeSheets) {
+function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
   return _(timeSheets)
     .groupBy('userId')
-    .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
+    .map(timeSheet => _.transform(timeSheet, (resultObject, task) => {
       if (!_.has(resultObject, 'user')) {
         resultObject.user = task.user;
       }
       if (!_.has(resultObject, 'tasks')) {
         resultObject.tasks = [];
       }
-      resultObject.tasks.push(task);
+      if (!checkTimesheetInSprint(factStartDate, factFinishDate, task.onDate)) {
+        if (!_.has(resultObject, 'otherTasks')) {
+          resultObject.otherTasks = [];
+        }
+        resultObject.otherTasks.push(task);
+      } else {
+        resultObject.tasks.push(task);
+      }
     }, {}))
     .sortBy('user.fullNameRu')
     .value();
@@ -226,9 +233,10 @@ function groupTimeSheetsInSprint (timeSheets) {
 function divideTimeSheetsBySprints (project, timeSheets) {
   const sprintsWithTimeSheets = project.sprints.map(sprint => {
     const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === sprint.id);
+    const { factStartDate, factFinishDate } = sprint;
     return {
       ...sprint,
-      timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint)
+      timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
     };
   });
   const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === 0);
@@ -238,7 +246,7 @@ function divideTimeSheetsBySprints (project, timeSheets) {
       name: 'Задачи не принадлежащие спринту',
       factStartDate: project.createdAt,
       factFinishDate: project.completedAt,
-      timeSheets: timeSheetsWithoutSprint
+      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, project.completedAt)
     });
   }
   return sprintsWithTimeSheets;
