@@ -9,29 +9,44 @@ class ByUserWorkSheet extends WorkSheetTemplate {
   init () {
     super.init();
 
-    this._data.byUser.forEach(data => {
-      this._write(data);
+    this._data.byUser.forEach(sprint => {
+      this._writeUserBySprint(sprint);
     });
 
     this._writeTottalSummary();
   }
 
-  _write (data) {
-    this._lastIndexRow++;
-    this._writeUser(data.user.fullNameRu);
-    data.tasks.forEach(task => {
+  _writeUserBySprint (sprint) {
+    this._writeSectionName(sprint.name);
+    sprint.timeSheets.forEach(data => {
+      this._writeTimesheetByUser(data);
+    });
+  }
+
+  _writeTimesheetByUser (timeSheets) {
+    this._writeSectionName(timeSheets.user.fullNameRu);
+    timeSheets.tasks.forEach(task => {
       this._writeUserRow(task);
     });
-    this._writeSummary(data.tasks);
+    this._writeSummary(timeSheets.tasks);
+    if (timeSheets.otherTasks) {
+      this._writeSectionName('Прочие задачи');
+      timeSheets.otherTasks.forEach(task => {
+        this._writeUserRow(task);
+      });
+      this._writeSummary(timeSheets.otherTasks);
+    }
     this._lastIndexRow++;
   }
 
-  _writeUser (userName) {
+  _writeSectionName (name) {
+    this._lastIndexRow++;
     this._worksheet
       .mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[2] + this._lastIndexRow}`);
     this._worksheet
       .getCell(this._columns[0] + this._lastIndexRow)
-      .value = userName;
+      .value = name;
+    this._lastIndexRow++;
   }
 
   _writeUserRow (task) {
