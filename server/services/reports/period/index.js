@@ -272,10 +272,6 @@ function generateMessage (errors) {
 }
 
 function getTaskTypeName (typeId) {
-  console.log(' ');
-  console.log(typeId);
-  console.log(' ');
-  console.log(TaskTypesDictionary.values);
   return TaskTypesDictionary.values.find(item => item.id === typeId).name;
 }
 

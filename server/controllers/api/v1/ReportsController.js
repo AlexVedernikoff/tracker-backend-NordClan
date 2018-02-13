@@ -17,7 +17,7 @@ exports.byPeriod = async (req, res, next) => {
   try {
     const {startDate, endDate} = req.query;
     const sprintId = req.query.sprintId ? req.query.sprintId : null;
-    const label = req.query.label ? req.query.label : null;
+    const label = req.query.label ? req.query.label : '';
     const {workbook, options} = await ReportsService.byPeriod
       .getReport(req.params.projectId, startDate && endDate && {
         startDate, endDate, label, sprintId
