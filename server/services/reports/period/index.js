@@ -29,7 +29,7 @@ exports.getReport = async function (projectId, criteria) {
   };
   const project = await Project.findOne({
     where: {id: {$eq: projectId}},
-    attributes: ['id', 'name', 'prefix'],
+    attributes: ['id', 'name', 'prefix', 'createdAt', 'completedAt'],
     include: [
       {
         as: 'sprints',
@@ -40,9 +40,7 @@ exports.getReport = async function (projectId, criteria) {
       }
     ]
   }).then(model => ({
-    id: model.dataValues.id,
-    name: model.dataValues.name,
-    prefix: model.dataValues.prefix,
+    ...model.dataValues,
     sprints: model.sprints ? model.sprints.map(sprint => sprint.dataValues) : null
   }));
 
@@ -126,26 +124,7 @@ exports.getReport = async function (projectId, criteria) {
         resultObject.users.push(user);
       }, {}))
       .value(),
-    byUser: _(timeSheets)
-      .groupBy('userId')
-      .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
-        if (!_.has(resultObject, 'user')) {
-          resultObject.user = task.user;
-        }
-        if (!_.has(resultObject, 'sprints')) {
-          resultObject.sprints = [...project.sprints];
-        }
-        if (task.sprintId) {
-          resultObject.sprints = [...groupTaskInSprints(resultObject.sprints, task)];
-        } else {
-          if (!_.has(resultObject, 'otherTasks')) {
-            resultObject.otherTasks = [];
-          }
-          resultObject.otherTasks.push(task);
-        }
-      }, {}))
-      .sortBy('user.fullNameRu')
-      .value()
+    byUser: divideTimeSheetsBySprints(project, timeSheets)
   };
 
   return {
@@ -227,21 +206,42 @@ function checkTimesheetInSprint (factStartDate, factFinishDate, spentTimeDate) {
   return moment(factStartDate).isBefore(spentTimeDate) && moment(spentTimeDate).isBefore(factFinishDate);
 }
 
-function groupTaskInSprints (sprints, task) {
-  const needSprint = sprints.find(item => item.id === task.sprintId);
-  const { factStartDate, factFinishDate } = needSprint;
-  if (checkTimesheetInSprint(factStartDate, factFinishDate, task.onDate)) {
-    if (!_.has(needSprint, 'tasks')) {
-      needSprint.tasks = [];
-    }
-    needSprint.tasks.push(task);
-  } else {
-    if (!_.has(needSprint, 'otherTasks')) {
-      needSprint.otherTasks = [];
-    }
-    needSprint.otherTasks.push(task);
+function groupTimeSheetsInSprint (timeSheets) {
+  return _(timeSheets)
+    .groupBy('userId')
+    .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
+      if (!_.has(resultObject, 'user')) {
+        resultObject.user = task.user;
+      }
+      if (!_.has(resultObject, 'tasks')) {
+        resultObject.tasks = [];
+      }
+      resultObject.tasks.push(task);
+    }, {}))
+    .sortBy('user.fullNameRu')
+    .value();
+
+}
+
+function divideTimeSheetsBySprints (project, timeSheets) {
+  const sprintsWithTimeSheets = project.sprints.map(sprint => {
+    const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === sprint.id);
+    return {
+      ...sprint,
+      timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint)
+    };
+  });
+  const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === 0);
+  if (timeSheetsWithoutSprint.length > 0) {
+    sprintsWithTimeSheets.push({
+      id: 0,
+      name: 'Задачи не принадлежащие спринту',
+      factStartDate: project.createdAt,
+      factFinishDate: project.completedAt,
+      timeSheets: timeSheetsWithoutSprint
+    });
   }
-  return sprints;
+  return sprintsWithTimeSheets;
 }
 
 function generateMessage (errors) {
