@@ -1,4 +1,4 @@
-const { Timesheet, Task, User, Project, ProjectUsers, ProjectUsersRoles,
+const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, ProjectUsersRoles,
   ProjectRolesDictionary, TimesheetTypesDictionary, Sprint} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
@@ -54,7 +54,7 @@ exports.getReport = async function (projectId, criteria) {
         as: 'task',
         model: Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId'],
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId', 'typeId'],
         paranoid: false
       },
       {
@@ -109,6 +109,8 @@ exports.getReport = async function (projectId, criteria) {
       ProjectRolesDictionary.values.find(item => item.id === roleId).name).join(', ');
     delete data.user.usersProjects;
     data.user.userRolesNames = userRolesNames;
+
+    data.task.typeName = getTaskTypeName(data.task.typeId);
     return data;
   });
 
@@ -267,6 +269,14 @@ function generateMessage (errors) {
     .join(', ');
 
   return `Incorrect params - ${incorrectParams}`;
+}
+
+function getTaskTypeName (typeId) {
+  console.log(' ');
+  console.log(typeId);
+  console.log(' ');
+  console.log(TaskTypesDictionary.values);
+  return TaskTypesDictionary.values.find(item => item.id === typeId).name;
 }
 
 function formatDate (date) {
