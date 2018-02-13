@@ -41,6 +41,8 @@ exports.getReport = async function (projectId, criteria) {
     ]
   }).then(model => ({
     ...model.dataValues,
+    createdAt: moment(model.dataValues.createdAt).format('YYYY-MM-DD'),
+    completedAt: moment(model.dataValues.completedAt).format('YYYY-MM-DD'),
     sprints: model.sprints ? model.sprints.map(sprint => sprint.dataValues) : null
   }));
 
@@ -203,8 +205,7 @@ function checkRegExp (regExp, value) {
 }
 
 function checkTimesheetInSprint (factStartDate, factFinishDate, spentTimeDate) {
-  return moment(spentTimeDate).isSame(factFinishDate) || moment(factStartDate).isSame(spentTimeDate)
-   || moment(spentTimeDate).isBefore(factFinishDate) && moment(factStartDate).isBefore(spentTimeDate);
+  return moment(spentTimeDate).isSameOrBefore(factFinishDate) && moment(factStartDate).isSameOrBefore(spentTimeDate);
 }
 
 function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
@@ -232,17 +233,19 @@ function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
 }
 
 function divideTimeSheetsBySprints (project, timeSheets) {
-  const sprintsWithTimeSheets = project.sprints.map(sprint => {
-    const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === sprint.id);
-    const { factStartDate, factFinishDate, id, name } = sprint;
-    return {
-      id,
-      name,
-      factStartDate: formatDate(factStartDate),
-      factFinishDate: formatDate(factFinishDate),
-      timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
-    };
-  });
+  const sprintsWithTimeSheets = project.sprints
+    .sort((sprint1, sprint2) => moment(sprint2.factStartDate).isBefore(sprint1.factStartDate))
+    .map(sprint => {
+      const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === sprint.id);
+      const { factStartDate, factFinishDate, id, name } = sprint;
+      return {
+        id,
+        name,
+        factStartDate: formatDate(factStartDate),
+        factFinishDate: formatDate(factFinishDate),
+        timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
+      };
+    });
   const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === 0);
   if (timeSheetsWithoutSprint.length > 0) {
     const factStartDate = formatDate(project.createdAt);
@@ -252,7 +255,7 @@ function divideTimeSheetsBySprints (project, timeSheets) {
       name: 'Backlog',
       factStartDate: factStartDate,
       factFinishDate: factFinishDate,
-      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, factStartDate, factFinishDate)
+      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, project.completedAt)
     });
   }
   return sprintsWithTimeSheets;

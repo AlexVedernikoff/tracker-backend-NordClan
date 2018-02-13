@@ -27,10 +27,12 @@ class ByUserWorkSheet extends WorkSheetTemplate {
 
   _writeTimesheetByUser (timeSheets) {
     this._writeSectionName(timeSheets.user.fullNameRu);
-    timeSheets.tasks.forEach(task => {
-      this._writeUserRow(task);
-    });
-    this._writeSummary(timeSheets.tasks);
+    if (timeSheets.tasks.length > 0) {
+      timeSheets.tasks.forEach(task => {
+        this._writeUserRow(task);
+      });
+      this._writeSummary(timeSheets.tasks);
+    }
     if (timeSheets.otherTasks) {
       this._writeSectionName('Прочие задачи');
       timeSheets.otherTasks.forEach(task => {
