@@ -6,4 +6,3 @@ dump
 tmp
 .idea/*
 package-lock.json
-pg_db/dump/*
