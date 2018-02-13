@@ -17,10 +17,12 @@ class ByUserWorkSheet extends WorkSheetTemplate {
   }
 
   _writeUserBySprint (sprint) {
-    this._writeSectionName(sprint.name);
-    sprint.timeSheets.forEach(data => {
-      this._writeTimesheetByUser(data);
-    });
+    if (sprint.timeSheets.length > 0) {
+      this._writeSectionName(`${sprint.name} c ${sprint.factStartDate} по ${sprint.factFinishDate}`);
+      sprint.timeSheets.forEach(data => {
+        this._writeTimesheetByUser(data);
+      });
+    }
   }
 
   _writeTimesheetByUser (timeSheets) {

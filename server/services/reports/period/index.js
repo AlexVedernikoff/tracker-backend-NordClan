@@ -203,7 +203,8 @@ function checkRegExp (regExp, value) {
 }
 
 function checkTimesheetInSprint (factStartDate, factFinishDate, spentTimeDate) {
-  return moment(factStartDate).isBefore(spentTimeDate) && moment(spentTimeDate).isBefore(factFinishDate);
+  return moment(spentTimeDate).isSame(factFinishDate) || moment(factStartDate).isSame(spentTimeDate)
+   || moment(spentTimeDate).isBefore(factFinishDate) && moment(factStartDate).isBefore(spentTimeDate);
 }
 
 function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
@@ -233,20 +234,25 @@ function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
 function divideTimeSheetsBySprints (project, timeSheets) {
   const sprintsWithTimeSheets = project.sprints.map(sprint => {
     const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === sprint.id);
-    const { factStartDate, factFinishDate } = sprint;
+    const { factStartDate, factFinishDate, id, name } = sprint;
     return {
-      ...sprint,
+      id,
+      name,
+      factStartDate: formatDate(factStartDate),
+      factFinishDate: formatDate(factFinishDate),
       timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
     };
   });
   const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === 0);
   if (timeSheetsWithoutSprint.length > 0) {
+    const factStartDate = formatDate(project.createdAt);
+    const factFinishDate = formatDate(project.completedAt);
     sprintsWithTimeSheets.push({
       id: 0,
-      name: 'Задачи не принадлежащие спринту',
-      factStartDate: project.createdAt,
-      factFinishDate: project.completedAt,
-      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, project.completedAt)
+      name: 'Backlog',
+      factStartDate: factStartDate,
+      factFinishDate: factFinishDate,
+      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, factStartDate, factFinishDate)
     });
   }
   return sprintsWithTimeSheets;
@@ -258,4 +264,8 @@ function generateMessage (errors) {
     .join(', ');
 
   return `Incorrect params - ${incorrectParams}`;
+}
+
+function formatDate (date) {
+  return date && moment(date).format('DD.MM.YYYY');
 }
