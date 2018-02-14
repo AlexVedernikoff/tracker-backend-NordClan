@@ -1,5 +1,6 @@
 const moment = require('moment');
-const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, TaskHistory, TaskStatusesDictionary, User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
+const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, Timesheet, TaskHistory, TaskStatusesDictionary,
+  User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -63,6 +64,12 @@ async function getMetrics (){
                   field: 'sprintId'
                 },
                 required: false
+              },
+              {
+                as: 'timesheets',
+                model: Timesheet,
+                attributes: ['id', 'sprintId', 'spentTime', 'projectId'],
+                required: false
               }
             ],
             required: false
@@ -89,10 +96,29 @@ async function getMetrics (){
   };
 
   const projects = await Project.findAll(projectsQuery);
+
+  const tasksInBacklog = await Task.findAll({
+    where: {
+      sprintId: null
+    },
+    attributes: ['id', 'sprintId', 'projectId'],
+    include: [
+      {
+        as: 'timesheets',
+        model: Timesheet,
+        attributes: ['id', 'sprintId', 'spentTime', 'projectId'],
+        required: false
+      }
+    ]
+  }).then(tasks => tasks
+    .map(task => task.get({ 'plain': true }))
+    .filter(task => task.timesheets.length > 0));
+
   const projectMetricsTasks = [];
 
   projects.forEach(function (project){
     const plainProject = project.get({ 'plain': true });
+    plainProject.tasksInBacklog = tasksInBacklog.filter(task => task.projectId === plainProject.id);
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint, sprintKey){
         plainProject.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
@@ -120,7 +146,6 @@ async function getMetrics (){
       });
     }
   });
-
   return await Promise.all(projectMetricsTasks);
 }
 
