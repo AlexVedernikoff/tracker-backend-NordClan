@@ -6,7 +6,17 @@ const exactMath = require('exact-math');
 
 module.exports = async function (metricsTypeId, input){
 
-  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId, totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks, laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures;
+  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
+    totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
+    laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
+    spentTimeBacklog, spentTimeBySprint;
+
+  const countSpentTimeByTask = (task) =>
+    task.timesheets.reduce((sum, timesheet) => (exactMath.add(sum, timesheet.spentTime)), 0);
+
+  const countSpentTimeByTasks = (tasks) =>
+    tasks.reduce((tasksSum, task) => (countSpentTimeByTask(task)), 0);
+
 
   switch (metricsTypeId){
   case (1):
@@ -51,13 +61,13 @@ module.exports = async function (metricsTypeId, input){
 
   case (5):
     projectBurndown = input.project.budget || 0;
+    spentTimeBacklog = countSpentTimeByTasks(input.project.tasksInBacklog);
     if (input.project.sprints.length > 0){
       input.project.sprints.forEach(function (sprint){
         if (sprint.tasks.length === 0) return;
-        sprint.tasks.forEach(function (task){
-          if (!task.factExecutionTime) return;
-          projectBurndown = exactMath.sub(projectBurndown, parseFloat(task.factExecutionTime) || 0);
-        });
+        spentTimeBySprint = countSpentTimeByTasks(sprint.tasks);
+        if (!spentTimeBacklog && !spentTimeBySprint) return;
+        projectBurndown = exactMath.sub(projectBurndown, parseFloat(spentTimeBacklog), parseFloat(spentTimeBySprint));
       });
     }
     return {
@@ -71,13 +81,13 @@ module.exports = async function (metricsTypeId, input){
 
   case (6):
     projectRiskBurndown = input.project.riskBudget || 0;
+    spentTimeBacklog = countSpentTimeByTasks(input.project.tasksInBacklog);
     if (input.project.sprints.length > 0){
       input.project.sprints.forEach(function (sprint){
         if (sprint.tasks.length === 0) return;
-        sprint.tasks.forEach(function (task){
-          if (!task.factExecutionTime) return;
-          projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(task.factExecutionTime) || 0);
-        });
+        if (!spentTimeBacklog && !spentTimeBySprint) return;
+        spentTimeBySprint = countSpentTimeByTasks(sprint.tasks);
+        projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(spentTimeBacklog), parseFloat(spentTimeBySprint));
       });
     }
     return {
