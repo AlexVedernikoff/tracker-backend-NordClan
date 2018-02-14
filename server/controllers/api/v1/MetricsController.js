@@ -13,3 +13,12 @@ exports.list = async (req, res, next) => {
     .then(metrics => res.json(metrics))
     .catch(e => next(createError(e)));
 };
+
+exports.calculate = (req, res, next) => {
+  try {
+    AgentService.calculate();
+    res.sendStatus(200);
+  } catch (error) {
+    next(createError(error));
+  }
+};
