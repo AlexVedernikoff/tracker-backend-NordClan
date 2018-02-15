@@ -15,7 +15,7 @@ module.exports = async function (metricsTypeId, input){
     task.timesheets.reduce((sum, timesheet) => (exactMath.add(sum, timesheet.spentTime)), 0);
 
   const countSpentTimeByTasks = (tasks) =>
-    tasks.reduce((tasksSum, task) => (countSpentTimeByTask(task)), 0);
+    tasks.reduce((tasksSum, task) => (exactMath.add(tasksSum, countSpentTimeByTask(task))), 0);
 
 
   switch (metricsTypeId){
