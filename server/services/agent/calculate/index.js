@@ -5,7 +5,7 @@ const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
 
-module.exports.calculate = async function (){
+module.exports.calculate = async function (projectId){
   try {
     await init();
   } catch (err){
@@ -18,7 +18,7 @@ module.exports.calculate = async function (){
   let metricsData;
 
   try {
-    metricsData = await getMetrics();
+    metricsData = await getMetrics(projectId);
   } catch (err){
     console.error('getMetrics err', err);
     process.exit(-1);
@@ -38,8 +38,13 @@ async function init (){
   return await sequelize.authenticate();
 }
 
-async function getMetrics (){
+async function getMetrics (projectId){
   const projectsQuery = {
+    where: {
+      ...(projectId ? {
+        id: {$eq: projectId}
+      } : null)
+    },
     attributes: Project.defaultSelect,
     include: [
       {
