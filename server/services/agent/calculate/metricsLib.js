@@ -87,13 +87,9 @@ module.exports = async function (metricsTypeId, input){
       if (input.project.sprints.length === 0) return;
       input.project.sprints.forEach(function (sprint){
         spentTimeBySprint = countSpentTimeByTasks(sprint.tasks);
-        console.log(spentTimeBySprint);
         projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(spentTimeBySprint));
       });
     }
-    console.log('PROJECT ID');
-    console.log(input.project.id);
-    console.log(projectRiskBurndown);
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
