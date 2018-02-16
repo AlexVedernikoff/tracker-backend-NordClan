@@ -48,13 +48,13 @@ exports.getReport = async function (projectId, criteria) {
 
   const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
-    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId', 'sprintId'],
+    attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId'],
     include: [
       {
         as: 'task',
         model: Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId', 'typeId'],
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId', 'typeId', 'sprintId'],
         paranoid: false
       },
       {
@@ -110,7 +110,7 @@ exports.getReport = async function (projectId, criteria) {
     delete data.user.usersProjects;
     data.user.userRolesNames = userRolesNames;
 
-    data.task.typeName = getTaskTypeName(data.task.typeId);
+    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId) : null;
     return data;
   });
 
@@ -238,7 +238,7 @@ function divideTimeSheetsBySprints (project, timeSheets) {
   const sprintsWithTimeSheets = project.sprints
     .sort((sprint1, sprint2) => moment(sprint2.factStartDate).isBefore(sprint1.factStartDate))
     .map(sprint => {
-      const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === sprint.id);
+      const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.task.sprintId === sprint.id);
       const { factStartDate, factFinishDate, id, name } = sprint;
       return {
         id,
