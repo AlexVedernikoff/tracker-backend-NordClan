@@ -45,7 +45,7 @@ module.exports = function (templateName, input){
                 <br>
                 <span style="font-weight: bold; font-style: italic;">Автор задачи:</span>
                 ${i.task.author.fullNameRu}`
-                + (i.task.performer ? '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span>' + i.task.performer.fullNameRu : '')
+                + (i.task.performer ? '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span> ' + i.task.performer.fullNameRu : '')
               + `</td>
             </tr>
             <tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
