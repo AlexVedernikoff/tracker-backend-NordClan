@@ -62,12 +62,12 @@ module.exports = async function (metricsTypeId, input){
   case (5):
     projectBurndown = input.project.budget || 0;
     spentTimeByBacklog = countSpentTimeByTasks(input.project.tasksInBacklog);
+    projectBurndown = exactMath.sub(projectBurndown, parseFloat(spentTimeByBacklog));
     if (input.project.sprints.length > 0){
+      if (input.project.sprints.length === 0) return;
       input.project.sprints.forEach(function (sprint){
-        if (sprint.tasks.length === 0) return;
         spentTimeBySprint = countSpentTimeByTasks(sprint.tasks);
-        if (!spentTimeByBacklog && !spentTimeBySprint) return;
-        projectBurndown = exactMath.sub(projectBurndown, parseFloat(spentTimeByBacklog), parseFloat(spentTimeBySprint));
+        projectBurndown = exactMath.sub(projectBurndown, parseFloat(spentTimeBySprint));
       });
     }
     return {
@@ -82,14 +82,18 @@ module.exports = async function (metricsTypeId, input){
   case (6):
     projectRiskBurndown = input.project.riskBudget || 0;
     spentTimeByBacklog = countSpentTimeByTasks(input.project.tasksInBacklog);
+    projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(spentTimeByBacklog));
     if (input.project.sprints.length > 0){
+      if (input.project.sprints.length === 0) return;
       input.project.sprints.forEach(function (sprint){
-        if (sprint.tasks.length === 0) return;
-        if (!spentTimeByBacklog && !spentTimeBySprint) return;
         spentTimeBySprint = countSpentTimeByTasks(sprint.tasks);
-        projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(spentTimeByBacklog), parseFloat(spentTimeBySprint));
+        console.log(spentTimeBySprint);
+        projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(spentTimeBySprint));
       });
     }
+    console.log('PROJECT ID');
+    console.log(input.project.id);
+    console.log(projectRiskBurndown);
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
