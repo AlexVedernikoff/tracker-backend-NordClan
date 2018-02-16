@@ -34,16 +34,16 @@ services:
       pm2-docker start --auto-exit --env development processes-debug.json
       EOF'
 
-  # web:
-  #   build: ./../sim-track
-  #   volumes:
-  #     - ./../sim-track:/app
-  #   ports:
-  #     - 8080:8080
-  #   env_file:
-  #     - .docker-compose-dev.env
-  #   entrypoint: |
-  #     bash -c 'bash -s <<EOF
-  #     npm install
-  #     npm start
-  #     EOF'
+  web:
+    build: ./../sim-track
+    volumes:
+      - ./../sim-track:/app
+    ports:
+      - 8080:8080
+    env_file:
+      - .docker-compose-dev.env
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      npm install
+      npm start
+      EOF'
