@@ -38,13 +38,9 @@ module.exports = async function (metricsTypeId, input){
 
   const checkSprintsHaveTask = (sprints) => sprints.find(sprint => sprint.tasks.length > 0);
 
-  // массив ролей приходит в виде строки вида '[2,3,4,5,6,7,8,9]'
-  const transformUserRoleIdToArray = (userRoleId) =>
-    userRoleId.replace('[', '').replace(']', '').split(',').map(id => Number(id));
-
   const countSpentTimeByTaskWithRole = (task, curRoleId) =>
     task.timesheets.reduce((sum, timesheet) => {
-      return (transformUserRoleIdToArray(timesheet.userRoleId).includes(curRoleId))
+      return (JSON.parse(timesheet.userRoleId).includes(curRoleId))
         ? exactMath.add(sum, timesheet.spentTime) : sum;
     }, 0);
 
