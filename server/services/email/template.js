@@ -341,7 +341,7 @@ function getTaskPriorityName (num){
 }
 
 function getTaskLastComment (task){
-  return task.comments[task.comments.length - 1];
+  return task.comments[0];
 }
 
 // TODO
