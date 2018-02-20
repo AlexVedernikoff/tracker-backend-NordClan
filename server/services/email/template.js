@@ -21,8 +21,7 @@ module.exports = function (templateName, input){
                 <span style="font-size: 13px;">
                   В проект
                   <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                    ${i.task.project.name + ' '}
-                  </a>
+                    ${i.task.project.name}</a>
                   добавлена новая задача:
                 </span>
               </td>
