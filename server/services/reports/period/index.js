@@ -236,7 +236,15 @@ function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
 
 function divideTimeSheetsBySprints (project, timeSheets, endDate) {
   const sprintsWithTimeSheets = project.sprints
-    .sort((sprint1, sprint2) => moment(sprint2.factStartDate).isBefore(sprint1.factStartDate))
+    .sort((sprint1, sprint2) => {
+      if (moment(sprint2.factStartDate).isBefore(sprint1.factStartDate)) {
+        return 1;
+      } else if (moment(sprint1.factStartDate).isBefore(sprint2.factStartDate)) {
+        return -1;
+      } else {
+        return 0;
+      }
+    })
     .map(sprint => {
       const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.task.sprintId === sprint.id);
       const { factStartDate, factFinishDate, id, name } = sprint;
