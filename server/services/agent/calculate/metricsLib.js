@@ -15,12 +15,16 @@ module.exports = async function (metricsTypeId, input){
     if (!task.timesheets) {
       return 0;
     } else {
-      return task.timesheets.reduce((sum, timesheet) => (exactMath.add(sum, timesheet.spentTime)), 0);
+      return task.timesheets.reduce((sum, timesheet) => {
+        return (exactMath.add(sum, parseFloat(timesheet.spentTime)));
+      }, 0);
     }
   };
 
   const countSpentTimeByTasks = (tasks) =>
-    tasks.reduce((tasksSum, task) => (exactMath.add(tasksSum, countSpentTimeByTask(task))), 0);
+    tasks.reduce((tasksSum, task) => {
+      return (exactMath.add(tasksSum, countSpentTimeByTask(task)));
+    }, 0);
 
   const countSpentTimeByProject = (project) => {
     const curSpentTimeByBacklog = project.tasksInBacklog
@@ -29,7 +33,7 @@ module.exports = async function (metricsTypeId, input){
     const curSpentTimeBySprints = project.sprints
       ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasks(sprint.tasks))), 0)
       : 0;
-    return curSpentTimeByBacklog + curSpentTimeBySprints;
+    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints));
   };
 
   const checkSprintsHaveTask = (sprints) => sprints.find(sprint => sprint.tasks.length > 0);
@@ -54,7 +58,7 @@ module.exports = async function (metricsTypeId, input){
     const curSpentTimeBySprints = project.sprints
       ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasksWithRole(sprint.tasks, curRoleId))), 0)
       : 0;
-    return curSpentTimeByBacklog + curSpentTimeBySprints;
+    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints));
   };
 
   switch (metricsTypeId){
@@ -99,7 +103,7 @@ module.exports = async function (metricsTypeId, input){
     };
 
   case (5):
-    projectBurndown = input.project.budget || 0;
+    projectBurndown = parseFloat(input.project.budget) || 0;
     if (input.project.sprints.length === 0
       && input.project.tasksInBacklog.length === 0) return;
     totalTimeSpent = countSpentTimeByProject(input.project);
@@ -114,11 +118,11 @@ module.exports = async function (metricsTypeId, input){
     };
 
   case (6):
-    projectRiskBurndown = input.project.riskBudget || 0;
+    projectRiskBurndown = parseFloat(input.project.riskBudget) || 0;
     if (input.project.sprints.length === 0
       && input.project.tasksInBacklog.length === 0) return;
     totalTimeSpent = countSpentTimeByProject(input.project);
-    projectRiskBurndown = exactMath.sub(projectBurndown, parseFloat(totalTimeSpent));
+    projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(totalTimeSpent));
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
