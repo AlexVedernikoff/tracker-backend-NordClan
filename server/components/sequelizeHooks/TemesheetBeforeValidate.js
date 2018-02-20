@@ -16,7 +16,8 @@ exports.index = async (instance, options) => {
   } else if (isMagicActivityWithProject(instance)) {
     const projectUsers = await models.ProjectUsers.findOne({
       where: {
-        projectId: instance.projectId
+        projectId: instance.projectId,
+        userId: instance.userId
       },
       attributes: ['id'],
       include: [
@@ -38,7 +39,8 @@ exports.index = async (instance, options) => {
 
     const projectUsers = await models.ProjectUsers.findOne({
       where: {
-        projectId: task.projectId
+        projectId: task.projectId,
+        userId: instance.userId
       },
       attributes: ['id'],
       include: [
@@ -71,7 +73,7 @@ function isImplementation (instance) {
 
 function isBillable (projectUsers, UNBILLABLE_ID) {
   if (projectUsers && projectUsers.roles) {
-    return !_.find(projectUsers.roles, { projectRoleId : UNBILLABLE_ID });
+    return !_.find(projectUsers.roles, { projectRoleId: UNBILLABLE_ID });
   }
   return true;
 }
