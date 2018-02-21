@@ -38,14 +38,20 @@ module.exports = async function (metricsTypeId, input){
 
   const checkSprintsHaveTask = (sprints) => sprints.find(sprint => sprint.tasks.length > 0);
 
-  const countSpentTimeByTaskWithRole = (task, curRoleId) =>
-    task.timesheets.reduce((sum, timesheet) => {
-      if (timesheet.userRoleId && JSON.parse(timesheet.userRoleId).includes(curRoleId)) {
+  const countSpentTimeByTaskWithRole = (task, curRoleId) => {
+
+    const checRole = (timesheet, curCaseRoleId) =>
+      (timesheet.userRoleId && JSON.parse(timesheet.userRoleId).includes(curCaseRoleId))
+      || (curCaseRoleId === 10 && !timesheet.isBillable);
+
+    return task.timesheets.reduce((sum, timesheet) => {
+      if (checRole(timesheet, curRoleId)) {
         return exactMath.add(sum, timesheet.spentTime);
       } else {
         return sum;
       }
     }, 0);
+  };
 
   const countSpentTimeByTasksWithRole = (tasks, curRoleId) =>
     tasks.reduce((tasksSum, task) => (exactMath.add(tasksSum, countSpentTimeByTaskWithRole(task, curRoleId))), 0);
