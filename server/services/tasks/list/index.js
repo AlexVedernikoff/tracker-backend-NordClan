@@ -1,4 +1,5 @@
 const models = require('../../../models');
+const queries = require('../../../models/queries');
 const _ = require('underscore');
 const { Task, Tag, ItemTag } = models;
 
@@ -35,16 +36,13 @@ exports.list = async function (req) {
 
   const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId);
   const queryWhere = createWhereForRequest(req);
-  const queryAttributes = req.query.fields
-    ? _.union(['id', 'name', 'authorId', 'performerId', 'sprintId', 'statusId', 'prioritiesId', 'projectId'].concat(req.query.fields))
-    : '';
 
   const queryOffset = req.query.currentPage > 0
     ? req.query.pageSize * (req.query.currentPage - 1)
     : 0;
 
   const tasks = await Task.findAll({
-    attributes: queryAttributes,
+    attributes: queries.task.defaultAttributes,
     limit: req.query.pageSize,
     offset: queryOffset,
     include: includeForSelect,

@@ -48,12 +48,14 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
       .value()
       .map(timeSheets =>
         _.transform(timeSheets, (result, ts) => {
+          result.userRolesNames = ts.user.userRolesNames;
+          result.typeName = ts.task.typeName;
           result.fullNameRu = ts.user.fullNameRu;
           if (ts.comment) {
             result.comment += '- ' + ts.comment + '\r\n';
           }
           result.spentTime += Number(ts.spentTime);
-        }, {role: 'who?', comment: '', spentTime: 0, fullNameRu: ''})
+        }, {userRolesNames: '', comment: '', spentTime: 0, fullNameRu: ''})
       )
       .map(user => {
         this._lastIndexRow++;
@@ -100,8 +102,8 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
     return [
       {calculate: () => '', text: '', width: 3},
       {calculate: d => d.fullNameRu, text: 'Исполнитель', width: 25},
-      // TODO: awaiting role feature
-      // {calculate: () => 'Role?', text: 'Роль', width: 13},
+      {calculate: d => d.userRolesNames, text: 'Роль', width: 13},
+      {calculate: d => d.typeName, text: 'Тип', width: 13, alignment: {wrapText: true}},
       {calculate: d => d.comment, text: 'Описание', width: 40, alignment: {wrapText: true}},
       {calculate: () => '', text: 'Hours Plan', width: 13, numFmt: '0.00', alignment: {wrapText: true}, ref: 'hoursPlan'},
       {

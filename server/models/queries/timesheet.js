@@ -23,8 +23,9 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
     });
 };
 
-exports.getTimesheet = function (params) {
-  return models.Timesheet.findOne({
+exports.getTimesheet = async function (params) {
+  const timesheet = await models.Timesheet.findOne({
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'isVisible', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
     where: params,
     include: [
       {
@@ -39,6 +40,13 @@ exports.getTimesheet = function (params) {
             model: models.Project,
             required: false,
             attributes: ['id', 'name', 'prefix'],
+            paranoid: false
+          },
+          {
+            as: 'sprint',
+            model: models.Sprint,
+            required: false,
+            attributes: ['id', 'name'],
             paranoid: false
           },
           {
@@ -58,10 +66,17 @@ exports.getTimesheet = function (params) {
         paranoid: false
       },
       {
-        as: 'projectMaginActivity',
+        as: 'project',
         model: models.Project,
         required: false,
-        attributes: ['id', 'name', 'prefix'],
+        attributes: ['id', 'name'],
+        paranoid: false
+      },
+      {
+        as: 'sprint',
+        model: models.Sprint,
+        required: false,
+        attributes: ['id', 'name'],
         paranoid: false
       }
     ]
@@ -77,6 +92,7 @@ exports.getTimesheet = function (params) {
 
     return model;
   });
+  return timesheet;
 };
 
 exports.isNeedCreateTimesheet = async function (options) {

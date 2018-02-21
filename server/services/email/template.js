@@ -21,8 +21,7 @@ module.exports = function (templateName, input){
                 <span style="font-size: 13px;">
                   В проект
                   <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                    ${i.task.project.name + ' '}
-                  </a>
+                    ${i.task.project.name}</a>
                   добавлена новая задача:
                 </span>
               </td>
@@ -45,7 +44,7 @@ module.exports = function (templateName, input){
                 <br>
                 <span style="font-weight: bold; font-style: italic;">Автор задачи:</span>
                 ${i.task.author.fullNameRu}`
-                + (i.task.performer ? '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span>' + i.task.performer.fullNameRu : '')
+                + (i.task.performer ? '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span> ' + i.task.performer.fullNameRu : '')
               + `</td>
             </tr>
             <tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
@@ -97,10 +96,9 @@ module.exports = function (templateName, input){
             <tr>
               <td>
                 <span style="font-size: 13px;">
-                  В проекте
+                  В проекте 
                   <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                    ${i.task.project.name + ' '}
-                  </a>`;
+                  ${i.task.project.name}</a> `;
 
     switch (i.task.statusId){
     case (1): //new
@@ -199,12 +197,9 @@ module.exports = function (templateName, input){
             <tr>
               <td>
                 <span style="font-size: 13px;">
-                  В проекте
+                  В проекте 
                   <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                    ${i.task.project.name + ' '}
-                  </a>
-                  оставлен новый комментарий к задаче:
-                </span>
+                  ${i.task.project.name}</a> оставлен новый комментарий к задаче:</span>
               </td>
             </tr>
             <tr><td style="padding: 10px;"></td></tr>
@@ -254,11 +249,9 @@ module.exports = function (templateName, input){
             <tr>
               <td>
                 <span style="font-size: 13px;">
-                  В проекте
+                  В проекте 
                   <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                    ${i.task.project.name + ' '}
-                  </a>
-                  готова задача:
+                  ${i.task.project.name}</a> готова задача:
                 </span>
               </td>
             </tr>
@@ -348,7 +341,7 @@ function getTaskPriorityName (num){
 }
 
 function getTaskLastComment (task){
-  return task.comments[task.comments.length - 1];
+  return task.comments[0];
 }
 
 // TODO

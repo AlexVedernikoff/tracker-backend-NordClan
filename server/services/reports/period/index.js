@@ -1,4 +1,5 @@
-const {Timesheet, Task, User, Project, TimesheetTypesDictionary} = require('../../../models');
+const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, ProjectUsersRoles,
+  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
@@ -7,6 +8,7 @@ const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
 exports.getReport = async function (projectId, criteria) {
   let startDate;
   let endDate;
+  const { label, sprintId } = criteria;
   if (criteria) {
     const validCriteria = validateCriteria(criteria);
     startDate = validCriteria.startDate;
@@ -14,6 +16,11 @@ exports.getReport = async function (projectId, criteria) {
   }
   const queryParams = {
     projectId: {$eq: projectId},
+    ...(sprintId ? (
+      {
+        sprintId: {$eq: sprintId}
+      }
+    ) : null),
     ...(criteria ? (
       {
         onDate: {$between: [startDate, endDate]}
@@ -22,8 +29,23 @@ exports.getReport = async function (projectId, criteria) {
   };
   const project = await Project.findOne({
     where: {id: {$eq: projectId}},
-    attributes: ['id', 'name', 'prefix']
-  });
+    attributes: ['id', 'name', 'prefix', 'createdAt', 'completedAt'],
+    include: [
+      {
+        as: 'sprints',
+        model: Sprint,
+        required: false,
+        attributes: ['id', 'name', 'factStartDate', 'factFinishDate'],
+        paranoid: false
+      }
+    ]
+  }).then(model => ({
+    ...model.dataValues,
+    createdAt: moment(model.dataValues.createdAt).format('YYYY-MM-DD'),
+    completedAt: moment(model.dataValues.completedAt).format('YYYY-MM-DD'),
+    sprints: model.sprints ? model.sprints.map(sprint => sprint.dataValues) : null
+  }));
+
   const timeSheetsDbData = await Timesheet.findAll({
     where: queryParams,
     attributes: ['id', 'taskId', 'userId', 'comment', 'spentTime', 'onDate', 'typeId'],
@@ -32,7 +54,7 @@ exports.getReport = async function (projectId, criteria) {
         as: 'task',
         model: Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId', 'typeId', 'sprintId'],
         paranoid: false
       },
       {
@@ -40,8 +62,26 @@ exports.getReport = async function (projectId, criteria) {
         model: User,
         required: false,
         attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
-        paranoid: false
+        paranoid: false,
+        include: [
+          {
+            as: 'usersProjects',
+            model: ProjectUsers,
+            where: { projectId: queryParams.projectId },
+            attributes: ['id', 'rolesIds'],
+            include: [
+              {
+                as: 'roles',
+                model: ProjectUsersRoles
+              }
+            ]
+          }
+        ]
       }
+    ],
+    order: [
+      [ { model: User, as: 'user' }, 'fullNameRu', 'ASC' ],
+      [ 'onDate', 'ASC' ]
     ]
   });
   const timeSheets = timeSheetsDbData.map(timeSheet => {
@@ -60,10 +100,22 @@ exports.getReport = async function (projectId, criteria) {
     } else {
       Object.assign(data, {task: data.task.dataValues});
     }
+
+    const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
+    const rolesIds = currentProjectRoles
+      .map(role => role.projectRoleId)
+      .sort((role1, role2) => role1 - role2);
+    const userRolesNames = rolesIds.map(roleId =>
+      ProjectRolesDictionary.values.find(item => item.id === roleId).name).join(', ');
+    delete data.user.usersProjects;
+    data.user.userRolesNames = userRolesNames;
+
+    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId) : null;
     return data;
   });
+
   const data = {
-    info: {project, range: {startDate, endDate}},
+    info: { project, range: {startDate, endDate}, label },
     byTasks: _(timeSheets)
       .groupBy('taskId')
       .map(timeSheet => _.transform(timeSheet, (resultObject, user) => {
@@ -76,20 +128,9 @@ exports.getReport = async function (projectId, criteria) {
         resultObject.users.push(user);
       }, {}))
       .value(),
-
-    byUser: _(timeSheets)
-      .groupBy('userId')
-      .map(timmeSheet => _.transform(timmeSheet, (resultObject, task) => {
-        if (!_.has(resultObject, 'user')) {
-          resultObject.user = task.user;
-        }
-        if (!_.has(resultObject, 'tasks')) {
-          resultObject.tasks = [];
-        }
-        resultObject.tasks.push(task);
-      }, {}))
-      .value()
+    byUser: divideTimeSheetsBySprints(project, timeSheets, endDate)
   };
+
   return {
     workbook: generateExcellDocument(data),
     options: {
@@ -165,10 +206,83 @@ function checkRegExp (regExp, value) {
   return regExp.test(value);
 }
 
+function checkTimesheetInSprint (factStartDate, factFinishDate, spentTimeDate) {
+  return moment(spentTimeDate).isSameOrBefore(factFinishDate) && moment(factStartDate).isSameOrBefore(spentTimeDate);
+}
+
+function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
+  return _(timeSheets)
+    .groupBy('userId')
+    .map(timeSheet => _.transform(timeSheet, (resultObject, task) => {
+      if (!_.has(resultObject, 'user')) {
+        resultObject.user = task.user;
+      }
+      if (!_.has(resultObject, 'tasks')) {
+        resultObject.tasks = [];
+      }
+      if (!checkTimesheetInSprint(factStartDate, factFinishDate, task.onDate)) {
+        if (!_.has(resultObject, 'otherTasks')) {
+          resultObject.otherTasks = [];
+        }
+        resultObject.otherTasks.push(task);
+      } else {
+        resultObject.tasks.push(task);
+      }
+    }, {}))
+    .sortBy('user.fullNameRu')
+    .value();
+
+}
+
+function divideTimeSheetsBySprints (project, timeSheets, endDate) {
+  const sprintsWithTimeSheets = project.sprints
+    .sort((sprint1, sprint2) => {
+      if (moment(sprint2.factStartDate).isBefore(sprint1.factStartDate)) {
+        return 1;
+      } else if (moment(sprint1.factStartDate).isBefore(sprint2.factStartDate)) {
+        return -1;
+      } else {
+        return 0;
+      }
+    })
+    .map(sprint => {
+      const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.task.sprintId === sprint.id);
+      const { factStartDate, factFinishDate, id, name } = sprint;
+      return {
+        id,
+        name,
+        factStartDate: formatDate(factStartDate),
+        factFinishDate: formatDate(factFinishDate),
+        timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
+      };
+    });
+  const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => !timeSheet.task.sprintId);
+  if (timeSheetsWithoutSprint.length > 0) {
+    const factStartDate = formatDate(project.createdAt);
+    const factFinishDate = formatDate(endDate);
+    sprintsWithTimeSheets.push({
+      id: 0,
+      name: 'Backlog',
+      factStartDate: factStartDate,
+      factFinishDate: factFinishDate,
+      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, endDate)
+    });
+  }
+  return sprintsWithTimeSheets;
+}
+
 function generateMessage (errors) {
   const incorrectParams = errors
     .map(([key, value]) => `${key}: ${value}`)
     .join(', ');
 
   return `Incorrect params - ${incorrectParams}`;
+}
+
+function getTaskTypeName (typeId) {
+  return TaskTypesDictionary.values.find(item => item.id === typeId).name;
+}
+
+function formatDate (date) {
+  return date && moment(date).format('DD.MM.YYYY');
 }

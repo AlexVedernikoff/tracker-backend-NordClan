@@ -110,6 +110,10 @@ exports.read = function (req, res, next){
               as: 'roles',
               model: models.ProjectUsersRoles
             }
+          ],
+          order: [
+            [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
+            [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
           ]
         },
         {

@@ -1,26 +1,35 @@
 const models = require('../../../models');
-const queries = require('../../../models/queries');
+const createError = require('http-errors');
 
 exports.update = async (req) => {
-  let oldTimesheet;
-  const params = req.body;
 
-  if (req.isSystemUser) {
-    oldTimesheet = await models.Timesheet.findById(params.sheetId);
-  } else {
-    oldTimesheet = await queries.timesheet.canUserChangeTimesheet(req.user.id, params.sheetId);
-  }
 
-  const updatedTimesheet = await models.Timesheet.update(params, {
-    where: { id: params.sheetId },
-    include: setInclude(),
+  const updatedTimesheet = await models.Timesheet.update(req.body, {
+    where: getWhere(req),
+    include: getInclude(),
     returning: true
   });
 
-  return updatedTimesheet[1][0].dataValues;
+  if (!updatedTimesheet[1][0]) {
+    throw createError(404);
+  }
+
+  return updatedTimesheet[1];
 };
 
-function setInclude () {
+function getWhere (req) {
+  const where = {
+    id: req.body.sheetId
+  };
+
+  if (!req.isSystemUser) {
+    where.userId = req.user.id;
+  }
+
+  return where;
+}
+
+function getInclude () {
   return [
     {
       as: 'task',
