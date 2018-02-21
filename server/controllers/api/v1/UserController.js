@@ -139,10 +139,12 @@ exports.updateUserRole = async function (req, res, next) {
         }
 
         return model.updateAttributes({ globalRole }, { transaction: t })
-          .then((updatedModel)=>{
+          .then((updatedModel) => {
             const updatedUser = {
               id: updatedModel.id,
-              globalRole: updatedModel.globalRole
+              globalRole: updatedModel.globalRole,
+              firstNameRu: updatedModel.firstNameRu,
+              lastNameRu: updatedModel.lastNameRu
             };
             res.json(updatedUser);
           });
