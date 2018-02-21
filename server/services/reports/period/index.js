@@ -128,7 +128,7 @@ exports.getReport = async function (projectId, criteria) {
         resultObject.users.push(user);
       }, {}))
       .value(),
-    byUser: divideTimeSheetsBySprints(project, timeSheets)
+    byUser: divideTimeSheetsBySprints(project, timeSheets, endDate)
   };
 
   return {
@@ -234,9 +234,17 @@ function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
 
 }
 
-function divideTimeSheetsBySprints (project, timeSheets) {
+function divideTimeSheetsBySprints (project, timeSheets, endDate) {
   const sprintsWithTimeSheets = project.sprints
-    .sort((sprint1, sprint2) => moment(sprint2.factStartDate).isBefore(sprint1.factStartDate))
+    .sort((sprint1, sprint2) => {
+      if (moment(sprint2.factStartDate).isBefore(sprint1.factStartDate)) {
+        return 1;
+      } else if (moment(sprint1.factStartDate).isBefore(sprint2.factStartDate)) {
+        return -1;
+      } else {
+        return 0;
+      }
+    })
     .map(sprint => {
       const timeSheetsInSprint = timeSheets.filter(timeSheet => timeSheet.task.sprintId === sprint.id);
       const { factStartDate, factFinishDate, id, name } = sprint;
@@ -248,16 +256,16 @@ function divideTimeSheetsBySprints (project, timeSheets) {
         timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
       };
     });
-  const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => timeSheet.sprintId === 0);
+  const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => !timeSheet.task.sprintId);
   if (timeSheetsWithoutSprint.length > 0) {
     const factStartDate = formatDate(project.createdAt);
-    const factFinishDate = formatDate(project.completedAt);
+    const factFinishDate = formatDate(endDate);
     sprintsWithTimeSheets.push({
       id: 0,
       name: 'Backlog',
       factStartDate: factStartDate,
       factFinishDate: factFinishDate,
-      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, project.completedAt)
+      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, endDate)
     });
   }
   return sprintsWithTimeSheets;
