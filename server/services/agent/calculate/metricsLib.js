@@ -40,8 +40,11 @@ module.exports = async function (metricsTypeId, input){
 
   const countSpentTimeByTaskWithRole = (task, curRoleId) =>
     task.timesheets.reduce((sum, timesheet) => {
-      return (JSON.parse(timesheet.userRoleId).includes(curRoleId))
-        ? exactMath.add(sum, timesheet.spentTime) : sum;
+      if (timesheet.userRoleId && JSON.parse(timesheet.userRoleId).includes(curRoleId)) {
+        return exactMath.add(sum, timesheet.spentTime);
+      } else {
+        return sum;
+      }
     }, 0);
 
   const countSpentTimeByTasksWithRole = (tasks, curRoleId) =>
