@@ -73,7 +73,7 @@ async function getMetrics (projectId){
               {
                 as: 'timesheets',
                 model: Timesheet,
-                attributes: ['id', 'sprintId', 'spentTime', 'projectId'],
+                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId'],
                 required: false
               }
             ],
@@ -111,7 +111,7 @@ async function getMetrics (projectId){
       {
         as: 'timesheets',
         model: Timesheet,
-        attributes: ['id', 'sprintId', 'spentTime', 'projectId'],
+        attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId'],
         required: false
       }
     ]
