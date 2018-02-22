@@ -1363,6 +1363,34 @@ module.exports = {
         ]
       }
     },
+    '/user/': {
+      put: {
+        tags: ['User'],
+        summary: 'Изменение глобальной роли пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'body',
+            required: true
+          },
+          {
+            name: 'globalRole',
+            type: 'string',
+            in: 'body',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/user/roles': {
+      get: {
+        tags: ['User'],
+        summary: 'Получение списка всех пользователей и их глобальных ролей',
+        responses: responsesCodes
+      }
+    },
 
 
     '/timesheetDraft/{timesheetDraftId}/': {

@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const ProjectRoles = sequelize.define('ProjectRolesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -9,26 +9,26 @@ module.exports = function(sequelize, DataTypes) {
     code: {
       type: DataTypes.STRING(20),
       trim: true,
-      allowNull: false,
+      allowNull: false
     },
     name: {
       type: DataTypes.STRING(30),
       trim: true,
-      allowNull: false,
-    },
+      allowNull: false
+    }
   }, {
     indexes: [
       {
         unique: true,
         fields: ['code']
-      },
+      }
     ],
     underscored: true,
     timestamps: false,
     paranoid: false,
     tableName: 'project_roles'
   });
-  
+
   ProjectRoles.values = [
     {id: 1, code: 'account', name: 'Account'},
     {id: 2, code: 'pm', name: 'PM'},
@@ -39,10 +39,10 @@ module.exports = function(sequelize, DataTypes) {
     {id: 7, code: 'mobile', name: 'Mobile'},
     {id: 8, code: 'teamLead', name: 'TeamLead(Code review)'},
     {id: 9, code: 'qa', name: 'QA'},
-    {id: 10, code: 'unbillable', name: 'Unbillable'},
+    {id: 10, code: 'unbillable', name: 'Unbillable'}
   ];
 
-  ProjectRoles.ADMIN_IDS = [1,2];
+  ProjectRoles.ADMIN_IDS = [1, 2];
   ProjectRoles.UNBILLABLE_ID = 2;
   ProjectRoles.UNBILLABLE_ID = 10;
   return ProjectRoles;

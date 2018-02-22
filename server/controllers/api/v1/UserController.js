@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const models = require('../../../models');
+const { User} = models;
 
 exports.me = function (req, res, next){
   try {
@@ -92,4 +93,64 @@ exports.autocomplete = function (req, res, next) {
         });
     })
     .catch((err) => next(createError(err)));
+};
+
+exports.getUsersRoles = async function (req, res, next) {
+  try {
+
+    const users = await models.User
+      .findAll({
+        where: {
+          active: 1
+        },
+        order: [
+          ['last_name_ru']
+        ],
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
+      });
+
+    const usersWithFilteredData = users.map(user => {
+      const {id, firstNameRu, lastNameRu, globalRole} = user;
+      return {
+        id,
+        firstNameRu,
+        lastNameRu,
+        globalRole
+      };
+    });
+
+    res.json(usersWithFilteredData);
+
+  } catch (err) {
+    next(err);
+  }
+
+};
+
+exports.updateUserRole = async function (req, res, next) {
+
+  const { id, globalRole } = req.body;
+
+  return models.sequelize.transaction(function (t) {
+    return User.findByPrimary(id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if (!model) {
+          return next(createError(404));
+        }
+
+        return model.updateAttributes({ globalRole }, { transaction: t })
+          .then((updatedModel) => {
+            const updatedUser = {
+              id: updatedModel.id,
+              globalRole: updatedModel.globalRole,
+              firstNameRu: updatedModel.firstNameRu,
+              lastNameRu: updatedModel.lastNameRu
+            };
+            res.json(updatedUser);
+          });
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
 };
