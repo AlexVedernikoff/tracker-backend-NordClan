@@ -29,7 +29,7 @@ router.delete('/auth/logout', AuthController.logout);
 // User
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
-router.get('/user/usersroles', GlobalAccess.can('user', 'usersRoles'), UserController.getUsersRoles);
+router.get('/user/roles', GlobalAccess.can('user', 'usersRoles'), UserController.getUsersRoles);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 router.put('/user/', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
 

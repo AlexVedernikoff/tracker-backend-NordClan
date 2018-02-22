@@ -1384,7 +1384,7 @@ module.exports = {
         responses: responsesCodes
       }
     },
-    '/user/usersroles': {
+    '/user/roles': {
       get: {
         tags: ['User'],
         summary: 'Получение списка всех пользователей и их глобальных ролей',
