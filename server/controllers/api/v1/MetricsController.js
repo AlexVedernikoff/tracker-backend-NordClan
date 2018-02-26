@@ -20,9 +20,8 @@ exports.calculate = async (req, res, next) => {
   }
   try {
     await AgentService.calculateByProject(req.params.projectId);
-    await AgentService
-      .list(req.body)
-      .then(metrics => res.json(metrics));
+    const metrics = await AgentService.list(req.body);
+    res.json(metrics);
   } catch (error) {
     next(createError(error));
   }
