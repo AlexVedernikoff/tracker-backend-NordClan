@@ -5,7 +5,6 @@ module.exports.calculateByProject = async function (projectId) {
     exec(`node ./server/services/agent/calculateByProject/agent.js ${projectId}`, (error, stdout, stderr) => {
       if (error) {
         reject();
-        return;
       } else {
         resolve();
       }

@@ -19,11 +19,10 @@ exports.calculate = async (req, res, next) => {
     return next(createError(400, 'projectId id must be int'));
   }
   try {
-    await AgentService.calculateByProject(req.params.projectId).then(async () => {
-      await AgentService
-        .list(req.body)
-        .then(metrics => res.json(metrics));
-    });
+    await AgentService.calculateByProject(req.params.projectId);
+    await AgentService
+      .list(req.body)
+      .then(metrics => res.json(metrics));
   } catch (error) {
     next(createError(error));
   }
