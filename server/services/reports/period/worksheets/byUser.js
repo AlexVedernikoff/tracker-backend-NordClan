@@ -9,29 +9,48 @@ class ByUserWorkSheet extends WorkSheetTemplate {
   init () {
     super.init();
 
-    this._data.byUser.forEach(data => {
-      this._write(data);
+    this._data.byUser.forEach(sprint => {
+      this._writeUserBySprint(sprint);
     });
 
     this._writeTottalSummary();
   }
 
-  _write (data) {
-    this._lastIndexRow++;
-    this._writeUser(data.user.fullNameRu);
-    data.tasks.forEach(task => {
-      this._writeUserRow(task);
-    });
-    this._writeSummary(data.tasks);
+  _writeUserBySprint (sprint) {
+    if (sprint.timeSheets.length > 0) {
+      this._writeSectionName(`${sprint.name} c ${sprint.factStartDate} по ${sprint.factFinishDate}`);
+      sprint.timeSheets.forEach(data => {
+        this._writeTimesheetByUser(data);
+      });
+    }
+  }
+
+  _writeTimesheetByUser (timeSheets) {
+    this._writeSectionName(timeSheets.user.fullNameRu);
+    if (timeSheets.tasks.length > 0) {
+      timeSheets.tasks.forEach(task => {
+        this._writeUserRow(task);
+      });
+      this._writeSummary(timeSheets.tasks);
+    }
+    if (timeSheets.otherTasks) {
+      this._writeSectionName('Прочие задачи');
+      timeSheets.otherTasks.forEach(task => {
+        this._writeUserRow(task);
+      });
+      this._writeSummary(timeSheets.otherTasks);
+    }
     this._lastIndexRow++;
   }
 
-  _writeUser (userName) {
+  _writeSectionName (name) {
+    this._lastIndexRow++;
     this._worksheet
       .mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[2] + this._lastIndexRow}`);
     this._worksheet
       .getCell(this._columns[0] + this._lastIndexRow)
-      .value = userName;
+      .value = name;
+    this._lastIndexRow++;
   }
 
   _writeUserRow (task) {
@@ -76,6 +95,7 @@ class ByUserWorkSheet extends WorkSheetTemplate {
       {calculate: () => '', text: '', width: 3},
       {calculate: d => d.task.isMagic ? '' : `${this._prefix}-${d.task.id}`, text: '#'},
       {calculate: d => d.task.name, text: 'Задача', width: 50, alignment: {wrapText: true}},
+      {calculate: d => d.task.typeName, text: 'Тип', width: 13, alignment: {wrapText: true}},
       {calculate: d => d.comment, text: 'Описание', width: 40, alignment: {wrapText: true}},
       {calculate: d => d.onDate, text: 'Дата', width: 13},
       {

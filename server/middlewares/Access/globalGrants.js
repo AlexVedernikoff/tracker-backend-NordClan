@@ -63,7 +63,8 @@ const USER = {
     'trackAll': true
   },
   metrics: {
-    'list': true
+    'list': true,
+    'calculate': true
   }
 };
 
@@ -85,6 +86,11 @@ module.exports = {
       ...USER.portfolio,
       'list': true,
       'delete': true
+    },
+    user: {
+      ...USER.user,
+      'usersRoles': true,
+      'updateRole': true
     }
   },
   SYSTEM_USER: {

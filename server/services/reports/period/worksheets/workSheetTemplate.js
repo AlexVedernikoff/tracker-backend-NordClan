@@ -31,6 +31,7 @@ class WorkSheetTemplate {
   _setHeader (sheet, info) {
     const dateFrom = info.range.startDate && moment(info.range.startDate).locale('ru').format('DD MMMM YYYY');
     const dateTo = info.range.endDate && moment(info.range.endDate).locale('ru').format('DD MMMM YYYY');
+    const label = info.label;
     const font = {name: 'Calibri', color: {argb: 'F44546A'}, bold: true};
     const border = {bottom: {style: 'medium'}};
 
@@ -42,7 +43,7 @@ class WorkSheetTemplate {
 
     sheet.mergeCells(`${this._columns[0]}2:${this._columns[this._tableColumns.length - 1]}2`);
     const period = sheet.getCell('A2');
-    period.value = `Период: ${dateFrom && dateTo ? (dateFrom + ' - ' + dateTo) : 'За весь проект'}`;
+    period.value = `Период:  ${dateFrom}  -  ${dateTo} ${label}`;
     period.font = {size: 13, ...font};
     period.border = {color: {argb: 'FA2b8E1'}, ...border};
   }

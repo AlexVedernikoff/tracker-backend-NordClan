@@ -6,15 +6,21 @@ exports.byPeriod = async (req, res, next) => {
     return next(createError(400, 'id must be int'));
   }
 
+  if (req.query.sprintId && !req.query.sprintId.match(/^[0-9]+$/)) {
+    return next(createError(400, 'sprint id must be int'));
+  }
+
   if (!req.user.canReadProject(req.params.projectId)) {
     next(createError(403, 'Access denied'));
   }
 
   try {
     const {startDate, endDate} = req.query;
+    const sprintId = req.query.sprintId ? req.query.sprintId : null;
+    const label = req.query.label ? req.query.label : '';
     const {workbook, options} = await ReportsService.byPeriod
       .getReport(req.params.projectId, startDate && endDate && {
-        startDate, endDate
+        startDate, endDate, label, sprintId
       });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
