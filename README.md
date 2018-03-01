@@ -33,7 +33,7 @@
 
 - restart трех контейнеров
 
-        npm run restart
+        npm run restart:dev
 
 
 ##### МАЛЕНЬКИЙ РЕФЕРЕНС
