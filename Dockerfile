@@ -5,6 +5,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app && \
-    npm install pm2 -g
+    npm install pm2 -g 
 
 WORKDIR /app
+
+RUN npm install && \
+    npm rebuild

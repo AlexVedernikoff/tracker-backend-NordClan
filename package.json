@@ -8,7 +8,7 @@
     "compose:up": "docker-compose up -d",
     "compose:dev": "docker-compose -f docker-compose.dev.yml up",
     "compose:stop": "docker-compose stop",
-    "restart": "./restart.sh",
+    "restart:dev": "./restart.sh",
     "precommit": "lint-staged",
     "migrate": "node_modules/.bin/sequelize db:migrate",
     "rollback": "node_modules/.bin/sequelize db:migrate:undo"
