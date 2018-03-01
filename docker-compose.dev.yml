@@ -29,6 +29,8 @@ services:
       - .docker-compose-dev.env
     entrypoint: |
       bash -c 'bash -s <<EOF
+      npm install
+      npm rebuild
       pm2-runtime start --env development processes-debug.json
       EOF'
 
@@ -42,5 +44,7 @@ services:
       - .docker-compose-dev.env
     entrypoint: |
       bash -c 'bash -s <<EOF
+      npm install
+      npm rebuild
       npm start
       EOF'
