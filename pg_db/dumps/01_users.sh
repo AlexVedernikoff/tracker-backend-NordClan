@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "CREATE ROLE simtrack CREATEDB CREATEROLE LOGIN UNENCRYPTED PASSWORD '123456'" | psql -a -f -
