@@ -26,14 +26,20 @@ module.exports = async function (metricsTypeId, input){
       return (exactMath.add(tasksSum, countSpentTimeByTask(task)));
     }, 0);
 
+  const countSpentTimeOnOtherTimesheets = (timesheets) =>
+    timesheets.reduce((timesheetsSum, timesheet) => (exactMath.add(timesheetsSum, timesheet.spentTime)), 0);
+
   const countSpentTimeByProject = (project) => {
     const curSpentTimeByBacklog = project.tasksInBacklog
       ? countSpentTimeByTasks(project.tasksInBacklog)
       : 0;
+    const curSpentTimeOnOtherTimesheets = project.otherTimeSheets
+      ? countSpentTimeOnOtherTimesheets(project.otherTimeSheets)
+      : 0;
     const curSpentTimeBySprints = project.sprints
       ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasks(sprint.tasks))), 0)
       : 0;
-    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints));
+    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
   };
 
   const checkSprintsHaveTask = (sprints) => sprints.find(sprint => sprint.tasks.length > 0);
@@ -60,10 +66,13 @@ module.exports = async function (metricsTypeId, input){
     const curSpentTimeByBacklog = project.tasksInBacklog
       ? countSpentTimeByTasksWithRole(project.tasksInBacklog, curRoleId)
       : 0;
+    const curSpentTimeOnOtherTimesheets = project.otherTimeSheets
+      ? countSpentTimeOnOtherTimesheets(project.otherTimeSheets)
+      : 0;
     const curSpentTimeBySprints = project.sprints
       ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasksWithRole(sprint.tasks, curRoleId))), 0)
       : 0;
-    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints));
+    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
   };
 
   switch (metricsTypeId){
