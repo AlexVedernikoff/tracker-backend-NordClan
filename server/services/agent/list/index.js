@@ -50,6 +50,9 @@ exports.validate = (params) => {
     },
     userId: {
       type: 'number'
+    },
+    recalculate: {
+      type: 'boolean'
     }
   };
 

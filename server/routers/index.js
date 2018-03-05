@@ -112,6 +112,5 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 
 // Metrics
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
-router.get('/metrics/:projectId', GlobalAccess.can('metrics', 'calculate'), MetricsController.calculate);
 
 module.exports = router;
