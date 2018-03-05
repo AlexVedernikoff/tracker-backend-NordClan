@@ -119,11 +119,20 @@ async function getMetrics (projectId){
     .map(task => task.get({ 'plain': true }))
     .filter(task => task.timesheets.length > 0));
 
+  const otherTimeSheets = await Timesheet.findAll({
+    where: {
+      taskId: null
+    },
+    attributes: ['id', 'projectId', 'spentTime']
+  }).then(timesheets => timesheets
+    .map(timesheet => timesheet.get({ 'plain': true })));
+
   const projectMetricsTasks = [];
 
   projects.forEach(function (project){
     const plainProject = project.get({ 'plain': true });
     plainProject.tasksInBacklog = tasksInBacklog.filter(task => task.projectId === plainProject.id);
+    plainProject.otherTimeSheets = otherTimeSheets.filter(timesheet => timesheet.projectId === plainProject.id);
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint, sprintKey){
         plainProject.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
@@ -151,6 +160,7 @@ async function getMetrics (projectId){
       });
     }
   });
+
   return await Promise.all(projectMetricsTasks);
 }
 
