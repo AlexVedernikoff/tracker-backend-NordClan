@@ -2,14 +2,24 @@ const createError = require('http-errors');
 const AgentService = require('../../../services/agent');
 
 exports.list = async (req, res, next) => {
-  const errors = AgentService.validate(req.body);
+  try {
+    AgentService.validate(req.body);
 
-  if (errors) {
-    next(createError(errors));
+    const {projectId, startDate, endDate, recalculate} = req.body;
+
+    if (recalculate) {
+      await AgentService.calculateByProject(projectId);
+    }
+
+    const metrics = await AgentService.list({
+      projectId,
+      startDate,
+      endDate
+    });
+
+    res.json(metrics);
+
+  } catch (error) {
+    next(createError(error));
   }
-
-  AgentService
-    .list(req.body)
-    .then(metrics => res.json(metrics))
-    .catch(e => next(createError(e)));
 };

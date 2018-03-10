@@ -5,4 +5,4 @@ RUN npm install pm2 -g
 COPY . /app
 WORKDIR /app
 RUN npm install && npm rebuild
-CMD ["/app/wait-for.sh", "15", "pm2-docker", "start", "--auto-exit", "processes-debug.json"]
+CMD ["/app/wait-for.sh", "15", "pm2-runtime", "start", "processes-debug.json"]

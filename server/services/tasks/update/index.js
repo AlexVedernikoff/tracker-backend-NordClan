@@ -3,6 +3,7 @@ const moment = require('moment');
 const { Task, Project } = models;
 const TimesheetService = require('../../timesheets');
 const { findByPrimary } = require('./request');
+const createError = require('http-errors');
 
 async function update (body, taskId, user) {
   const originTask = await findByPrimary(taskId);
@@ -25,7 +26,7 @@ async function update (body, taskId, user) {
   const updatedTask = await findByPrimary(taskId);
 
   const createdDraft = body.statusId
-    ? await createDraftIfNeeded(originTask, body.statusId, user.id)
+    ? await createDraftIfNeeded(originTask, body.statusId)
     : null;
 
   const { activeTask, stoppedTasks } = body.statusId
@@ -63,9 +64,9 @@ function getTaskParams (body) {
   return params;
 }
 
-async function createDraftIfNeeded (task, statusId, currentUserId) {
+async function createDraftIfNeeded (task, statusId) {
   const onDate = moment().format('YYYY-MM-DD');
-  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate, currentUserId);
+  const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
   const draftParams = {
     taskId: task.id,
     userId: task.performerId,
@@ -93,15 +94,15 @@ async function updateTasksStatuses (updatedTask, originTask, currentUserId) {
   const activeTask = activeTasks.find(task => task.id === updatedTask.dataValues.id)
     || await getLastActiveTask(currentUserId);
 
-  const stoppedTasks = activeTasks
+  const stoppedTasksIds = activeTasks
     .reduce((acc, task) => {
       if (task.id !== updatedTask.dataValues.id) {
-        acc.push(task);
+        acc.push(task.id);
       }
       return acc;
     }, []);
 
-  await stopTasks(stoppedTasks, currentUserId);
+  const stoppedTasks = await stopTasks(stoppedTasksIds);
 
   return { activeTask, stoppedTasks };
 }
@@ -143,28 +144,27 @@ async function getActiveTasks (currentUserId) {
   return tasks;
 }
 
-async function stopTasks (tasks, userId) {
-  if (tasks.length > 0) {
-    await Promise.all([
-      tasks.map(task => {
-        task.updateAttributes({ statusId: task.statusId + 1 }, { historyAuthorId: userId });
-      })
-    ]);
+async function stopTasks (ids) {
+  if (ids.length > 0) {
+    const stoppedTasks = await Task.update({ statusId: models.sequelize.literal('status_id + 1') },
+      { where: { id: { $or: ids }}, returning: true });
+    return stoppedTasks[1];
   }
+  return [];
 }
 
 function validateTask (task, body, user) {
   if (!task) {
-    return { error: 'Task not found' };
+    throw createError(404, 'Task not found');
   }
 
   if (!user.canReadProject(task.projectId)) {
-    return { error: 'Access denied' };
+    throw createError(403, 'Access denied');
   }
 
-  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS &&
-      (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
-    return { error: 'Task is closed' };
+  if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS
+      && (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
+    throw createError(403, 'Task is closed');
   }
 
   return {};

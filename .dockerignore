@@ -2,3 +2,4 @@ node_modules
 pg_db
 etc
 yarn.lock
+.git/

@@ -6,7 +6,74 @@ const exactMath = require('exact-math');
 
 module.exports = async function (metricsTypeId, input){
 
-  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId, totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks, laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures;
+  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
+    totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
+    laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
+    spentTimeBySprint, spentTimeByTask;
+
+  const countSpentTimeByTask = (task) => {
+    if (!task.timesheets) {
+      return 0;
+    } else {
+      return task.timesheets.reduce((sum, timesheet) => {
+        return (exactMath.add(sum, parseFloat(timesheet.spentTime)));
+      }, 0);
+    }
+  };
+
+  const countSpentTimeByTasks = (tasks) =>
+    tasks.reduce((tasksSum, task) => {
+      return (exactMath.add(tasksSum, countSpentTimeByTask(task)));
+    }, 0);
+
+  const countSpentTimeOnOtherTimesheets = (timesheets) =>
+    timesheets.reduce((timesheetsSum, timesheet) => (exactMath.add(timesheetsSum, timesheet.spentTime)), 0);
+
+  const countSpentTimeByProject = (project) => {
+    const curSpentTimeByBacklog = project.tasksInBacklog
+      ? countSpentTimeByTasks(project.tasksInBacklog)
+      : 0;
+    const curSpentTimeOnOtherTimesheets = project.otherTimeSheets
+      ? countSpentTimeOnOtherTimesheets(project.otherTimeSheets)
+      : 0;
+    const curSpentTimeBySprints = project.sprints
+      ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasks(sprint.tasks))), 0)
+      : 0;
+    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
+  };
+
+  const checkSprintsHaveTask = (sprints) => sprints.find(sprint => sprint.tasks.length > 0);
+
+  const countSpentTimeByTaskWithRole = (task, curRoleId) => {
+
+    const checRole = (timesheet, curCaseRoleId) =>
+      (timesheet.userRoleId && JSON.parse(timesheet.userRoleId).includes(curCaseRoleId))
+      || (curCaseRoleId === 10 && !timesheet.isBillable);
+
+    return task.timesheets.reduce((sum, timesheet) => {
+      if (checRole(timesheet, curRoleId)) {
+        return exactMath.add(sum, timesheet.spentTime);
+      } else {
+        return sum;
+      }
+    }, 0);
+  };
+
+  const countSpentTimeByTasksWithRole = (tasks, curRoleId) =>
+    tasks.reduce((tasksSum, task) => (exactMath.add(tasksSum, countSpentTimeByTaskWithRole(task, curRoleId))), 0);
+
+  const countSpentTimeByRole = (project, curRoleId) => {
+    const curSpentTimeByBacklog = project.tasksInBacklog
+      ? countSpentTimeByTasksWithRole(project.tasksInBacklog, curRoleId)
+      : 0;
+    const curSpentTimeOnOtherTimesheets = project.otherTimeSheets
+      ? countSpentTimeOnOtherTimesheets(project.otherTimeSheets)
+      : 0;
+    const curSpentTimeBySprints = project.sprints
+      ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasksWithRole(sprint.tasks, curRoleId))), 0)
+      : 0;
+    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
+  };
 
   switch (metricsTypeId){
   case (1):
@@ -50,16 +117,11 @@ module.exports = async function (metricsTypeId, input){
     };
 
   case (5):
-    projectBurndown = input.project.budget || 0;
-    if (input.project.sprints.length > 0){
-      input.project.sprints.forEach(function (sprint){
-        if (sprint.tasks.length === 0) return;
-        sprint.tasks.forEach(function (task){
-          if (!task.factExecutionTime) return;
-          projectBurndown = exactMath.sub(projectBurndown, parseFloat(task.factExecutionTime) || 0);
-        });
-      });
-    }
+    projectBurndown = parseFloat(input.project.budget) || 0;
+    if (input.project.sprints.length === 0
+      && input.project.tasksInBacklog.length === 0) return;
+    totalTimeSpent = countSpentTimeByProject(input.project);
+    projectBurndown = exactMath.sub(projectBurndown, parseFloat(totalTimeSpent));
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -70,16 +132,11 @@ module.exports = async function (metricsTypeId, input){
     };
 
   case (6):
-    projectRiskBurndown = input.project.riskBudget || 0;
-    if (input.project.sprints.length > 0){
-      input.project.sprints.forEach(function (sprint){
-        if (sprint.tasks.length === 0) return;
-        sprint.tasks.forEach(function (task){
-          if (!task.factExecutionTime) return;
-          projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(task.factExecutionTime) || 0);
-        });
-      });
-    }
+    projectRiskBurndown = parseFloat(input.project.riskBudget) || 0;
+    if (input.project.sprints.length === 0
+      && input.project.tasksInBacklog.length === 0) return;
+    totalTimeSpent = countSpentTimeByProject(input.project);
+    projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(totalTimeSpent));
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -169,23 +226,13 @@ module.exports = async function (metricsTypeId, input){
       '19': 10
     };
     roleId = rolesIdsConf[metricsTypeId.toString()];
-    totalTimeSpent = 0;
-    totalTimeSpentWithRole = 0;
-    totalTimeSpentInPercent = 0;
-    if (input.project.sprints.length > 0 && input.project.projectUsers.length > 0){
-      input.project.sprints.forEach(function (sprint){
-        if (sprint.tasks.length === 0) return;
-        sprint.tasks.forEach(function (task){
-          if (!task.factExecutionTime) return;
-          totalTimeSpent = exactMath.add(totalTimeSpent, task.factExecutionTime);
-          input.project.projectUsers.forEach(function (projectUser){
-            if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) {
-              totalTimeSpentWithRole = exactMath.add(totalTimeSpentWithRole, task.factExecutionTime);
-            }
-          });
-        });
-      });
-    }
+    if (input.project.sprints.length === 0
+      && !checkSprintsHaveTask(input.project.sprints)
+      && input.project.tasksInBacklog.length === 0
+      || input.project.projectUsers.length === 0
+    ) return;
+    totalTimeSpent = countSpentTimeByProject(input.project);
+    totalTimeSpentWithRole = countSpentTimeByRole(input.project, roleId);
     totalTimeSpentInPercent = exactMath.div(totalTimeSpentWithRole, totalTimeSpent) * 100 || 0;
     totalTimeSpentInPercent = parseFloat(totalTimeSpentInPercent.toFixed(2));
     return {
@@ -220,21 +267,12 @@ module.exports = async function (metricsTypeId, input){
       '29': 10
     };
     roleId = rolesIdsConf[metricsTypeId.toString()];
-    totalTimeSpentWithRole = 0;
-    if (input.project.sprints.length > 0 && input.project.projectUsers.length > 0){
-      input.project.sprints.forEach(function (sprint){
-        if (sprint.tasks.length === 0) return;
-        sprint.tasks.forEach(function (task){
-          input.project.projectUsers.forEach(function (projectUser){
-            if (!task.factExecutionTime) return;
-            if (projectUser.user.id === task.performerId && _.find(projectUser.roles, {projectRoleId: roleId})) {
-              totalTimeSpentWithRole = exactMath.add(totalTimeSpentWithRole, parseFloat(task.factExecutionTime) || 0);
-            }
-          });
-
-        });
-      });
-    }
+    if (input.project.sprints.length === 0
+      && !checkSprintsHaveTask(input.project.sprints)
+      && input.project.tasksInBacklog.length === 0
+      || input.project.projectUsers.length === 0
+    ) return;
+    totalTimeSpentWithRole = countSpentTimeByRole(input.project, roleId);
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -246,12 +284,9 @@ module.exports = async function (metricsTypeId, input){
 
   case (30):
     sprintBurndown = input.sprint.budget || 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
-        if (!task.factExecutionTime) return;
-        sprintBurndown = exactMath.sub(sprintBurndown, parseFloat(task.factExecutionTime) || 0);
-      });
-    }
+    spentTimeBySprint = countSpentTimeByTasks(input.sprint.tasks);
+    if (!spentTimeBySprint) return;
+    sprintBurndown = exactMath.sub(sprintBurndown, parseFloat(spentTimeBySprint) || 0);
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -262,13 +297,10 @@ module.exports = async function (metricsTypeId, input){
     };
 
   case (31):
-    sprintBurndown = input.sprint.riskBudget || 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
-        if (!task.factExecutionTime) return;
-        sprintBurndown = exactMath.sub(sprintBurndown, parseFloat(task.factExecutionTime) || 0);
-      });
-    }
+    sprintBurndown = input.sprint.budget || 0;
+    spentTimeBySprint = countSpentTimeByTasks(input.sprint.tasks);
+    if (!spentTimeBySprint) return;
+    sprintBurndown = exactMath.sub(sprintBurndown, parseFloat(spentTimeBySprint) || 0);
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -306,13 +338,14 @@ module.exports = async function (metricsTypeId, input){
     laborCostsWithoutRating = 0;
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
+        spentTimeByTask = countSpentTimeByTask(task);
         if (
           task.plannedExecutionTime
             || task.typeId !== 1
             || task.statusId !== TaskStatusesDictionary.CLOSED_STATUS
-            || !task.factExecutionTime
+            || !spentTimeByTask
         ) return;
-        laborCostsWithoutRating = exactMath.add(laborCostsWithoutRating, task.factExecutionTime);
+        laborCostsWithoutRating = exactMath.add(laborCostsWithoutRating, spentTimeByTask);
       });
     }
     return {
@@ -328,8 +361,9 @@ module.exports = async function (metricsTypeId, input){
     laborCostsTotal = 0;
     if (input.sprint.tasks.length > 0){
       input.sprint.tasks.forEach(function (task){
-        if (!task.factExecutionTime || task.typeId !== 1) return;
-        laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(task.factExecutionTime) || 0);
+        spentTimeByTask = countSpentTimeByTask(task);
+        if (!task.spentTimeByTask || task.typeId !== 1) return;
+        laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(spentTimeByTask));
       });
     }
     return {

@@ -6,3 +6,5 @@ dump
 tmp
 .idea/*
 package-lock.json
+
+/public/uploads*
