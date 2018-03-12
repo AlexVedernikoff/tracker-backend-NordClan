@@ -14,7 +14,9 @@ exports.projectRoles = function (req, res){
 };
 
 exports.timesheetTypes = function (req, res){
-  res.end(JSON.stringify(models.TimesheetTypesDictionary.values));
+  return models.TimesheetTypesDictionary
+    .findAll()
+    .then(data => res.json(data));
 };
 
 exports.taskTypes = function (req, res){
