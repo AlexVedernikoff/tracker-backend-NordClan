@@ -22,10 +22,9 @@ async function update (body, taskId, user) {
     'performerId': (originTask.performerId !== oldPerformer),
     'statusId': (originTask.statusId !== oldStatus)
   };
-
   const updatedTask = await findByPrimary(taskId);
 
-  const createdDraft = body.statusId
+  const createdDraft = body.statusId && body.performerId !== 0
     ? await createDraftIfNeeded(originTask, body.statusId)
     : null;
 
