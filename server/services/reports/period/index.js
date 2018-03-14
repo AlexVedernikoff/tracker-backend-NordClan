@@ -9,6 +9,7 @@ exports.getReport = async function (projectId, criteria) {
   let startDate;
   let endDate;
   const { label, sprintId } = criteria;
+  const timesheetTypes = await TimesheetTypesDictionary.findAll();
   if (criteria) {
     const validCriteria = validateCriteria(criteria);
     startDate = validCriteria.startDate;
@@ -88,13 +89,13 @@ exports.getReport = async function (projectId, criteria) {
     const data = timeSheet.dataValues;
     Object.assign(data, {user: data.user.dataValues});
     if (!data.taskId) {
-      const type = TimesheetTypesDictionary.values.find(dictionary => dictionary.id === timeSheet.typeId);
+      const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
       Object.assign(data, {
         taskId: -type.id,
         task: {
           name: type.name,
           id: type.id,
-          isMagic: true
+          isMagic: type.isMagicActivity
         }
       });
     } else {
