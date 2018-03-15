@@ -22,19 +22,8 @@ build_docker_be:
     - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.be .
   only:
     - master
-    - feature/ci
-  tags:
-    - docker
-
-build_docker_be_debug:
-  image: docker:stable
-  stage: docker
-  script:
-    - cp ci/Dockerfile.debug.be ./
-    - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.debug.be .
-  only:
-    - develop
     - test
+    - develop
   tags:
     - docker
 
@@ -42,7 +31,6 @@ release:
   image: docker:stable
   stage: release
   script:
-    - echo release
     - docker tag $DOCKER_PREFIX/be:$TAG $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
     - docker push $DOCKER_PREFIX/be:$TAG
     - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
