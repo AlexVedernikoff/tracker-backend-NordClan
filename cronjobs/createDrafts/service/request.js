@@ -1,6 +1,6 @@
 const models = require('../../../server/models');
 
-module.exports = (onDate) => ({
+module.exports = (onDate, timesheetTypeImplementation) => ({
   attributes: ['id', 'performerId', 'statusId'],
   where: {
     statusId: models.TaskStatusesDictionary.CAN_CREATE_DRAFT_BY_CRON, // Только для активных тасок
@@ -48,7 +48,7 @@ module.exports = (onDate) => ({
       required: false,
       where: {
         onDate: onDate,
-        typeId: models.TimesheetTypesDictionary.IMPLEMENTATION,
+        typeId: timesheetTypeImplementation.id,
         userId: models.sequelize.literal('"timesheet"."user_id" = "Task"."performer_id"') // Только для пользователя который состоит в проекте
       }
     }

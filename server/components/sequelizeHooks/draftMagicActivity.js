@@ -21,17 +21,19 @@ exports.destroyDraftMagicActivity = (instance, options) => {
   return draftModel.destroy({
     where: {
       projectId: instance.projectId,
-      userId: instance.userId,
-    },
+      userId: instance.userId
+    }
   });
 };
 
-function generateDrafts(instance) {
-  const magicActivities = instance.$modelOptions.sequelize.models.TimesheetTypesDictionary.magicActivities;
+function generateDrafts (instance) {
+  const magicActivities = instance.$modelOptions.sequelize.models.TimesheetTypesDictionary.findAll({
+    isMagicActivity: true
+  });
 
   return magicActivities.map((el) => ({
     projectId: instance.projectId,
     userId: instance.userId,
-    typeId: el,
+    typeId: el
   }));
 }
