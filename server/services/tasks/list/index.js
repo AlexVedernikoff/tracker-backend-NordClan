@@ -20,9 +20,9 @@ exports.list = async function (req) {
     Task.checkAttributes(req.query.fields);
   }
 
-  if (!req.query.pageSize && !req.query.projectId && !req.query.sprintId) {
+  if (!req.query.pageSize && !req.query.projectId && !req.query.sprintId && !req.query.performerId) {
     req.query.pageSize = 100;
-  } else if (!req.query.pageSize && (req.query.projectId || req.query.sprintId)) {
+  } else if (!req.query.pageSize && (req.query.projectId || req.query.sprintId || req.query.performerId)) {
     req.query.pageSize = null;
   }
 

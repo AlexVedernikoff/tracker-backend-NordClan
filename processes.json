@@ -7,7 +7,7 @@
       "exec_mode": "cluster",
       "env": {
         "NODE_ENV": "develop",
-        "watch": ["server"],
+        "watch": "server",
         "ignore_watch": "public/uploads*"
       },
       "env_production": {
