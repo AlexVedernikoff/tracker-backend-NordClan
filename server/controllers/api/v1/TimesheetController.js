@@ -29,22 +29,13 @@ exports.create = async (req, res, next) => {
 exports.getTracksAll = async (req, res, next) => {
   const startDate = req.query.startDate;
   const endDate = req.query.endDate;
-  const params = {
-    id: req.params.sheetId || req.body.sheetId || req.query.sheetId,
-    userId: req.user.id,
-    taskStatusId: req.body.statusId,
-    taskId: req.body.taskId,
-    sprintId: req.body.sprintId,
-    onDate: req.onDate
-  };
-
   const activeTasks = await TasksService.getActiveTasks(req.user.id);
   const activeTask = activeTasks.length !== 0
     ? activeTasks[0]
     : await TasksService.getLastActiveTask(req.user.id);
 
   TimesheetService
-    .getTracksAll(startDate, endDate, params)
+    .getTracksAll(startDate, endDate, req.user.id)
     .then(tracks => {
       TimesheetsChannel.sendAction('setActiveTask', activeTask, res.io, req.user.id);
       res.json(tracks);
