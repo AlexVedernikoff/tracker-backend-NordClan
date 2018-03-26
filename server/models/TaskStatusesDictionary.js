@@ -25,17 +25,20 @@ module.exports = function (sequelize, DataTypes) {
 
   TaskStatuses.values = [
     {id: 1, name: 'New', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 2, name: 'Develop play', createDraftByChangesTaskStatus: false, createDraftByCron: true},
+    {id: 2, name: 'Develop play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
     {id: 3, name: 'Develop stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 4, name: 'Code Review play', createDraftByChangesTaskStatus: false, createDraftByCron: true},
+    {id: 4, name: 'Code Review play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
     {id: 5, name: 'Code Review stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 6, name: 'QA play', createDraftByChangesTaskStatus: false, createDraftByCron: true},
+    {id: 6, name: 'QA play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
     {id: 7, name: 'QA stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
     {id: 8, name: 'Done', createDraftByChangesTaskStatus: false, createDraftByCron: false},
     {id: 9, name: 'Canceled', createDraftByChangesTaskStatus: false, createDraftByCron: false},
     {id: 10, name: 'Closed', createDraftByChangesTaskStatus: false, createDraftByCron: false}
   ];
 
+  TaskStatuses.DEVELOP_STATUSES = [2, 3];
+  TaskStatuses.CODE_REVIEW_STATUSES = [4, 5];
+  TaskStatuses.QA_STATUSES = [6, 7];
   TaskStatuses.DONE_STATUS = 8;
   TaskStatuses.CANCELED_STATUS = 9;
   TaskStatuses.CLOSED_STATUS = 10;

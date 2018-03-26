@@ -63,8 +63,7 @@ const USER = {
     'trackAll': true
   },
   metrics: {
-    'list': true,
-    'calculate': true
+    'list': true
   }
 };
 

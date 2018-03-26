@@ -20,22 +20,22 @@ exports.list = async function (req) {
     Task.checkAttributes(req.query.fields);
   }
 
-  if (!req.query.pageSize && !req.query.projectId && !req.query.sprintId) {
-    req.query.pageSize = 100;
-  } else if (!req.query.pageSize && (req.query.projectId || req.query.sprintId)) {
-    req.query.pageSize = null;
-  }
-
-  if (!req.query.currentPage) {
-    req.query.currentPage = 1;
-  }
-
   const tags = typeof req.query.tags === 'string'
     ? req.query.tags.split(',')
     : req.query.tags;
 
   const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId);
   const queryWhere = createWhereForRequest(req);
+
+  if (!req.query.pageSize && !queryWhere.projectId && !queryWhere.sprintId && !queryWhere.performerId) {
+    req.query.pageSize = 100;
+  } else if (!req.query.pageSize && (queryWhere.projectId || queryWhere.sprintId || queryWhere.performerId)) {
+    req.query.pageSize = null;
+  }
+
+  if (!req.query.currentPage) {
+    req.query.currentPage = 1;
+  }
 
   const queryOffset = req.query.currentPage > 0
     ? req.query.pageSize * (req.query.currentPage - 1)
