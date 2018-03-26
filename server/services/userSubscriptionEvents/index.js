@@ -59,7 +59,7 @@ module.exports = async function (eventId, input){
     // input = { taskId }
 
     task = await getTask(input.taskId);
-    receivers = [task.performer];
+    receivers = task.performer ? [task.performer] : [];
 
     receivers.forEach(function (user){
       if (!isUserSubscribed(eventId, user.usersProjects[0])) return;

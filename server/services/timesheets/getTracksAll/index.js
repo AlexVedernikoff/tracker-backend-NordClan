@@ -3,12 +3,11 @@ const moment = require('moment');
 const exactMath = require('exact-math');
 const { ProjectUsers, Project } = require('../../../models');
 
-exports.getTracksAll = async (startDate, endDate, params) => {
+exports.getTracksAll = async (startDate, endDate, userId) => {
   const dateRange = getDateRange(startDate, endDate);
-
   const tracksData = await Promise
     .all(dateRange.map(async (onDate) => {
-      const tracks = await getTracks({...params, onDate});
+      const tracks = await getTracks({userId, onDate});
       const scales = getScales(tracks);
       return { tracks, scales, onDate };
     }));
@@ -18,15 +17,14 @@ exports.getTracksAll = async (startDate, endDate, params) => {
     return acc;
   }, {});
 
-  formatTracksData.availableProjects = await getAvailableProjects(params.userId);
+  formatTracksData.availableProjects = await getAvailableProjects(userId);
 
   return formatTracksData;
 };
 
 async function getTracks (params) {
-  const today = moment().format('YYYY-MM-DD');
   const timesheets = await getTimesheets(params);
-  const drafts = moment(params.onDate).isSame(today) ? await getDrafts(params) : [];
+  const drafts = await getDrafts(params);
   return [ ...timesheets, ...drafts ];
 }
 

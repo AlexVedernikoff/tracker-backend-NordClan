@@ -5,6 +5,12 @@ const TimesheetService = require('../../timesheets');
 const { findByPrimary } = require('./request');
 const createError = require('http-errors');
 
+const {
+  DEVELOP_STATUSES,
+  CODE_REVIEW_STATUSES,
+  QA_STATUSES
+} = models.TaskStatusesDictionary;
+
 async function update (body, taskId, user) {
   const originTask = await findByPrimary(taskId);
   const { error } = validateTask(originTask, body, user);
@@ -22,10 +28,9 @@ async function update (body, taskId, user) {
     'performerId': (originTask.performerId !== oldPerformer),
     'statusId': (originTask.statusId !== oldStatus)
   };
-
   const updatedTask = await findByPrimary(taskId);
 
-  const createdDraft = body.statusId
+  const createdDraft = body.statusId && body.performerId !== 0
     ? await createDraftIfNeeded(originTask, body.statusId)
     : null;
 
@@ -65,25 +70,29 @@ function getTaskParams (body) {
 }
 
 async function createDraftIfNeeded (task, statusId) {
+  const statuses = [
+    DEVELOP_STATUSES,
+    CODE_REVIEW_STATUSES,
+    QA_STATUSES
+  ];
   const onDate = moment().format('YYYY-MM-DD');
   const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
-  const draftParams = {
-    taskId: task.id,
-    userId: task.performerId,
-    onDate,
-    typeId: 1,
-    taskStatusId: statusId,
-    projectId: task.projectId,
-    isVisible: true
-  };
-
   if (needCreateDraft) {
+    const currentStageStatuses = statuses.find(item => item.includes(statusId));
+    const draftParams = {
+      taskId: task.id,
+      userId: task.performerId,
+      onDate,
+      typeId: 1,
+      taskStatusId: currentStageStatuses[1],
+      projectId: task.projectId,
+      isVisible: true
+    };
     await TimesheetService.createDraft(draftParams);
+    return TimesheetService.getDraft(draftParams);
+  } else {
+    return null;
   }
-
-  return needCreateDraft
-    ? await TimesheetService.getDraft(draftParams)
-    : null;
 }
 
 async function updateTasksStatuses (updatedTask, originTask, currentUserId) {

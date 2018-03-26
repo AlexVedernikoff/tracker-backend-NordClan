@@ -55,6 +55,13 @@ function additionalEntities() {
           paranoid: false,
         },
       ]
-    }
+    },
+    {
+      as: 'portfolio',
+      model: models.Portfolio,
+      attributes: ['id', 'name'],
+      required: false,
+      paranoid: false,
+    },
   ];
 }
