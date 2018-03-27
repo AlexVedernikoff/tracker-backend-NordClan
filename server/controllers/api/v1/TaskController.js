@@ -28,8 +28,8 @@ exports.create = async function (req, res, next) {
 
   try {
     const task = await TasksService.create(req.body);
-    if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id });
-    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id });
+    if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id }, req.user);
+    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id }, req.user);
     res.json(task);
   } catch (err) {
     next(createError(err));
