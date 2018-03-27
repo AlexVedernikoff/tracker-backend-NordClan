@@ -2,7 +2,7 @@ const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 
-module.exports = async function (eventId, input){
+module.exports = async function (eventId, input, user){
   const emails = [];
   let receivers, task, comment;
 
@@ -43,6 +43,7 @@ module.exports = async function (eventId, input){
 
     receivers.forEach(function (projectUser){
       if (!isUserSubscribed(eventId, projectUser.get({ plain: true }))) return;
+      if (user.dataValues.id === projectUser.user.id) return;
       const emailTemplate = email.template('newTaskForQAPM', { task });
       emails.push({
         'receiver': projectUser.user.emailPrimary,
@@ -59,13 +60,14 @@ module.exports = async function (eventId, input){
     // input = { taskId }
 
     task = await getTask(input.taskId);
-    receivers = [task.performer];
+    receivers = task.performer ? [task.performer] : [];
 
-    receivers.forEach(function (user){
-      if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
+    receivers.forEach(function (performer){
+      if (!isUserSubscribed(eventId, performer.usersProjects[0])) return;
+      if (user.dataValues.id === performer.dataValues.id) return;
       const emailTemplate = email.template('newTaskForPerformer', { task });
       emails.push({
-        'receiver': user.emailPrimary,
+        'receiver': performer.emailPrimary,
         'subject': emailTemplate.subject,
         'html': emailTemplate.body
       });
@@ -82,11 +84,12 @@ module.exports = async function (eventId, input){
     comment = _.find(task.comments, { id: input.commentId });
     receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
-    receivers.forEach(function (user){
-      if (!isUserSubscribed(eventId, user.usersProjects[0])) return;
+    receivers.forEach(function (receiver){
+      if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return;
+      if (user.dataValues.id === receiver.dataValues.id) return;
       const emailTemplate = email.template('newTaskComment', { task, comment });
       emails.push({
-        'receiver': user.emailPrimary,
+        'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
         'html': emailTemplate.body
       });
@@ -125,11 +128,11 @@ module.exports = async function (eventId, input){
       }
     });
 
-    receivers.forEach(function (user){
-      if (!user.usersProjects || user.usersProjects.length === 0 || !isUserSubscribed(eventId, user.usersProjects[0])) return;
+    receivers.forEach(function (receiver){
+      if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       const emailTemplate = email.template('taskCompleted', { task });
       emails.push({
-        'receiver': user.emailPrimary,
+        'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
         'html': emailTemplate.body
       });

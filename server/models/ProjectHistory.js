@@ -123,6 +123,15 @@ module.exports = function(sequelize, DataTypes) {
       },
       constraints: false,
     });
+
+    ProjectHistory.belongsTo(models.Portfolio, {
+      as: 'portfolio',
+      foreignKey: {
+        name: 'valueInt',
+        field: 'value_int'
+      },
+      constraints: true,
+    });
   };
 
   return ProjectHistory;

@@ -69,6 +69,7 @@ module.exports = function (templateName, input){
 
     switch (i.task.statusId){
     case (1): //new
+    case (8): //new
       subject = `${i.task.project.name}. Вам назначена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
       break;
     case (2): //develop play
