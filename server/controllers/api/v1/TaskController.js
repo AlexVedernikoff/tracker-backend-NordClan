@@ -28,9 +28,8 @@ exports.create = async function (req, res, next) {
 
   try {
     const task = await TasksService.create(req.body);
-    TasksChannel.sendAction('create', task, res.io, task.projectId);
-    if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id });
-    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id });
+    if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id }, req.user);
+    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id }, req.user);
     res.json(task);
   } catch (err) {
     next(createError(err));
@@ -58,9 +57,9 @@ exports.update = async function (req, res, next) {
   try {
     const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (changedTaskData.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId });
+    if (changedTaskData.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId }, req.user);
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
-      await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId });
+      await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId }, req.user);
     }
     res.sendStatus(200);
   } catch (err) {

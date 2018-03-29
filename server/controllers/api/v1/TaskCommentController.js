@@ -26,7 +26,7 @@ exports.create = async function (req, res, next){
 
   const comment = await models.Comment.create(req.body);
   const getOne = await queries.comment.getOne(comment.id);
-  await userSubscriptionEvents(models.ProjectEventsDictionary.values[2].id, { taskId: task.id, commentId: comment.id });
+  await userSubscriptionEvents(models.ProjectEventsDictionary.values[2].id, { taskId: task.id, commentId: comment.id }, req.user);
   res.json(getOne);
 };
 
