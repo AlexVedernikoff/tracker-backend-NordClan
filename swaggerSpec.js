@@ -1440,10 +1440,6 @@ module.exports = {
                   type: 'string',
                   example: 'string'
                 },
-                active: {
-                  type: 'integer',
-                  example: 0
-                },
                 expiredDate: {
                   type: 'string',
                   example: 'yyyy-mm-dd'

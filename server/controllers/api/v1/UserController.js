@@ -170,6 +170,7 @@ exports.createExternal = async function (req, res, next){
   //TODO: создать срок жизни токена
 
   const params = {
+    active: 0,
     globalRole: 'EXTERNAL_USER',
     ldapLogin: req.body.login,
     createdAt: new Date(),
