@@ -33,7 +33,7 @@ router.get('/user/roles', GlobalAccess.can('user', 'usersRoles'), UserController
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 router.put('/user/', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
 router.post('/user/external/', GlobalAccess.can('user', 'createExternal'), UserController.createExternal);
-router.put('/user/:id/password/', UserController.setPassword);
+router.put('/user/password/:token', UserController.setPassword);
 
 // Tags
 router.get('/:taggable(project|task)/tag', GlobalAccess.can('tag', 'autocompliter'), TagController.autocompliter);

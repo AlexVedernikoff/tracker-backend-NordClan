@@ -25,7 +25,12 @@ module.exports = function (sequelize, DataTypes) {
     },
     setPasswordToken: {
       field: 'set_password_token',
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    setPasswordExpired: {
+      field: 'set_password_expired',
+      type: DataTypes.DATE,
       allowNull: true
     },
     expiredDate: {

@@ -1336,14 +1336,14 @@ module.exports = {
         responses: responsesCodes
       }
     },
-    '/user/{userId}/password': {
+    '/user/password/{token}': {
       put: {
         tags: ['User'],
         summary: 'Установка пароля для внешнего пользователя',
         parameters: [
           {
-            name: 'userId',
-            type: 'integer',
+            name: 'token',
+            type: 'string',
             in: 'path',
             required: true
           },

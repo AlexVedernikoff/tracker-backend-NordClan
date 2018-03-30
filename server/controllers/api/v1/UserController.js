@@ -3,10 +3,8 @@ const models = require('../../../models');
 const bcrypt = require('bcrypt-nodejs');
 const { User } = models;
 const config = require('../../../configs');
-const jwt = require('jwt-simple');
-const tokenSecret = 'token_pass_s';
+const crypto = require('crypto');
 const emailService = require('../../../services/email');
-const moment = require('moment');
 
 exports.me = function (req, res, next){
   try {
@@ -162,12 +160,9 @@ exports.updateUserRole = async function (req, res, next) {
 };
 
 exports.createExternal = async function (req, res, next){
-  const payload = {
-    login: req.body.login,
-    expires: moment().add(config.externalUser.setPasswordTokenLifetime, 's')
-  };
-  const setPasswordToken = jwt.encode(payload, tokenSecret);
-  //TODO: создать срок жизни токена
+  const buf = crypto.randomBytes(20);
+  const setPasswordToken = buf.toString('hex');
+  const setPasswordExpired = Date.now() + config.externalUser.setPasswordTokenLifetime;
 
   const params = {
     active: 0,
@@ -176,6 +171,7 @@ exports.createExternal = async function (req, res, next){
     createdAt: new Date(),
     updatedAt: new Date(),
     setPasswordToken,
+    setPasswordExpired,
     ...req.body
   };
 
@@ -195,32 +191,33 @@ exports.createExternal = async function (req, res, next){
 };
 
 exports.setPassword = async function (req, res, next){
-  req.checkParams('id', 'id must be int').isInt();
-  const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+  try {
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-  return models.sequelize.transaction(function (t) {
-    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
-      .then((model) => {
-        if (!model) {
-          return next(createError(404));
-        }
-        if (model.dataValues.globalRole !== 'EXTERNAL_USER') {
-          return next(createError(400));
-        }
-
-        const params = {
-          active: 1,
-          password: bcrypt.hashSync(req.body.password)
-        };
-
-        return model.updateAttributes(params, { transaction: t })
-          .then((updatedModel) => {
-            res.json(updatedModel);
-          });
+    const user = await models.User
+      .findOne({
+        where: {
+          setPasswordToken: req.params.token,
+          setPasswordExpired: { $gt: Date.now() },
+          globalRole: 'EXTERNAL_USER'
+        },
+        attributes: models.User.defaultSelect
       });
-  })
-    .catch((err) => {
-      next(err);
-    });
+
+    if (!user) return next(createError(404, 'Password set token is invalid or has expired'));
+
+    const params = {
+      active: 1,
+      password: bcrypt.hashSync(req.body.password),
+      setPasswordToken: null,
+      setPasswordExpires: null
+    };
+
+    user.updateAttributes(params)
+      .then(updatedModel => res.json(updatedModel));
+
+  } catch (e) {
+    return next(createError(e));
+  }
 };

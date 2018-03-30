@@ -28,7 +28,16 @@ module.exports = {
           'users',
           'set_password_token',
           {
-            type: Sequelize.TEXT
+            type: Sequelize.STRING(100)
+          }
+        )
+      ]))
+      .then(() => Promise.all([
+        queryInterface.addColumn(
+          'users',
+          'set_password_expired',
+          {
+            type: Sequelize.DATE
           }
         )
       ]))
@@ -70,6 +79,12 @@ module.exports = {
         queryInterface.removeColumn(
           'users',
           'expired_date'
+        )
+      ]))
+      .then(() => Promise.all([
+        queryInterface.removeColumn(
+          'users',
+          'set_password_expired'
         )
       ]));
   }

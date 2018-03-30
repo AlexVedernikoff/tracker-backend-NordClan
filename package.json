@@ -31,6 +31,7 @@
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
+    "crypto": "^1.0.1",
     "exact-math": "^1.0.0",
     "exceljs": "^0.8.1",
     "express": "^4.15.3",
