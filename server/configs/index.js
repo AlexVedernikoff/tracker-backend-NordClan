@@ -34,5 +34,8 @@ module.exports = {
     title: 'SimTrack',
     templateBaseUrl: 'http://sim-track.simbirsoft'
   },
-  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
+  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
+  externalUser: {
+    setPasswordTokenLifetime: 60 * 60 * 24
+  }
 };

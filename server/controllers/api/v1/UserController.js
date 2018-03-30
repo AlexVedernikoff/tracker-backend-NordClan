@@ -1,6 +1,12 @@
 const createError = require('http-errors');
 const models = require('../../../models');
-const { User} = models;
+const bcrypt = require('bcrypt-nodejs');
+const { User } = models;
+const config = require('../../../configs');
+const jwt = require('jwt-simple');
+const tokenSecret = 'token_pass_s';
+const emailService = require('../../../services/email');
+const moment = require('moment');
 
 exports.me = function (req, res, next){
   try {
@@ -147,6 +153,69 @@ exports.updateUserRole = async function (req, res, next) {
               lastNameRu: updatedModel.lastNameRu
             };
             res.json(updatedUser);
+          });
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.createExternal = async function (req, res, next){
+  const payload = {
+    login: req.body.login,
+    expires: moment().add(config.externalUser.setPasswordTokenLifetime, 's')
+  };
+  const setPasswordToken = jwt.encode(payload, tokenSecret);
+  //TODO: создать срок жизни токена
+
+  const params = {
+    globalRole: 'EXTERNAL_USER',
+    ldapLogin: req.body.login,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    setPasswordToken,
+    ...req.body
+  };
+
+  User.create(params)
+    .then((model) => {
+      const template = emailService.template('activateExternalUser', { token: setPasswordToken });
+      emailService.send({
+        receiver: req.body.login,
+        subject: template.subject,
+        html: template.body
+      });
+      res.json(model);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.setPassword = async function (req, res, next){
+  req.checkParams('id', 'id must be int').isInt();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+  return models.sequelize.transaction(function (t) {
+    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if (!model) {
+          return next(createError(404));
+        }
+        if (model.dataValues.globalRole !== 'EXTERNAL_USER') {
+          return next(createError(400));
+        }
+
+        const params = {
+          active: 1,
+          password: bcrypt.hashSync(req.body.password)
+        };
+
+        return model.updateAttributes(params, { transaction: t })
+          .then((updatedModel) => {
+            res.json(updatedModel);
           });
       });
   })

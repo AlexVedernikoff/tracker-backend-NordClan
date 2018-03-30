@@ -9,14 +9,29 @@ module.exports = function (sequelize, DataTypes) {
     ldapLogin: {
       field: 'ldap_login',
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     login: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
       validate: {
         len: [2, 100]
       }
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    setPasswordToken: {
+      field: 'set_password_token',
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    expiredDate: {
+      field: 'expired_date',
+      type: DataTypes.DATE,
+      allowNull: true
     },
     lastNameEn: {
       field: 'last_name_en',
@@ -150,7 +165,8 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'users',
     getterMethods: {
       fullNameRu: function (){
-        return this.firstNameRu.concat(' ', this.lastNameRu);
+        const fullNameRuArr = [this.firstNameRu, this.lastNameRu].filter(i => i);
+        return fullNameRuArr.join(' ');
       }
     }
   });

@@ -1336,6 +1336,35 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/user/{userId}/password': {
+      put: {
+        tags: ['User'],
+        summary: 'Установка пароля для внешнего пользователя',
+        parameters: [
+          {
+            name: 'userId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'task',
+            schema: {
+              type: 'object',
+              required: ['password'],
+              properties: {
+                password: {
+                  type: 'string',
+                  example: 'string'
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/user/me': {
       get: {
         tags: ['User'],
@@ -1388,6 +1417,41 @@ module.exports = {
       get: {
         tags: ['User'],
         summary: 'Получение списка всех пользователей и их глобальных ролей',
+        responses: responsesCodes
+      }
+    },
+    '/user/external': {
+      post: {
+        tags: ['User'],
+        summary: 'Создать внешнего пользователя',
+        parameters: [
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              required: ['login'],
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                firstNameRu: {
+                  type: 'string',
+                  example: 'string'
+                },
+                active: {
+                  type: 'integer',
+                  example: 0
+                },
+                expiredDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                }
+              }
+            }
+          }
+        ],
         responses: responsesCodes
       }
     },
