@@ -161,6 +161,13 @@ exports.updateUserRole = async function (req, res, next) {
 };
 
 exports.createExternal = async function (req, res, next){
+  req.checkBody('login', 'login must be email').isEmail();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
   const setPasswordExpired = Date.now() + config.externalUser.setPasswordTokenLifetime;
@@ -192,6 +199,13 @@ exports.createExternal = async function (req, res, next){
 };
 
 exports.updateExternal = async function (req, res, next) {
+  req.checkBody('login', 'login must be email').isEmail();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
   return models.sequelize.transaction(function (t) {
     return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
       .then((model) => {
@@ -212,6 +226,8 @@ exports.updateExternal = async function (req, res, next) {
 
 exports.setPassword = async function (req, res, next){
   try {
+    req.checkBody('password', 'password must be more then 8 chars').isLength({ min: 8 });
+
     const validationResult = await req.getValidationResult();
     if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
