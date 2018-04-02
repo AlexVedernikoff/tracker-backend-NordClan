@@ -27,13 +27,14 @@ router.post('/auth/login', AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
 
 // User
+router.put('/user', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.get('/user/roles', GlobalAccess.can('user', 'usersRoles'), UserController.getUsersRoles);
-router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
-router.put('/user/', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
-router.post('/user/external/', GlobalAccess.can('user', 'createExternal'), UserController.createExternal);
+router.post('/user/external', GlobalAccess.can('user', 'createExternal'), UserController.createExternal);
+router.get('/user/external', GlobalAccess.can('user', 'getExternalUsers'), UserController.getExternalUsers);
 router.put('/user/password/:token', UserController.setPassword);
+router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 
 // Tags
 router.get('/:taggable(project|task)/tag', GlobalAccess.can('tag', 'autocompliter'), TagController.autocompliter);

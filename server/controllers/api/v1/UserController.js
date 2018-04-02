@@ -105,7 +105,8 @@ exports.getUsersRoles = async function (req, res, next) {
     const users = await models.User
       .findAll({
         where: {
-          active: 1
+          active: 1,
+          globalRole: { $not: 'EXTERNAL_USER' },
         },
         order: [
           ['last_name_ru']
@@ -220,4 +221,26 @@ exports.setPassword = async function (req, res, next){
   } catch (e) {
     return next(createError(e));
   }
+};
+
+exports.getExternalUsers = async function (req, res, next) {
+  try {
+
+    const users = await models.User
+      .findAll({
+        where: {
+          globalRole: 'EXTERNAL_USER',
+        },
+        order: [
+          ['first_name_ru']
+        ],
+        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login']
+      });
+
+    res.json(users);
+
+  } catch (err) {
+    next(err);
+  }
+
 };

@@ -1416,11 +1416,16 @@ module.exports = {
     '/user/roles': {
       get: {
         tags: ['User'],
-        summary: 'Получение списка всех пользователей и их глобальных ролей',
+        summary: 'Получение списка всех пользователей кроме внешних и их глобальных ролей',
         responses: responsesCodes
       }
     },
     '/user/external': {
+      get: {
+        tags: ['User'],
+        summary: 'Получение списка всех внешних пользователей',
+        responses: responsesCodes
+      },
       post: {
         tags: ['User'],
         summary: 'Создать внешнего пользователя',
