@@ -91,7 +91,8 @@ module.exports = {
       'usersRoles': true,
       'updateRole': true,
       'createExternal': true,
-      'getExternalUsers': true
+      'getExternalUsers': true,
+      'updateExternal': true
     }
   },
   SYSTEM_USER: {

@@ -457,7 +457,6 @@ module.exports = {
       }
     },
 
-
     '/portfolio': {
       get: {
         tags: ['Portfolios'],
@@ -525,7 +524,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
 
     '/sprint': {
       get: {
@@ -690,7 +688,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
 
     '/task': {
       get: {
@@ -1272,7 +1269,6 @@ module.exports = {
       }
     },
 
-
     '/auth/login': {
       post: {
         tags: ['Auth'],
@@ -1320,7 +1316,6 @@ module.exports = {
       }
     },
 
-
     '/user/{userId}': {
       get: {
         tags: ['User'],
@@ -1349,7 +1344,7 @@ module.exports = {
           },
           {
             in: 'body',
-            name: 'task',
+            name: 'user',
             schema: {
               type: 'object',
               required: ['password'],
@@ -1456,7 +1451,46 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
+    '/user/external/{id}': {
+      put: {
+        tags: ['User'],
+        summary: 'Редактирование внешнего пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                firstNameRu: {
+                  type: 'string',
+                  example: 'string'
+                },
+                expiredDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                active: {
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
 
     '/timesheetDraft/{timesheetDraftId}/': {
       put: {
@@ -1514,7 +1548,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
     '/timesheet/': {
       get: {
         tags: ['Timesheets'],
@@ -1656,6 +1689,7 @@ module.exports = {
         responses: responsesCodes
       }
     },
+
     '/draftsheet/': {
       put: {
         tags: ['Timesheets'],

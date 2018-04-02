@@ -33,6 +33,7 @@ router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.get('/user/roles', GlobalAccess.can('user', 'usersRoles'), UserController.getUsersRoles);
 router.post('/user/external', GlobalAccess.can('user', 'createExternal'), UserController.createExternal);
 router.get('/user/external', GlobalAccess.can('user', 'getExternalUsers'), UserController.getExternalUsers);
+router.put('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), UserController.updateExternal);
 router.put('/user/password/:token', UserController.setPassword);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 

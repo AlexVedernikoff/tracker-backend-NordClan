@@ -191,6 +191,25 @@ exports.createExternal = async function (req, res, next){
     });
 };
 
+exports.updateExternal = async function (req, res, next) {
+  return models.sequelize.transaction(function (t) {
+    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if (!model) {
+          return next(createError(404));
+        }
+
+        return model.updateAttributes(req.body , { transaction: t })
+          .then((updatedModel) => {
+            res.json(updatedModel);
+          });
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 exports.setPassword = async function (req, res, next){
   try {
     const validationResult = await req.getValidationResult();
