@@ -34,8 +34,7 @@ exports.checkToken = function (req, res, next) {
   } catch (err) {
     return next(createError(403, 'Can not parse access token - it is not valid'));
   }
-  console.log(2323232323);
-  console.log(decoded.user.login);
+
   User
     .findOne({
       where: {
