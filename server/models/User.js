@@ -14,7 +14,6 @@ module.exports = function (sequelize, DataTypes) {
     login: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
       validate: {
         len: [2, 100]
       }

@@ -99,15 +99,18 @@ exports.login = function (req, res, next){
     if (user.expiredDate < Date.now()) return next(createError(400, 'Expired Access Timeout'));
     if (!bcrypt.compareSync(password, user.password)) return next(createError(404, 'Invalid Login or Password'));
 
-    const token = SystemAuth.createJwtToken(req.body.login);
+    const token = Auth.createJwtToken({
+      login: req.body.login
+    });
 
-    SystemToken
+    Token
       .create({
+        userId: user.dataValues.id,
         token: token.token,
         expires: token.expires.format()
       })
       .then(() => {
-        res.cookie('system-authorization', 'Basic ' + token.token, {
+        res.cookie('authorization', 'Basic ' + token.token, {
           maxAge: config.auth.accessTokenLifetime * 1000,
           httpOnly: true
         });
