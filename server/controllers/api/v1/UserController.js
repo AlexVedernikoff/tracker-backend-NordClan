@@ -161,7 +161,7 @@ exports.updateUserRole = async function (req, res, next) {
 };
 
 exports.createExternal = async function (req, res, next){
-  req.checkBody('login', 'login must be email').isEmail();
+  // req.checkBody('login', 'login must be email').isEmail();
 
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) {
@@ -199,7 +199,7 @@ exports.createExternal = async function (req, res, next){
 };
 
 exports.updateExternal = async function (req, res, next) {
-  req.checkBody('login', 'login must be email').isEmail();
+  // req.checkBody('login', 'login must be email').isEmail();
 
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) {
