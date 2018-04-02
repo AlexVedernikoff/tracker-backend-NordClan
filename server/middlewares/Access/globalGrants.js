@@ -89,7 +89,10 @@ module.exports = {
     user: {
       ...USER.user,
       'usersRoles': true,
-      'updateRole': true
+      'updateRole': true,
+      'createExternal': true,
+      'getExternalUsers': true,
+      'updateExternal': true
     }
   },
   SYSTEM_USER: {
@@ -104,5 +107,53 @@ module.exports = {
   },
   VISOR: {
     ...USER
+  },
+  EXTERNAL_USER: {
+    user: {
+      'autocomplete': true,
+      'me': true,
+      'read': true
+    },
+    tag: {
+      'autocompliter': true,
+      'list': true,
+    },
+    project: {
+      'read': true,
+    },
+    projectUsers: {
+      'list': true,
+    },
+    portfolio: {
+      'list': true,
+      'read': true
+    },
+    sprint: {
+      'read': true,
+      'list': true,
+    },
+    task: {
+      'create': true,
+      'read': true,
+      'update': true,
+      'list': true
+    },
+    taskLinks: {
+      'create': true,
+      'delete': true
+    },
+    comment: {
+      'create': true,
+      'update': true,
+      'delete': true,
+      'list': true
+    },
+    attachment: {
+      'upload': true,
+      'delete': true
+    },
+    history: {
+      'list': true
+    }
   }
 };
