@@ -279,5 +279,46 @@ exports.getExternalUsers = async function (req, res, next) {
   } catch (err) {
     next(err);
   }
+};
 
+exports.autocompleteExternal = function (req, res, next) {
+  req.sanitize('userName').trim();
+  req.checkQuery('userName', 'userName must be not empty').notEmpty();
+  req.getValidationResult()
+    .then((validationResult) => {
+      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+      const result = [];
+
+      return models.User
+        .findAll({
+          where: {
+            globalRole: 'EXTERNAL_USER',
+            $or: [
+              {
+                firstNameRu: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
+              },
+              {
+                firstNameRu: {
+                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                }
+              }
+            ]
+          },
+          limit: req.query.pageSize ? +req.query.pageSize : 10,
+          attributes: ['id', 'firstNameRu', 'lastNameRu']
+        })
+        .then((users) => {
+          users.forEach((user) => {
+            result.push({fullNameRu: user.fullNameRu, id: user.id});
+          });
+          res.end(JSON.stringify(result));
+        })
+        .catch((err) => {
+          next(err);
+        });
+    })
+    .catch((err) => next(createError(err)));
 };
