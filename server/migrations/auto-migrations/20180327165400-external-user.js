@@ -50,6 +50,16 @@ module.exports = {
           }
         )
       ]))
+      .then(() => Promise.all([
+        queryInterface.addIndex(
+          'users',
+          {
+            name: 'login_unique',
+            unique: true,
+            fields: ['login']
+          }
+        )
+      ]))
   },
   down: function (queryInterface) {
     return Promise.resolve()
@@ -85,6 +95,12 @@ module.exports = {
         queryInterface.removeColumn(
           'users',
           'set_password_expired'
+        )
+      ]))
+      .then(() => Promise.all([
+        queryInterface.removeIndex(
+          'users',
+          'login_unique'
         )
       ]));
   }
