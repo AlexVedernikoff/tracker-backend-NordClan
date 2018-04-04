@@ -12,7 +12,7 @@ const tokenSecret = 'token_s';
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
 
-  if (/\/auth\/login$/ui.test(req.url)){//potential defect /blabla/auth/login - is not validated
+  if (/\/auth\/login$/ui.test(req.url) || /\/user\/password/ui.test(req.url)){//potential defect /blabla/auth/login - is not validated
     return next();
   }
 

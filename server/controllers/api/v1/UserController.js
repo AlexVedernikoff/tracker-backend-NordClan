@@ -1,6 +1,10 @@
 const createError = require('http-errors');
 const models = require('../../../models');
-const { User} = models;
+const bcrypt = require('bcrypt-nodejs');
+const { User } = models;
+const moment = require('moment');
+const crypto = require('crypto');
+const emailService = require('../../../services/email');
 
 exports.me = function (req, res, next){
   try {
@@ -101,7 +105,8 @@ exports.getUsersRoles = async function (req, res, next) {
     const users = await models.User
       .findAll({
         where: {
-          active: 1
+          active: 1,
+          globalRole: { $not: 'EXTERNAL_USER' },
         },
         order: [
           ['last_name_ru']
@@ -153,4 +158,126 @@ exports.updateUserRole = async function (req, res, next) {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.createExternal = async function (req, res, next){
+  req.checkBody('login', 'login must be email').isEmail();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const buf = crypto.randomBytes(20);
+  const setPasswordToken = buf.toString('hex');
+  const setPasswordExpired = moment().add(1, 'days');
+
+  const params = {
+    active: 0,
+    globalRole: 'EXTERNAL_USER',
+    ldapLogin: req.body.login,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    setPasswordToken,
+    setPasswordExpired,
+    ...req.body
+  };
+
+  User.create(params)
+    .then((model) => {
+      const template = emailService.template('activateExternalUser', { token: setPasswordToken });
+      emailService.send({
+        receiver: req.body.login,
+        subject: template.subject,
+        html: template.body
+      });
+      res.json(model);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.updateExternal = async function (req, res, next) {
+  if (req.body.login) {
+    req.checkBody('login', 'login must be email').isEmail();
+  }
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  return models.sequelize.transaction(function (t) {
+    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if (!model) {
+          return next(createError(404));
+        }
+
+        return model.updateAttributes(req.body , { transaction: t })
+          .then((updatedModel) => {
+            res.json(updatedModel);
+          });
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.setPassword = async function (req, res, next){
+  try {
+    req.checkBody('password', 'password must be more then 8 chars').isLength({ min: 8 });
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+
+    const user = await models.User
+      .findOne({
+        where: {
+          setPasswordToken: req.params.token,
+          setPasswordExpired: { $gt: Date.now() },
+          globalRole: 'EXTERNAL_USER'
+        },
+        attributes: models.User.defaultSelect
+      });
+
+    if (!user) return next(createError(404, 'Password set token is invalid or has expired'));
+
+    const params = {
+      active: 1,
+      password: bcrypt.hashSync(req.body.password),
+      setPasswordToken: null,
+      setPasswordExpires: null
+    };
+
+    user.updateAttributes(params)
+      .then(updatedModel => res.json(updatedModel));
+
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
+exports.getExternalUsers = async function (req, res, next) {
+  try {
+
+    const users = await models.User
+      .findAll({
+        where: {
+          globalRole: 'EXTERNAL_USER',
+        },
+        order: [
+          ['first_name_ru']
+        ],
+        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login']
+      });
+
+    res.json(users);
+
+  } catch (err) {
+    next(err);
+  }
+
 };
