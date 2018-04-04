@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const bcrypt = require('bcrypt-nodejs');
 const { User } = models;
-const config = require('../../../configs');
+const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
 
@@ -170,7 +170,7 @@ exports.createExternal = async function (req, res, next){
 
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
-  const setPasswordExpired = Date.now() + config.externalUser.setPasswordTokenLifetime;
+  const setPasswordExpired = moment().add(1, 'days');
 
   const params = {
     active: 0,
@@ -199,7 +199,9 @@ exports.createExternal = async function (req, res, next){
 };
 
 exports.updateExternal = async function (req, res, next) {
-  req.checkBody('login', 'login must be email').isEmail();
+  if (req.body.login) {
+    req.checkBody('login', 'login must be email').isEmail();
+  }
 
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) {
