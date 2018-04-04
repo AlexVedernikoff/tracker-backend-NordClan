@@ -1,6 +1,7 @@
 const USER = {
   user: {
     'autocomplete': true,
+    'autocompleteExternal': true,
     'me': true,
     'read': true
   },

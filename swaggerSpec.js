@@ -1387,6 +1387,26 @@ module.exports = {
         ]
       }
     },
+    '/user/autocompleter/external': {
+      get: {
+        tags: ['User'],
+        summary: 'Поиск внешних пользователей по типу autocompliter',
+        responses: responsesCodes,
+        parameters: [
+          {
+            name: 'userName',
+            type: 'integer',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query'
+          }
+        ]
+      }
+    },
     '/user/': {
       put: {
         tags: ['User'],
