@@ -12,7 +12,7 @@ const {
 } = models.TaskStatusesDictionary;
 
 async function update (body, taskId, user) {
-  const originTask = await findByPrimary(taskId);
+  const originTask = await findByPrimary(taskId, user.globalRole);
   const { error } = validateTask(originTask, body, user);
   if (error) {
     throw new Error(error);
@@ -28,7 +28,8 @@ async function update (body, taskId, user) {
     'performerId': (originTask.performerId !== oldPerformer),
     'statusId': (originTask.statusId !== oldStatus)
   };
-  const updatedTask = await findByPrimary(taskId);
+
+  const updatedTask = await findByPrimary(taskId, user.globalRole);
 
   const createdDraft = body.statusId && body.performerId !== 0
     ? await createDraftIfNeeded(originTask, body.statusId)

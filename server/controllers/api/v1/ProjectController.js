@@ -66,6 +66,8 @@ exports.read = function (req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
+  const userRole = req.user.dataValues.globalRole;
+
   Project
     .findByPrimary(req.params.id, {
       order: [
@@ -88,7 +90,7 @@ exports.read = function (req, res, next){
         {
           as: 'sprints',
           model: Sprint,
-          attributes: queries.sprint.queryAttributes('sprints')
+          attributes: queries.sprint.queryAttributes('sprints', userRole)
         },
         {
           as: 'portfolio',
@@ -145,6 +147,12 @@ exports.read = function (req, res, next){
       model.dataValues.users = usersData;
       if (model.dataValues.tags) model.dataValues.tags = Object.keys(model.dataValues.tags).map((k) => model.dataValues.tags[k].name); // Преобразую теги в массив
       delete model.dataValues.portfolioId;
+
+      if (userRole === models.User.EXTERNAL_USER_ROLE) {
+        delete model.dataValues.budget;
+        delete model.dataValues.riskBudget;
+      }
+
       res.json(model.dataValues);
     })
     .catch((err) => {
@@ -295,11 +303,15 @@ exports.list = function (req, res, next){
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
   }
 
+  const userRole = req.user.dataValues.globalRole;
+
   // вывод текущего спринта
   include.push({
     as: 'currentSprints',
     model: Sprint,
-    attributes: models.Sprint.defaultSelect,
+    attributes: userRole !== models.User.EXTERNAL_USER_ROLE
+      ? models.Sprint.defaultSelect
+      : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate'],
     where: {
       statusId: models.SprintStatusesDictionary.IN_PROCESS_STATUS,
       deletedAt: {
@@ -375,24 +387,36 @@ exports.list = function (req, res, next){
     });
   }
 
-  const attributes = Project.defaultSelect.concat([
+  const additinalAttr = [
     [Sequelize.literal(`(SELECT count(t.*)
-                                FROM project_users as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL)`), 'usersCount'], // Кол-во активных участников в проекте
+                                  FROM project_users as t
+                                  WHERE t.project_id = "Project"."id"
+                                  AND t.deleted_at IS NULL)`), 'usersCount'], // Кол-во активных участников в проекте
     [Sequelize.literal(`(SELECT fact_start_date
-                                FROM sprints as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL
-                                ORDER BY fact_start_date ASC
-                                LIMIT 1)`), 'dateStartFirstSprint'], // Дата начала превого спринта у проекта
+                                  FROM sprints as t
+                                  WHERE t.project_id = "Project"."id"
+                                  AND t.deleted_at IS NULL
+                                  ORDER BY fact_start_date ASC
+                                  LIMIT 1)`), 'dateStartFirstSprint'], // Дата начала превого спринта у проекта
     [Sequelize.literal(`(SELECT fact_finish_date
-                                FROM sprints as t
-                                WHERE t.project_id = "Project"."id"
-                                AND t.deleted_at IS NULL
-                                ORDER BY fact_start_date DESC
-                                LIMIT 1)`), 'dateFinishLastSprint'] // Дата завершения последнего спринта у проекта
-  ]);
+                                  FROM sprints as t
+                                  WHERE t.project_id = "Project"."id"
+                                  AND t.deleted_at IS NULL
+                                  ORDER BY fact_start_date DESC
+                                  LIMIT 1)`), 'dateFinishLastSprint'] // Дата завершения последнего спринта у проекта
+  ];
+  const attributes = userRole !== models.User.EXTERNAL_USER_ROLE
+    ? Project.defaultSelect.concat(additinalAttr)
+    : ['id',
+      'name',
+      'description',
+      'prefix',
+      'statusId',
+      'notbillable',
+      'portfolioId',
+      'authorId',
+      'completedAt',
+      'createdAt'].concat(additinalAttr);
 
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
