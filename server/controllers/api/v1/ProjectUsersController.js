@@ -33,12 +33,12 @@ exports.create = async function (req, res, next){
       {
         as: 'roles',
         model: models.ProjectUsersRoles
-      },
-      {
-        as: 'user',
-        model: models.User,
-        attributes: ['globalRole']
       }
+      // {
+      //   as: 'user',
+      //   model: models.User,
+      //   attributes: ['globalRole']
+      // }
     ],
     defaults: { projectId, userId }
   };
@@ -46,14 +46,15 @@ exports.create = async function (req, res, next){
   models.ProjectUsers
     .findOrCreate(options)
     .spread(async (user, created) => {
-      if (
-        (user.dataValues.user.dataValues.globalRole !== 'EXTERNAL_USER' && rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) !== -1)
-        || (user.dataValues.user.dataValues.globalRole === 'EXTERNAL_USER'
-          && (rolesIds.length > 1 || rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) === -1)
-        )
-      ) {
-        return next(createError('roleId is invalid for this userId'));
-      }
+
+      // if (user && user.dataValues.user &&
+      //   (user.dataValues.user.dataValues.globalRole !== models.User.EXTERNAL_USER_ROLE && rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) !== -1)
+      //   || (user.dataValues.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE
+      //     && (rolesIds.length > 1 || rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) === -1)
+      //   )
+      // ) {
+      //   return next(createError(403, 'roleId is invalid for this userId'));
+      // }
 
       if (rolesIds.length > 0) {
         const deleteRoles = [];

@@ -20,11 +20,13 @@ exports.list = async function (req) {
     Task.checkAttributes(req.query.fields);
   }
 
+  const userRole = req.user.dataValues.globalRole;
+
   const tags = typeof req.query.tags === 'string'
     ? req.query.tags.split(',')
     : req.query.tags;
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId);
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole);
   const queryWhere = createWhereForRequest(req);
 
   if (!req.query.pageSize && !queryWhere.projectId && !queryWhere.sprintId && !queryWhere.performerId) {
@@ -42,7 +44,7 @@ exports.list = async function (req) {
     : 0;
 
   const tasks = await Task.findAll({
-    attributes: queries.task.defaultAttributes,
+    attributes: queries.task.defaultAttributes(userRole),
     limit: req.query.pageSize,
     offset: queryOffset,
     include: includeForSelect,
@@ -161,7 +163,7 @@ function createWhereForRequest (req) {
   return where;
 }
 
-async function createIncludeForRequest (tagsParams, prefixNeed, performerId) {
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role) {
   const parsedTags = tagsParams
     ? tagsParams.map((el) => el.toString().trim().toLowerCase())
     : null;
@@ -181,7 +183,9 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId) {
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
-    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+    attributes: role !== 'EXTERNAL_USER'
+      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+      : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
   };
 
   const includeTagSelect = {

@@ -2,7 +2,7 @@ const taskRequests = require('./request');
 const createError = require('http-errors');
 
 exports.read = async (id, user) => {
-  const task = await taskRequests.findByPrimary(id);
+  const task = await taskRequests.findByPrimary(id, user.dataValues.globalRole);
 
   if (!task) {
     throw createError(404, 'Task not found');

@@ -217,5 +217,7 @@ module.exports = function (sequelize, DataTypes) {
     'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole',
     'expiredDate'];
 
+  User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';
+
   return User;
 };

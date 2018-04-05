@@ -30,6 +30,12 @@ exports.create = async function (req, res, next) {
     const task = await TasksService.create(req.body);
     if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id }, req.user);
     await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id }, req.user);
+
+    if (req.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE) {
+      delete task.dataValues.plannedExecutionTime;
+      delete task.dataValues.factExecutionTime;
+    }
+
     res.json(task);
   } catch (err) {
     next(createError(err));
@@ -61,6 +67,7 @@ exports.update = async function (req, res, next) {
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
       await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId }, req.user);
     }
+
     res.sendStatus(200);
   } catch (err) {
     next(createError(err));
