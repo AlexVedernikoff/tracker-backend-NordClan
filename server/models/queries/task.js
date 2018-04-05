@@ -55,9 +55,17 @@ exports.isPerformerOfTask = function (userId, taskId) {
 
 };
 
-exports.defaultAttributes = {
-  include: [[models.Sequelize.literal(`(SELECT sum(tsh.spent_time)
+exports.defaultAttributes = function (role) {
+  if (role === models.User.EXTERNAL_USER_ROLE) {
+    return {
+      exclude: ['factExecutionTime', 'plannedExecutionTime']
+    };
+  }
+
+  return {
+    include: [[models.Sequelize.literal(`(SELECT sum(tsh.spent_time)
                                           FROM timesheets as tsh
                                           WHERE tsh.task_id = "Task"."id")`), 'factExecutionTime']],
-  exclude: ['factExecutionTime']
+    exclude: ['factExecutionTime']
+  };
 };

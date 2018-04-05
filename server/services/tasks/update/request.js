@@ -2,9 +2,9 @@ const models = require('../../../models');
 const queries = require('../../../models/queries');
 const { Task, Tag, ItemTag } = models;
 
-exports.findByPrimary = (id) => {
+exports.findByPrimary = (id, role) => {
   return Task.findByPrimary(id, {
-    attributes: queries.task.defaultAttributes,
+    attributes: queries.task.defaultAttributes(role),
     include: [
       {
         as: 'tags',
