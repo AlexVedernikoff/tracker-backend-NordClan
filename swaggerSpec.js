@@ -276,7 +276,12 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          }
+          },
+          {
+            name: 'isExternal',
+            type: 'integer',
+            in: 'query'
+          },
         ],
         responses: responsesCodes
       }
