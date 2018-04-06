@@ -152,9 +152,6 @@ module.exports = {
     attachment: {
       'upload': true,
       'delete': true
-    },
-    history: {
-      'list': true
     }
   }
 };
