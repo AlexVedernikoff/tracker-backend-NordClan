@@ -106,6 +106,9 @@ exports.read = function (req, res, next){
             {
               as: 'user',
               model: models.User,
+              where: {
+                globalRole: { $not: models.User.EXTERNAL_USER_ROLE }
+              },
               attributes: ['id', 'firstNameRu', 'lastNameRu']
             },
             {
@@ -114,8 +117,9 @@ exports.read = function (req, res, next){
             }
           ],
           order: [
-            [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
-            [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
+            ['id', 'DESC']
+            // [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
+            // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
           ]
         },
         {

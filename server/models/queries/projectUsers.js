@@ -3,7 +3,7 @@ const models = require('../');
 exports.name = 'projectUsers';
 
 exports.getTransRolesToObject = getTransRolesToObject;
-exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesIds'], t = null) {
+exports.getUsersByProject = function (projectId, isExternal, attributes = ['userId', 'rolesIds'], t = null) {
   let response = [];
 
   return models.ProjectUsers
@@ -18,6 +18,9 @@ exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesI
         {
           as: 'user',
           model: models.User,
+          where: {
+            globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE }
+          },
           attributes: ['id', 'firstNameRu', 'lastNameRu'],
         },
         {
@@ -26,8 +29,9 @@ exports.getUsersByProject = function (projectId, attributes = ['userId', 'rolesI
         }
       ],
       order: [
-        [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
-        [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
+        ['id', 'DESC']
+        // [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
+        // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
       ]
     })
     .then((projectUsers) => {
