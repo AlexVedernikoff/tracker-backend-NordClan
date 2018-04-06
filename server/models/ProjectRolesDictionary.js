@@ -39,11 +39,13 @@ module.exports = function (sequelize, DataTypes) {
     {id: 7, code: 'mobile', name: 'Mobile'},
     {id: 8, code: 'teamLead', name: 'TeamLead(Code review)'},
     {id: 9, code: 'qa', name: 'QA'},
-    {id: 10, code: 'unbillable', name: 'Unbillable'}
+    {id: 10, code: 'unbillable', name: 'Unbillable'},
+    {id: 11, code: 'customer', name: 'Customer'}
   ];
 
   ProjectRoles.ADMIN_IDS = [1, 2];
   ProjectRoles.UNBILLABLE_ID = 2;
   ProjectRoles.UNBILLABLE_ID = 10;
+  ProjectRoles.CUSTOMER_ID = 11;
   return ProjectRoles;
 };

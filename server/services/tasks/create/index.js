@@ -7,7 +7,6 @@ exports.create = async function (params) {
     const tags = params.tags.split(',');
     await saveTagsForModel(task, tags);
   }
-
   return task;
 };
 

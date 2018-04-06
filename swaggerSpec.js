@@ -276,7 +276,12 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
-          }
+          },
+          {
+            name: 'isExternal',
+            type: 'integer',
+            in: 'query'
+          },
         ],
         responses: responsesCodes
       }
@@ -457,7 +462,6 @@ module.exports = {
       }
     },
 
-
     '/portfolio': {
       get: {
         tags: ['Portfolios'],
@@ -525,7 +529,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
 
     '/sprint': {
       get: {
@@ -690,7 +693,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
 
     '/task': {
       get: {
@@ -1272,7 +1274,6 @@ module.exports = {
       }
     },
 
-
     '/auth/login': {
       post: {
         tags: ['Auth'],
@@ -1320,7 +1321,6 @@ module.exports = {
       }
     },
 
-
     '/user/{userId}': {
       get: {
         tags: ['User'],
@@ -1331,6 +1331,35 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/user/password/{token}': {
+      put: {
+        tags: ['User'],
+        summary: 'Установка пароля для внешнего пользователя',
+        parameters: [
+          {
+            name: 'token',
+            type: 'string',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              required: ['password'],
+              properties: {
+                password: {
+                  type: 'string',
+                  example: 'string'
+                }
+              }
+            }
           }
         ],
         responses: responsesCodes
@@ -1347,6 +1376,26 @@ module.exports = {
       get: {
         tags: ['User'],
         summary: 'Поиск пользователей по типу autocompliter',
+        responses: responsesCodes,
+        parameters: [
+          {
+            name: 'userName',
+            type: 'integer',
+            in: 'query',
+            required: true
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query'
+          }
+        ]
+      }
+    },
+    '/user/autocompleter/external': {
+      get: {
+        tags: ['User'],
+        summary: 'Поиск внешних пользователей по типу autocompliter',
         responses: responsesCodes,
         parameters: [
           {
@@ -1387,11 +1436,86 @@ module.exports = {
     '/user/roles': {
       get: {
         tags: ['User'],
-        summary: 'Получение списка всех пользователей и их глобальных ролей',
+        summary: 'Получение списка всех пользователей кроме внешних и их глобальных ролей',
         responses: responsesCodes
       }
     },
-
+    '/user/external': {
+      get: {
+        tags: ['User'],
+        summary: 'Получение списка всех внешних пользователей',
+        responses: responsesCodes
+      },
+      post: {
+        tags: ['User'],
+        summary: 'Создать внешнего пользователя',
+        parameters: [
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              required: ['login'],
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                firstNameRu: {
+                  type: 'string',
+                  example: 'string'
+                },
+                expiredDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/user/external/{id}': {
+      put: {
+        tags: ['User'],
+        summary: 'Редактирование внешнего пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                firstNameRu: {
+                  type: 'string',
+                  example: 'string'
+                },
+                expiredDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                active: {
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
 
     '/timesheetDraft/{timesheetDraftId}/': {
       put: {
@@ -1449,7 +1573,6 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
     '/timesheet/': {
       get: {
         tags: ['Timesheets'],
@@ -1591,6 +1714,7 @@ module.exports = {
         responses: responsesCodes
       }
     },
+
     '/draftsheet/': {
       put: {
         tags: ['Timesheets'],

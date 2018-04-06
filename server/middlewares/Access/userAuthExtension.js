@@ -5,7 +5,8 @@ const statuses = {
   VISOR: 'VISOR',
   ADMIN: 'ADMIN',
   SYSTEM_USER: 'SYSTEM_USER',
-  USER: 'SYSTEM_USER'
+  USER: 'SYSTEM_USER',
+  EXTERNAL_USER: 'EXTERNAL_USER'
 };
 
 exports.statuses = statuses;

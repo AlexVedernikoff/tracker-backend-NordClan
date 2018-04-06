@@ -34,6 +34,11 @@ exports.create = async function (req, res, next){
         as: 'roles',
         model: models.ProjectUsersRoles
       }
+      // {
+      //   as: 'user',
+      //   model: models.User,
+      //   attributes: ['globalRole']
+      // }
     ],
     defaults: { projectId, userId }
   };
@@ -41,6 +46,15 @@ exports.create = async function (req, res, next){
   models.ProjectUsers
     .findOrCreate(options)
     .spread(async (user, created) => {
+
+      // if (user && user.dataValues.user &&
+      //   (user.dataValues.user.dataValues.globalRole !== models.User.EXTERNAL_USER_ROLE && rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) !== -1)
+      //   || (user.dataValues.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE
+      //     && (rolesIds.length > 1 || rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) === -1)
+      //   )
+      // ) {
+      //   return next(createError(403, 'roleId is invalid for this userId'));
+      // }
 
       if (rolesIds.length > 0) {
         const deleteRoles = [];
@@ -90,7 +104,7 @@ exports.create = async function (req, res, next){
         });
       }
 
-      const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, ['userId', 'rolesIds']);
+      const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
       res.json(allProjectUsers);
     })
     .catch(e => next(createError(e)));
@@ -155,7 +169,9 @@ exports.delete = function (req, res, next){
 
     await projectUser.destroy({ transaction: t, historyAuthorId: req.user.id });
 
-    const users = await queries.projectUsers.getUsersByProject(req.params.projectId, ['userId', 'rolesIds'], t);
+    const isExternal = +req.query.isExternal === 1;
+
+    const users = await queries.projectUsers.getUsersByProject(req.params.projectId, isExternal, ['userId', 'rolesIds'], t);
     res.json(users);
   })
     .catch((err) => {
@@ -169,7 +185,9 @@ exports.list = function (req, res, next){
   if (!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
   if (+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
 
-  queries.projectUsers.getUsersByProject(req.params.projectId)
+  const isExternal = +req.query.isExternal === 1;
+
+  queries.projectUsers.getUsersByProject(req.params.projectId, isExternal)
     .then((users) => {
       res.json(users);
     })

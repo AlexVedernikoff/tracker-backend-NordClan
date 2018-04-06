@@ -8,6 +8,7 @@ const models = require('../../../models');
 const { User, Token, SystemToken } = models;
 const queries = require('../../../models/queries');
 const config = require('../../../configs');
+const bcrypt = require('bcrypt-nodejs');
 
 exports.login = function (req, res, next){
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
@@ -37,13 +38,18 @@ exports.login = function (req, res, next){
         ]
       }
     ],
-    attributes: User.defaultSelect.concat('ldapLogin')
+    attributes: [ ...User.defaultSelect, 'ldapLogin', 'password']
   })
     .then((user) => {
       if (!user) return next(createError(404, 'Invalid Login or Password'));
 
       queries.token.deleteExpiredTokens(user);
-      authLdap(user, req.body.password);
+
+      if (user.globalRole === 'EXTERNAL_USER') {
+        authExternalUser(user, req.body.password);
+      } else {
+        authLdap(user, req.body.password);
+      }
     })
     .catch((err) => {
       next(err);
@@ -87,6 +93,36 @@ exports.login = function (req, res, next){
         .catch((e) => next(createError(e)));
 
     });
+  }
+
+  function authExternalUser (user, password) {
+    if (moment().isAfter(user.expiredDate)) return next(createError(400, 'Expired Access Timeout'));
+    if (!bcrypt.compareSync(password, user.password)) return next(createError(404, 'Invalid Login or Password'));
+
+    const token = Auth.createJwtToken({
+      login: req.body.login
+    });
+
+    Token
+      .create({
+        userId: user.dataValues.id,
+        token: token.token,
+        expires: token.expires.format()
+      })
+      .then(() => {
+        res.cookie('authorization', 'Basic ' + token.token, {
+          maxAge: config.auth.accessTokenLifetime * 1000,
+          httpOnly: true
+        });
+
+
+        res.json({
+          token: token.token,
+          expire: token.expires,
+          user: userAuthExtension(user)
+        });
+      })
+      .catch((err) => next(createError(err)));
   }
 
   function authSystemUser (user, password) {

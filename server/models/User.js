@@ -9,7 +9,7 @@ module.exports = function (sequelize, DataTypes) {
     ldapLogin: {
       field: 'ldap_login',
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     login: {
       type: DataTypes.STRING,
@@ -17,6 +17,25 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [2, 100]
       }
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    setPasswordToken: {
+      field: 'set_password_token',
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    setPasswordExpired: {
+      field: 'set_password_expired',
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    expiredDate: {
+      field: 'expired_date',
+      type: DataTypes.DATE,
+      allowNull: true
     },
     lastNameEn: {
       field: 'last_name_en',
@@ -150,7 +169,8 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'users',
     getterMethods: {
       fullNameRu: function (){
-        return this.firstNameRu.concat(' ', this.lastNameRu);
+        const fullNameRuArr = [this.firstNameRu, this.lastNameRu].filter(i => i);
+        return fullNameRuArr.join(' ');
       }
     }
   });
@@ -194,7 +214,10 @@ module.exports = function (sequelize, DataTypes) {
   };
 
   User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn',
-    'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole'];
+    'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole',
+    'expiredDate'];
+
+  User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';
 
   return User;
 };
