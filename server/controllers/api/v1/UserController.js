@@ -247,6 +247,7 @@ exports.setPassword = async function (req, res, next){
     if (!user) return next(createError(404, 'Password set token is invalid or has expired'));
 
     const params = {
+      active: 1,
       isActive: 1,
       password: bcrypt.hashSync(req.body.password),
       setPasswordToken: null,
