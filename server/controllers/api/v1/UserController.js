@@ -174,6 +174,7 @@ exports.createExternal = async function (req, res, next){
 
   const params = {
     active: 0,
+    isActive: 0,
     globalRole: 'EXTERNAL_USER',
     ldapLogin: req.body.login,
     createdAt: new Date(),
@@ -247,6 +248,7 @@ exports.setPassword = async function (req, res, next){
 
     const params = {
       active: 1,
+      isActive: 1,
       password: bcrypt.hashSync(req.body.password),
       setPasswordToken: null,
       setPasswordExpires: null
@@ -267,6 +269,7 @@ exports.getExternalUsers = async function (req, res, next) {
       .findAll({
         where: {
           globalRole: 'EXTERNAL_USER',
+          active: 1
         },
         order: [
           ['first_name_ru']
@@ -294,6 +297,7 @@ exports.autocompleteExternal = function (req, res, next) {
         .findAll({
           where: {
             globalRole: 'EXTERNAL_USER',
+            active: 1,
             $or: [
               {
                 firstNameRu: {
