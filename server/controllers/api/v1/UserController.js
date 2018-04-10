@@ -173,7 +173,7 @@ exports.createExternal = async function (req, res, next){
   const setPasswordExpired = moment().add(1, 'days');
 
   const params = {
-    active: 0,
+    active: 1,
     isActive: 0,
     globalRole: 'EXTERNAL_USER',
     ldapLogin: req.body.login,
@@ -247,7 +247,6 @@ exports.setPassword = async function (req, res, next){
     if (!user) return next(createError(404, 'Password set token is invalid or has expired'));
 
     const params = {
-      active: 1,
       isActive: 1,
       password: bcrypt.hashSync(req.body.password),
       setPasswordToken: null,
