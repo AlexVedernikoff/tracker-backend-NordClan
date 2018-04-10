@@ -84,6 +84,13 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    isActive: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true
+      }
+    },
     photo: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -215,7 +222,7 @@ module.exports = function (sequelize, DataTypes) {
 
   User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn',
     'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole',
-    'expiredDate'];
+    'expiredDate', 'isActive'];
 
   User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';
 

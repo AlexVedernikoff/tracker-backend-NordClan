@@ -274,7 +274,7 @@ exports.getExternalUsers = async function (req, res, next) {
         order: [
           ['first_name_ru']
         ],
-        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login']
+        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive']
       });
 
     res.json(users);
