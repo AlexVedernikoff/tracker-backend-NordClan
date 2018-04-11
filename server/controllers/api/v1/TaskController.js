@@ -32,13 +32,13 @@ exports.create = async function (req, res, next) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
         input: { taskId: task.id },
-        user: req.user
+        user: { ...req.user.get() }
       });
     }
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[0].id,
       input: { taskId: task.id },
-      user: req.user
+      user: { ...req.user.get() }
     });
 
     if (req.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE) {
@@ -77,14 +77,14 @@ exports.update = async function (req, res, next) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
         input: { taskId },
-        user: req.user
+        user: { ...req.user.get() }
       });
     }
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[3].id,
         input: { taskId },
-        user: req.user
+        user: { ...req.user.get() }
       });
     }
 

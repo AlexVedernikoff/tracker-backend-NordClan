@@ -26,10 +26,11 @@ exports.create = async function (req, res, next){
 
   const comment = await models.Comment.create(req.body);
   const getOne = await queries.comment.getOne(comment.id);
+
   emailSubprocess({
     eventId: models.ProjectEventsDictionary.values[2].id,
     input: { taskId: task.id, commentId: comment.id },
-    user: req.user
+    user: { ...req.user.get() }
   });
   res.json(getOne);
 };
