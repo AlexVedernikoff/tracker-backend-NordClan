@@ -1,7 +1,7 @@
 const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
-const userSubscriptionEvents = require('../../../services/userSubscriptionEvents');
+const emailSubprocess = require('../../../services/email/subprocess');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -26,7 +26,11 @@ exports.create = async function (req, res, next){
 
   const comment = await models.Comment.create(req.body);
   const getOne = await queries.comment.getOne(comment.id);
-  await userSubscriptionEvents(models.ProjectEventsDictionary.values[2].id, { taskId: task.id, commentId: comment.id }, req.user);
+  emailSubprocess({
+    eventId: models.ProjectEventsDictionary.values[2].id,
+    input: { taskId: task.id, commentId: comment.id },
+    user: req.user
+  });
   res.json(getOne);
 };
 

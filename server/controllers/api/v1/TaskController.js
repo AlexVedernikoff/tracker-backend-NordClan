@@ -4,7 +4,7 @@ const { Task } = models;
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
-const userSubscriptionEvents = require('../../../services/userSubscriptionEvents');
+const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 
 exports.create = async function (req, res, next) {
@@ -28,8 +28,18 @@ exports.create = async function (req, res, next) {
 
   try {
     const task = await TasksService.create(req.body);
-    if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id }, req.user);
-    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id }, req.user);
+    if (task.performerId) {
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[1].id,
+        input: { taskId: task.id },
+        user: req.user
+      });
+    }
+    emailSubprocess({
+      eventId: models.ProjectEventsDictionary.values[0].id,
+      input: { taskId: task.id },
+      user: req.user
+    });
 
     if (req.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE) {
       delete task.dataValues.plannedExecutionTime;
@@ -63,9 +73,19 @@ exports.update = async function (req, res, next) {
   try {
     const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (changedTaskData.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId }, req.user);
+    if (changedTaskData.performerId) {
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[1].id,
+        input: { taskId },
+        user: req.user
+      });
+    }
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
-      await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId }, req.user);
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[3].id,
+        input: { taskId },
+        user: req.user
+      });
     }
 
     res.sendStatus(200);

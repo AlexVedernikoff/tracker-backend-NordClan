@@ -78,4 +78,6 @@ exports.run = function () {
   server.listen(config.port, () => {
     console.log('listen ' + config.port);
   });
+
+  require('./services/email/subprocess');
 };
