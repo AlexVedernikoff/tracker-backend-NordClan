@@ -225,52 +225,27 @@ module.exports = function (templateName, input){
   case ('newTaskComment'):
     subject = `${i.task.project.name}. Новый комментарий к задаче ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
 
-    body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
-        <body>
-          <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
-            <tr>
-              <td>
-                <span style="font-size: 13px;">
-                  В проекте 
-                  <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                  ${i.task.project.name}</a> оставлен новый комментарий к задаче:</span>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td>
-                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 25px;" target="_blank">
-                  ${i.task.project.prefix}-${i.task.id} | ${i.task.name}
-                </a>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px;">
-                <span style="font-weight: bold; font-style: italic;">${i.comment.author.fullNameRu}:</span>
-                <br>
-                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}" style="font-weight: bold; font-style: italic; color: #2d4154;" target="_blank">
-                  ${i.comment.text}
-                </a>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
-                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
-                <br>
-                Это письмо отправлено из
-                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
-                  SimTrack
-                </a>
-              </td>
-            </tr>
-          </table>
-        </body>
-      </html>`;
+    body = `
+      ${mailHeader}
+
+      ${createBlock(`
+        В проекте 
+        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        оставлен новый комментарий к задаче:
+      `)}
+
+      ${createBlock(
+        createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+      )}
+
+      ${createBlock(`
+        <span style="font-weight: bold">${i.comment.author.fullNameRu}:</span>
+        <br>
+        ${createLink(i.comment.text, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}`)}
+      `)}
+
+      ${mailFooter}
+    `;
 
     break;
 
