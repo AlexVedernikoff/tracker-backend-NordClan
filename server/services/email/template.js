@@ -12,56 +12,101 @@ module.exports = function (templateName, input){
     subject = `${i.task.project.name}. Новая задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
 
     body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
-        <body>
-          <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
-            <tr>
-              <td>
-                <span style="font-size: 13px;">
-                  В проект
-                  <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                    ${i.task.project.name}</a>
-                  добавлена новая задача:
-                </span>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td>
-                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 25px;" target="_blank">
-                  ${i.task.project.prefix}-${i.task.id} | ${i.task.name}
-                </a>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px;"></td></tr>`
-            + (i.task.description ? '<tr><td><span style="font-weight: normal;line-height: 19px;">' + i.task.description + '</span></td></tr>' : '')
-            + `<tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px;">
-                <span style="font-weight: bold; font-style: italic;">Приоритет задачи:</span>
-                ${ getTaskPriorityName(i.task.prioritiesId) }
-                <br>
-                <span style="font-weight: bold; font-style: italic;">Автор задачи:</span>
-                ${i.task.author.fullNameRu}`
-                + (i.task.performer ? '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span> ' + i.task.performer.fullNameRu : '')
-              + `</td>
-            </tr>
-            <tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
-                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
-                <br>
-                Это письмо отправлено из
-                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
-                  SimTrack
-                </a>
-              </td>
-            </tr>
-          </table>
+    <html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+            <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+        </head>
+        <body style="padding: 8px">
+            <table border="0" cellpadding="0" cellspacing="0" style="
+              margin:0;
+              padding:0;
+              table-layout: fixed;
+              max-width: 600px;
+              width: 100%;
+              color: #2d4154;
+              font-size: 14px;
+              font-family: sans-serif;
+              color: #333;
+              border: 1px solid #DDDDDD;
+            ">
+                <tr>
+                    <td style="
+                      padding: 16px;
+                      background-color: #2b3e50;
+                      color: white;
+                      font-size: 18px;
+                    ">
+                      <span style="color: #ff7800">Sim</span>Track
+                    </td>
+                </tr>
+                <tr>
+                    <td style="
+                      padding: 16px;
+                      padding-top: 24px"
+                    >
+                      В проект
+                      <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" target="_blank" style="
+                        font-weight: bold;
+                        color: #2d4154;
+                        line-height: 19px;
+                      ">
+                        ${i.task.project.name}
+                      </a>
+                      добавлена новая задача:
+                    </td>
+                </tr>
+                <tr>
+                    <td style="
+                      padding: 16px;
+                      padding-top: 0
+                    ">
+                        <a target="_blank" href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" style="
+                          font-weight: bold;
+                          color: #2d4154;
+                          line-height: 19px;
+                        ">
+                          ${i.task.project.prefix}-${i.task.id} | ${i.task.name}
+                        </a>
+                    </td>
+                </tr>
+                ` + (i.task.description ? '<tr><td style="padding: 16px; padding-top: 0"><span style="font-weight: normal; line-height: 19px;">' + i.task.description + '</span></td></tr>' : '')
+                + `
+                <tr>
+                    <td style="
+                      padding: 16px;
+                      padding-top: 0;
+                      padding-bottom: 24px;
+                      font-weight: normal;
+                      line-height: 19px;
+                    ">
+                        <span style="font-weight: bold;">Приоритет:</span> ${ getTaskPriorityName(i.task.prioritiesId) }
+                        <br>
+                        <span style="font-weight: bold;">Автор:</span> ${i.task.author.fullNameRu}`
+                        + (i.task.performer ? '<br><span style="font-weight: bold;">Исполнитель:</span> ' + i.task.performer.fullNameRu : '')
+                        + `
+                    </td>
+                </tr>
+                <tr><td style="border-bottom:1px solid #DDDDDD;"></td></tr>
+                <tr>
+                    <td style="
+                      text-align: left;
+                      font-weight: normal;
+                      line-height: 16px;
+                      color: #999999;
+                      font-size: 12px;
+                      padding: 16px;
+                      background-color: ghostwhite
+                    ">
+                        <span style="font-weight: bold;">
+                            SimbirSoft
+                        </span>
+                        <br>
+                        Это письмо отправлено из <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">SimTrack</a>
+                    </td>
+                </tr>
+            </table>
         </body>
-      </html>`;
+    </html>`;
 
     break;
 
