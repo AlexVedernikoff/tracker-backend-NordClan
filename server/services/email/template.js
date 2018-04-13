@@ -2,7 +2,7 @@ const config = require('../../configs').email;
 
 module.exports = function (templateName, input){
 
-  let subject, body, lastComment;
+  let subject, body, lastComment, appointment;
   const i = input;
 
   const createBlock = content => {
@@ -158,101 +158,67 @@ module.exports = function (templateName, input){
       break;
     }
 
-    body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
-        <body>
-          <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
-            <tr>
-              <td>
-                <span style="font-size: 13px;">
-                  В проекте 
-                  <a href="${config.templateBaseUrl}/projects/${i.task.project.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                  ${i.task.project.name}</a> `;
-
     switch (i.task.statusId){
     case (1): //new
     case (2): //develop play
     case (3): //develop stop
-      body += 'на вас назначена задача';
+      appointment = 'на вас назначена задача';
       break;
     case (4): //code review play
     case (5): //code review stop
     case (6): //qa play
     case (7): //qa stop
-      body += 'на проверку назначена задача';
+      appointment = 'на проверку назначена задача';
       break;
     default:
       break;
     }
 
-    body += `</span>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td>
-                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 25px;" target="_blank">
-                  ${i.task.project.prefix}-${i.task.id} | ${i.task.name}
-                </a>
-              </td>
-            </tr>
-            <tr><td style="padding: 10px;"></td></tr>`
-            + (i.task.description ? '<tr><td><span style="font-weight: normal;line-height: 19px;">' + i.task.description + '</span></td></tr>' : '')
-            + `<tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px;">
-                <span style="font-weight: bold; font-style: italic;">Приоритет задачи:</span>
-                ${ getTaskPriorityName(i.task.prioritiesId) }
-                <br>
-                <span style="font-weight: bold; font-style: italic;">Автор задачи:</span>
-                ${i.task.author.fullNameRu}`;
+    body = `
+      ${mailHeader}
 
-    // TODO
-    /*switch(i.task.statusId){
-    case(1): //new
-    case(3): //develop stop
-      break;
-    case(5): //code review stop
-    case(7): //qa stop
-      body += '<br><span style="font-weight: bold; font-style: italic;">Исполнитель:</span>' + getTaskPrevPerformer(i.task);
-      break;
-    default:
-      break;
-    }*/
+      ${createBlock(`
+        В проекте 
+        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        ${appointment}:
+      `)}
 
-    body += `</td>
-            </tr>`;
+      ${createBlock(
+        createLink(
+          `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
+          `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
+        )
+      )}
 
-    if (i.task.comments && i.task.comments.length > 0) {
-      lastComment = getTaskLastComment(i.task);
-      body += `<tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px;">
-                <span style="font-weight: bold; font-style: italic;">${lastComment.author.fullNameRu}:</span>
-                <br>
-                <a href="${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${lastComment.id}" style="font-weight: bold; font-style: italic; color: #2d4154;" target="_blank">
-                  ${lastComment.text}
-                </a>
-              </td>
-            </tr>`;
-    }
+      ${
+        i.task.description
+        ? createBlock(i.task.description)
+        : ''
+      }
 
-    body += `<tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
-            <tr><td style="padding: 10px;"></td></tr>
-            <tr>
-              <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
-                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
-                <br>
-                Это письмо отправлено из
-                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
-                  SimTrack
-                </a>
-              </td>
-            </tr>
-          </table>
-        </body>
-      </html>`;
+      ${createBlock(`
+          <span style="font-weight: bold">Приоритет задачи:</span>
+          ${ getTaskPriorityName(i.task.prioritiesId) }
+          <br>
+          <span style="font-weight: bold">Автор задачи:</span>
+          ${i.task.author.fullNameRu}
+      `)}
+
+      ${
+        i.task.comments && i.task.comments.length > 0
+        ? createBlock(`
+            <span style="font-weight: bold;">${getTaskLastComment(i.task).author.fullNameRu}:</span>
+            <br>
+            ${createLink(
+              getTaskLastComment(i.task).text,
+              `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
+            )}
+          `)
+        : ''
+      }
+
+      ${mailFooter}
+    `;
 
     break;
 
