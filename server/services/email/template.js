@@ -295,33 +295,13 @@ module.exports = function (templateName, input){
   case ('activateExternalUser'):
     subject = 'Активация аккаунта в SimTrack';
 
-    body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-    <html xmlns="http://www.w3.org/1999/xhtml">
-      <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
-      <body>
-        <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
-          <tr>
-            <td>
-              <span style="font-size: 13px;">
-                <a href="${config.templateBaseUrl}/externalUserActivate/${i.token}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
-                  Активировать аккаунт
-                </a>
-              </span>
-            </td>
-          </tr>
-          <tr>
-            <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
-              <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
-              <br>
-              Это письмо отправлено из
-              <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
-                SimTrack
-              </a>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>`;
+    body = `
+      ${mailHeader}
+      ${createBlock(`
+        ${createLink('Активировать аккаунт', `${config.templateBaseUrl}/externalUserActivate/${i.token}`)}
+      `)}
+      ${mailFooter}
+    `;
 
     break;
 
