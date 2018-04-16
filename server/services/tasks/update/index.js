@@ -13,7 +13,7 @@ const {
 
 async function update (body, taskId, user) {
   const originTask = await findByPrimary(taskId, user.globalRole);
-  const { error } = validateTask(originTask, body, user);
+  const { error } = await validateTask(originTask, body, user);
   if (error) {
     throw new Error(error);
   }
@@ -163,7 +163,7 @@ async function stopTasks (ids) {
   return [];
 }
 
-function validateTask (task, body, user) {
+async function validateTask (task, body, user) {
   if (!task) {
     throw createError(404, 'Task not found');
   }
@@ -175,6 +175,20 @@ function validateTask (task, body, user) {
   if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS
       && (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
     throw createError(403, 'Task is closed');
+  }
+
+  if (body.hasOwnProperty('projectId')) {
+    throw createError(400, 'projectId excess property');
+  }
+
+  if (body.hasOwnProperty('sprintId')) {
+    const projectBySprint = await models.Sprint.findByPrimary(body.sprintId, {
+      attributes: ['projectId']
+    });
+
+    if (!projectBySprint || (projectBySprint && task.projectId === projectBySprint.projectId)) {
+      throw createError(400, 'sprintId wrong');
+    }
   }
 
   return {};
