@@ -22,11 +22,21 @@ exports.create = async function (req, res, next) {
     });
   }
 
-  Task.beforeValidate((model) => {
-    model.authorId = req.user.id;
-  });
-
   try {
+    if (req.body.hasOwnProperty('sprintId')) {
+      const projectBySprint = await models.Sprint.findByPrimary(req.body.sprintId, {
+        attributes: ['projectId']
+      });
+
+      if (!projectBySprint || (projectBySprint && projectBySprint.projectId !== req.body.projectId)) {
+        return next(createError(400, 'projectId wrong'));
+      }
+    }
+
+    Task.beforeValidate((model) => {
+      model.authorId = req.user.id;
+    });
+
     const task = await TasksService.create(req.body);
     if (task.performerId) {
       emailSubprocess({
