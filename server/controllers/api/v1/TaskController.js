@@ -4,7 +4,7 @@ const { Task } = models;
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
-const userSubscriptionEvents = require('../../../services/userSubscriptionEvents');
+const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 
 exports.create = async function (req, res, next) {
@@ -22,14 +22,34 @@ exports.create = async function (req, res, next) {
     });
   }
 
-  Task.beforeValidate((model) => {
-    model.authorId = req.user.id;
-  });
-
   try {
+    if (req.body.hasOwnProperty('sprintId')) {
+      const projectBySprint = await models.Sprint.findByPrimary(req.body.sprintId, {
+        attributes: ['projectId']
+      });
+
+      if (!projectBySprint || (projectBySprint && projectBySprint.projectId !== req.body.projectId)) {
+        return next(createError(400, 'projectId wrong'));
+      }
+    }
+
+    Task.beforeValidate((model) => {
+      model.authorId = req.user.id;
+    });
+
     const task = await TasksService.create(req.body);
-    if (task.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId: task.id }, req.user);
-    await userSubscriptionEvents(models.ProjectEventsDictionary.values[0].id, { taskId: task.id }, req.user);
+    if (task.performerId) {
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[1].id,
+        input: { taskId: task.id },
+        user: { ...req.user.get() }
+      });
+    }
+    emailSubprocess({
+      eventId: models.ProjectEventsDictionary.values[0].id,
+      input: { taskId: task.id },
+      user: { ...req.user.get() }
+    });
 
     if (req.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE) {
       delete task.dataValues.plannedExecutionTime;
@@ -63,9 +83,19 @@ exports.update = async function (req, res, next) {
   try {
     const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (changedTaskData.performerId) await userSubscriptionEvents(models.ProjectEventsDictionary.values[1].id, { taskId }, req.user);
+    if (changedTaskData.performerId) {
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[1].id,
+        input: { taskId },
+        user: { ...req.user.get() }
+      });
+    }
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
-      await userSubscriptionEvents(models.ProjectEventsDictionary.values[3].id, { taskId }, req.user);
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[3].id,
+        input: { taskId },
+        user: { ...req.user.get() }
+      });
     }
 
     res.sendStatus(200);

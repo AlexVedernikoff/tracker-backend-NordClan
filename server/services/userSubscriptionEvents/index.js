@@ -43,7 +43,7 @@ module.exports = async function (eventId, input, user){
 
     receivers.forEach(function (projectUser){
       if (!isUserSubscribed(eventId, projectUser.get({ plain: true }))) return;
-      if (user.dataValues.id === projectUser.user.id) return;
+      if (user.id === projectUser.user.id) return;
       const emailTemplate = email.template('newTaskForQAPM', { task });
       emails.push({
         'receiver': projectUser.user.emailPrimary,
@@ -64,7 +64,7 @@ module.exports = async function (eventId, input, user){
 
     receivers.forEach(function (performer){
       if (!isUserSubscribed(eventId, performer.usersProjects[0])) return;
-      if (user.dataValues.id === performer.dataValues.id) return;
+      if (user.id === performer.dataValues.id) return;
       const emailTemplate = email.template('newTaskForPerformer', { task });
       emails.push({
         'receiver': performer.emailPrimary,
@@ -86,7 +86,7 @@ module.exports = async function (eventId, input, user){
 
     receivers.forEach(function (receiver){
       if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return;
-      if (user.dataValues.id === receiver.dataValues.id) return;
+      if (user.id === receiver.dataValues.id) return;
       const emailTemplate = email.template('newTaskComment', { task, comment });
       emails.push({
         'receiver': receiver.emailPrimary,

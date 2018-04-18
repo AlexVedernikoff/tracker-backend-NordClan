@@ -96,6 +96,7 @@ exports.login = function (req, res, next){
   }
 
   function authExternalUser (user, password) {
+    if (user.isActive === 0) return next(createError(400, 'Expired Access Timeout'));
     if (moment().isAfter(user.expiredDate)) return next(createError(400, 'Expired Access Timeout'));
     if (!bcrypt.compareSync(password, user.password)) return next(createError(404, 'Invalid Login or Password'));
 
