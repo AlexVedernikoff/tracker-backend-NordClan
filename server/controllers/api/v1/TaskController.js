@@ -28,7 +28,7 @@ exports.create = async function (req, res, next) {
         attributes: ['projectId']
       });
 
-      if (!projectBySprint || (projectBySprint && projectBySprint.projectId !== req.body.projectId)) {
+      if (!!req.body.sprintId !== false && (!projectBySprint || (projectBySprint && projectBySprint.projectId !== req.body.projectId))) {
         return next(createError(400, 'projectId wrong'));
       }
     }
@@ -81,6 +81,7 @@ exports.update = async function (req, res, next) {
   const taskId = req.params.id;
 
   try {
+    let updatedTasks, activeTask, createdDraft, projectId, changedTaskData;
     const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
     if (changedTaskData.performerId) {
