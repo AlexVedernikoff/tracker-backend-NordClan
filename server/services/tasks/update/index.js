@@ -40,7 +40,7 @@ async function update (body, taskId, user) {
     : { stoppedTasks: [] };
 
   return {
-    updatedTasks: [ updatedTask, ...stoppedTasks ],
+    updatedTasks: [updatedTask, ...stoppedTasks],
     createdDraft,
     activeTask,
     projectId: originTask.projectId,
@@ -157,7 +157,7 @@ async function getActiveTasks (currentUserId) {
 async function stopTasks (ids) {
   if (ids.length > 0) {
     const stoppedTasks = await Task.update({ statusId: models.sequelize.literal('status_id + 1') },
-      { where: { id: { $or: ids }}, returning: true });
+      { where: { id: { $or: ids } }, returning: true });
     return stoppedTasks[1];
   }
   return [];
@@ -173,7 +173,7 @@ async function validateTask (task, body, user) {
   }
 
   if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS
-      && (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
+    && (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
     throw createError(403, 'Task is closed');
   }
 
@@ -186,7 +186,8 @@ async function validateTask (task, body, user) {
       attributes: ['projectId']
     });
 
-    if (!projectBySprint || (projectBySprint && task.projectId === projectBySprint.projectId)) {
+
+    if (body.sprintId !== 0 && (!projectBySprint || (projectBySprint && task.projectId !== projectBySprint.projectId))) {
       throw createError(400, 'sprintId wrong');
     }
   }
