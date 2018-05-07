@@ -176,6 +176,13 @@ exports.all = async function (conditions) {
         paranoid: false
       },
       {
+        as: 'user',
+        model: models.User,
+        required: false,
+        attributes: ['id', 'fullNameRu', 'emailPrimary', 'firstNameRu', 'lastNameRu'],
+        paranoid: false
+      },
+      {
         as: 'sprint',
         model: models.Sprint,
         required: false,
