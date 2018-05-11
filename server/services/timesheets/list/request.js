@@ -1,6 +1,6 @@
 const models = require('../../../models');
 
-module.exports = function (dateBegin, dateEnd, userId, userPSId, isSystemUser) {
+module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSystemUser) {
   const where = {
     onDate: {
       $and: {
@@ -18,6 +18,10 @@ module.exports = function (dateBegin, dateEnd, userId, userPSId, isSystemUser) {
     where.spentTime = {
       gt: 0
     };
+  }
+
+  if (taskId) {
+    where.taskId = taskId;
   }
 
   return {

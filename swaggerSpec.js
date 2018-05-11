@@ -281,7 +281,7 @@ module.exports = {
             name: 'isExternal',
             type: 'integer',
             in: 'query'
-          },
+          }
         ],
         responses: responsesCodes
       }
@@ -1588,6 +1588,12 @@ module.exports = {
             name: 'userPSId',
             description: 'Либо userPSId id юзера из PS. Только для systemUser',
             type: 'string',
+            in: 'query'
+          },
+          {
+            name: 'taskId',
+            description: 'id задачи',
+            type: 'integer',
             in: 'query'
           },
           {

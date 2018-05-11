@@ -66,11 +66,12 @@ exports.list = async function (req, res, next) {
 
   const dateBegin = req.query.dateBegin;
   const dateEnd = req.query.dateEnd;
+  const taskId = req.query.taskId;
   const userId = req.isSystemUser ? req.query.userId : req.user.id;
   const userPSId = req.query.userPSId ? req.query.userPSId : null;
 
   TimesheetService
-    .list(dateBegin, dateEnd, userId, userPSId, req.isSystemUser)
+    .list(dateBegin, dateEnd, taskId, userId, userPSId, req.isSystemUser)
     .then(timesheets => res.json(timesheets))
     .catch(error => next(createError(error)));
 };
