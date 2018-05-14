@@ -1592,25 +1592,25 @@ module.exports = {
           },
           {
             name: 'taskId',
-            description: 'id задачи',
+            description: 'id задачи. Обязательный параметр в случае, если явно не указаны dateBegin и dateEnd.',
             type: 'integer',
             in: 'query'
           },
           {
             name: 'dateBegin',
-            description: 'yyyy-mm-dd',
+            description: 'В формате yyyy-mm-dd. Обязательный параметр в случае, если явно не указан taskId',
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           },
           {
             name: 'dateEnd',
-            description: 'yyyy-mm-dd',
+            description: 'В формате yyyy-mm-dd. Обязательный параметр в случае, если явно не указан taskId',
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           }
         ],
         responses: responsesCodes

@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const TimesheetService = require('../../../services/timesheets');
 const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
-const TasksChannel = require('../../../channels/Tasks');
+const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
   const timesheetParams = {
@@ -56,8 +56,13 @@ exports.list = async function (req, res, next) {
     }
   }
 
-  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
-  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+  if (!req.query.taskId) {
+    req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+    req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+  } else {
+    req.checkQuery('taskId', 'taskId is invalid or not defined. You should define int taskId or time period').isInt();
+  }
+
 
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) {
@@ -67,8 +72,14 @@ exports.list = async function (req, res, next) {
   const dateBegin = req.query.dateBegin;
   const dateEnd = req.query.dateEnd;
   const taskId = req.query.taskId;
-  const userId = req.isSystemUser ? req.query.userId : req.user.id;
   const userPSId = req.query.userPSId ? req.query.userPSId : null;
+  const task = taskId ? await models.Task.findByPrimary(taskId, {
+    attributes: ['id', 'projectId']
+  }) : null;
+  const isAllTimeSheets = taskId ? req.user.isAdminOfProject(task.projectId) : false;
+  const userId
+    = req.isSystemUser ? req.query.userId
+      : isAllTimeSheets ? false : req.user.id;
 
   TimesheetService
     .list(dateBegin, dateEnd, taskId, userId, userPSId, req.isSystemUser)
