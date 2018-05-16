@@ -109,7 +109,7 @@ exports.read = function (req, res, next){
               where: {
                 globalRole: { $not: models.User.EXTERNAL_USER_ROLE }
               },
-              attributes: ['id', 'firstNameRu', 'lastNameRu']
+              attributes: ['id', 'firstNameRu', 'lastNameRu', 'photo', 'skype', 'emailPrimary', 'mobile']
             },
             {
               as: 'roles',
