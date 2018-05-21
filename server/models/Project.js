@@ -76,6 +76,12 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    gitlabRepositoryId: {
+      type: DataTypes.INTEGER,
+      field: 'gitlab_repository_id',
+      allowNull: true,
+      defaultValue: null
+    },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
@@ -225,6 +231,7 @@ module.exports = function (sequelize, DataTypes) {
     'budget',
     'riskBudget',
     'portfolioId',
+    'gitlabRepositoryId',
     'authorId',
     'completedAt',
     'createdAt'
