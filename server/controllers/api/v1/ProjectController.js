@@ -7,6 +7,8 @@ const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
 
+const gitLabService = require('../../../services/gitLab');
+
 exports.create = function (req, res, next){
   if (req.body.tags) {
     req.body.tags.split(',').map(el=>el.trim()).forEach(el => {
@@ -136,7 +138,7 @@ exports.read = function (req, res, next){
         }
       ]
     })
-    .then((model) => {
+    .then(async (model) => {
       if (!model) return next(createError(404));
       const usersData = [];
       if (model.projectUsers) {
@@ -155,6 +157,10 @@ exports.read = function (req, res, next){
       if (userRole === models.User.EXTERNAL_USER_ROLE) {
         delete model.dataValues.budget;
         delete model.dataValues.riskBudget;
+      }
+
+      if (model.gitlabProjectIds.length) {
+        model.dataValues.gitlabProjects = await gitLabService.projects.getProjects(model.gitlabProjectIds);
       }
 
       res.json(model.dataValues);
@@ -207,7 +213,7 @@ exports.update = function (req, res, next){
 
         return project
           .updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
-          .then(()=>{
+          .then(async ()=>{
 
             // Запускаю проверку портфеля на пустоту и его удаление
             if (portfolioIdOld) {
@@ -228,9 +234,14 @@ exports.update = function (req, res, next){
                 ],
                 transaction: t
               })
-              .then((model)=>{
+              .then(async (model) => {
                 const updatedParams = { ...req.body, id: model.id };
                 ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
+
+                if (req.body.gitlabProjectIds.length) {
+                  model.dataValues.gitlabProjects = await gitLabService.projects.getProjects(req.body.gitlabProjectIds);
+                }
+
                 res.json(model);
               });
           });
