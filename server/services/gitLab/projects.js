@@ -10,7 +10,7 @@ const getProjects = async function (ids) {
   await Promise.all(ids.map(id => {
     return getProject(id)
       .then(gitlabResponse => projects.push(gitlabResponse.data))
-      .catch(() => projects.push(null));
+      .catch(error => projects.push({id, error: error.message}));
   }));
   return projects;
 };

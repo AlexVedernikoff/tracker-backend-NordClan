@@ -159,9 +159,9 @@ exports.read = function (req, res, next){
         delete model.dataValues.riskBudget;
       }
 
-      if (model.gitlabProjectIds.length) {
+      if (model.gitlabProjectIds && model.gitlabProjectIds.length) {
         model.dataValues.gitlabProjects = await gitLabService.projects.getProjects(model.gitlabProjectIds);
-      }
+      } else model.dataValues.gitlabProjects = [];
 
       res.json(model.dataValues);
     })
@@ -238,9 +238,9 @@ exports.update = function (req, res, next){
                 const updatedParams = { ...req.body, id: model.id };
                 ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
 
-                if (req.body.gitlabProjectIds.length) {
+                if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
                   model.dataValues.gitlabProjects = await gitLabService.projects.getProjects(req.body.gitlabProjectIds);
-                }
+                } else model.dataValues.gitlabProjects = [];
 
                 res.json(model);
               });
