@@ -184,12 +184,30 @@ exports.update = function (req, res, next){
 
   let portfolioIdOld;
 
+  const gitlabProjectIdsOld = [];
+  const gitlabProjectIdsNew = [];
+  let gitlabProjectsOld = [];
+  let gitlabProjectsNew = [];
+
   return models.sequelize.transaction(function (t) {
     return Project
       .findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' })
       .then(async (project) => {
         if (!project) {
           return next(createError(404));
+        }
+
+        // проверка добавленных / измененных репозиториев GitLab
+        if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+
+          req.body.gitlabProjectIds.forEach(id => {
+            if (project.gitlabProjectIds.includes(id)) gitlabProjectIdsOld.push(id);
+            else gitlabProjectIdsNew.push(id);
+          });
+
+          gitlabProjectsNew = await gitLabService.projects.getProjects(gitlabProjectIdsNew);
+          const isError = !!gitlabProjectsNew.filter(p => p.error).length;
+          if (isError) return next(createError(500, 'Can not add repositories'));
         }
 
         // сброс портфеля
@@ -239,7 +257,8 @@ exports.update = function (req, res, next){
                 ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
 
                 if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
-                  model.dataValues.gitlabProjects = await gitLabService.projects.getProjects(req.body.gitlabProjectIds);
+                  gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
+                  model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
                 } else model.dataValues.gitlabProjects = [];
 
                 res.json(model);
