@@ -201,7 +201,7 @@ exports.update = function (req, res, next){
         if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
 
           req.body.gitlabProjectIds.forEach(id => {
-            if (project.gitlabProjectIds.includes(id)) gitlabProjectIdsOld.push(id);
+            if ((project.gitlabProjectIds || []).includes(id)) gitlabProjectIdsOld.push(id);
             else gitlabProjectIdsNew.push(id);
           });
 
