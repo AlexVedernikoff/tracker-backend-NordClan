@@ -18,6 +18,10 @@ module.exports = {
     username: 'serviceman',
     password: 'FdKg&$b*)FeA{'
   },
+  gitLab: {
+    host: process.env.GITLAB_HOST || 'gitlab-test.simbirsoft',
+    token: process.env.GITLAB_TOKEN || 'DBx1nxkqSEEpwhbAT4K5'
+  },
   auth: {
     accessTokenLifetime: 60 * 60 * 24 * 7
   },
