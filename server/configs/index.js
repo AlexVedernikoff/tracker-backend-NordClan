@@ -19,7 +19,7 @@ module.exports = {
     password: 'FdKg&$b*)FeA{'
   },
   gitLab: {
-    host: process.env.GITLAB_HOST || 'http://gitlab.simbirsoft',
+    host: process.env.GITLAB_HOST || 'gitlab.simbirsoft',
     token: process.env.GITLAB_TOKEN || 'undefined'
   },
   auth: {

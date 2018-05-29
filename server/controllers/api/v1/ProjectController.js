@@ -161,7 +161,9 @@ exports.read = function (req, res, next){
 
       if (model.gitlabProjectIds && model.gitlabProjectIds.length) {
         model.dataValues.gitlabProjects = await gitLabService.projects.getProjects(model.gitlabProjectIds);
-      } else model.dataValues.gitlabProjects = [];
+      } else {
+        model.dataValues.gitlabProjects = [];
+      }
 
       res.json(model.dataValues);
     })
@@ -259,7 +261,9 @@ exports.update = function (req, res, next){
                 if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
                   gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
                   model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
-                } else model.dataValues.gitlabProjects = [];
+                } else {
+                  model.dataValues.gitlabProjects = [];
+                }
 
                 res.json(model);
               });
