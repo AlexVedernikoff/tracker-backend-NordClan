@@ -45,6 +45,12 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'typeId',
+            description: 'можно разделять через ","',
+            type: 'integer',
+            in: 'query'
+          },
+          {
             name: 'portfolioId',
             type: 'integer',
             in: 'query'
@@ -197,6 +203,14 @@ module.exports = {
                   example: 'string'
                 },
                 notbillable: {
+                  type: 'integer',
+                  example: 1
+                },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
                   type: 'integer',
                   example: 1
                 },
