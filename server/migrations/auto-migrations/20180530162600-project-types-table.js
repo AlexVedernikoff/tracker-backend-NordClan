@@ -16,6 +16,7 @@ module.exports = {
         }
       }))
       .then(() => queryInterface.bulkInsert('project_types', [
+        { code_name: 'UNDEFINED', name: 'Без типа' },
         { code_name: 'PRODUCT', name: 'Продуктовый' },
         { code_name: 'INTERNSHIP', name: 'Стажировка' },
         { code_name: 'INTERNAL', name: 'Внутренний' }
