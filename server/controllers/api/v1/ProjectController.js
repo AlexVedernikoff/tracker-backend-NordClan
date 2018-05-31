@@ -258,11 +258,9 @@ exports.update = function (req, res, next){
                 const updatedParams = { ...req.body, id: model.id };
                 ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
 
-                if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+                if (req.body.gitlabProjectIds) {
                   gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
                   model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
-                } else {
-                  model.dataValues.gitlabProjects = [];
                 }
 
                 res.json(model);
