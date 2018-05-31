@@ -337,6 +337,12 @@ exports.list = function (req, res, next){
     };
   }
 
+  if (req.query.typeId) {
+    where.typeId = {
+      in: req.query.typeId.toString().split(',').map((el)=>el.trim())
+    };
+  }
+
   if (req.query.tags) {
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
   }
@@ -450,6 +456,7 @@ exports.list = function (req, res, next){
       'description',
       'prefix',
       'statusId',
+      'typeId',
       'notbillable',
       'portfolioId',
       'authorId',
