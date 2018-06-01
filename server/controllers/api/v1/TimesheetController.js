@@ -87,6 +87,27 @@ exports.list = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
+exports.listProject = async function (req, res, next) {
+  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const dateBegin = req.query.dateBegin;
+  const dateEnd = req.query.dateEnd;
+  const projectId = req.params.projectId;
+
+  console.log('listProject, projectId', projectId);
+
+  TimesheetService
+    .listProject(dateBegin, dateEnd, projectId, req.isSystemUser)
+    .then(timesheets => res.json(timesheets))
+    .catch(error => next(createError(error)));
+};
+
 exports.update = async (req, res, next) => {
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
