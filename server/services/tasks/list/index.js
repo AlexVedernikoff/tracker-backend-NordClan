@@ -180,6 +180,28 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: models.User.defaultSelect
   };
 
+  const includeParentTask = {
+    as: 'parentTask',
+    model: models.Task,
+    attributes: ['id', 'name']
+  };
+
+  const includeSubTasks = {
+    as: 'subTasks',
+    model: models.Task,
+    attributes: ['id', 'name']
+  };
+
+  const includeLLnkedTasks = {
+    as: 'linkedTasks',
+    model: models.Task,
+    attributes: ['id', 'name'],
+    through: {
+      model: models.TaskTasks,
+      attributes: []
+    }
+  };
+
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
@@ -223,7 +245,15 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: ['prefix']
   };
 
-  const includeForSelect = [ includeAuthor, includePerformer, includeSprint, includeTagSelect ];
+  const includeForSelect = [
+    includeAuthor,
+    includeParentTask,
+    includeSubTasks,
+    includeLLnkedTasks,
+    includePerformer,
+    includeSprint,
+    includeTagSelect
+  ];
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];
