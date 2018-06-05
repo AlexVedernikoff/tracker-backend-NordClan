@@ -22,3 +22,9 @@ exports.timesheetTypes = function (req, res){
 exports.taskTypes = function (req, res){
   res.end(JSON.stringify(models.TaskTypesDictionary.values));
 };
+
+exports.projectTypes = function (req, res){
+  return models.ProjectTypesDictionary
+    .findAll()
+    .then(data => res.json(data));
+};

@@ -45,6 +45,12 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'typeId',
+            description: 'можно разделять через ","',
+            type: 'integer',
+            in: 'query'
+          },
+          {
             name: 'portfolioId',
             type: 'integer',
             in: 'query'
@@ -200,6 +206,14 @@ module.exports = {
                   type: 'integer',
                   example: 1
                 },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
+                  type: 'integer',
+                  example: 1
+                },
                 budget: {
                   type: 'number',
                   example: 1
@@ -212,6 +226,11 @@ module.exports = {
                   description: '0 чтобы сбросить портфель у проекта',
                   type: 'integer',
                   example: 1
+                },
+                gitlabProjectIds: {
+                  description: 'Массив айдишников проектов GitLab',
+                  type: 'array',
+                  example: [1, 2]
                 }
               }
             }
@@ -1781,6 +1800,13 @@ module.exports = {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник статусов проектов',
+        responses: responsesCodes
+      }
+    },
+    '/dictionary/project/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов проектов',
         responses: responsesCodes
       }
     },

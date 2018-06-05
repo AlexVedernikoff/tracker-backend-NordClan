@@ -44,6 +44,16 @@ module.exports = function (sequelize, DataTypes) {
         max: 9
       }
     },
+    typeId: {
+      field: 'type_id',
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: 0,
+        max: 9
+      }
+    },
     notbillable: {
       type: DataTypes.INTEGER,
       defaultValue: 1,
