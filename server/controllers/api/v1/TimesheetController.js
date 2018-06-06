@@ -117,7 +117,7 @@ exports.update = async (req, res, next) => {
     .update(req)
     .then(updatedTimesheets => {
       updatedTimesheets.map(sheet => {
-        TimesheetsChannel.sendAction('update', sheet, res.io, req.isSystemUser ? sheet.userId : req.user.id);
+        TimesheetsChannel.sendAction('update', sheet, res.io, sheet.userId);
       });
       res.end();
     })
