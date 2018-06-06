@@ -5,9 +5,11 @@ const TimesheetsChannel = require('../../../channels/Timesheets');
 const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
+  const userId = req.body.userId || req.user.id; // Todo: validate user rights
+
   const timesheetParams = {
     ...req.body,
-    userId: req.user.id,
+    userId,
     taskStatusId: req.body.taskStatusId || 2
   };
 
@@ -18,7 +20,7 @@ exports.create = async (req, res, next) => {
   TimesheetService
     .create(timesheetParams)
     .then(createdTimesheet => {
-      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, userId);
       res.json(createdTimesheet);
     })
     .catch(e => {
@@ -99,8 +101,6 @@ exports.listProject = async function (req, res, next) {
   const dateBegin = req.query.dateBegin;
   const dateEnd = req.query.dateEnd;
   const projectId = req.params.projectId;
-
-  console.log('listProject, projectId', projectId);
 
   TimesheetService
     .listProject(dateBegin, dateEnd, projectId, req.isSystemUser)
