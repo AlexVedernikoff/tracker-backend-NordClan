@@ -58,6 +58,9 @@ router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUser
 // Project reports
 router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
 
+// Project time sheets
+router.get('/project/:projectId/timesheet', GlobalAccess.can('project', 'read'), TimesheetController.listProject);
+
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
 router.put('/portfolio/:id', GlobalAccess.can('portfolio', 'update'), PortfolioController.update);

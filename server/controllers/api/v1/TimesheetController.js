@@ -5,9 +5,11 @@ const TimesheetsChannel = require('../../../channels/Timesheets');
 const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
+  const userId = req.body.userId || req.user.id; // Todo: validate user rights
+
   const timesheetParams = {
     ...req.body,
-    userId: req.user.id,
+    userId,
     taskStatusId: req.body.taskStatusId || 2
   };
 
@@ -18,7 +20,7 @@ exports.create = async (req, res, next) => {
   TimesheetService
     .create(timesheetParams)
     .then(createdTimesheet => {
-      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, userId);
       res.json(createdTimesheet);
     })
     .catch(e => {
@@ -87,6 +89,25 @@ exports.list = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
+exports.listProject = async function (req, res, next) {
+  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const dateBegin = req.query.dateBegin;
+  const dateEnd = req.query.dateEnd;
+  const projectId = req.params.projectId;
+
+  TimesheetService
+    .listProject(dateBegin, dateEnd, projectId, req.isSystemUser)
+    .then(timesheets => res.json(timesheets))
+    .catch(error => next(createError(error)));
+};
+
 exports.update = async (req, res, next) => {
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
@@ -96,7 +117,7 @@ exports.update = async (req, res, next) => {
     .update(req)
     .then(updatedTimesheets => {
       updatedTimesheets.map(sheet => {
-        TimesheetsChannel.sendAction('update', sheet, res.io, req.isSystemUser ? sheet.userId : req.user.id);
+        TimesheetsChannel.sendAction('update', sheet, res.io, sheet.userId);
       });
       res.end();
     })
