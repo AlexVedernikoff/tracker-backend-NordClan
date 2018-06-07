@@ -1,7 +1,9 @@
 const models = require('../../../models');
 
 module.exports = function (dateBegin, dateEnd, projectId, isSystemUser) {
-  const where = {};
+  const where = {
+    projectId
+  };
 
   if (dateBegin && dateEnd) {
     where.onDate = {
@@ -11,8 +13,6 @@ module.exports = function (dateBegin, dateEnd, projectId, isSystemUser) {
       }
     };
   }
-
-  where.projectId = projectId;
 
   if (isSystemUser) {
     where.spentTime = {
