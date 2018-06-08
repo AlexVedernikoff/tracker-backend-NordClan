@@ -28,6 +28,11 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    isTaskByCustomer: {
+      filed: 'is_by_customer',
+      type: DataTypes.Boolean,
+      defaultValue: false
+    },
     statusId: {
       field: 'status_id',
       type: DataTypes.INTEGER,
