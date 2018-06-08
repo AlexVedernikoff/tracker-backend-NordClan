@@ -111,6 +111,7 @@ router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', Diction
 router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated. но еще используется
 router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
+router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
 
 // Attachments
 router.post('/:entity(project|task)/:entityId/attachment', GlobalAccess.can('attachment', 'upload'), UploadController.upload);

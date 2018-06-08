@@ -1851,6 +1851,13 @@ module.exports = {
         summary: 'Справочник типов активности в таймшитах',
         responses: responsesCodes
       }
+    },
+    '/dictionary/milestone/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов майлстоунов',
+        responses: responsesCodes
+      }
     }
 
 

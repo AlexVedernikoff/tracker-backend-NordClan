@@ -3,7 +3,8 @@ module.exports = function (sequelize, DataTypes) {
     name: DataTypes.STRING,
     date: DataTypes.DATEONLY,
     done: DataTypes.BOOLEAN,
-    projectId: DataTypes.INTEGER
+    projectId: DataTypes.INTEGER,
+    typeId: DataTypes.INTEGER
   }, {
     classMethods: {
       associate: function (models) {
@@ -11,6 +12,15 @@ module.exports = function (sequelize, DataTypes) {
           as: 'project',
           foreignKey: {
             name: 'projectId'
+          }
+        });
+
+        models.Milestone.belongsTo(models.MilestoneTypesDictionary, {
+          as: 'MilestoneTypesDictionary',
+          foreignKey: {
+            name: 'typeId',
+            field: 'typeId',
+            allowNull: false
           }
         });
       }
