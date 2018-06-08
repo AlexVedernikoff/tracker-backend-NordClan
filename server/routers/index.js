@@ -21,6 +21,7 @@ const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare
 
 router.post('/milestones', MilestonesController.create);
 router.put('/milestones/:id', MilestonesController.update);
+router.delete('/milestones/:id', MilestonesController.delete);
 
 // Auth
 router.post('/auth/login', AuthController.login);

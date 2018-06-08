@@ -1851,6 +1851,23 @@ module.exports = {
         summary: 'Справочник типов активности в таймшитах',
         responses: responsesCodes
       }
+    },
+
+    '/milestones/{id}': {
+      delete: {
+        tags: ['Milestone'],
+        summary: 'Вех проекта',
+        parameters: [
+          {
+            name: 'id',
+            description: 'id вех',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
     }
 
 
