@@ -40,7 +40,9 @@ module.exports = function (sequelize, DataTypes) {
     {id: 8, code: 'teamLead', name: 'TeamLead(Code review)'},
     {id: 9, code: 'qa', name: 'QA'},
     {id: 10, code: 'unbillable', name: 'Unbillable'},
-    {id: 11, code: 'customer', name: 'Customer'}
+    {id: 11, code: 'customer', name: 'Customer'},
+    {id: 12, code: 'android', name: 'Android'},
+    {id: 13, code: 'ios', name: 'IOS'}
   ];
 
   ProjectRoles.ADMIN_IDS = [1, 2];
