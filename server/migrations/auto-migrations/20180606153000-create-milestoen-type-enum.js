@@ -37,7 +37,7 @@ module.exports = {
           {
             type: Sequelize.INTEGER
           }
-        ),));
+        )));
   },
   down: function (queryInterface) {
     return Promise.resolve()
