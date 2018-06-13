@@ -44,9 +44,7 @@ module.exports = {
       .then(() => Promise.all([
         queryInterface.removeColumn(
           'Milestones',
-          'typeId', {
-            references: { model: 'milestone_types_dictionary', key: 'id' }
-          },
+          'typeId'
         ),
         queryInterface.dropTable('milestone_types_dictionary')
       ]));
