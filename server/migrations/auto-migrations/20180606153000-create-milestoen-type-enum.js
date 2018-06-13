@@ -35,7 +35,11 @@ module.exports = {
           'Milestones',
           'typeId',
           {
-            type: Sequelize.INTEGER
+            type: Sequelize.INTEGER,
+            references: {
+              model: 'milestone_types_dictionary',
+              key: 'id'
+            }
           }
         )));
   },
