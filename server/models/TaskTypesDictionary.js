@@ -35,8 +35,7 @@ module.exports = function (sequelize, DataTypes) {
     {id: 1, name: 'Фича'},
     {id: 3, name: 'Доп. Фича'},
     {id: 2, name: 'Баг'},
-    {id: 4, name: 'Регрес. Баг'},
-    {id: 5, name: 'Баг от клиента'}
+    {id: 4, name: 'Регрес. Баг'}
   ];
 
   TaskTypes.defaultSelect = ['id', 'name'];
