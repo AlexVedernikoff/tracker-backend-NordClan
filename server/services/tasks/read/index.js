@@ -1,9 +1,6 @@
 const taskRequests = require('./request');
 const createError = require('http-errors');
-const models = require('../../../models');
-const { getTaskFactTimeByQa } = require('../../../services/timesheets/spent');
-const { Sprint, Project } = models;
-
+const {getQaTimeByTask} = require('../utils');
 
 exports.read = async (id, user) => {
   const task = await taskRequests.findByPrimary(id, user.dataValues.globalRole);
@@ -20,25 +17,14 @@ exports.read = async (id, user) => {
     task.tags = Object.keys(task.tags).map((k) => task.tags[k].name);
   }
 
-  let qaPercent;
+  const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(task);
 
-  if (task.sprintId) {
-    const sprint = await Sprint.findByPrimary(task.sprintId, {attributes: ['qaPercent']});
-    qaPercent = sprint.qaPercent;
-  }
-
-  if (!qaPercent) {
-    const project = await Project.findByPrimary(task.projectId, { attributes: ['qaPercent'] });
-    qaPercent = project ? project.qaPercent : null;
-  }
-
-  if (qaPercent && task.plannedExecutionTime) {
-    task.dataValues.qaPlannedTime = qaPercent * task.plannedExecutionTime * 0.01;
-  } else {
+  if (!(qaPlannedTime && qaFactExecutionTime)) {
     throw createError(500, 'QA planned time calculate error');
   }
 
-  task.dataValues.qaFactExecutionTime = await getTaskFactTimeByQa(task.id);
+  task.dataValues.qaPlannedTime = qaPlannedTime;
+  task.dataValues.qaFactExecutionTime = qaFactExecutionTime;
 
   return task;
 };
