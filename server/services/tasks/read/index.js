@@ -19,10 +19,6 @@ exports.read = async (id, user) => {
 
   const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(task);
 
-  if (!(qaPlannedTime && qaFactExecutionTime)) {
-    throw createError(500, 'QA planned time calculate error');
-  }
-
   task.dataValues.qaPlannedTime = qaPlannedTime;
   task.dataValues.qaFactExecutionTime = qaFactExecutionTime;
 
