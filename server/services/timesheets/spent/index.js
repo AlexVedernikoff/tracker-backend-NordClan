@@ -20,4 +20,12 @@ function transformSpent (timesheet) {
   };
 }
 
-exports.getTaskSpent = getTaskSpent;
+async function getTaskFactTimeByQa (taskId) {
+  const qaTimesheets = await getTaskSpent(taskId);
+  const qaFactTime = qaTimesheets
+    .filter(timesheet => timesheet.taskStatusId === 6)
+    .reduce((total, timesheet) => total + timesheet.spentTime, 0);
+  return qaFactTime ? qaFactTime : 0;
+}
+
+module.exports = { getTaskSpent, getTaskFactTimeByQa };
