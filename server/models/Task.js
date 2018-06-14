@@ -28,6 +28,12 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    isTaskByClient: {
+      field: 'is_task_by_client',
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
     statusId: {
       field: 'status_id',
       type: DataTypes.INTEGER,

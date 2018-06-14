@@ -1,7 +1,9 @@
 const models = require('../../../models');
 
-module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSystemUser) {
-  const where = {};
+module.exports = function (dateBegin, dateEnd, projectId, isSystemUser) {
+  const where = {
+    projectId
+  };
 
   if (dateBegin && dateEnd) {
     where.onDate = {
@@ -12,24 +14,16 @@ module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSyste
     };
   }
 
-  if (userId && !userPSId) {
-    where.userId = userId;
-  }
-
   if (isSystemUser) {
     where.spentTime = {
       gt: 0
     };
   }
 
-  if (taskId) {
-    where.taskId = taskId;
-  }
-
   return {
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId'],
     where,
-    include: getInclude(userId, userPSId),
+    include: getInclude(),
     order: [
       ['createdAt', 'ASC']
     ]
@@ -37,7 +31,7 @@ module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSyste
 };
 
 
-function getInclude (userId, userPSId) {
+function getInclude () {
   const include = [
     {
       as: 'task',
@@ -75,21 +69,15 @@ function getInclude (userId, userPSId) {
       required: false,
       attributes: ['id', 'name'],
       paranoid: false
-    }
-  ];
-
-  if (userPSId && !userId) {
-    include.push({
+    },
+    {
       as: 'user',
       model: models.User,
-      required: true,
-      attributes: [],
-      paranoid: false,
-      where: {
-        psId: userPSId
-      }
-    });
-  }
+      required: false,
+      attributes: ['id', 'firstNameRu', 'lastNameRu'],
+      paranoid: false
+    }
+  ];
 
   return include;
 }

@@ -1,8 +1,8 @@
 const timesheetRequest = require('./request');
 const { Timesheet } = require('../../../models');
 
-exports.list = async (dateBegin, dateEnd, taskId, userId, userPSId, isSystemUser) => {
-  const request = timesheetRequest(dateBegin, dateEnd, taskId, userId, userPSId, isSystemUser);
+exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
+  const request = timesheetRequest(dateBegin, dateEnd, projectId, isSystemUser);
   const timesheets = await Timesheet.findAll(request);
   return createResponse(timesheets);
 };

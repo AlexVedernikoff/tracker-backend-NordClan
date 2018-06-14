@@ -58,6 +58,9 @@ router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUser
 // Project reports
 router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
 
+// Project time sheets
+router.get('/project/:projectId/timesheet', GlobalAccess.can('project', 'read'), TimesheetController.listProject);
+
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
 router.put('/portfolio/:id', GlobalAccess.can('portfolio', 'update'), PortfolioController.update);
@@ -101,6 +104,7 @@ router.get('/task/:taskId/comment', GlobalAccess.can('comment', 'list'), Comment
 // Dictionaries
 router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
+router.get('/dictionary/project/types', DictionaryController.projectTypes);
 router.get('/dictionary/task/types', DictionaryController.taskTypes);
 router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
 router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated. но еще используется

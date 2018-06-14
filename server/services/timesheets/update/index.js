@@ -22,8 +22,10 @@ function getWhere (req) {
     id: req.body.sheetId
   };
 
+  const userId = req.body.userId || req.user.id; // Todo: validate user rights
+
   if (!req.isSystemUser) {
-    where.userId = req.user.id;
+    where.userId = userId;
   }
 
   return where;

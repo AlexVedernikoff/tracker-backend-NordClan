@@ -2,12 +2,14 @@ const createError = require('http-errors');
 const TimesheetService = require('../../../services/timesheets');
 const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
-const TasksChannel = require('../../../channels/Tasks');
+const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
+  const userId = req.body.userId || req.user.id; // Todo: validate user rights
+
   const timesheetParams = {
     ...req.body,
-    userId: req.user.id,
+    userId,
     taskStatusId: req.body.taskStatusId || 2
   };
 
@@ -18,7 +20,7 @@ exports.create = async (req, res, next) => {
   TimesheetService
     .create(timesheetParams)
     .then(createdTimesheet => {
-      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, userId);
       res.json(createdTimesheet);
     })
     .catch(e => {
@@ -56,6 +58,38 @@ exports.list = async function (req, res, next) {
     }
   }
 
+  if (!req.query.taskId) {
+    req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+    req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+  } else {
+    req.checkQuery('taskId', 'taskId is invalid or not defined. You should define int taskId or time period').isInt();
+  }
+
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const dateBegin = req.query.dateBegin;
+  const dateEnd = req.query.dateEnd;
+  const taskId = req.query.taskId;
+  const userPSId = req.query.userPSId ? req.query.userPSId : null;
+  const task = taskId ? await models.Task.findByPrimary(taskId, {
+    attributes: ['id', 'projectId']
+  }) : null;
+  const isAllTimeSheets = taskId ? req.user.isAdminOfProject(task.projectId) : false;
+  const userId
+    = req.isSystemUser ? req.query.userId
+      : isAllTimeSheets ? false : req.user.id;
+
+  TimesheetService
+    .list(dateBegin, dateEnd, taskId, userId, userPSId, req.isSystemUser)
+    .then(timesheets => res.json(timesheets))
+    .catch(error => next(createError(error)));
+};
+
+exports.listProject = async function (req, res, next) {
   req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
 
@@ -66,11 +100,10 @@ exports.list = async function (req, res, next) {
 
   const dateBegin = req.query.dateBegin;
   const dateEnd = req.query.dateEnd;
-  const userId = req.isSystemUser ? req.query.userId : req.user.id;
-  const userPSId = req.query.userPSId ? req.query.userPSId : null;
+  const projectId = req.params.projectId;
 
   TimesheetService
-    .list(dateBegin, dateEnd, userId, userPSId, req.isSystemUser)
+    .listProject(dateBegin, dateEnd, projectId, req.isSystemUser)
     .then(timesheets => res.json(timesheets))
     .catch(error => next(createError(error)));
 };
@@ -84,7 +117,7 @@ exports.update = async (req, res, next) => {
     .update(req)
     .then(updatedTimesheets => {
       updatedTimesheets.map(sheet => {
-        TimesheetsChannel.sendAction('update', sheet, res.io, req.isSystemUser ? sheet.userId : req.user.id);
+        TimesheetsChannel.sendAction('update', sheet, res.io, sheet.userId);
       });
       res.end();
     })
