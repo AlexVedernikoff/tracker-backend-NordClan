@@ -32,7 +32,7 @@ exports.read = function (req, res, next){
 
   Sprint.findByPrimary(req.params.id, {
     attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
-      'projectId', 'authorId', 'budget', 'riskBudget',
+      'projectId', 'authorId', 'budget', 'riskBudget', 'qaPercent',
       [Sequelize.literal(`(SELECT count(*)
                                 FROM tasks as t
                                 WHERE t.project_id = "Sprint"."project_id"
