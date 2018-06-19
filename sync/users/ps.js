@@ -36,6 +36,8 @@ const jsonOpts = {
   arrayNotation: false
 };
 
+const unnecessaryPsIds = ['fs002080000ihsinfd90000000'];
+
 module.exports = function() {
   return syncUsers()
     .then(() => {
@@ -79,7 +81,7 @@ function syncUsers() {
           deletedAt: (!_.isEmpty(x.deleteDate)) ? moment(x.deleteDate, 'DD.MM.YYYY HH:mm' ).format() : null,
         };
       }));
-  
+
       resolve(users);
 
     });
@@ -90,6 +92,10 @@ function syncUsers() {
         let chain = Promise.resolve();
 
         users.forEach(function(x) {
+
+          if (unnecessaryPsIds.indexOf(x.psId) !== -1) {
+            return;
+          }
 
           chain = chain
             .then(() => {
