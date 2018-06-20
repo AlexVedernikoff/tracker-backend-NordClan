@@ -53,6 +53,12 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       }
     },
+    qaPercent: {
+      field: 'qa_percent',
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
+    },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,

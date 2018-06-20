@@ -1858,6 +1858,22 @@ module.exports = {
         summary: 'Справочник типов майлстоунов',
         responses: responsesCodes
       }
+    },
+    '/milestones/{id}': {
+      delete: {
+        tags: ['Milestone'],
+        summary: 'Вех проекта',
+        parameters: [
+          {
+            name: 'id',
+            description: 'id вех',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
     }
 
 
