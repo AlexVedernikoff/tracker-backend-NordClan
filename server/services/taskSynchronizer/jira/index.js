@@ -15,7 +15,6 @@ exports.jiraSync = async function (data) {
    * 
    * */
   // req.body =  [{},{}]; задачи - это будут ишьюсы
-
   const taskProjects = data.map((task) => task.projectId);
 
   // проекты задействованные в джире

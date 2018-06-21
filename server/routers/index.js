@@ -18,6 +18,7 @@ const HistoryController = require('../controllers/api/v1/HistoryController');
 const MetricsController = require('../controllers/api/v1/MetricsController');
 const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
+const TaskSynchronizeController = require('../controllers/api/v1/TaskSynchronizeController');
 
 router.post('/milestones', MilestonesController.create);
 router.put('/milestones/:id', MilestonesController.update);
@@ -117,5 +118,8 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 
 // Metrics
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
+
+// Metrics
+router.post('/jiraSynchronize', TaskSynchronizeController.jiraSynchronize);
 
 module.exports = router;

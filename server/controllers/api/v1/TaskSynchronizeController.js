@@ -1,9 +1,10 @@
+const { jiraSync } = require('../../../services/taskSynchronizer/index');
 
-
-exports.synchronize = function (req, res, next) {
-// обработка запроса
-//валидация каждой задачи и таймшита
-// использование сервиса
+exports.jiraSynchronize = function (req, res, next) {
+  // обработка запроса
+  //валидация каждой задачи и таймшита
+  // использование сервиса
+  const p = jiraSync([]);
 
 
 };
