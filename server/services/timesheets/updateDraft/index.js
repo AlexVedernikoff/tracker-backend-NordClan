@@ -47,6 +47,7 @@ function transformTimesheet (timesheet) {
 
   timesheet.dataValues.onDate = timesheet.onDate;
   timesheet.dataValues.isDraft = false;
+  timesheet.dataValues.task = timesheet.dataValues.task.dataValues;
   return timesheet.dataValues;
 }
 
