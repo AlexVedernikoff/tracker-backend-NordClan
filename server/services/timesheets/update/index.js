@@ -14,7 +14,7 @@ exports.update = async (req) => {
     throw createError(404);
   }
 
-  return updatedTimesheet[1];
+  return updatedTimesheet[1][0].dataValues;
 };
 
 function getWhere (req) {
@@ -37,7 +37,10 @@ function getInclude () {
       as: 'task',
       model: models.Task,
       required: false,
-      attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+      attributes: ['id', 'name', 'plannedExecutionTime', [
+        models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+        FROM timesheets AS tsh
+        WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']],
       paranoid: false,
       include: [
         {
