@@ -36,7 +36,7 @@ module.exports = {
     login: 'sim-track@simbirsoft.com',
     password: 'AP2y2CHU',
     title: 'SimTrack',
-    templateBaseUrl: 'http://sim-track.simbirsoft'
+    templateBaseUrl: 'http://sim-track.simbirsoft1.com'
   },
   ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
 };

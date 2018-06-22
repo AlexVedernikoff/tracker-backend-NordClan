@@ -22,9 +22,6 @@ services:
       - 9230:9230
     depends_on:
       - db
-    extra_hosts:
-      - "auth.simbirsoft:192.168.20.15"
-      - "auth-copy.simbirsoft:192.168.20.133"
     env_file:
       - .docker-compose-dev.env
     entrypoint: |
