@@ -1852,7 +1852,13 @@ module.exports = {
         responses: responsesCodes
       }
     },
-
+    '/dictionary/milestone/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов майлстоунов',
+        responses: responsesCodes
+      }
+    },
     '/milestones/{id}': {
       delete: {
         tags: ['Milestone'],
