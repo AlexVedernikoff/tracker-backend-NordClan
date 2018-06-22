@@ -8,7 +8,13 @@ const EnumTypes = [
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return queryInterface.createTable('milestone_types_dictionary', {
+    return Promise.all([
+      queryInterface.removeColumn(
+        'Milestones',
+        'typeId'
+      ),
+      queryInterface.dropTable('milestone_types_dictionary')
+    ]).then(() => queryInterface.createTable('milestone_types_dictionary', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -22,7 +28,7 @@ module.exports = {
         field: 'code_name',
         type: Sequelize.STRING(25)
       }
-    })
+    }))
       .then(() => Promise.all(EnumTypes.map((type) => queryInterface.sequelize.query(`
         INSERT INTO milestone_types_dictionary (name, code_name)
         VALUES (:name, :codeName);
