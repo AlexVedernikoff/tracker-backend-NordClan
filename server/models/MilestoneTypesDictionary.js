@@ -10,9 +10,9 @@ module.exports = function (sequelize, DataTypes) {
     codeName: {
       field: 'code_name',
       type: DataTypes.STRING(25)
-      }
+    }
   },
-  { 
+  {
     underscored: true,
     timestamps: false,
     paranoid: false,
