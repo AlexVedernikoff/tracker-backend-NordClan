@@ -27,7 +27,7 @@ module.exports = {
         INSERT INTO milestone_types_dictionary (name, code_name)
         VALUES (:name, :codeName);
         `, { replacements: type }))))
-      .then(()=> queryInterface.addColumn(
+      /*.then(()=> queryInterface.addColumn(
         'Milestones',
         'typeId',
         {
@@ -37,7 +37,7 @@ module.exports = {
             key: 'id'
           }
         }
-      ));
+      ))*/;
   },
   down: function (queryInterface) {
     return Promise.all([
