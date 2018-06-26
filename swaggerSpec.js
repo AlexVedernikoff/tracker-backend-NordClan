@@ -620,8 +620,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -681,8 +680,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
