@@ -4,6 +4,7 @@ const { Task, Project } = models;
 const TimesheetService = require('../../timesheets');
 const { findByPrimary } = require('./request');
 const createError = require('http-errors');
+const {getQaTimeByTask} = require('../utils');
 
 const {
   DEVELOP_STATUSES,
@@ -38,6 +39,11 @@ async function update (body, taskId, user) {
   const { activeTask, stoppedTasks } = body.statusId
     ? await updateTasksStatuses(updatedTask, originTask, user.id)
     : { stoppedTasks: [] };
+
+  const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(updatedTask);
+  updatedTask.dataValues.qaFactExecutionTime = qaFactExecutionTime;
+  updatedTask.dataValues.qaPlannedTime = qaPlannedTime;
+
 
   return {
     updatedTasks: [updatedTask, ...stoppedTasks],

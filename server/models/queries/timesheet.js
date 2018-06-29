@@ -32,7 +32,11 @@ exports.getTimesheet = async function (params) {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: {
+          include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']]
+        },
         paranoid: false,
         include: [
           {
@@ -142,7 +146,11 @@ exports.all = async function (conditions) {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: {
+          include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']]
+        },
         paranoid: false,
         include: [
           {
@@ -211,7 +219,11 @@ exports.findOne = function (where) {
           as: 'task',
           model: models.Task,
           required: false,
-          attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+          attributes: {
+            include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+            FROM timesheets AS tsh
+            WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']]
+          },
           paranoid: false,
           include: [
             {
