@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
   const TaskHistory = sequelize.define('TaskHistory', {
-    id : {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -72,6 +72,16 @@ module.exports = function(sequelize, DataTypes) {
     prevValueText: {
       field: 'prev_value_text',
       type: DataTypes.TEXT,
+      allowNull: true
+    },
+    valueBoolean: {
+      field: 'value_boolean',
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    prevValueBoolean: {
+      field: 'prev_value_boolean',
+      type: DataTypes.BOOLEAN,
       allowNull: true
     },
     action: {
