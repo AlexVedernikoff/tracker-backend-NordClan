@@ -30,7 +30,9 @@ exports.historyHandler = function (sequelize, historyModel) {
         valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
         prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
         valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
-        prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null
+        prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null,
+        valueBoolean: (type === 'BOOLEAN') ? diffObj[key].newVal : null,
+        prevValueBoolean: (type === 'BOOLEAN') ? diffObj[key].oldVal : null
       };
     });
   }
