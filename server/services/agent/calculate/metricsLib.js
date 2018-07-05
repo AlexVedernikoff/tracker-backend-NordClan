@@ -170,7 +170,7 @@ module.exports = async function (metricsTypeId, input){
     if (input.project.sprints.length > 0){
       input.project.sprints.forEach(function (sprint){
         const clientBugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 5);
+          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
         });
         totalClientBugsAmount += clientBugs.length;
       });

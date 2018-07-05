@@ -68,7 +68,7 @@ exports.findByPrimary = (id, role) => {
       {
         as: 'sprint',
         model: models.Sprint,
-        attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'qaPercent']
+        attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'budget', 'qaPercent']
       },
       {
         as: 'performer',

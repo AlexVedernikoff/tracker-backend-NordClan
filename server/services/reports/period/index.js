@@ -1,5 +1,5 @@
 const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, ProjectUsersRoles,
-  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint} = require('../../../models');
+  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint, sequelize} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
@@ -55,7 +55,10 @@ exports.getReport = async function (projectId, criteria) {
         as: 'task',
         model: Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId', 'typeId', 'sprintId'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime'], 'projectId', 'typeId', 'sprintId'],
         paranoid: false
       },
       {

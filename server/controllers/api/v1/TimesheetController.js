@@ -113,12 +113,16 @@ exports.update = async (req, res, next) => {
     return next(createError(400, 'spentTime wrong'));
   }
 
+  const {taskId} = req.body;//eslint-disable-line
   TimesheetService
     .update(req)
-    .then(updatedTimesheets => {
-      updatedTimesheets.map(sheet => {
-        TimesheetsChannel.sendAction('update', sheet, res.io, sheet.userId);
-      });
+    .then(sheet => Promise.all([
+      taskId && TasksService
+        .read(taskId, req.user),
+      sheet
+    ]))
+    .then(([task, sheet]) => {
+      TimesheetsChannel.sendAction('update', !task ? sheet : {...sheet, task }, res.io, sheet.userId);
       res.end();
     })
     .catch(e => next(createError(e)));
@@ -150,16 +154,20 @@ exports.updateDraft = async function (req, res, next) {
   }
 
   const draftId = req.params.sheetId || req.body.sheetId || req.query.sheetId;
+  const { sheetId, taskId, ...body} = req.body;//eslint-disable-line
 
   TimesheetService
-    .updateDraft(req.body, draftId, req.user.id)
-    .then(({updatedDraft, createdTimesheet}) => {
+    .updateDraft(body, draftId, req.user.id)
+    .then(sheet => Promise.all([
+      taskId && TasksService
+        .read(taskId, req.user),
+      sheet
+    ]))
+    .then(([task, {updatedDraft, createdTimesheet}]) => {
       if (updatedDraft) {
-        TimesheetsChannel.sendAction('update', updatedDraft, res.io, req.user.id);
-      }
-
-      if (createdTimesheet) {
-        TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+        TimesheetsChannel.sendAction('update', !task ? updatedDraft : {...updatedDraft, task}, res.io, req.user.id);
+      } else if (createdTimesheet) {
+        TimesheetsChannel.sendAction('create', !task ? createdTimesheet : {...createdTimesheet, task}, res.io, req.user.id);
       }
 
       res.end();
