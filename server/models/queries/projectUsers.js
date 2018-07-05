@@ -21,7 +21,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
           where: {
             globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE }
           },
-          attributes: ['id', 'firstNameRu', 'lastNameRu'],
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
         },
         {
           as: 'roles',
