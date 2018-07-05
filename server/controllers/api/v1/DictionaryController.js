@@ -28,3 +28,11 @@ exports.projectTypes = function (req, res){
     .findAll()
     .then(data => res.json(data));
 };
+
+exports.milestoneTypes = function (req, res){
+  return models.MilestoneTypesDictionary
+    .findAll({
+      order: [['id', 'ASC']]
+    })
+    .then(data => res.json(data));
+};

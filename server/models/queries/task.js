@@ -3,7 +3,10 @@ const createError = require('http-errors');
 
 exports.name = 'task';
 
-exports.findOneActiveTask = function (taskId, attributes = ['id', 'factExecutionTime'], t = null) {
+exports.findOneActiveTask = function (taskId, attributes = ['id', [
+  models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+  FROM timesheets AS tsh
+  WHERE tsh.task_id = "Task"."id")`), 'factExecutionTime']], t = null) {
   return models.Task
     .findOne({
       where: {

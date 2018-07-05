@@ -249,7 +249,8 @@ module.exports = function (sequelize, DataTypes) {
     'gitlabProjectIds',
     'authorId',
     'completedAt',
-    'createdAt'
+    'createdAt',
+    'qaPercent'
   ];
 
   Project.addHistoryForProject();

@@ -137,7 +137,7 @@ module.exports = function (sequelize, DataTypes) {
 
   };
 
-  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'budget', 'riskBudget'];
+  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'budget', 'riskBudget'];
 
   Sprint.addHistoryForProject();
 
