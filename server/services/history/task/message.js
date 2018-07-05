@@ -38,12 +38,12 @@ function generativeAnswer(model, values) {
   if(model.parentTask) result.entities.parentTask = model.parentTask;
   if(model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
 
-  if(model.action === 'update') {
-    if(values.value  === null && values.prevValue) { // убрал
+  if (model.action === 'update') {
+    if ((values.value === null && values.prevValue) || (values.value === true && values.prevValue === false)) { // убрал
       result.message = 'убрал(-а)';
-    } else if (values.value  && values.prevValue === null) { // установил
+    } else if ((values.value && values.prevValue === null) || (values.value === false && values.prevValue === true)) { // установил
       result.message = 'установил(-а)';
-    }else { // изменил
+    } else { // изменил
       result.message = 'изменил(-а)';
     }
   }
@@ -58,9 +58,14 @@ function generativeAnswer(model, values) {
   case 'plannedExecutionTime': result.message += ' планируемое время исполнения'; break;
   case 'factExecutionTime': result.message += ' фактическое время исполнения'; break;
   case 'parentId': result.message += ' родителя'; break;
+  case 'isTaskByClient': result.message += ' признак "От клиента"'; break;
   }
 
-  result.message += ' ' + entityWord.update;
+  if (model.field !== 'isTaskByClient') {
+    result.message += ' ' + entityWord.update;
+  } else {
+    return result;
+  }
 
   if(values.value  === null && values.prevValue) { // убрал
     result.message += ` '${transformValue(model, values, 'prev')}'`;

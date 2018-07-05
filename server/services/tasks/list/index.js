@@ -206,7 +206,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     as: 'sprint',
     model: models.Sprint,
     attributes: role !== 'EXTERNAL_USER'
-      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate'/*, allottedTime' DEPRECATED*/, 'budget']
       : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
   };
 

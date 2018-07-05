@@ -620,8 +620,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -681,8 +680,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -1849,6 +1847,29 @@ module.exports = {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник типов активности в таймшитах',
+        responses: responsesCodes
+      }
+    },
+    '/dictionary/milestone/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов майлстоунов',
+        responses: responsesCodes
+      }
+    },
+    '/milestones/{id}': {
+      delete: {
+        tags: ['Milestone'],
+        summary: 'Вех проекта',
+        parameters: [
+          {
+            name: 'id',
+            description: 'id вех',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
         responses: responsesCodes
       }
     }

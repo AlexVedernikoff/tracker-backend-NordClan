@@ -12,7 +12,10 @@ exports.findDraftSheet = async function (userId, id) {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
         paranoid: false,
         include: [
           {
@@ -61,7 +64,10 @@ exports.all = async function (conditions) {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
         paranoid: false,
         include: [
           {
@@ -104,7 +110,10 @@ function appendInclude (entities) {
       as: 'task',
       model: models.Task,
       required: false,
-      attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+      attributes: ['id', 'name', 'plannedExecutionTime', [
+        models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+        FROM timesheets AS tsh
+        WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
       paranoid: false,
       include: [
         {
