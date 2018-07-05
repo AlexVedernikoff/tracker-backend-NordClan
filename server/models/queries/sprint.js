@@ -3,8 +3,8 @@ const models = require('../');
 const queryAttributes = function (sprintSource, role) {
   return role !== models.User.EXTERNAL_USER_ROLE
     ? [
-      'id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'budget', 'createdAt', 'deletedAt',
-      'projectId', 'authorId', 'budget', 'riskBudget',
+      'id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'createdAt', 'deletedAt',
+      'projectId', 'authorId', 'budget', 'riskBudget', 'qaPercent',
       [models.Sequelize.literal(`(SELECT sum(tsh.spent_time)
                                     FROM timesheets as tsh
                                     WHERE tsh.sprint_id = "${sprintSource}"."id")`), 'spentTime'], // Потраченное время на спринт
@@ -21,7 +21,7 @@ const queryAttributes = function (sprintSource, role) {
     ]
     : [
       'id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'createdAt', 'deletedAt',
-      'projectId', 'authorId',
+      'projectId', 'authorId', 'qaPercent',
       [models.Sequelize.literal(`(SELECT count(*)
                                     FROM tasks as t
                                     WHERE t.sprint_id = "${sprintSource}"."id"
