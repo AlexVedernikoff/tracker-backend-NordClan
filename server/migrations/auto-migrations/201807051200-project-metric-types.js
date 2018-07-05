@@ -12,7 +12,7 @@ module.exports = {
     return (
       queryInterface.bulkDelete(
         'metric_types',
-        { id: { [Sequalize.Op.in]: [51, 52, 53, 54] } }
+        { id: { [Sequalize.Op.in]: [51, 52, 53, 54, 55, 56] } }
       )
     );
   }
