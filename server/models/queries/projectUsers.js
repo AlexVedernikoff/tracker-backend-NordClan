@@ -39,6 +39,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
         response.push({
           id: projectUser.user.id,
           fullNameRu: projectUser.user.fullNameRu,
+          fullNameEn: projectUser.user.fullNameEn,
           roles: getTransRolesToObject(projectUser.roles),
         });
       });

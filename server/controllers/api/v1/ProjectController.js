@@ -111,7 +111,7 @@ exports.read = function (req, res, next){
               where: {
                 globalRole: { $not: models.User.EXTERNAL_USER_ROLE }
               },
-              attributes: ['id', 'firstNameRu', 'lastNameRu', 'photo', 'skype', 'emailPrimary', 'mobile']
+              attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'photo', 'skype', 'emailPrimary', 'mobile']
             },
             {
               as: 'roles',
@@ -146,6 +146,7 @@ exports.read = function (req, res, next){
           usersData.push({
             id: projectUser.user.id,
             fullNameRu: projectUser.user.fullNameRu,
+            fullNameEn: projectUser.user.fullNameEn,
             roles: queries.projectUsers.getTransRolesToObject(projectUser.roles)
           });
         });

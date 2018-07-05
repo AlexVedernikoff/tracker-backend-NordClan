@@ -79,6 +79,16 @@ exports.autocomplete = function (req, res, next) {
                 fullNameRu: {
                   $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
                 }
+              },
+              {
+                fullNameEn: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
+              },
+              {
+                fullNameEn: {
+                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                }
               }
             ]
           },
@@ -88,7 +98,7 @@ exports.autocomplete = function (req, res, next) {
         .then((users) => {
 
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, id: user.id});
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
           });
           res.end(JSON.stringify(result));
         })
