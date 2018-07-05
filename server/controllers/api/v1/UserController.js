@@ -111,16 +111,18 @@ exports.getUsersRoles = async function (req, res, next) {
         order: [
           ['last_name_ru']
         ],
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'globalRole']
       });
 
     const usersWithFilteredData = users.map(user => {
-      const {id, firstNameRu, lastNameRu, globalRole} = user;
+      const {id, firstNameRu, lastNameRu, globalRole, firstNameEn, lastNameEn} = user;
       return {
         id,
         firstNameRu,
         lastNameRu,
-        globalRole
+        globalRole,
+        firstNameEn,
+        lastNameEn
       };
     });
 
@@ -149,7 +151,9 @@ exports.updateUserRole = async function (req, res, next) {
               id: updatedModel.id,
               globalRole: updatedModel.globalRole,
               firstNameRu: updatedModel.firstNameRu,
-              lastNameRu: updatedModel.lastNameRu
+              lastNameRu: updatedModel.lastNameRu,
+              firstNameEn: updatedModel.firstNameEn,
+              lastNameEn: updatedModel.lastNameEn
             };
             res.json(updatedUser);
           });
