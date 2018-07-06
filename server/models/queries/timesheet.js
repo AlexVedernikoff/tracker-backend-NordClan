@@ -187,7 +187,7 @@ exports.all = async function (conditions) {
         as: 'user',
         model: models.User,
         required: false,
-        attributes: ['id', 'fullNameRu', 'fullNameEn', 'emailPrimary', 'firstNameRu', 'lastNameRu'],
+        attributes: ['id', 'fullNameRu', 'fullNameEn', 'emailPrimary', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
         paranoid: false
       },
       {
