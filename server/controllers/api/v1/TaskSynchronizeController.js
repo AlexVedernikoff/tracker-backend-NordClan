@@ -4,7 +4,8 @@ exports.jiraSynchronize = function (req, res, next) {
   // обработка запроса
   //валидация каждой задачи и таймшита
   // использование сервиса
-  const p = jiraSync([]);
+
+  const p = jiraSync(req.body.payload);
 
 
 };

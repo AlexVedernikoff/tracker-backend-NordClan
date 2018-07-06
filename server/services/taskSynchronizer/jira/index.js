@@ -1,5 +1,5 @@
 const TasksService = require('../syncMethods/task');
-const SprintService = require('../syncMethods/task');
+const SprintService = require('../syncMethods/sprint');
 const models = require('../../../models');
 const { Project } = models;
 
@@ -15,25 +15,28 @@ exports.jiraSync = async function (data) {
    * 
    * */
   // req.body =  [{},{}]; задачи - это будут ишьюсы
-  const taskProjects = data.map((task) => task.projectId);
+  const taskProjectIds = data.map((task) => task.projectId.toString());
 
   // проекты задействованные в джире
-  const projects = await Project.findAll({ where: { externalId: { in: taskProjects } } });
+  const projects = await Project.findAll({ where: { externalId: { $in: taskProjectIds } } });
 
   /**
    * Модуль со спринтами
    */
+  // нужно проставлять спринту значение author_id и брать его из автора проекта.
+  // creator задачи возможно тоже
   const sprintsObj = {};
   data.map(task => {
+    // 
     if (!Object.keys(sprintsObj).includes(task.sprint.id)) {
       sprintsObj[task.sprint.id] = task.sprint.name;
     }
   });
   const sprints = [];
   for (const key in sprintsObj) {
-    sprints.push({ externalId: key, name: sprintsObj[key] }); /*authorId*/
+    sprints.push({ externalId: key, name: sprintsObj[key] }); /*authorId - вытащить из проекта */
   }
-
+  console.log(sprints);
   const resSprints = await SprintService.synchronizeSprints(sprints); // тут должны быть все спринты которые пришли в исходном обьекте
 
   /**
