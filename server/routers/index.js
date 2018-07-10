@@ -82,6 +82,7 @@ router.get('/sprint', GlobalAccess.can('sprint', 'list'), SprintController.list)
 router.post('/task', GlobalAccess.can('task', 'create'), TaskController.create);
 router.get('/task/:id', GlobalAccess.can('task', 'read'), TaskController.read);
 router.put('/task/:id', GlobalAccess.can('task', 'update'), TaskController.update);
+router.put('/tasks', GlobalAccess.can('task', 'update'), TaskTasksController.update);
 router.delete('/task/:id', GlobalAccess.can('task', 'delete'), TaskController.delete);
 router.get('/task', GlobalAccess.can('task', 'list'), TaskController.list);
 router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), TaskTasksController.create);
