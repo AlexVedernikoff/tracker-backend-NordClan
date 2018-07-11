@@ -47,6 +47,7 @@ async function update (body, taskId, user) {
 
   return {
     updatedTasks: [updatedTask, ...stoppedTasks],
+    updatedTask,
     createdDraft,
     activeTask,
     projectId: originTask.projectId,

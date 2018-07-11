@@ -79,6 +79,16 @@ exports.autocomplete = function (req, res, next) {
                 fullNameRu: {
                   $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
                 }
+              },
+              {
+                fullNameEn: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
+              },
+              {
+                fullNameEn: {
+                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                }
               }
             ]
           },
@@ -88,7 +98,7 @@ exports.autocomplete = function (req, res, next) {
         .then((users) => {
 
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, id: user.id});
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
           });
           res.end(JSON.stringify(result));
         })
@@ -111,16 +121,18 @@ exports.getUsersRoles = async function (req, res, next) {
         order: [
           ['last_name_ru']
         ],
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'globalRole']
       });
 
     const usersWithFilteredData = users.map(user => {
-      const {id, firstNameRu, lastNameRu, globalRole} = user;
+      const {id, firstNameRu, lastNameRu, globalRole, firstNameEn, lastNameEn} = user;
       return {
         id,
         firstNameRu,
         lastNameRu,
-        globalRole
+        globalRole,
+        firstNameEn,
+        lastNameEn
       };
     });
 
@@ -149,7 +161,9 @@ exports.updateUserRole = async function (req, res, next) {
               id: updatedModel.id,
               globalRole: updatedModel.globalRole,
               firstNameRu: updatedModel.firstNameRu,
-              lastNameRu: updatedModel.lastNameRu
+              lastNameRu: updatedModel.lastNameRu,
+              firstNameEn: updatedModel.firstNameEn,
+              lastNameEn: updatedModel.lastNameEn
             };
             res.json(updatedUser);
           });
