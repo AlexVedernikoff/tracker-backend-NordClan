@@ -86,7 +86,7 @@ exports.update = async function (req, res, next) {
     let updatedTasks, activeTask, createdDraft, projectId, changedTaskData, updatedTask;
     const result = { updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId);
-    if (changedTaskData.performerId) {
+    if (changedTaskData.performerId && !taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
         input: { taskId },
