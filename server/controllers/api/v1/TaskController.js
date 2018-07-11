@@ -7,6 +7,8 @@ const TasksService = require('../../../services/tasks');
 const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 
+const taskIsDone = tasks => tasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS;
+
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
@@ -84,14 +86,14 @@ exports.update = async function (req, res, next) {
     let updatedTasks, activeTask, createdDraft, projectId, changedTaskData;
     const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (changedTaskData.performerId) {
+    if (changedTaskData.performerId && !taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
         input: { taskId },
         user: { ...req.user.get() }
       });
     }
-    if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
+    if (changedTaskData.statusId && taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[3].id,
         input: { taskId },
