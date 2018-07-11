@@ -57,10 +57,11 @@ exports.update = function (req, res, next) {
       const updateTaskReq = {...req};
       updateTaskReq.body = task;
       updateTaskReq.params.id = task.id;
-      taskController.update(updateTaskReq, res, next);
+      taskController.update(updateTaskReq);
     });
-  } else {
     res.sendStatus(200);
+  } else {
+    res.sendStatus(500);
   }
 };
 

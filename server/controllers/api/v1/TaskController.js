@@ -99,9 +99,13 @@ exports.update = async function (req, res, next) {
       });
     }
 
-    res.sendStatus(200);
+    if (res) {
+      res.sendStatus(200);
+    }
   } catch (err) {
-    next(createError(err));
+    if (next) {
+      next(createError(err));
+    }
   }
 };
 
