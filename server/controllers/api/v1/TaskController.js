@@ -81,17 +81,15 @@ exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
   const taskId = req.params.id;
 
   try {
-    let updatedTasks, activeTask, createdDraft, projectId, changedTaskData;
-    const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
-    sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (changedTaskData) {
-      if (changedTaskData.performerId) {
-        emailSubprocess({
-          eventId: models.ProjectEventsDictionary.values[1].id,
-          input: {taskId},
-          user: {...req.user.get()}
-        });
-      }
+    let updatedTasks, activeTask, createdDraft, projectId, changedTaskData, updatedTask;
+    const result = { updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
+    sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId);
+    if (changedTaskData.performerId) {
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[1].id,
+        input: { taskId },
+        user: { ...req.user.get() }
+      });
     }
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
       emailSubprocess({
@@ -111,13 +109,15 @@ exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
   }
 };
 
-function sendUpdates (io, userId, updatedTasks, activeTask, createdDraft, projectId) {
+function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, createdDraft, projectId) {
   if (createdDraft) {
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);
   }
 
   if (activeTask) {
     TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
+  } else {
+    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
   }
 
   updatedTasks.forEach(updatedTask => {
