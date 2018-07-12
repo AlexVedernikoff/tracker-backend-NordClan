@@ -73,7 +73,7 @@ exports.read = function (req, res, next) {
     .catch((err) => next(createError(err)));
 };
 
-exports.update = async function (req, res, next) {
+exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
   req.checkParams('id', 'id must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
@@ -84,12 +84,14 @@ exports.update = async function (req, res, next) {
     let updatedTasks, activeTask, createdDraft, projectId, changedTaskData;
     const result = { updatedTasks, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, activeTask, createdDraft, projectId);
-    if (changedTaskData.performerId) {
-      emailSubprocess({
-        eventId: models.ProjectEventsDictionary.values[1].id,
-        input: { taskId },
-        user: { ...req.user.get() }
-      });
+    if (changedTaskData) {
+      if (changedTaskData.performerId) {
+        emailSubprocess({
+          eventId: models.ProjectEventsDictionary.values[1].id,
+          input: {taskId},
+          user: {...req.user.get()}
+        });
+      }
     }
     if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
       emailSubprocess({
@@ -99,7 +101,7 @@ exports.update = async function (req, res, next) {
       });
     }
 
-    if (res) {
+    if (isNeedSendOkStatus) {
       res.sendStatus(200);
     }
   } catch (err) {

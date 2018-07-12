@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const taskController = require('./TaskController')
+const taskController = require('./TaskController');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
@@ -51,17 +51,29 @@ exports.create = async function (req, res, next) {
   }
 };
 
-exports.update = function (req, res, next) {
+exports.update = async function (req, res, next) {
+  const tasksUpdatePromise = [];
   if (Array.isArray(req.body)) {
     req.body.forEach(task => {
       const updateTaskReq = {...req};
       updateTaskReq.body = task;
       updateTaskReq.params.id = task.id;
-      taskController.update(updateTaskReq);
+      tasksUpdatePromise.push(taskController.update(
+        {
+          ...req,
+          body: task,
+          params: {
+            ...task.params,
+            id: task.id
+          }
+        },
+        res, next, false));
     });
-    res.sendStatus(200);
+    Promise.all(tasksUpdatePromise)
+      .then(res.sendStatus(200))
+      .catch(error => res.sendStatus(500));
   } else {
-    res.sendStatus(500);
+    res.sendStatus(200);
   }
 };
 
