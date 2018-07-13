@@ -93,10 +93,9 @@ exports.autocomplete = function (req, res, next) {
             ]
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu']
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn']
         })
         .then((users) => {
-
           users.forEach((user) => {
             result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
           });
@@ -130,9 +129,9 @@ exports.getUsersRoles = async function (req, res, next) {
         id,
         firstNameRu,
         lastNameRu,
-        globalRole,
         firstNameEn,
-        lastNameEn
+        lastNameEn,
+        globalRole
       };
     });
 
@@ -287,7 +286,7 @@ exports.getExternalUsers = async function (req, res, next) {
         order: [
           ['first_name_ru']
         ],
-        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive']
+        attributes: ['id', 'firstNameRu', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive']
       });
 
     res.json(users);
@@ -321,15 +320,26 @@ exports.autocompleteExternal = function (req, res, next) {
                 firstNameRu: {
                   $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
                 }
+              },
+              {
+                firstNameEn: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
+              },
+              {
+                firstNameEn: {
+                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                }
               }
+
             ]
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu']
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
         })
         .then((users) => {
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, id: user.id});
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id});
           });
           res.end(JSON.stringify(result));
         })
