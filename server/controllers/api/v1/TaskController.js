@@ -116,10 +116,12 @@ function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, c
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);
   }
 
+  if (updatedTaskPlayer.dataValues.performer) {
+    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
+  }
+
   if (activeTask) {
     TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
-  } else {
-    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
   }
 
   updatedTasks.forEach(updatedTask => {
