@@ -286,7 +286,7 @@ exports.getExternalUsers = async function (req, res, next) {
         order: [
           ['first_name_ru']
         ],
-        attributes: ['id', 'firstNameRu', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive']
+        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive']
       });
 
     res.json(users);
@@ -325,13 +325,7 @@ exports.autocompleteExternal = function (req, res, next) {
                 firstNameEn: {
                   $iLike: '%' + req.query.userName.trim() + '%'
                 }
-              },
-              {
-                firstNameEn: {
-                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
-                }
               }
-
             ]
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
