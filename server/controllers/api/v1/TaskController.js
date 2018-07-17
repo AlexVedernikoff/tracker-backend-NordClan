@@ -105,9 +105,7 @@ exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
       res.sendStatus(200);
     }
   } catch (err) {
-    if (next) {
-      next(createError(err));
-    }
+    next(createError(err));
   }
 };
 
