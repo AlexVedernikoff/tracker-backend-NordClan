@@ -165,8 +165,13 @@ async function getMetrics (projectId){
 }
 
 
-async function saveMetrics (metricsData){
-  return await sequelize.transaction(function (t){
-    return Metrics.bulkCreate(metricsData, {transaction: t});
+async function saveMetrics (metricsData) {
+  return sequelize.transaction({autocommit: false}).then(function (t) {
+    return Metrics.bulkCreate(metricsData, {transaction: t})
+      .then(function (metrics){
+        return t.commit();
+      }).catch(function (error) {
+        return t.rollback();
+      });
   });
 }
