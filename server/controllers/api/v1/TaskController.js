@@ -105,22 +105,52 @@ exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
       res.sendStatus(200);
     }
   } catch (err) {
+    if (next) {
+      next(createError(err));
+    }
+  }
+};
+
+exports.updateAllByAttribute = async function (req, res, next) {
+  if (isErrorReqUpdateAll(req)) return next(createError(400));
+  req.body.taskIds.forEach(taskId => {
+    if (isNaN(taskId)) {
+      return next(createError(400));
+    }
+  });
+  try {
+    await TasksService.updateAllByAttribute(req.body.changeData, req.body.taskIds, req.user);
+    res.sendStatus(200);
+  } catch (err) {
     next(createError(err));
   }
 };
+
+function isErrorReqUpdateAll (req) {
+  if (req.body.taskIds) {
+    const attribute = ['sprintId'];
+    return attribute.find(attr => {
+      req.body.hasOwnProperty(attr);
+    });
+  } else if (!req.body.taskIds) {
+    return true;
+  }
+  return false;
+}
 
 function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, createdDraft, projectId) {
   if (createdDraft) {
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);
   }
 
-  if (updatedTaskPlayer.dataValues.performer) {
-    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
-  }
-
   if (activeTask) {
     TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
   }
+
+  if (updatedTaskPlayer && updatedTaskPlayer.dataValues.performer) {
+    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
+  }
+
 
   updatedTasks.forEach(updatedTask => {
     TasksChannel.sendAction('update', updatedTask.dataValues, io, projectId);

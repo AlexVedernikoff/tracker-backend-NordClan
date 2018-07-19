@@ -32,6 +32,50 @@ async function update (body, taskId, user) {
 
   const updatedTask = await findByPrimary(taskId, user.globalRole);
 
+  const taskData = await taskUpdateHandler(updatedTask, originTask, body, user);
+
+  return {
+    changedTaskData,
+    ...taskData
+  };
+}
+
+async function updateAllByAttribute (attr, taskIds, user) {
+
+  const originTasks = await Task.findAll({
+    where: {
+      id: taskIds
+    }
+  });
+  const validTaskIds = await getValidTaskIds(originTasks, attr, user);
+  await Task.update(attr, {
+    where: {
+      id: validTaskIds
+    }
+  });
+
+  const updatedTasks = await Task.findAll({
+    where: {
+      id: validTaskIds
+    }
+  });
+
+  const taskUpdatedPromises = [];
+
+  updatedTasks.forEach(updatedTask => {
+    const findOriginTask = originTasks.find(originTask => {
+      return originTask.dataValues.id === updatedTask.dataValues.id;
+    });
+    taskUpdatedPromises.push(
+      taskUpdateHandler(updatedTask, findOriginTask, attr, user)
+    );
+  });
+
+  await Promise.all(taskUpdatedPromises);
+  return updatedTasks;
+}
+
+async function taskUpdateHandler (updatedTask, originTask, body, user){
   const createdDraft = body.statusId && body.performerId !== 0
     ? await createDraftIfNeeded(originTask, body.statusId)
     : null;
@@ -43,15 +87,12 @@ async function update (body, taskId, user) {
   const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(updatedTask);
   updatedTask.dataValues.qaFactExecutionTime = qaFactExecutionTime;
   updatedTask.dataValues.qaPlannedTime = qaPlannedTime;
-
-
   return {
     updatedTasks: [updatedTask, ...stoppedTasks],
-    updatedTask,
+    updatedTask: updatedTask,
     createdDraft,
     activeTask,
-    projectId: originTask.projectId,
-    changedTaskData
+    projectId: originTask.projectId
   };
 }
 
@@ -170,6 +211,17 @@ async function stopTasks (ids) {
   return [];
 }
 
+async function getValidTaskIds (tasks, body, user) {
+  const validTaskIds = [];
+  for (const task of tasks) {
+    const { error } = await validateTask(task, body, user);
+    if (!error) {
+      validTaskIds.push(task.id);
+    }
+  }
+  return validTaskIds;
+}
+
 async function validateTask (task, body, user) {
   if (!task) {
     throw createError(404, 'Task not found');
@@ -203,6 +255,7 @@ async function validateTask (task, body, user) {
 }
 
 module.exports = {
+  updateAllByAttribute,
   update,
   getActiveTasks,
   getLastActiveTask
