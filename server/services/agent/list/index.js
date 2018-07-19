@@ -12,6 +12,8 @@ exports.list = async (params) => {
     ? new Date(params.endDate)
     : now.add(1, 'days').format(dateFormat);
 
+  endDate.setMinutes(endDate.getMinutes() + 10);
+
   delete params.startDate;
   delete params.endDate;
 
