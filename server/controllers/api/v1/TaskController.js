@@ -73,7 +73,7 @@ exports.read = function (req, res, next) {
     .catch((err) => next(createError(err)));
 };
 
-exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
+exports.update = async function (req, res, next) {
   req.checkParams('id', 'id must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
@@ -101,13 +101,9 @@ exports.update = async function (req, res, next, isNeedSendOkStatus = true) {
       });
     }
 
-    if (isNeedSendOkStatus) {
-      res.sendStatus(200);
-    }
+    res.sendStatus(200);
   } catch (err) {
-    if (next) {
-      next(createError(err));
-    }
+    next(createError(err));
   }
 };
 
