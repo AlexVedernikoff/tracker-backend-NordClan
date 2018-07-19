@@ -1,5 +1,4 @@
 const createError = require('http-errors');
-const taskController = require('./TaskController');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 
@@ -51,31 +50,6 @@ exports.create = async function (req, res, next) {
   }
 };
 
-exports.update = async function (req, res, next) {
-  const tasksUpdatePromise = [];
-  if (Array.isArray(req.body)) {
-    req.body.forEach(task => {
-      const updateTaskReq = {...req};
-      updateTaskReq.body = task;
-      updateTaskReq.params.id = task.id;
-      tasksUpdatePromise.push(taskController.update(
-        {
-          ...req,
-          body: task,
-          params: {
-            ...task.params,
-            id: task.id
-          }
-        },
-        res, next, false));
-    });
-    Promise.all(tasksUpdatePromise)
-      .then(res.sendStatus(200))
-      .catch(error => res.sendStatus(500));
-  } else {
-    res.sendStatus(200);
-  }
-};
 
 exports.delete = async function (req, res, next) {
   if (!req.params.taskId.match(/^[0-9]+$/)) return next(createError(400, 'taskId must be int'));
