@@ -109,11 +109,6 @@ exports.update = async function (req, res, next) {
 
 exports.updateAllByAttribute = async function (req, res, next) {
   if (isErrorReqUpdateAll(req)) return next(createError(400));
-  req.body.taskIds.forEach(taskId => {
-    if (isNaN(taskId)) {
-      return next(createError(400));
-    }
-  });
   try {
     await TasksService.updateAllByAttribute(req.body.changeData, req.body.taskIds, req.user);
     res.sendStatus(200);
@@ -123,15 +118,8 @@ exports.updateAllByAttribute = async function (req, res, next) {
 };
 
 function isErrorReqUpdateAll (req) {
-  if (req.body.taskIds) {
-    const attribute = ['sprintId'];
-    return attribute.find(attr => {
-      req.body.hasOwnProperty(attr);
-    });
-  } else if (!req.body.taskIds) {
-    return true;
-  }
-  return false;
+  return !req.body.taskIds || !req.body.taskIds.length || !req.body.changeData.sprintId
+    || req.body.taskIds.some(id => isNaN(id));
 }
 
 function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, createdDraft, projectId) {

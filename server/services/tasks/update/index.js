@@ -32,50 +32,6 @@ async function update (body, taskId, user) {
 
   const updatedTask = await findByPrimary(taskId, user.globalRole);
 
-  const taskData = await taskUpdateHandler(updatedTask, originTask, body, user);
-
-  return {
-    changedTaskData,
-    ...taskData
-  };
-}
-
-async function updateAllByAttribute (attr, taskIds, user) {
-
-  const originTasks = await Task.findAll({
-    where: {
-      id: taskIds
-    }
-  });
-  const validTaskIds = await getValidTaskIds(originTasks, attr, user);
-  await Task.update(attr, {
-    where: {
-      id: validTaskIds
-    }
-  });
-
-  const updatedTasks = await Task.findAll({
-    where: {
-      id: validTaskIds
-    }
-  });
-
-  const taskUpdatedPromises = [];
-
-  updatedTasks.forEach(updatedTask => {
-    const findOriginTask = originTasks.find(originTask => {
-      return originTask.dataValues.id === updatedTask.dataValues.id;
-    });
-    taskUpdatedPromises.push(
-      taskUpdateHandler(updatedTask, findOriginTask, attr, user)
-    );
-  });
-
-  await Promise.all(taskUpdatedPromises);
-  return updatedTasks;
-}
-
-async function taskUpdateHandler (updatedTask, originTask, body, user){
   const createdDraft = body.statusId && body.performerId !== 0
     ? await createDraftIfNeeded(originTask, body.statusId)
     : null;
@@ -87,13 +43,50 @@ async function taskUpdateHandler (updatedTask, originTask, body, user){
   const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(updatedTask);
   updatedTask.dataValues.qaFactExecutionTime = qaFactExecutionTime;
   updatedTask.dataValues.qaPlannedTime = qaPlannedTime;
+
+
   return {
     updatedTasks: [updatedTask, ...stoppedTasks],
-    updatedTask: updatedTask,
+    updatedTask,
     createdDraft,
     activeTask,
-    projectId: originTask.projectId
+    projectId: originTask.projectId,
+    changedTaskData
   };
+}
+
+async function updateAllByAttribute (attr, taskIds, user) {
+  const originTasks = await Task.findAll({
+    where: {
+      id: taskIds
+    }
+  });
+
+  let updatedTasks;
+  const validTaskIds = await getValidTaskIds(originTasks, attr, user);
+  try {
+    await validateSprint(attr);
+    updatedTasks = await Task.update(attr, {
+      where: {
+        id: validTaskIds
+      },
+      returning: true
+    });
+  } catch (error) {
+    createError(error);
+  }
+
+  return updatedTasks[1];
+}
+
+async function validateSprint (data) {
+  const sprintId = await models.Sprint.findByPrimary(data.sprintId, {
+    attributes: ['id']
+  });
+
+  if (!sprintId) {
+    throw createError(400, 'sprintId wrong');
+  }
 }
 
 function getTaskParams (body) {
@@ -215,9 +208,10 @@ async function getValidTaskIds (tasks, body, user) {
   const validTaskIds = [];
   for (const task of tasks) {
     const { error } = await validateTask(task, body, user);
-    if (!error) {
-      validTaskIds.push(task.id);
+    if (error) {
+      throw createError(error);
     }
+    validTaskIds.push(task.id);
   }
   return validTaskIds;
 }
