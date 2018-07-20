@@ -8,7 +8,7 @@ const { Project } = models;
  * @param data - Данные для синхронизации
  */
 exports.jiraSync = async function (data) {
-  // тело сервиса. Вся логика будет тут
+  // тело сервиса. Вся логика тут
   /**
    *  
    * Приходят данные за неделю. по externalId сравниваем таски если нет заводим новую, если есть обновляем старую
@@ -23,29 +23,30 @@ exports.jiraSync = async function (data) {
   /**
    * Модуль со спринтами
    */
-  // нужно проставлять спринту значение author_id и брать его из автора проекта.
-  // creator задачи возможно тоже
+  // Проставление спринту значения author_id из автора проекта.
   const sprintsObj = {};
   data.map(task => {
-    // 
-    if (!Object.keys(sprintsObj).includes(task.sprint.id)) {
-      sprintsObj[task.sprint.id] = task.sprint.name;
+    const ind = projects.findIndex((p) => {
+      return p.externalId.toString() === task.projectId.toString();
+    });
+    if (!Object.keys(sprintsObj).includes(task.sprint.id) && ind >= 0) {
+      sprintsObj[task.sprint.id] = {name: task.sprint.name, authorId: projects[ind].authorId};
     }
   });
   const sprints = [];
   for (const key in sprintsObj) {
-    sprints.push({ externalId: key, name: sprintsObj[key] }); /*authorId - вытащить из проекта */
+    sprints.push({ externalId: key, name: sprintsObj[key].name, authorId: sprintsObj[key].authorId });
   }
-  console.log(sprints);
   const resSprints = await SprintService.synchronizeSprints(sprints); // тут должны быть все спринты которые пришли в исходном обьекте
-
+  return resSprints;
   /**
     * Модуль с задачами
     */
+  /*
   const tasks = data.map(task => {
     const ind = resSprints.findIndex(sp => sp.externalId === task.sprint.id ? true : false);
     const t = Object.assign({}, { externalId: task.id, name: task.summary, factExecutionTime: task.timeSpent, sprintId: resSprints[ind].id }); /* typeId, statusId, authorId */
-    delete t.worklogs;
+  /*   delete t.worklogs;
     return t;
   });
 

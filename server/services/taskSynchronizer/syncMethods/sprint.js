@@ -1,7 +1,6 @@
 const models = require('../../../models');
 const { Sprint } = models;
 
-
 /**
  * Синхронизация спринтов
  * @param {Array} data - массив из спринтов, подготовленный для записи.
@@ -15,8 +14,25 @@ exports.synchronizeSprints = async function (sprints) {
     });
     if (ind === -1) return spr;
   });
-  // если нет спринта с таким экстерналом то создавать новый либо обновлять текущий
-  if (createdSprints.length > 0) createdSprints = await Sprint.update(createdSprints, { where: { externalId: { $in: extIds } } });
+
+  //обновление созданных спринтов
+  if (createdSprints.length > 0) {
+    createdSprints = createdSprints.map(cs => cs.dataValues);
+
+    // отсеить из спринтов созданные и их обновить в цикле
+    sprints.map(async (s, i) => {
+      const ind = createdSprints.findIndex(cspr => {
+        return s.externalId.toString() === cspr.id.toString();
+      });
+      if (ind >= -1) {
+        const updObj = sprints[i];
+        await Sprint.update(updObj, { where: { externalId: s.externalId.toString() } });
+      }
+    });
+
+  }
+
+  // создание новых спринтов
   if (newSprints.length > 0) newSprints = await Sprint.bulkCreate(newSprints);
   return newSprints.concat(createdSprints);
 };
