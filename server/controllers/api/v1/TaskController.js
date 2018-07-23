@@ -7,6 +7,8 @@ const TasksService = require('../../../services/tasks');
 const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 
+const taskIsDone = tasks => tasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS;
+
 exports.create = async function (req, res, next) {
   req.checkBody('projectId', 'projectId must be int').isInt();
   const validationResult = await req.getValidationResult();
@@ -84,16 +86,14 @@ exports.update = async function (req, res, next) {
     let updatedTasks, activeTask, createdDraft, projectId, changedTaskData, updatedTask;
     const result = { updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
     sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId);
-    if (changedTaskData) {
-      if (changedTaskData.performerId) {
-        emailSubprocess({
-          eventId: models.ProjectEventsDictionary.values[1].id,
-          input: {taskId},
-          user: {...req.user.get()}
-        });
-      }
+    if (changedTaskData.performerId && !taskIsDone(updatedTasks)) {
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[1].id,
+        input: { taskId },
+        user: { ...req.user.get() }
+      });
     }
-    if (changedTaskData.statusId && updatedTasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS) {
+    if (changedTaskData.statusId && taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[3].id,
         input: { taskId },
@@ -134,7 +134,6 @@ function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, c
   if (updatedTaskPlayer && updatedTaskPlayer.dataValues.performer) {
     TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
   }
-
 
   updatedTasks.forEach(updatedTask => {
     TasksChannel.sendAction('update', updatedTask.dataValues, io, projectId);
