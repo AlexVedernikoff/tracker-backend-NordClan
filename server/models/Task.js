@@ -70,7 +70,8 @@ module.exports = function (sequelize, DataTypes) {
     externalId: {
       field: 'external_id',
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
+      unique: true
     },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
     updatedAt: { type: DataTypes.DATE, field: 'updated_at' },

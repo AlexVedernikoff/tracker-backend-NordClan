@@ -30,7 +30,7 @@ exports.jiraSync = async function (data) {
       return p.externalId.toString() === task.projectId.toString();
     });
     if (!Object.keys(sprintsObj).includes(task.sprint.id) && ind >= 0) {
-      sprintsObj[task.sprint.id] = {name: task.sprint.name, authorId: projects[ind].authorId};
+      sprintsObj[task.sprint.id] = { name: task.sprint.name, authorId: projects[ind].authorId };
     }
   });
   const sprints = [];
@@ -38,22 +38,38 @@ exports.jiraSync = async function (data) {
     sprints.push({ externalId: key, name: sprintsObj[key].name, authorId: sprintsObj[key].authorId });
   }
   const resSprints = await SprintService.synchronizeSprints(sprints); // тут должны быть все спринты которые пришли в исходном обьекте
-  return resSprints;
+  // return resSprints;
+
   /**
     * Модуль с задачами
     */
-  /*
+
   const tasks = data.map(task => {
-    const ind = resSprints.findIndex(sp => sp.externalId === task.sprint.id ? true : false);
-    const t = Object.assign({}, { externalId: task.id, name: task.summary, factExecutionTime: task.timeSpent, sprintId: resSprints[ind].id }); /* typeId, statusId, authorId */
-  /*   delete t.worklogs;
+    const pInd = projects.findIndex((p) => {
+      return p.externalId.toString() === task.projectId.toString();
+    });
+    const sInd = resSprints.findIndex(sp => sp.externalId.toString() === task.sprint.id.toString());
+    const t = Object.assign({}, {
+      externalId: task.id.toString(),
+      name: task.summary,
+      factExecutionTime: task.timeSpent,
+      sprintId: resSprints[sInd].id,
+      typeId: 1, // тестовое значение до реализации функционала
+      statusId: 1, // тестовое значение до реализации функционала
+      authorId: projects[pInd].authorId,
+      projectId: projects[pInd].id
+    });
     return t;
   });
 
-  const resTasks = await TasksService.createMany(tasks); // тут должны быть все спринты которые пришли в исходном обьекте
+  const resTasks = await TasksService.synchronizeTasks(tasks);
+  return resTasks;
+
+
   /**
    * Модуль с таймшитами
    */
+
 };
 
 // когда создается проект, аккаунт-менеджер из джиры подгружает типы задач, баги фичи итд и аккаунт прокидывает связи. 
