@@ -1,6 +1,7 @@
 const TasksService = require('../syncMethods/task');
 const SprintService = require('../syncMethods/sprint');
 const models = require('../../../models');
+const createError = require('http-errors');
 const { Project } = models;
 
 
@@ -37,7 +38,14 @@ exports.jiraSync = async function (data) {
   for (const key in sprintsObj) {
     sprints.push({ externalId: key, name: sprintsObj[key].name, authorId: sprintsObj[key].authorId });
   }
-  const resSprints = await SprintService.synchronizeSprints(sprints); // тут должны быть все спринты которые пришли в исходном обьекте
+
+  let resSprints;
+  try {
+    resSprints = await SprintService.synchronizeSprints(sprints); // тут должны быть все спринты которые пришли в исходном обьекте
+  } catch (e) {
+    throw createError(400, 'Invalid input data');
+  }
+
   // return resSprints;
 
   /**
@@ -62,7 +70,13 @@ exports.jiraSync = async function (data) {
     return t;
   });
 
-  const resTasks = await TasksService.synchronizeTasks(tasks);
+  let resTasks;
+  try {
+    resTasks = await TasksService.synchronizeTasks(tasks);
+  } catch (e) {
+    throw createError(400, 'Invalid input data');
+  }
+
   return resTasks;
 
 

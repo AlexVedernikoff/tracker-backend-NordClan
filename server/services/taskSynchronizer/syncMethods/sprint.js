@@ -8,7 +8,7 @@ const { Sprint } = models;
 exports.synchronizeSprints = async function (sprints) {
   const extIds = sprints.map(s => s.externalId);
   let createdSprints = await Sprint.findAll({ where: { externalId: { $in: extIds } } });
-  let newSprints = sprints.filter(spr => {
+  const newSprints = sprints.filter(spr => {
     const ind = createdSprints.findIndex(cspr => {
       if (cspr.externalId === spr.externalId) return true;
     });
@@ -33,7 +33,7 @@ exports.synchronizeSprints = async function (sprints) {
   }
 
   // создание новых спринтов
-  if (newSprints.length > 0) newSprints = await Sprint.bulkCreate(newSprints);
+  if (newSprints.length > 0) await Sprint.bulkCreate(newSprints);
   return newSprints.concat(createdSprints);
 };
 

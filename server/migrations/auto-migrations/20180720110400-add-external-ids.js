@@ -7,28 +7,32 @@ module.exports = {
           'projects',
           'external_id',
           {
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
+            unique: true
           }
         ),
         queryInterface.addColumn(
           'sprints',
           'external_id',
           {
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
+            unique: true
           }
         ),
         queryInterface.addColumn(
           'tasks',
           'external_id',
           {
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
+            unique: true
           }
         ),
         queryInterface.addColumn(
           'timesheets',
           'external_id',
           {
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
+            unique: true
           }
         )
       ]));
