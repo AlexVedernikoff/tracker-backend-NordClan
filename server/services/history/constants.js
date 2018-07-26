@@ -57,7 +57,7 @@ module.exports = {
     CREATE_SPRINT: {
       message: 'создал(-а) спринт \'{sprint}\'',
       entities: ['sprint'],
-      messageEn: 'changed budget project without risk reserve from \'{prevValue}\' to \'{value}\''
+      messageEn: 'created sprint \'{sprint}\''
     },
     SET_SPRINT_DELETED_AT: {
       message: 'удалил(-а) спринт \'{sprint}\'',

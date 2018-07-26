@@ -31,9 +31,9 @@ module.exports = function (sequelize, DataTypes) {
   };
 
   ProjectStatuses.values = [
-    {id: 1, name: 'В процессе'},
-    {id: 2, name: 'Приостановлен'},
-    {id: 3, name: 'Завершен'}
+    {id: 1, name: 'В процессе', nameEn: 'In progress'},
+    {id: 2, name: 'Приостановлен', nameEn: 'Paused'},
+    {id: 3, name: 'Завершен', nameEn: 'Finished'}
   ];
 
   ProjectStatuses.IN_PROGRESS = 1;
