@@ -4,7 +4,6 @@ exports.name = 'projectUsers';
 
 exports.getTransRolesToObject = getTransRolesToObject;
 exports.getUsersByProject = function (projectId, isExternal, attributes = ['userId', 'rolesIds'], t = null) {
-  let response = [];
 
   return models.ProjectUsers
     .findAll({
@@ -21,7 +20,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
           where: {
             globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE }
           },
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login'],
         },
         {
           as: 'roles',
@@ -35,16 +34,14 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
       ]
     })
     .then((projectUsers) => {
-      projectUsers.forEach((projectUser) => {
-        response.push({
-          id: projectUser.user.id,
+      return projectUsers.map((projectUser) => {
+        return {
+          ...projectUser.user.get(),
           fullNameRu: projectUser.user.fullNameRu,
           fullNameEn: projectUser.user.fullNameEn,
-          roles: getTransRolesToObject(projectUser.roles),
-        });
+          roles: getTransRolesToObject(projectUser.roles)
+        };
       });
-
-      return response;
     });
 
 };
