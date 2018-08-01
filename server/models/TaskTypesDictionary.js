@@ -13,6 +13,14 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
+    },
+    nameEn: {
+      type: DataTypes.STRING(20),
+      trim: true,
+      allowNull: false,
+      validate: {
+        len: [1, 20]
+      }
     }
   }, {
     underscored: true,
@@ -32,13 +40,13 @@ module.exports = function (sequelize, DataTypes) {
   };
 
   TaskTypes.values = [
-    {id: 1, name: 'Фича'},
-    {id: 3, name: 'Доп. Фича'},
-    {id: 2, name: 'Баг'},
-    {id: 4, name: 'Регрес. Баг'}
+    {id: 1, name: 'Фича', nameEn: 'Feature'},
+    {id: 3, name: 'Доп. Фича', nameEn: 'Add. Feature'},
+    {id: 2, name: 'Баг', nameEn: 'Bug'},
+    {id: 4, name: 'Регрес. Баг', nameEn: 'Regres. Bug'}
   ];
 
-  TaskTypes.defaultSelect = ['id', 'name'];
+  TaskTypes.defaultSelect = ['id', 'name', 'nameEn'];
 
   return TaskTypes;
 };
