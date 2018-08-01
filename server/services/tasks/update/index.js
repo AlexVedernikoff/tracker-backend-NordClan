@@ -207,7 +207,7 @@ async function getValidTaskIds (tasks, body, user) {
     await Promise.all(tasks.map(task => validateTask(task, body, user)));
     return tasks.map(task => task.id);
   } catch (error) {
-    throw createError(error);
+    throw error;
   }
 }
 
