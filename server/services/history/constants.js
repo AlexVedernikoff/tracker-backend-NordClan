@@ -82,7 +82,7 @@ module.exports = {
     CHANGE_SPRINT_ALLOTTEDTIME: {
       message: 'изменил(-а) выделенное время на спринт \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'changed alotted time of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
+      messageEn: 'changed allotted time of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     CHANGE_SPRINT_NAME: {
       message: 'изменил(-а) название спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
@@ -92,12 +92,12 @@ module.exports = {
     SET_SPRINT_FACTSTARTDATE: {
       message: 'добавил(-а) фактическое начало спринта \'{sprint}\' \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'added factic start sprint time \'{sprint}\' \'{value}\''
+      messageEn: 'added fact start sprint time \'{sprint}\' \'{value}\''
     },
     CHANGE_SPRINT_FACTSTARTDATE: {
       message: 'изменил(-а) фактическое начало спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'changed factic sprint start time \'{sprint}\' from \'{prevValue}\' to \'{value}\''
+      messageEn: 'changed fact sprint start time \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     SET_SPRINT_FACTFINISHDATE: {
       message: 'добавил(-а) фактическое завершение спринта \'{sprint}\' \'{value}\'',
@@ -107,7 +107,7 @@ module.exports = {
     CHANGE_SPRINT_FACTFINISHDATE: {
       message: 'изменил(-а) фактическое завершение спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'changed factic sprint end time from \'{prevValue}\' to \'{value}\''
+      messageEn: 'changed fact sprint end time from \'{prevValue}\' to \'{value}\''
     },
     CREATE_SPRINT_BUDGET: {
       message: 'добавил(а) бюджет спринта \'{sprint}\' без рискового резерва \'{value}\'',
