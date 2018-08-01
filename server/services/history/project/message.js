@@ -13,8 +13,8 @@ module.exports = function (model) {
     return;
   }
 
-  const { message, entities } = getResources(resource, model, changedProperty);
-  return { message, entities };
+  const { message, entities, messageEn } = getResources(resource, model, changedProperty);
+  return { message, entities, messageEn };
 };
 
 function getResourceName (model, changedProperty) {
@@ -26,6 +26,7 @@ function getResourceName (model, changedProperty) {
 
 function getResources (resource, model, changedProperty) {
   const message = transformMessage(resource.message, changedProperty, model);
+  const messageEn = transformMessage(resource.messageEn, changedProperty, model);
   const properties = transformProperties(model.entity, model.field, changedProperty);
   const entitiesName = resource.entities || [];
   const entities = entitiesName.reduce((acc, name) => {
@@ -36,6 +37,7 @@ function getResources (resource, model, changedProperty) {
 
   return {
     message: insertChangedProperties(message, properties),
+    messageEn: insertChangedProperties(messageEn, properties),
     entities
   };
 }
