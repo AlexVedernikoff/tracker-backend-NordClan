@@ -1,6 +1,6 @@
 const models = require('../../../models');
 const moment = require('moment');
-const { Task, Project } = models;
+const { Task, Project, Sprint } = models;
 const TimesheetService = require('../../timesheets');
 const { findByPrimary } = require('./request');
 const createError = require('http-errors');
@@ -56,36 +56,34 @@ async function update (body, taskId, user) {
 }
 
 async function updateAllByAttribute (attr, taskIds, user) {
-  const originTasks = await Task.findAll({
-    where: {
-      id: taskIds
-    }
-  });
-
-  let updatedTasks;
-  const validTaskIds = await getValidTaskIds(originTasks, attr, user);
   try {
-    await validateSprint(attr);
-    updatedTasks = await Task.update(attr, {
+    const originTasks = await Task.findAll({
+      where: {
+        id: taskIds
+      }
+    });
+
+    const validTaskIds = await getValidTaskIds(originTasks, attr, user);
+
+    if (attr.sprintId) await validateSprint(attr.sprintId);
+
+    const updatedTasks = await Task.update(attr, {
       where: {
         id: validTaskIds
       },
       returning: true
     });
+    return updatedTasks[1];
   } catch (error) {
-    createError(error);
+    throw createError(error);
   }
-
-  return updatedTasks[1];
 }
 
-async function validateSprint (data) {
-  const sprintId = await models.Sprint.findByPrimary(data.sprintId, {
-    attributes: ['id']
-  });
-
-  if (!sprintId) {
-    throw createError(400, 'sprintId wrong');
+async function validateSprint (sprintId) {
+  try {
+    if (!await Sprint.findByPrimary(sprintId)) throw createError(404, 'Invalid sprint.');
+  } catch (error) {
+    throw createError(error);
   }
 }
 
@@ -205,15 +203,12 @@ async function stopTasks (ids) {
 }
 
 async function getValidTaskIds (tasks, body, user) {
-  const validTaskIds = [];
-  for (const task of tasks) {
-    const { error } = await validateTask(task, body, user);
-    if (error) {
-      throw createError(error);
-    }
-    validTaskIds.push(task.id);
+  try {
+    await Promise.all(tasks.map(task => validateTask(task, body, user)));
+    return tasks.map(task => task.id);
+  } catch (error) {
+    throw createError(error);
   }
-  return validTaskIds;
 }
 
 async function validateTask (task, body, user) {

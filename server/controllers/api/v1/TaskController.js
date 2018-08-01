@@ -109,8 +109,9 @@ exports.update = async function (req, res, next) {
 
 exports.updateAllByAttribute = async function (req, res, next) {
   if (isErrorReqUpdateAll(req)) return next(createError(400));
+
   try {
-    await TasksService.updateAllByAttribute(req.body.changeData, req.body.taskIds, req.user);
+    await TasksService.updateAllByAttribute({sprintId: req.body.sprintId}, req.body.taskIds, req.user);
     res.sendStatus(200);
   } catch (err) {
     next(createError(err));
@@ -118,7 +119,7 @@ exports.updateAllByAttribute = async function (req, res, next) {
 };
 
 function isErrorReqUpdateAll (req) {
-  return !req.body.taskIds || !req.body.taskIds.length || !req.body.changeData.sprintId
+  return !req.body.taskIds || !req.body.taskIds.length || !req.body.sprintId
     || req.body.taskIds.some(id => isNaN(id));
 }
 
