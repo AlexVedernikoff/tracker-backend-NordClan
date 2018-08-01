@@ -8,15 +8,15 @@ module.exports = {
   resources: {
     CREATE_PROJECT: {
       message: 'создал(а) проект',
-      messageEn: 'was created project'
+      messageEn: 'created project'
     },
     CREATE_PROJECT_CREATEDBYSYSTEMUSER: {
       message: 'создал(а) проект от системного пользователя',
-      messageEn: 'was created project from system user'
+      messageEn: 'created project from system user'
     },
     CHANGE_PROJECT_NAME: {
       message: 'изменил(-а) название проекта c \'{prevValue}\' на \'{value}\'',
-      messageEn: 'was changed name of project from \'{prevValue}\' to \'{value}\''
+      messageEn: 'changed name of project from \'{prevValue}\' to \'{value}\''
     },
     SET_PROJECT_DESCRIPTION: {
       message: 'добавил(а) описание проекта \'{value}\'',
@@ -65,57 +65,57 @@ module.exports = {
       messageEn: 'removed sprint \'{sprint}\''
     },
     CHANGE_SPRINT_STATUSID: {
-      message: 'изменил(-а) статус спринта {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'изменил(-а) статус спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
       messageEn: 'changed status of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     CREATE_SPRINT_ALLOTTEDTIME: {
-      message: 'добавил(-а) выделенное время на спринт {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'добавил(-а) выделенное время на спринт \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'added allotted time to sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
+      messageEn: 'added allotted time of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     SET_SPRINT_ALLOTTEDTIME: {
-      message: 'добавил(-а) выделенное время на спринт {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'добавил(-а) выделенное время на спринт \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'added alotted time to sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
+      messageEn: 'added allotted time of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     CHANGE_SPRINT_ALLOTTEDTIME: {
-      message: 'изменил(-а) выделенное время на спринт {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'изменил(-а) выделенное время на спринт \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'changed alotted time to sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
+      messageEn: 'changed alotted time of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     CHANGE_SPRINT_NAME: {
-      message: 'изменил(-а) название спринта {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'изменил(-а) название спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
       messageEn: 'changed name of sprint \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     SET_SPRINT_FACTSTARTDATE: {
-      message: 'добавил(-а) фактическое начало спринта {sprint} \'{value}\'',
+      message: 'добавил(-а) фактическое начало спринта \'{sprint}\' \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'added factic start sprint time {sprint} \'{value}\''
+      messageEn: 'added factic start sprint time \'{sprint}\' \'{value}\''
     },
     CHANGE_SPRINT_FACTSTARTDATE: {
-      message: 'изменил(-а) фактическое начало спринта {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'изменил(-а) фактическое начало спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'changed factic sprint start time {sprint} from \'{prevValue}\' to \'{value}\''
+      messageEn: 'changed factic sprint start time \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     },
     SET_SPRINT_FACTFINISHDATE: {
-      message: 'добавил(-а) фактическое завершение спринта {sprint} \'{value}\'',
+      message: 'добавил(-а) фактическое завершение спринта \'{sprint}\' \'{value}\'',
       entities: ['sprint'],
-      messageEn: 'added factic sprint end time {sprint} \'{value}\''
+      messageEn: 'added fact sprint end time \'{sprint}\' \'{value}\''
     },
     CHANGE_SPRINT_FACTFINISHDATE: {
-      message: 'изменил(-а) фактическое завершение спринта {sprint} c \'{prevValue}\' на \'{value}\'',
+      message: 'изменил(-а) фактическое завершение спринта \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
       entities: ['sprint'],
       messageEn: 'changed factic sprint end time from \'{prevValue}\' to \'{value}\''
     },
     CREATE_SPRINT_BUDGET: {
-      message: 'добавил(а) бюджет спринта {sprint} без рискового резерва \'{value}\'',
+      message: 'добавил(а) бюджет спринта \'{sprint}\' без рискового резерва \'{value}\'',
       entities: ['sprint'],
       messageEn: 'added budget of sprint without risk reserve \'{value}\''
     },
     CREATE_SPRINT_RISKBUDGET: {
-      message: 'добавил(а) бюджет спринта {sprint} с рисковым резервом \'{value}\'',
+      message: 'добавил(а) бюджет спринта \'{sprint}\' с рисковым резервом \'{value}\'',
       entities: ['sprint'],
       messageEn: 'added budget of sprint with risk reserve \'{value}\''
     },
@@ -168,12 +168,12 @@ module.exports = {
     SET_PROJECT_PORTFOLIOID: {
       message: 'добавил(а) проект в портфель {portfolio}',
       entities: ['portfolio'],
-      messageEn: 'added project in portfolio {portfolio}'
+      messageEn: 'added project to portfolio {portfolio}'
     },
     CHANGE_PROJECT_PORTFOLIOID: {
       message: 'добавил(а) проект в портфель {portfolio}',
       entities: ['portfolio'],
-      messageEn: 'added project in portfolio {portfolio}'
+      messageEn: 'added project to portfolio {portfolio}'
     },
     DELETE_PROJECT_PORTFOLIOID: {
       message: 'удалил(а) проект из портфеля {portfolio}',
