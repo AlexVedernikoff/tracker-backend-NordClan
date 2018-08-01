@@ -31,6 +31,7 @@ module.exports = () => {
             id: model.id,
             date: model.createdAt,
             message: response.message,
+            messageEn: response.messageEn,
             entities: response.entities,
             author: model.author
           } : null;

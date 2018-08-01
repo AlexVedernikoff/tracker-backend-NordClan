@@ -21,6 +21,7 @@ module.exports = function (model) {
 
   return {
     message: answer.message,
+    messageEn: answer.messageEn,
     entities: answer.entities
   };
 };
@@ -30,6 +31,7 @@ module.exports = function (model) {
 function generativeAnswer(model, values) {
   let result = {
     message: '',
+    messageEn: '',
     entities: {}
   };
 
@@ -106,6 +108,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: `создал(-а) ${entityWord.create} '${model.task.name}'`,
+          messageEn: `created ${entityWord.create} '${model.task.name}'`,
           entities: {}
         };
       }
@@ -118,6 +121,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: `создал(-а) под${entityWord.create} {subTask}`,
+          messageEn: `created as${entityWord.create} {subTask}`,
           entities: {
             subTask: model.subTask
           }
@@ -132,6 +136,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'установил(-а) исполнителя {performer}',
+          messageEn: 'setted performer {performer}',
           entities: {
             performer: model.performer
           }
@@ -146,6 +151,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'убрал(-а) исполнителя {prevPerformer}',
+          messageEn: 'removed performer {prevPerformer}',
           entities: {
             prevPerformer: model.prevPerformer
           },
@@ -160,6 +166,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'изменил(-а) исполнителя {prevPerformer} на {performer}',
+          messageEn: 'changed performer from {prevPerformer} to {performer}',
           entities: {
             performer: model.performer,
             prevPerformer: model.prevPerformer
@@ -175,6 +182,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'создал(-а) связь с задачей {linkedTask}',
+          messageEn: 'created a connection with task {linkedTask}',
           entities: {
             linkedTask: model.taskTasks
           },
@@ -189,6 +197,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'удалил(-а) связь с задачей {linkedTask}',
+          messageEn: 'removed connection with task {linkedTask}',
           entities: {
             linkedTask: model.taskTasks
           },
@@ -203,6 +212,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: `создал(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`,
+          messageEn: `created tag '${model.itemTag ? model.itemTag.tag.name : ''}'`
         };
       }
     },
@@ -213,7 +223,8 @@ function declarativeHandlers() {
       },
       answer: (model) => {
         return {
-          message: `удалил(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`
+          message: `удалил(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`,
+          messageEn: `deleted tag '${model.itemTag ? model.itemTag.tag.name : ''}'`
         };
       }
     },
@@ -225,6 +236,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'прикрепил(-а) файл {file}',
+          messageEn: 'attached file {file}',
           entities: {
             file: model.taskAttachments
           }
@@ -239,6 +251,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'удалил(-а) файл {file}',
+          messageEn: 'removed file {file}',
           entities: {
             file: model.taskAttachments
           }
