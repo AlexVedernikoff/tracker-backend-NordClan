@@ -8,7 +8,7 @@ const TaskTypes = [
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
-      .addColumn('task_types_dictionary', 'nameEn', {
+      .addColumn('task_types', 'name_en', {
         type: Sequelize.STRING
       })
       .then(() =>
@@ -16,8 +16,8 @@ module.exports = {
           TaskTypes.map(type =>
             queryInterface.sequelize.query(
               `
-            UPDATE task_types_dictionary
-            SET nameEn = :nameEn,
+            UPDATE task_types
+            SET name_en = :nameEn
             WHERE id = :id
         `,
               {
@@ -30,6 +30,6 @@ module.exports = {
   },
 
   down: function (queryInterface) {
-    return queryInterface.removeColumn('task_types_dictionary', 'nameEn');
+    return queryInterface.removeColumn('task_types', 'name_en');
   }
 };

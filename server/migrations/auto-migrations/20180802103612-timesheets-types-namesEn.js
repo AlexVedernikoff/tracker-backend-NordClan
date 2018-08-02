@@ -36,7 +36,7 @@ const timesheetTypes = [
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
-      .addColumn('timesheets_types', 'nameEn', {
+      .addColumn('timesheets_types', 'name_en', {
         type: Sequelize.STRING(25)
       })
       .then(() =>
@@ -45,7 +45,7 @@ module.exports = {
             queryInterface.sequelize.query(
               `
         UPDATE timesheets_types
-        SET nameEn = :nameEn,
+        SET name_en = :nameEn
         WHERE id = :id
     `,
               {
@@ -58,6 +58,6 @@ module.exports = {
   },
 
   down: function (queryInterface) {
-    return queryInterface.removeColumn('timesheets_types', 'nameEn');
+    return queryInterface.removeColumn('timesheets_types', 'name_en');
   }
 };

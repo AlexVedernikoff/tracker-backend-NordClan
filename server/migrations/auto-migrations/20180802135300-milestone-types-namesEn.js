@@ -8,7 +8,7 @@ const EnumTypes = [
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
-      .addColumn('milestone_types_dictionary', 'nameEn', {
+      .addColumn('milestone_types_dictionary', 'name_en', {
         type: Sequelize.STRING
       })
       .then(() =>
@@ -17,7 +17,7 @@ module.exports = {
             queryInterface.sequelize.query(
               `
           UPDATE milestone_types_dictionary
-          SET nameEn = :nameEn,
+          SET name_en = :nameEn
           WHERE id = :id
       `,
               {
@@ -30,6 +30,6 @@ module.exports = {
   },
 
   down: function (queryInterface) {
-    return queryInterface.removeColumn('milestone_types_dictionary', 'nameEn');
+    return queryInterface.removeColumn('milestone_types_dictionary', 'name_en');
   }
 };
