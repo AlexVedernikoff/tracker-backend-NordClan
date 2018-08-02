@@ -37,7 +37,7 @@ module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
       .addColumn('timesheets_types', 'name_en', {
-        type: Sequelize.STRING(25)
+        type: Sequelize.STRING
       })
       .then(() =>
         Promise.all(
