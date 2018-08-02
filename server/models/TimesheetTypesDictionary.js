@@ -14,11 +14,9 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     nameEn: {
-      type: DataTypes.STRING(25),
+      type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        len: [1, 25]
-      }
+      field: 'name_en'
     },
     codeName: {
       field: 'code_name',
