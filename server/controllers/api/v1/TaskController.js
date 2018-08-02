@@ -145,8 +145,7 @@ exports.list = function (req, res, next) {
     return next(createError(400, 'pageSize must be int'));
   }
 
-  if (req.query.performerId
-    && !(Array.isArray(req.query.performerId) && req.query.performerId.every(performerId => parseInt(performerId) > 0))
+  if (!Array.isArray(req.query.performerId) || req.query.performerId.some(performerId => parseInt(performerId) < 1))
   ) {
     return next(createError(400, 'performerId must be array of numbers'));
   }
