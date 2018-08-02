@@ -5,34 +5,37 @@ const emailSubprocess = require('../../../services/email/subprocess');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
-  req.checkParams('taskId', 'taskId must be int').isInt();
+  try {
+    req.checkParams('taskId', 'taskId must be int').isInt();
 
-  const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) {
-    return next(createError(400, validationResult));
-  }
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
 
-  const task = await models.Task
-    .findByPrimary(req.params.taskId, {
-      attributes: ['id', 'projectId']
+    const task = await models.Task
+      .findByPrimary(req.params.taskId, {
+        attributes: ['id', 'projectId']
+      });
+    if (!task) return next(createError(404, 'Task model not found'));
+    if (!req.user.canCreateCommentProject(task.projectId)) {
+      return next(createError(403, 'Access denied'));
+    }
+
+    req.body.authorId = req.user.id;
+    req.body.taskId = req.params.taskId;
+
+    const comment = await models.Comment.create(req.body);
+    const getOne = await queries.comment.getOne(comment.id);
+    emailSubprocess({
+      eventId: models.ProjectEventsDictionary.values[2].id,
+      input: { taskId: task.id, commentId: comment.id },
+      user: { ...req.user.get() }
     });
-  if (!task) return next(createError(404, 'Task model not found'));
-  if (!req.user.canCreateCommentProject(task.projectId)) {
-    return next(createError(403, 'Access denied'));
+    res.json(getOne);
+  } catch (e) {
+    return next(createError(e));
   }
-
-  req.body.authorId = req.user.id;
-  req.body.taskId = req.params.taskId;
-
-  const comment = await models.Comment.create(req.body);
-  const getOne = await queries.comment.getOne(comment.id);
-
-  emailSubprocess({
-    eventId: models.ProjectEventsDictionary.values[2].id,
-    input: { taskId: task.id, commentId: comment.id },
-    user: { ...req.user.get() }
-  });
-  res.json(getOne);
 };
 
 exports.update = function (req, res, next){
