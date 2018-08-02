@@ -85,7 +85,7 @@ module.exports = async function (eventId, input, user){
     receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
     receivers.forEach(function (receiver){
-      if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return;
+      if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
       const emailTemplate = email.template('newTaskComment', { task, comment });
       emails.push({
