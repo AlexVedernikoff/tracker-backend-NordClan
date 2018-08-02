@@ -7,6 +7,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     name: DataTypes.STRING,
+    nameEn: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'name_en'
+    },
     codeName: {
       field: 'code_name',
       type: DataTypes.STRING(25)
