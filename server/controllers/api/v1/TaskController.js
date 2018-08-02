@@ -107,6 +107,22 @@ exports.update = async function (req, res, next) {
   }
 };
 
+exports.updateAllByAttribute = async function (req, res, next) {
+  if (isErrorReqUpdateAll(req)) return next(createError(400));
+
+  try {
+    await TasksService.updateAllByAttribute({sprintId: req.body.sprintId}, req.body.taskIds, req.user);
+    res.sendStatus(200);
+  } catch (err) {
+    next(createError(err));
+  }
+};
+
+function isErrorReqUpdateAll (req) {
+  return !req.body.taskIds || !req.body.taskIds.length || !req.body.sprintId
+    || req.body.taskIds.some(id => isNaN(id));
+}
+
 function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, createdDraft, projectId) {
   if (createdDraft) {
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);

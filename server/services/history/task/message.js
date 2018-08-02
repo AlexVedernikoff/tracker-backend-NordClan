@@ -15,9 +15,9 @@ module.exports = function (model) {
     return handler.statement(model, changedProperty);
   })[0];
 
-  const answer = messageHandler ?
-    messageHandler.answer(model) :
-    generativeAnswer(model, changedProperty);
+  const answer = messageHandler
+    ? messageHandler.answer(model)
+    : generativeAnswer(model, changedProperty);
 
   return {
     message: answer.message,
@@ -28,17 +28,17 @@ module.exports = function (model) {
 
 
 //TODO refactoring
-function generativeAnswer(model, values) {
-  let result = {
+function generativeAnswer (model, values) {
+  const result = {
     message: '',
     messageEn: '',
     entities: {}
   };
 
-  if(model.sprint) result.entities.sprint = model.sprint;
-  if(model.prevSprint) result.entities.prevSprint = model.prevSprint;
-  if(model.parentTask) result.entities.parentTask = model.parentTask;
-  if(model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
+  if (model.sprint) result.entities.sprint = model.sprint;
+  if (model.prevSprint) result.entities.prevSprint = model.prevSprint;
+  if (model.parentTask) result.entities.parentTask = model.parentTask;
+  if (model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
 
   if (model.action === 'update') {
     if ((values.value === null && values.prevValue) || (values.value === true && values.prevValue === false)) { // убрал
@@ -50,7 +50,7 @@ function generativeAnswer(model, values) {
     }
   }
 
-  switch(model.field) {
+  switch (model.field) {
   case 'statusId': result.message += ' статус'; break;
   case 'name': result.message += ' название'; break;
   case 'typeId': result.message += ' тип'; break;
@@ -69,24 +69,22 @@ function generativeAnswer(model, values) {
     return result;
   }
 
-  if(values.value  === null && values.prevValue) { // убрал
+  if (values.value === null && values.prevValue) { // убрал
     result.message += ` '${transformValue(model, values, 'prev')}'`;
-  } else if (values.value  && values.prevValue === null) { // установил
+  } else if (values.value && values.prevValue === null) { // установил
     result.message += ` '${transformValue(model, values)}'`;
-  }else { // изменил
-    if(values.prevValue !== null)
-      result.message += ` с '${transformValue(model, values, 'prev')}'`;
-    if(values.value !== null)
-      result.message += ` на '${transformValue(model, values)}'`;
+  } else { // изменил
+    if (values.prevValue !== null) {result.message += ` с '${transformValue(model, values, 'prev')}'`;}
+    if (values.value !== null) {result.message += ` на '${transformValue(model, values)}'`;}
   }
 
   return result;
 }
 
-function transformValue(model, changedProperty, hasPrevChangedProperty = false) {
-  const currentValue = hasPrevChangedProperty ?
-    changedProperty.prevValue :
-    changedProperty.value;
+function transformValue (model, changedProperty, hasPrevChangedProperty = false) {
+  const currentValue = hasPrevChangedProperty
+    ? changedProperty.prevValue
+    : changedProperty.value;
 
   const changedValue = {
     statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue),
@@ -98,7 +96,7 @@ function transformValue(model, changedProperty, hasPrevChangedProperty = false) 
   return changedValue[model.field] || currentValue;
 }
 
-function declarativeHandlers() {
+function declarativeHandlers () {
   return [
     {
       name: 'create Task',
@@ -154,7 +152,7 @@ function declarativeHandlers() {
           messageEn: 'removed performer {prevPerformer}',
           entities: {
             prevPerformer: model.prevPerformer
-          },
+          }
         };
       }
     },
@@ -170,7 +168,7 @@ function declarativeHandlers() {
           entities: {
             performer: model.performer,
             prevPerformer: model.prevPerformer
-          },
+          }
         };
       }
     },
@@ -185,7 +183,7 @@ function declarativeHandlers() {
           messageEn: 'created a connection with task {linkedTask}',
           entities: {
             linkedTask: model.taskTasks
-          },
+          }
         };
       }
     },
@@ -200,7 +198,7 @@ function declarativeHandlers() {
           messageEn: 'removed connection with task {linkedTask}',
           entities: {
             linkedTask: model.taskTasks
-          },
+          }
         };
       }
     },

@@ -20,7 +20,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
           where: {
             globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE }
           },
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login'],
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login']
         },
         {
           as: 'roles',
@@ -74,14 +74,13 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 };
 
 
-
-function getTransRolesToObject(rolesIds) {
+function getTransRolesToObject (rolesIds) {
   const result = {};
   if (rolesIds) rolesIds = rolesIds.map((role) => role.projectRoleId);
 
   models.ProjectRolesDictionary.values.forEach(el => {
-    result[el.code] = (rolesIds) ?
-      (rolesIds.indexOf(el.id) > -1)
+    result[el.code] = (rolesIds)
+      ? (rolesIds.indexOf(el.id) > -1)
       : false;
   });
 
