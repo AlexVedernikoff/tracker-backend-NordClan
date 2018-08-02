@@ -47,7 +47,10 @@ module.exports = {
         UPDATE timesheets_types
         SET nameEn = :nameEn,
         WHERE id = :id
-    `
+    `,
+            {
+              replacements: type
+            }
           )
         )
       )
