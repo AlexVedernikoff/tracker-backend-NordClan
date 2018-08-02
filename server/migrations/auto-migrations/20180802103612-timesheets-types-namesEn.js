@@ -9,7 +9,7 @@ const timesheetTypes = [
   },
   {
     id: 3,
-    nameEn: 'Presale  and mark'
+    nameEn: 'Presale and mark'
   },
   {
     id: 4,
@@ -21,7 +21,7 @@ const timesheetTypes = [
   },
   {
     id: 6,
-    nameEn: 'Buisness trip'
+    nameEn: 'Business trip'
   },
   {
     id: 7,
@@ -35,31 +35,29 @@ const timesheetTypes = [
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return Promise.all([
-      queryInterface.addColumn('timesheets_types', 'nameEn', {
+    return queryInterface
+      .addColumn('timesheets_types', 'nameEn', {
         type: Sequelize.STRING(25)
       })
-    ]).then(() =>
-      Promise.all(
-        timesheetTypes.map(type =>
-          queryInterface.sequelize.query(
-            `
+      .then(() =>
+        Promise.all(
+          timesheetTypes.map(type =>
+            queryInterface.sequelize.query(
+              `
         UPDATE timesheets_types
         SET nameEn = :nameEn,
         WHERE id = :id
     `,
-            {
-              replacements: type
-            }
+              {
+                replacements: type
+              }
+            )
           )
         )
-      )
-    );
+      );
   },
 
   down: function (queryInterface) {
-    return Promise.all([
-      queryInterface.removeColumn('timesheets_types', 'nameEn')
-    ]);
+    return queryInterface.removeColumn('timesheets_types', 'nameEn');
   }
 };
