@@ -74,15 +74,13 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 };
 
 
-function getTransRolesToObject (rolesIds) {
-  const result = {};
-  if (rolesIds) rolesIds = rolesIds.map((role) => role.projectRoleId);
+async function getTransRolesToObject (rolesIds) {
+  const projectRoleIds = rolesIds ? rolesIds.map((role) => role.projectRoleId) : [];
 
-  models.ProjectRolesDictionary.values.forEach(el => {
-    result[el.code] = (rolesIds)
-      ? (rolesIds.indexOf(el.id) > -1)
-      : false;
-  });
+  const projectRoles = await models.ProjectRolesDictionary.findAll();
 
-  return result;
+  return projectRoles.reduce((acc, el) => ({
+    ...acc,
+    [el.code]: projectRoleIds.indexOf(el.id) > -1
+  }), {});
 }

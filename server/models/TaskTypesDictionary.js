@@ -36,14 +36,7 @@ module.exports = function (sequelize, DataTypes) {
       }});
   };
 
-  TaskTypes.values = [
-    {id: 1, name: 'Фича'},
-    {id: 3, name: 'Доп. Фича'},
-    {id: 2, name: 'Баг'},
-    {id: 4, name: 'Регрес. Баг'}
-  ];
-
-  TaskTypes.defaultSelect = ['id', 'name'];
+  TaskTypes.defaultSelect = ['id', 'name', 'nameEn'];
 
   return TaskTypes;
 };
