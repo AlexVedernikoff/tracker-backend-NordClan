@@ -6,6 +6,7 @@ const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
 const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
+const moment = require('moment');
 
 const taskIsDone = tasks => tasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS;
 
@@ -169,6 +170,23 @@ exports.list = function (req, res, next) {
     }
   }
 
+  if (req.query.dateFrom) {
+    if (!moment(req.query.dateFrom, 'DD.MM.YYYY').isValid()) {
+      return next(createError(400, 'dateFrom must be date format "DD.MM.YYYY"'));
+    }
+  }
+
+  if (req.query.dateTo) {
+    if (!moment(req.query.dateTo, 'DD.MM.YYYY').isValid()) {
+      return next(createError(400, 'dateTo must be date format "DD.MM.YYYY"'));
+    }
+  }
+
+  if (req.query.dateFrom && req.query.dateTo) {
+    if (moment(req.query.dateFrom, 'DD.MM.YYYY').unix() > moment(req.query.dateTo, 'DD.MM.YYYY').unix()) {
+      return next(createError(400, 'dateTo must be later then dateFrom'));
+    }
+  }
 
   TasksService
     .list(req)
