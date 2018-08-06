@@ -115,7 +115,7 @@ exports.getUsersRoles = async function (req, res, next) {
       .findAll({
         where: {
           active: 1,
-          globalRole: { $not: 'EXTERNAL_USER' },
+          globalRole: { $not: 'EXTERNAL_USER' }
         },
         order: [
           ['last_name_ru']
@@ -229,7 +229,7 @@ exports.updateExternal = async function (req, res, next) {
           return next(createError(404));
         }
 
-        return model.updateAttributes(req.body , { transaction: t })
+        return model.updateAttributes(req.body, { transaction: t })
           .then((updatedModel) => {
             res.json(updatedModel);
           });

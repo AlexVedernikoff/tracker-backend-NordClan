@@ -107,6 +107,22 @@ exports.update = async function (req, res, next) {
   }
 };
 
+exports.updateAllByAttribute = async function (req, res, next) {
+  if (isErrorReqUpdateAll(req)) return next(createError(400));
+
+  try {
+    await TasksService.updateAllByAttribute({sprintId: req.body.sprintId}, req.body.taskIds, req.user);
+    res.sendStatus(200);
+  } catch (err) {
+    next(createError(err));
+  }
+};
+
+function isErrorReqUpdateAll (req) {
+  return !req.body.taskIds || !req.body.taskIds.length || !req.body.sprintId
+    || req.body.taskIds.some(id => isNaN(id));
+}
+
 function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, createdDraft, projectId) {
   if (createdDraft) {
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);
@@ -115,7 +131,7 @@ function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, c
   if (activeTask) {
     TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
   } else {
-    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, updatedTaskPlayer.dataValues.performer.id);
+    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, userId);
   }
 
   updatedTasks.forEach(updatedTask => {
@@ -145,9 +161,14 @@ exports.list = function (req, res, next) {
     return next(createError(400, 'pageSize must be int'));
   }
 
-  if (req.query.performerId && !req.query.performerId.toString().match(/^\d+$/)) {
-    return next(createError(400, 'performerId must be int'));
+  if (req.query.performerId) {
+    if (Array.isArray(req.query.performerId)) {
+      if (req.query.performerId.some(performerId => parseInt(performerId) < 1)) return next(createError(400, 'performerId must be correct array'));
+    } else if (!req.query.performerId.match(/^\d+$/)) {
+      return next(createError(400, 'performerId must be int'));
+    }
   }
+
 
   TasksService
     .list(req)

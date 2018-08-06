@@ -2,15 +2,13 @@ const { Metrics } = require('../../../models');
 const moment = require('moment');
 
 exports.list = async (params) => {
-  const dateFormat = 'YYYY-MM-DD';
-  const now = moment();
   const startDate = params.startDate
     ? new Date(params.startDate)
-    : now.format(dateFormat);
+    : new Date();
 
   const endDate = params.endDate
     ? new Date(params.endDate)
-    : now.add(1, 'days').format(dateFormat);
+    : new Date();
 
   delete params.startDate;
   delete params.endDate;
