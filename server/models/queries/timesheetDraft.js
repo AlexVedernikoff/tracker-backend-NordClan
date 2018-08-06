@@ -52,6 +52,37 @@ exports.findDraftSheet = async function (userId, id) {
   });
 };
 
+exports.getDraftToDestroy = async function (options) {
+  const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
+
+  const where = {
+    onDate,
+    userId,
+    typeId
+  };
+
+  if (taskId) {
+    where.taskId = taskId;
+  } else if (projectId) {
+    where.projectId = projectId;
+  } else {
+    where.projectId = { $eq: null }; // IS NULL
+  }
+
+  if (taskStatusId) {
+    where.taskStatusId = taskStatusId;
+  }
+
+  const draft = await models.TimesheetDraft
+    .findOne({
+      where: where,
+      attributes: ['id']
+    });
+
+
+  return draft;
+};
+
 exports.all = async function (conditions) {
   return await models.TimesheetDraft.findAll({
     where: conditions,
