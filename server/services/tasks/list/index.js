@@ -161,10 +161,13 @@ function createWhereForRequest (req) {
     }
   }
 
-  where.created_at = {
-    ...(req.query.dateFrom && {$gte: moment(req.query.dateFrom, 'DD.MM.YYYY').startOf('day').toDate()}),
-    ...(req.query.dateTo && {$lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()})
-  };
+  if (req.query.dateFrom) {
+    where.created_at = {...where.created_at, $gte: moment(req.query.dateFrom, 'DD.MM.YYYY').startOf('day').toDate()};
+  }
+
+  if (req.query.dateTo) {
+    where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
+  }
 
   return where;
 }

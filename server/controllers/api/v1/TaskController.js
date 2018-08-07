@@ -40,6 +40,10 @@ exports.create = async function (req, res, next) {
       model.authorId = req.user.id;
     });
 
+    if (Array.isArray(req.body.performerId) && req.body.performerId.length === 0) {
+      req.body.performerId = null;
+    }
+
     const task = await TasksService.create(req.body);
     if (task.performerId) {
       emailSubprocess({
