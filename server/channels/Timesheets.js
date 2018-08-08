@@ -28,5 +28,5 @@ function getAction (type, data) {
 
 function emit (socketIO, action, userId) {
   const channel = `timesheet_user_${userId}`;
-  socketIO.emit(channel, action);
+  socketIO.to(`user_${ userId }`).emit(channel, action);
 }
