@@ -6,7 +6,10 @@ exports.create = async (params) => {
   if (!isNeedCreateTimesheet) {
     throw new Error(`Some timesheet already exists on date ${params.onDate}`);
   }
-
+  const draftToDestroy = await queries.timesheetDraft.getDraftToDestroy(params);
+  if (draftToDestroy) {
+    await models.TimesheetDraft.destroy({ where: { id: draftToDestroy.id } });
+  }
   const { id } = await models.Timesheet.create(params);
   const createdTimesheet = await queries.timesheet.getTimesheet({ id });
   createdTimesheet.isDraft = false;

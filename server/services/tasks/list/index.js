@@ -1,6 +1,7 @@
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const _ = require('underscore');
+const moment = require('moment');
 const { Task, Tag, ItemTag } = models;
 
 exports.list = async function (req) {
@@ -158,6 +159,14 @@ function createWhereForRequest (req) {
         in: req.query.sprintId.toString().split(',').map((el) => el.trim())
       };
     }
+  }
+
+  if (req.query.dateFrom) {
+    where.created_at = {...where.created_at, $gte: moment(req.query.dateFrom, 'DD.MM.YYYY').startOf('day').toDate()};
+  }
+
+  if (req.query.dateTo) {
+    where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
   }
 
   return where;
