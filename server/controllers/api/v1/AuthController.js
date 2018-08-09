@@ -199,11 +199,20 @@ function userLogout (req, res, next) {
         httpOnly: true
       });
 
+      userSocketLogout(req, res);
       res.sendStatus(200);
     })
     .catch((err) => {
       next(err);
     });
+}
+
+function userSocketLogout (req, res) {
+  const userAgent = req.headers['user-agent'] ? req.headers['user-agent'] : '';
+  res.io.of('/').in(`user_${ req.user.id }_${ userAgent }`).clients((error, socketIds) => {
+    socketIds.forEach(socketId => res.io.sockets.sockets[socketId].leave(`user_${ req.user.id }_${ userAgent }`));
+    console.log('leave: ' + `user_${ req.user.id }_${ userAgent }`);
+  });
 }
 
 

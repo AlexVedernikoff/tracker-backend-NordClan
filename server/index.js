@@ -23,8 +23,13 @@ io.sockets.on('connection', function (socket) {
   getUserByToken(socket.handshake.headers).then(user => {
     console.log('connect');
     if (user) {
-      socket.join(`user_${ user.dataValues.id }`);
+      const userAgent = socket.handshake.headers['user-agent'] ? socket.handshake.headers['user-agent'] : '';
+      socket.join(`user_${ user.dataValues.id }_${ userAgent }`);
+      console.log('connect' + `user_${ user.dataValues.id }_${ userAgent }`);
     }
+  });
+  socket.on('disconnect', function (s) {
+    console.log('disconnect');
   });
 });
 
