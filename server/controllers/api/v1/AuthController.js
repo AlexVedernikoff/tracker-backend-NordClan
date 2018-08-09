@@ -208,10 +208,9 @@ function userLogout (req, res, next) {
 }
 
 function userSocketLogout (req, res) {
-  const userAgent = req.headers['user-agent'] ? req.headers['user-agent'] : '';
-  res.io.of('/').in(`user_${ req.user.id }_${ userAgent }`).clients((error, socketIds) => {
-    socketIds.forEach(socketId => res.io.sockets.sockets[socketId].leave(`user_${ req.user.id }_${ userAgent }`));
-    console.log('leave: ' + `user_${ req.user.id }_${ userAgent }`);
+  res.io.of('/').in(`user_${ req.user.id }`).clients((error, socketIds) => {
+    socketIds.forEach(socketId => res.io.sockets.sockets[socketId].leave(`user_${ req.user.id }`));
+    console.log('leave: ' + `user_${ req.user.id }`);
   });
 }
 

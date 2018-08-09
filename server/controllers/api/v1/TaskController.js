@@ -134,7 +134,7 @@ function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, c
   }
 
   if (activeTask) {
-    TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
+    TimesheetsChannel.sendAction('setActiveTask', activeTask, io, activeTask.dataValues.performerId);
   } else {
     TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, userId);
   }
