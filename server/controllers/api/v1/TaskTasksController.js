@@ -39,7 +39,7 @@ exports.create = async function (req, res, next) {
       })
     ]);
 
-    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
+    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], t);
     res.json(taskTasks);
     t.commit();
 
@@ -90,7 +90,7 @@ exports.delete = async function (req, res, next) {
       })
     ]);
 
-    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name'], t);
+    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], t);
     res.json(taskTasks);
     t.commit();
   } catch (e) {

@@ -32,7 +32,8 @@ exports.findLinkedTasks = function (taskId, attributes = ['id', 'name'], t = nul
       taskTasks.forEach((model) => {
         result.push({
           id: model.task.id,
-          name: model.task.name
+          name: model.task.name,
+          statusId: model.task.statusId
         });
       });
 
