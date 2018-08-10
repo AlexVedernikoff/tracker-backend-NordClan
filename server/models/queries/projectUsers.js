@@ -4,7 +4,6 @@ exports.name = 'projectUsers';
 
 exports.getTransRolesToObject = getTransRolesToObject;
 exports.getUsersByProject = function (projectId, isExternal, attributes = ['userId', 'rolesIds'], t = null) {
-
   return models.ProjectUsers
     .findAll({
       where: {
@@ -33,15 +32,24 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
         // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
       ]
     })
-    .then((projectUsers) => {
-      return projectUsers.map((projectUser) => {
+    .then(async (projectUsers) => {
+      const requests = [];
+      projectUsers.map((projectUser) => {
+        requests.push(async () => {
+          projectUser.roles = await getTransRolesToObject(projectUser.roles);
+          return projectUser;
+        });
         return {
           ...projectUser.user.get(),
           fullNameRu: projectUser.user.fullNameRu,
-          fullNameEn: projectUser.user.fullNameEn,
-          roles: getTransRolesToObject(projectUser.roles)
+          fullNameEn: projectUser.user.fullNameEn
         };
       });
+      await Promise.all(requests);
+      return projectUsers;
+    })
+    .catch(error => {
+      throw error;
     });
 
 };
