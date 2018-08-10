@@ -114,6 +114,12 @@ exports.all = async function (conditions) {
             required: false,
             attributes: ['id', 'name'],
             paranoid: false
+          },
+          {
+            as: 'sprint',
+            model: models.Sprint,
+            required: true,
+            attributes: ['name']
           }
         ]
       },
