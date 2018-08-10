@@ -33,20 +33,16 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
       ]
     })
     .then(async (projectUsers) => {
-      const requests = [];
-      projectUsers.map((projectUser) => {
-        requests.push(async () => {
-          projectUser.roles = await getTransRolesToObject(projectUser.roles);
-          return projectUser;
-        });
+      const projectRoles = await models.ProjectRolesDictionary.findAll();
+      return projectUsers.map((projectUser) => {
         return {
           ...projectUser.user.get(),
           fullNameRu: projectUser.user.fullNameRu,
-          fullNameEn: projectUser.user.fullNameEn
+          fullNameEn: projectUser.user.fullNameEn,
+          roles: getTransRolesToObject(projectUser.roles, projectRoles)
         };
       });
-      await Promise.all(requests);
-      return projectUsers;
+
     })
     .catch(error => {
       throw error;
@@ -82,10 +78,8 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 };
 
 
-async function getTransRolesToObject (rolesIds) {
+function getTransRolesToObject (rolesIds, projectRoles) {
   const projectRoleIds = rolesIds ? rolesIds.map((role) => role.projectRoleId) : [];
-
-  const projectRoles = await models.ProjectRolesDictionary.findAll();
 
   return projectRoles.reduce((acc, el) => ({
     ...acc,
