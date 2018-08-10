@@ -18,7 +18,7 @@ const io = require('socket.io')(server, {
 });
 
 exports.run = function () {
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, '../public')));
   app.use(bodyParser.json());
   app.use(expressValidator());
   app.use(cookieParser());
