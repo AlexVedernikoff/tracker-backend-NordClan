@@ -40,7 +40,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     type: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(80),
       trim: true,
       allowNull: false
     },

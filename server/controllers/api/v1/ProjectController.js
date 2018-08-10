@@ -142,12 +142,13 @@ exports.read = function (req, res, next){
       if (!model) return next(createError(404));
       const usersData = [];
       if (model.projectUsers) {
+        const projectRoles = await models.ProjectRolesDictionary.findAll();
         model.projectUsers.forEach((projectUser) => {
           usersData.push({
             id: projectUser.user.id,
             fullNameRu: projectUser.user.fullNameRu,
             fullNameEn: projectUser.user.fullNameEn,
-            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles)
+            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
           });
         });
       }

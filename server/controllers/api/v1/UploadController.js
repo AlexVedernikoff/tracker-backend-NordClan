@@ -79,7 +79,7 @@ exports.upload = function (req, res, next) {
       const modelFileName = modelName + 'Attachments';
 
 
-      models[modelName]
+      return models[modelName]
         .findByPrimary(req.params.entityId, {
           attributes: req.params.entity === 'project' ? ['id', 'statusId'] : ['id', 'statusId', 'projectId']
         })
@@ -108,8 +108,8 @@ exports.upload = function (req, res, next) {
             form.maxFields = maxFields;
             form.uploadDir = absoluteUploadDir;
 
-            form.on('error', function (err) {
-              next(err);
+            form.on('error', function (e) {
+              next(e);
             });
 
             form.on('aborted', function () {
@@ -117,53 +117,45 @@ exports.upload = function (req, res, next) {
             });
 
             // Все файлы загружены
-            form.on('end', function (err) {
-              if (err) return next(createError(err));
+            form.on('end', function (error) {
+              if (error) return next(createError(error));
 
-              const promises = [];
-              files.forEach((file) => {
-                const newPath = path.join(form.uploadDir, file.name);
-
-                promises.push(
-
-                  // Переименование
-                  new Promise((resolve) => {
-                    fs.rename(file.path, newPath, resolve);
+              const promises = files.map((file) => {
+                const hash = `${classicRandom(8)}-${classicRandom(8)}-${Date.now()}${file.name.slice(file.name.lastIndexOf('.'))}`;
+                const newPath = path.join(form.uploadDir, hash);
+                // Переименование
+                return new Promise((resolve) => {
+                  fs.rename(file.path, newPath, resolve);
+                }) //Подрезка если изображение
+                  .then(() => {
+                    if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) return cropImage(file, uploadDir, newPath, hash);
                   })
-                    .then(() => {
-                      let promise = Promise.resolve();
-                      if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) promise = cropImage(file, uploadDir, newPath);
+                  .then((previewPath) => {
+                  // Сохранение в БД
 
-                      // Сохранение в БД
-                      promise = promise.then((previewPath) => {
-                        return models[modelFileName]
-                          .create({
-                            taskId: req.params.entityId,
-                            projectId: req.params.entityId,
-                            authorId: req.user.id,
-                            fileName: file.name,
-                            type: file.type.match(/^(.*)\//)[1],
-                            size: file.size,
-                            path: uploadDir + '/' + file.name,
-                            previewPath: previewPath ? previewPath : null
-                          });
+                    return models[modelFileName]
+                      .create({
+                        taskId: req.params.entityId,
+                        projectId: req.params.entityId,
+                        authorId: req.user.id,
+                        fileName: file.name,
+                        type: file.type,
+                        size: file.size,
+                        path: uploadDir + '/' + hash,
+                        previewPath: previewPath ? previewPath : null
                       });
-                      return promise;
-
-                    })
-                );
-
+                  });
               });
 
 
-              Promise.all(promises)
+              return Promise.all(promises)
                 .then(() => {
                   return queries.file.getFilesByModel(modelFileName, req.params.entityId)
-                    .then((files) => {
-                      res.json(files);
+                    .then((uploadFiles) => {
+                      res.json(uploadFiles);
                     });
                 })
-                .catch((err) => next(err));
+                .catch((e) => next(e));
             });
 
             // Загружен 1 файл
@@ -171,8 +163,8 @@ exports.upload = function (req, res, next) {
               files.push(file);
             });
 
-            form.parse(req, function (err) {
-              if (err) return next(createError(err));
+            form.parse(req, function (e) {
+              if (e) return next(createError(e));
             });
 
           });
@@ -184,27 +176,30 @@ exports.upload = function (req, res, next) {
 };
 
 function classicRandom (n){
-  let result = '', abd = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', aL = abd.length;
-  while (result.length < n) {result += abd[Math.random() * aL | 0];}
-
+  let result = '';
+  const abd = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const aL = abd.length;
+  while (result.length < n) {
+    result += abd[Math.random() * aL | 0];
+  }
   return result;
 }
 
-function cropImage (file, uploadDir, newPath) {
+function cropImage (file, uploadDir, newPath, hash) {
   return new Promise(function (resolve, reject) {
     gm(newPath)
       .size({}, function (err, size) {
-        if (err) throw new Error('GraphicsMagick error');
-        if (!err && size.width) {
+        if (err) return reject(err);
+        if (size.width) {
           if (size.width >= size.height) {
             this.resize(null, 200);
-          } else if (size.width < size.height) {
+          } else {
             this.resize(200, null);
           }
         }
-        const preview = uploadDir + '/200-' + file.name;
-        this.write('./public/' + preview, function (err) {
-          if (err) reject(err);
+        const preview = uploadDir + '/200-' + hash;
+        this.write('./public/' + preview, function (error) {
+          if (error) return reject(error);
           resolve(preview);
         });
       });
