@@ -86,7 +86,6 @@ function transformTimesheet (timesheet) {
   }
   if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.sprint) {
     Object.assign(timesheet.dataValues, { sprint: timesheet.dataValues.task.dataValues.sprint });
-    delete timesheet.dataValues.task.dataValues.sprint;
   }
   if (timesheet.dataValues.task) {
     timesheet.dataValues.task = timesheet.dataValues.task.dataValues;

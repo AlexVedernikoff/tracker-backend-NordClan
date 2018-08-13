@@ -88,6 +88,11 @@ exports.getReport = async function (projectId, criteria) {
       [ 'onDate', 'ASC' ]
     ]
   });
+
+  // Подгрузка словарей из БД
+  const projectRolesValues = await ProjectRolesDictionary.findAll();
+  const taskTypesValues = await TaskTypesDictionary.findAll();
+
   const timeSheets = timeSheetsDbData.map(timeSheet => {
     const data = timeSheet.dataValues;
     Object.assign(data, {user: data.user.dataValues});
@@ -110,11 +115,11 @@ exports.getReport = async function (projectId, criteria) {
       .map(role => role.projectRoleId)
       .sort((role1, role2) => role1 - role2);
     const userRolesNames = rolesIds.map(roleId =>
-      ProjectRolesDictionary.values.find(item => item.id === roleId).name).join(', ');
+      projectRolesValues.find(item => item.id === roleId).name).join(', ');
     delete data.user.usersProjects;
     data.user.userRolesNames = userRolesNames;
 
-    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId) : null;
+    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues) : null;
     return data;
   });
 
@@ -283,8 +288,8 @@ function generateMessage (errors) {
   return `Incorrect params - ${incorrectParams}`;
 }
 
-function getTaskTypeName (typeId) {
-  return TaskTypesDictionary.values.find(item => item.id === typeId).name;
+function getTaskTypeName (typeId, taskTypesValues) {
+  return taskTypesValues.find(item => item.id === typeId).name;
 }
 
 function formatDate (date) {

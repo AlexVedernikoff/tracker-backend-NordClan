@@ -100,12 +100,13 @@ exports.getTimesheet = async function (params) {
 };
 
 exports.isNeedCreateTimesheet = async function (options) {
-  const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
+  const { onDate, typeId, taskId, projectId, taskStatusId, userId, sprintId } = options;
 
   const where = {
     onDate,
     userId,
-    typeId
+    typeId,
+    sprintId
   };
 
   if (taskId) {
