@@ -10,7 +10,7 @@ module.exports = async function (metricsTypeId, input){
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
     spentTimeBySprint, spentTimeByTask;
-
+  let timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
       return 0;
@@ -448,6 +448,21 @@ module.exports = async function (metricsTypeId, input){
       'sprintId': input.sprint.id,
       'userId': null
     };
+
+  case (57):
+    input.project.bugs.map(b => {
+      timeSpentForBugs += parseFloat(b.factExecutionTime);
+    });
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': timeSpentForBugs / input.project.bugs.length,
+      'projectId': input.project.id,
+      'sprintId': input.sprint ? input.sprint.id : null,
+      'userId': null
+    };
+
+    // Промежуток времени фронтовая задача
 
   default:
     break;
