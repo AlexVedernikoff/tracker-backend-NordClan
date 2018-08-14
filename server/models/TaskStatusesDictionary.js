@@ -24,16 +24,16 @@ module.exports = function (sequelize, DataTypes) {
   });
 
   TaskStatuses.values = [
-    {id: 1, name: 'New', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 2, name: 'Develop play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 3, name: 'Develop stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 4, name: 'Code Review play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 5, name: 'Code Review stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 6, name: 'QA play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 7, name: 'QA stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 8, name: 'Done', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 9, name: 'Canceled', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 10, name: 'Closed', createDraftByChangesTaskStatus: false, createDraftByCron: false}
+    {id: 1, name: 'New', nameEn: 'New', createDraftByChangesTaskStatus: false, createDraftByCron: false},
+    {id: 2, name: 'Develop play', nameEn: 'Develop play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
+    {id: 3, name: 'Develop stop', nameEn: 'Develop stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
+    {id: 4, name: 'Code Review play', nameEn: 'Code Review play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
+    {id: 5, name: 'Code Review stop', nameEn: 'Code Review stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
+    {id: 6, name: 'QA play', nameEn: 'QA play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
+    {id: 7, name: 'QA stop', nameEn: 'QA stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
+    {id: 8, name: 'Done', nameEn: 'Done', createDraftByChangesTaskStatus: false, createDraftByCron: false},
+    {id: 9, name: 'Canceled', nameEn: 'Canceled', createDraftByChangesTaskStatus: false, createDraftByCron: false},
+    {id: 10, name: 'Closed', nameEn: 'Closed', createDraftByChangesTaskStatus: false, createDraftByCron: false}
   ];
 
   TaskStatuses.DEVELOP_STATUSES = [2, 3];
