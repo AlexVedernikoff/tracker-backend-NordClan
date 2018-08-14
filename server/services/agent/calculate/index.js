@@ -103,9 +103,12 @@ async function getMetrics (projectId){
   const projects = await Project.findAll(projectsQuery);
 
   const bugNameEn = 'Bug';
-  const taskTypeBug = await TaskTypesDictionary.findAll({where: {name_en: bugNameEn}});
   const taskStatusDoneEn = 'Done';
-  const taskStatusDone = await TaskStatusesDictionary.findAll({where: {name: taskStatusDoneEn}});
+  const [taskTypeBug, taskStatusDone, metricTypes] = await Promise.all([
+    TaskTypesDictionary.findAll({where: {name_en: bugNameEn}}),
+    TaskStatusesDictionary.findAll({where: {name: taskStatusDoneEn}},
+      MetricTypesDictionary.findAll())
+  ]);
 
   const bugs = await Task.findAll({
     where: {
@@ -153,7 +156,7 @@ async function getMetrics (projectId){
         plainProject.sprints[sprintKey].regressionBugsAmount = parseInt(sprint.regressionBugsAmount, 10);
       });
     }
-    MetricTypesDictionary.values.forEach(function (value){
+    metricTypes.forEach(function (value){
       if (value.id > 29 && value.id !== 57) { return; }
       projectMetricsTasks.push(metricsLib(value.id, {
         project: plainProject,
@@ -162,7 +165,7 @@ async function getMetrics (projectId){
     });
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint){
-        MetricTypesDictionary.values.forEach(function (value){
+        metricTypes.forEach(function (value){
           if ((value.id < 30 || value.id > 41) && value.id !== 57) { return; }
           projectMetricsTasks.push(metricsLib(value.id, {
             project: plainProject,
