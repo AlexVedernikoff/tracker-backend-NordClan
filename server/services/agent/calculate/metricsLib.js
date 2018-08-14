@@ -462,8 +462,6 @@ module.exports = async function (metricsTypeId, input){
       'userId': null
     };
 
-    // Промежуток времени фронтовая задача
-
   default:
     break;
 
