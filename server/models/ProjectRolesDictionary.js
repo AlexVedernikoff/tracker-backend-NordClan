@@ -38,7 +38,7 @@ module.exports = function (sequelize, DataTypes) {
     {id: 1, name: 'Account', nameEn: 'Account'},
     {id: 2, name: 'PM', nameEn: 'PM'},
     {id: 3, name: 'UX', nameEn: 'UX'},
-    {id: 4, name: 'Аналитик', nameEn: 'Аналитик'},
+    {id: 4, name: 'Аналитик', nameEn: 'Analyst'},
     {id: 5, name: 'Back', nameEn: 'Back'},
     {id: 6, name: 'Front', nameEn: 'Front'},
     {id: 7, name: 'Mobile', nameEn: 'Mobile'},
