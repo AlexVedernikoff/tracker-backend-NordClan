@@ -7,9 +7,8 @@ exports.sendAction = (type, data, socketIO, userId) => {
 
 exports.sendTaskUpdate = async (data, socketIO) => {
   const action = getAction('update', data);
-  const userIds = await timesheets.all({taskId: { $eq: data.taskId }})
-    .then(sheets => sheets.map(sheet => sheet.id));
-  userIds.forEach(id => emit(socketIO, action, id));
+  const sheets = await timesheets.all({taskId: { $eq: data.id }});
+  sheets.forEach(sheet => emit(socketIO, {type: action.type, timesheet: sheet.dataValues}, sheet.userId));
 };
 
 function getAction (type, data) {
