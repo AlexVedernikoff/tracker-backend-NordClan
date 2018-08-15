@@ -21,13 +21,9 @@ const io = require('socket.io')(server, {
 
 io.sockets.on('connection', function (socket) {
   getUserByToken(socket.handshake.headers).then(user => {
-    console.log('connect');
     if (user) {
       socket.join(`user_${ user.dataValues.id }`);
     }
-  });
-  socket.on('disconnect', function (s) {
-    console.log('disconnect');
   });
 });
 
