@@ -15,6 +15,15 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
+    },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(20),
+      trim: true,
+      allowNull: false,
+      validate: {
+        len: [1, 20]
+      }
     }
   }, {
     underscored: true,
@@ -23,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'task_statuses'
   });
 
-  TaskStatuses.values = [
+  const TaskStatusesPermissions = [
     {id: 1, name: 'New', nameEn: 'New', createDraftByChangesTaskStatus: false, createDraftByCron: false},
     {id: 2, name: 'Develop play', nameEn: 'Develop play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
     {id: 3, name: 'Develop stop', nameEn: 'Develop stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
@@ -51,8 +60,8 @@ module.exports = function (sequelize, DataTypes) {
     TaskStatuses.DONE_STATUS,
     TaskStatuses.CLOSED_STATUS
   ];
-  TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = _.filter(TaskStatuses.values, obj => obj.createDraftByCron === true).map(el => el.id);
-  TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS = _.filter(TaskStatuses.values, obj => obj.createDraftByChangesTaskStatus === true).map(el => el.id);
+  TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = _.filter(TaskStatusesPermissions, obj => obj.createDraftByCron === true).map(el => el.id);
+  TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS = _.filter(TaskStatusesPermissions, obj => obj.createDraftByChangesTaskStatus === true).map(el => el.id);
 
   return TaskStatuses;
 };

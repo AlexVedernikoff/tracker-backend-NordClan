@@ -13,6 +13,15 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
+    },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(20),
+      trim: true,
+      allowNull: false,
+      validate: {
+        len: [1, 20]
+      }
     }
   }, {
     underscored: true,
@@ -20,11 +29,6 @@ module.exports = function (sequelize, DataTypes) {
     paranoid: false,
     tableName: 'sprint_statuses'
   });
-
-  SprintStatuses.values = [
-    {id: 1, name: 'Не в процессе', nameEn: 'Not processed'},
-    {id: 2, name: 'В процессе', nameEn: 'Processed'}
-  ];
 
   SprintStatuses.associate = function (models) {
     SprintStatuses.hasMany(models.Sprint, {

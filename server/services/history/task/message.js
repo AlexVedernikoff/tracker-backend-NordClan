@@ -14,16 +14,16 @@ const entityWord = {
   }
 };
 
-module.exports = function (model) {
+module.exports = async function (model) {
   const changedProperty = getChangedProperty(model);
   const messageHandlers = declarativeHandlers();
-  const messageHandler = messageHandlers.filter(handler => {
+  const messageHandler = await messageHandlers.filter(handler => {
     return handler.statement(model, changedProperty);
   })[0];
 
   const answer = messageHandler
     ? messageHandler.answer(model)
-    : generativeAnswer(model, changedProperty);
+    : await generativeAnswer(model, changedProperty);
 
   return {
     message: answer.message,
@@ -34,7 +34,7 @@ module.exports = function (model) {
 
 
 //TODO refactoring
-function generativeAnswer (model, values) {
+async function generativeAnswer (model, values) {
   const result = {
     message: '',
     messageEn: '',
@@ -112,33 +112,33 @@ function generativeAnswer (model, values) {
   }
 
   if (values.value === null && values.prevValue) { // убрал
-    result.message += ` '${transformValue(model, values, 'prev')}'`;
-    result.messageEn += ` '${transformValue(model, values, 'prev', 'en')}'`;
+    result.message += ` '${await transformValue(model, values, 'prev')}'`;
+    result.messageEn += ` '${await transformValue(model, values, 'prev', 'en')}'`;
   } else if (values.value && values.prevValue === null) { // установил
-    result.message += ` '${transformValue(model, values)}'`;
-    result.messageEn += ` '${transformValue(model, values, false, 'en')}'`;
+    result.message += ` '${await transformValue(model, values)}'`;
+    result.messageEn += ` '${await transformValue(model, values, false, 'en')}'`;
   } else { // изменил
     if (values.prevValue !== null) {
-      result.message += ` с '${transformValue(model, values, 'prev')}'`;
-      result.messageEn += ` from '${transformValue(model, values, 'prev', 'en')}'`;
+      result.message += ` с '${await transformValue(model, values, 'prev')}'`;
+      result.messageEn += ` from '${await transformValue(model, values, 'prev', 'en')}'`;
     }
     if (values.value !== null) {
-      result.message += ` на '${transformValue(model, values)}'`;
-      result.messageEn += ` to '${transformValue(model, values, false, 'en')}'`;
+      result.message += ` на '${await transformValue(model, values)}'`;
+      result.messageEn += ` to '${await transformValue(model, values, false, 'en')}'`;
     }
   }
 
   return result;
 }
 
-function transformValue (model, changedProperty, hasPrevChangedProperty = false, locale = 'ru') {
+async function transformValue (model, changedProperty, hasPrevChangedProperty = false, locale = 'ru') {
   const currentValue = hasPrevChangedProperty
     ? changedProperty.prevValue
     : changedProperty.value;
 
   const changedValue = {
-    statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue, locale),
-    typeId: queries.dictionary.getName('TaskTypesDictionary', currentValue, locale),
+    statusId: await queries.dictionary.getName('TaskStatusesDictionary', currentValue, locale),
+    typeId: await queries.dictionary.getName('TaskTypesDictionary', currentValue, locale),
     sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
     parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
   };
