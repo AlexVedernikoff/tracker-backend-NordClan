@@ -558,3 +558,13 @@ exports.list = function (req, res, next){
     })
     .catch(err => next(err));
 };
+
+exports.addGitlabProject = async function (req, res, next) {
+  const { projectId, path } = req.body;
+  try {
+    await gitLabService.projects.addProjectByPath(projectId, path);
+    res.json({data: 'ok'});
+  } catch (e) {
+    next(e);
+  }
+};
