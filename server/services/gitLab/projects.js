@@ -16,7 +16,7 @@ const getProjects = async function (ids) {
   }));
   return projects;
 };
-// вытянуть проект из гитлаба и айдишник приписал проекту в симтреке
+
 const addProjectByPath = async function (projectId, path) {
   try {
     const gitlabProject = await http.get({ host, path: `/api/v4/projects/${encodeURIComponent(path)}`, headers });
