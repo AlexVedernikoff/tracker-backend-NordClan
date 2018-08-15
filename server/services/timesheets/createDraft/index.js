@@ -7,7 +7,11 @@ exports.createDraft = async (params) => {
   if (!isNeedCreateDraft) {
     throw new Error(`Some timesheet already exists on date ${params.onDate}`);
   }
-  await models.TimesheetDraft.create(params, { returning: true });
+  try {
+    await models.TimesheetDraft.create(params, {returning: true});
+  } catch (e) {
+    throw new Error('Create draft error');
+  }
 };
 
 exports.getDraft = async (params) => {
