@@ -10,7 +10,7 @@ exports.createDraft = async (params) => {
   try {
     await models.TimesheetDraft.create(params, {returning: true});
   } catch (e) {
-    throw new Error('Create draft error');
+    throw new Error(e);
   }
 };
 
