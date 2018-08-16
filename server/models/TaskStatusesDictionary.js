@@ -32,19 +32,6 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'task_statuses'
   });
 
-  const TaskStatusesPermissions = [
-    {id: 1, name: 'New', nameEn: 'New', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 2, name: 'Develop play', nameEn: 'Develop play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 3, name: 'Develop stop', nameEn: 'Develop stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 4, name: 'Code Review play', nameEn: 'Code Review play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 5, name: 'Code Review stop', nameEn: 'Code Review stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 6, name: 'QA play', nameEn: 'QA play', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 7, name: 'QA stop', nameEn: 'QA stop', createDraftByChangesTaskStatus: true, createDraftByCron: true},
-    {id: 8, name: 'Done', nameEn: 'Done', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 9, name: 'Canceled', nameEn: 'Canceled', createDraftByChangesTaskStatus: false, createDraftByCron: false},
-    {id: 10, name: 'Closed', nameEn: 'Closed', createDraftByChangesTaskStatus: false, createDraftByCron: false}
-  ];
-
   TaskStatuses.DEVELOP_STATUSES = [2, 3];
   TaskStatuses.CODE_REVIEW_STATUSES = [4, 5];
   TaskStatuses.QA_STATUSES = [6, 7];
@@ -60,8 +47,8 @@ module.exports = function (sequelize, DataTypes) {
     TaskStatuses.DONE_STATUS,
     TaskStatuses.CLOSED_STATUS
   ];
-  TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = _.filter(TaskStatusesPermissions, obj => obj.createDraftByCron === true).map(el => el.id);
-  TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS = _.filter(TaskStatusesPermissions, obj => obj.createDraftByChangesTaskStatus === true).map(el => el.id);
+  TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = [2, 3, 4, 5, 6];
+  TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS = [2, 3, 4, 5, 6];
 
   return TaskStatuses;
 };
