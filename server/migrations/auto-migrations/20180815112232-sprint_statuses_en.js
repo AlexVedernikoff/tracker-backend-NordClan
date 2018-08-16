@@ -1,6 +1,6 @@
 const Statuses = [
-  {id: 1, name: 'Не в процессе', nameEn: 'In progress'},
-  {id: 2, name: 'В процессе', nameEn: 'Stopped'}
+  {id: 1, name: 'Не в процессе', nameEn: 'Stopped'},
+  {id: 2, name: 'В процессе', nameEn: 'In progress'}
 ];
 
 module.exports = {
