@@ -4,20 +4,26 @@ const constants = require('./../constants');
 const ACTIONS = constants.actions;
 
 const entityWord = {
-  create: 'задачу',
-  update: 'задачи'
+  ru: {
+    create: 'задачу',
+    update: 'задачи'
+  },
+  en: {
+    create: 'task',
+    update: 'task'
+  }
 };
 
-module.exports = function (model) {
+module.exports = async function (model) {
   const changedProperty = getChangedProperty(model);
   const messageHandlers = declarativeHandlers();
-  const messageHandler = messageHandlers.filter(handler => {
+  const messageHandler = await messageHandlers.filter(handler => {
     return handler.statement(model, changedProperty);
   })[0];
 
   const answer = messageHandler
     ? messageHandler.answer(model)
-    : generativeAnswer(model, changedProperty);
+    : await generativeAnswer(model, changedProperty);
 
   return {
     message: answer.message,
@@ -28,7 +34,7 @@ module.exports = function (model) {
 
 
 //TODO refactoring
-function generativeAnswer (model, values) {
+async function generativeAnswer (model, values) {
   const result = {
     message: '',
     messageEn: '',
@@ -43,52 +49,96 @@ function generativeAnswer (model, values) {
   if (model.action === 'update') {
     if ((values.value === null && values.prevValue) || (values.value === true && values.prevValue === false)) { // убрал
       result.message = 'убрал(-а)';
+      result.messageEn = 'removed';
     } else if ((values.value && values.prevValue === null) || (values.value === false && values.prevValue === true)) { // установил
       result.message = 'установил(-а)';
+      result.messageEn = 'setted';
     } else { // изменил
       result.message = 'изменил(-а)';
+      result.messageEn = 'changed';
     }
   }
 
   switch (model.field) {
-  case 'statusId': result.message += ' статус'; break;
-  case 'name': result.message += ' название'; break;
-  case 'typeId': result.message += ' тип'; break;
-  case 'sprintId': result.message += ' спринт'; break;
-  case 'description': result.message += ' описание'; break;
-  case 'prioritiesId': result.message += ' приоритет'; break;
-  case 'plannedExecutionTime': result.message += ' планируемое время исполнения'; break;
-  case 'factExecutionTime': result.message += ' фактическое время исполнения'; break;
-  case 'parentId': result.message += ' родителя'; break;
-  case 'isTaskByClient': result.message += ' признак "От клиента"'; break;
+  case 'statusId':
+    result.message += ' статус';
+    result.messageEn += ' status';
+    break;
+  case 'name':
+    result.message += ' название';
+    result.messageEn += ' name';
+    break;
+  case 'typeId':
+    result.message += ' тип';
+    result.messageEn += ' type';
+    break;
+  case 'sprintId':
+    result.message += ' спринт';
+    result.messageEn += ' sprint';
+    break;
+  case 'description':
+    result.message += ' описание';
+    result.messageEn += ' description';
+    break;
+  case 'prioritiesId':
+    result.message += ' приоритет';
+    result.messageEn += ' приоритет';
+    break;
+  case 'plannedExecutionTime':
+    result.message += ' планируемое время исполнения';
+    result.messageEn += ' planned time';
+    break;
+  case 'factExecutionTime':
+    result.message += ' фактическое время исполнения';
+    result.messageEn += ' fact execution time';
+    break;
+  case 'parentId':
+    result.message += ' родителя';
+    result.messageEn += ' parent';
+    break;
+  case 'isTaskByClient':
+    result.message += ' признак "От клиента"';
+    result.messageEn += ' "From client"';
+    break;
+  default:
+    break;
   }
 
   if (model.field !== 'isTaskByClient') {
-    result.message += ' ' + entityWord.update;
+    result.message += ' ' + entityWord.ru.update;
+    result.messageEn += ' ' + entityWord.en.update;
   } else {
     return result;
   }
 
   if (values.value === null && values.prevValue) { // убрал
-    result.message += ` '${transformValue(model, values, 'prev')}'`;
+    result.message += ` '${await transformValue(model, values, 'prev')}'`;
+    result.messageEn += ` '${await transformValue(model, values, 'prev', 'en')}'`;
   } else if (values.value && values.prevValue === null) { // установил
-    result.message += ` '${transformValue(model, values)}'`;
+    result.message += ` '${await transformValue(model, values)}'`;
+    result.messageEn += ` '${await transformValue(model, values, false, 'en')}'`;
   } else { // изменил
-    if (values.prevValue !== null) {result.message += ` с '${transformValue(model, values, 'prev')}'`;}
-    if (values.value !== null) {result.message += ` на '${transformValue(model, values)}'`;}
+    if (values.prevValue !== null) {
+      result.message += ` с '${await transformValue(model, values, 'prev')}'`;
+      result.messageEn += ` from '${await transformValue(model, values, 'prev', 'en')}'`;
+    }
+    if (values.value !== null) {
+      result.message += ` на '${await transformValue(model, values)}'`;
+      result.messageEn += ` to '${await transformValue(model, values, false, 'en')}'`;
+    }
   }
 
   return result;
 }
 
-function transformValue (model, changedProperty, hasPrevChangedProperty = false) {
+async function transformValue (model, changedProperty, hasPrevChangedProperty = false, locale = 'ru') {
   const currentValue = hasPrevChangedProperty
     ? changedProperty.prevValue
     : changedProperty.value;
 
   const changedValue = {
-    statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue),
-    typeId: queries.dictionary.getName('TaskTypesDictionary', currentValue),
+    statusId: await queries.dictionary.getName('TaskStatusesDictionary', currentValue, locale),
+    typeId: await queries.dictionary.getName('TaskTypesDictionary', currentValue, locale),
     sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
     parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
   };
@@ -105,8 +155,8 @@ function declarativeHandlers () {
       },
       answer: (model) => {
         return {
-          message: `создал(-а) ${entityWord.create} '${model.task.name}'`,
-          messageEn: `created ${entityWord.create} '${model.task.name}'`,
+          message: `создал(-а) ${entityWord.ru.create} '${model.task.name}'`,
+          messageEn: `created ${entityWord.en.create} '${model.task.name}'`,
           entities: {}
         };
       }
@@ -118,8 +168,8 @@ function declarativeHandlers () {
       },
       answer: (model) => {
         return {
-          message: `создал(-а) под${entityWord.create} {subTask}`,
-          messageEn: `created as${entityWord.create} {subTask}`,
+          message: `создал(-а) под${entityWord.ru.create} {subTask}`,
+          messageEn: `created as${entityWord.en.create} {subTask}`,
           entities: {
             subTask: model.subTask
           }

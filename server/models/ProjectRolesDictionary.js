@@ -15,6 +15,12 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(30),
       trim: true,
       allowNull: false
+    },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(30),
+      trim: true,
+      allowNull: false
     }
   }, {
     indexes: [
@@ -33,5 +39,7 @@ module.exports = function (sequelize, DataTypes) {
   ProjectRoles.UNBILLABLE_ID = 2;
   ProjectRoles.UNBILLABLE_ID = 10;
   ProjectRoles.CUSTOMER_ID = 11;
+
   return ProjectRoles;
+
 };
