@@ -456,7 +456,7 @@ module.exports = async function (metricsTypeId, input){
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': timeSpentForBugs / input.project.bugs.length,
+      'value': input.project.bugs.length ? timeSpentForBugs / input.project.bugs.length : 0,
       'projectId': input.project.id,
       'sprintId': input.sprint ? input.sprint.id : null,
       'userId': null
