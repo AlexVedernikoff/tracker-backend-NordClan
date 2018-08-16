@@ -13,7 +13,7 @@ function getAction (type, data) {
 
 function emit (socketIO, action, userId) {
   const channel = `task_user_${userId}`;
-  socketIO.emit(channel, action);
+  socketIO.sockets.to(`user_${ userId }`).emit(channel, action);
 }
 
 exports.sendAction = sendActionCreator(getAction, emit);

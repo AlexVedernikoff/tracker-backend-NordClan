@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const TimesheetService = require('../../../services/timesheets');
 const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
+const TaskChannel = require('../../../channels/Tasks');
 const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
@@ -119,10 +120,13 @@ exports.update = async (req, res, next) => {
     .then(sheet => Promise.all([
       taskId && TasksService
         .read(taskId, req.user),
-      sheet
+      sheet,
+      TasksService
+        .read(sheet.taskId, req.user)
     ]))
-    .then(([task, sheet]) => {
+    .then(([task, sheet, taskSheet]) => {
       TimesheetsChannel.sendAction('update', !task ? sheet : {...sheet, task }, res.io, sheet.userId);
+      TaskChannel.sendAction('update', taskSheet, res.io, taskSheet.projectId);
       res.end();
     })
     .catch(e => next(createError(e)));

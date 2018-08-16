@@ -199,11 +199,19 @@ function userLogout (req, res, next) {
         httpOnly: true
       });
 
+      userSocketLogout(req, res);
       res.sendStatus(200);
     })
     .catch((err) => {
       next(err);
     });
+}
+
+function userSocketLogout (req, res) {
+  res.io.of('/').in(`user_${ req.user.id }`).clients((error, socketIds) => {
+    socketIds.forEach(socketId => res.io.sockets.sockets[socketId].leave(`user_${ req.user.id }`));
+    console.log('leave: ' + `user_${ req.user.id }`);
+  });
 }
 
 
