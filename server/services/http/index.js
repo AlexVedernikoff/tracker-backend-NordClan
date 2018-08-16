@@ -48,3 +48,13 @@ exports.get = (requestOptions) => {
 
   return httpRequest(options);
 };
+
+exports.post = (requestOptions, postData) => {
+
+  const options = {
+    method: 'POST',
+    ...requestOptions
+  };
+
+  return httpRequest(options, postData);
+};
