@@ -183,6 +183,6 @@ async function getMetrics (projectId){
 
 async function saveMetrics (metricsData){
   return await sequelize.transaction(function (t){
-    return Metrics.bulkCreate(metricsData, {transaction: t});
+    return Metrics.bulkCreate(metricsData.filter(md => md), {transaction: t});
   });
 }
