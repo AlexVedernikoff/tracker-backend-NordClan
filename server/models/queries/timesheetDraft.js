@@ -118,7 +118,7 @@ exports.all = async function (conditions) {
           {
             as: 'sprint',
             model: models.Sprint,
-            required: true,
+            required: false,
             attributes: ['name']
           }
         ]
