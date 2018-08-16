@@ -6,8 +6,7 @@ module.exports = {
       { id: 53, name: 'Часы затраченные на роль 11(Android)' },
       { id: 54, name: 'Часы затраченные на роль 12(iOS)' },
       { id: 55, name: '% часов затраченных на роль 13(DevOps)' },
-      { id: 56, name: 'Часы затраченные на роль 13(DevOps)' },
-      { id: 57, name: 'Часы затраченные на фикс багов' }
+      { id: 56, name: 'Часы затраченные на роль 13(DevOps)' }
     ]);
   },
 
@@ -15,7 +14,7 @@ module.exports = {
     return (
       queryInterface.bulkDelete(
         'metric_types',
-        { id: { [Sequalize.Op.in]: [51, 52, 53, 54, 55, 56, 57] } }
+        { id: { [Sequalize.Op.in]: [51, 52, 53, 54, 55, 56] } }
       )
     );
   }

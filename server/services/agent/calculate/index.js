@@ -106,8 +106,8 @@ async function getMetrics (projectId){
   const taskStatusDoneEn = 'Done';
   const [taskTypeBug, taskStatusDone, metricTypes] = await Promise.all([
     TaskTypesDictionary.findAll({where: {name_en: bugNameEn}}),
-    TaskStatusesDictionary.findAll({where: {name: taskStatusDoneEn}},
-      MetricTypesDictionary.findAll())
+    TaskStatusesDictionary.findAll({where: {name: taskStatusDoneEn}}),
+    MetricTypesDictionary.findAll()
   ]);
 
   const bugs = await Task.findAll({
