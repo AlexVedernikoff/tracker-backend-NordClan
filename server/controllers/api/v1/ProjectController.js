@@ -317,7 +317,7 @@ exports.list = function (req, res, next){
   // }
 
   const include = [];
-  const where = {};
+  let where = {};
 
   if (!req.user.isGlobalAdmin && !req.user.isVisor) {
     where.id = req.user.dataValues.projects;
@@ -345,6 +345,44 @@ exports.list = function (req, res, next){
 
   if (req.query.tags) {
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
+  }
+
+  if (req.query.dateSprintBegin) {
+    const dateSprintBegin = moment(req.query.dateSprintBegin).format('YYYY-MM-DD');
+    where = Sequelize.and(where, Sequelize.literal(
+      `(
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}' 
+          AND fact_start_date = (SELECT MIN(fact_start_date)
+            FROM sprints
+            WHERE project_id = "Project"."id"
+            AND deleted_at IS NULL
+          )
+        ))
+        OR (
+          "Project"."id" NOT IN (SELECT project_id FROM sprints WHERE project_id IS NOT NULL AND deleted_at IS NULL)
+          AND "Project"."created_at" >= '${dateSprintBegin}'
+        )
+      )`
+    ));
+  }
+
+  if (req.query.dateSprintEnd) {
+    const dateSprintEnd = moment(req.query.dateSprintEnd).format('YYYY-MM-DD');
+    where = Sequelize.and(where, Sequelize.literal(
+      `(
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_finish_date <= '${dateSprintEnd}'
+          AND fact_finish_date = (SELECT MAX(fact_finish_date)
+            FROM sprints 
+            WHERE project_id = "Project"."id"
+            AND deleted_at IS NULL
+          )
+        ))
+        OR (
+          "Project"."id" NOT IN (SELECT project_id FROM sprints WHERE project_id IS NOT NULL AND deleted_at IS NULL)
+          AND ("Project"."completed_at" IS NULL OR "Project"."completed_at" <= '${dateSprintEnd}')
+        )
+      )`
+    ));
   }
 
   const userRole = req.user.dataValues.globalRole;
@@ -417,6 +455,7 @@ exports.list = function (req, res, next){
       as: 'sprintForQuery',
       model: Sprint,
       attributes: [],
+      required: false,
       where: {
         $or: [
           {
@@ -517,7 +556,6 @@ exports.list = function (req, res, next){
           ]
         })
         .then(projects => {
-
           return Project
             .count({
               where: where,
