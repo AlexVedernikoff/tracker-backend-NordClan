@@ -3,12 +3,12 @@
 
 // module.exports = http;
 
-
+const querystring = require('querystring');
 const http = require('http');
 
 function httpRequest (params, data) {
   return new Promise(function (resolve, reject) {
-    const req = http.request(params, res => {
+    const req = http.request(params, (res) => {
       if (res.statusCode < 200 || res.statusCode >= 300) {
         return reject(new Error('statusCode=' + res.statusCode));
       }
@@ -31,7 +31,8 @@ function httpRequest (params, data) {
     });
 
     if (data) {
-      req.write(data);
+      const post_data = querystring.stringify(data);
+      req.write(post_data);
     }
 
     req.end();

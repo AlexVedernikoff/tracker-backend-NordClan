@@ -4,29 +4,26 @@ const token = config.token;
 const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { Task, TaskTypesDictionary, Project } = require('../../models/');
-const createError = require('http-errors');
 
-// tasktype/project-prefix-taskId
 const createBranch = async function (taskId, repoId, sourceBranch = 'develop') {
 
 
   const taskTypesDictionary = await TaskTypesDictionary.findAll();
   const task = await Task.find({where: {id: taskId}, attributes: ['id', 'typeId', 'projectId']});
-  const project = await Project.find({where: {id: task.projectId}, attributes: ['id', 'prefix']});
+  const project = await Project.find({where: {id: task.projectId}, attributes: ['id', 'prefix', 'gitlabProjectIds']});
 
-  if (!project.gitlabProjetIds.includes(repoId)) {
-    throw createError(403, 'Access denied');
+  if (!project.gitlabProjectIds.includes(+repoId)) {
+    throw new Error(400, 'Bad request');
   }
   const taskType = taskTypesDictionary.find(i => i.id === task.typeId);
 
   const postData = {
-    id: repoId,
-    branch: `${taskType.toLowerCase()}/${project.prefix}-${task.id}`,
+    branch: `${taskType.nameEn.toLowerCase().search(/feature/g) ? 'feature' : 'bug'}/${project.prefix}-${task.id}`,
     ref: sourceBranch
   };
-  return http.post({ host, path: `/projects/${repoId}/repository/branches`, headers}, postData);
 
-  // проверка прикреплен ли репозиторий к проекту
+  return http.post({ host, path: `/api/v4/projects/${repoId}/repository/branches`, headers}, postData);
+
 };
 
 module.exports = {

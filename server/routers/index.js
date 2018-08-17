@@ -88,6 +88,7 @@ router.get('/task', GlobalAccess.can('task', 'list'), TaskController.list);
 router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), TaskTasksController.create);
 router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks', 'delete'), TaskTasksController.delete);
 router.get('/task/:id/spent/', GlobalAccess.can('task', 'read'), TaskController.getSpentTime);
+router.post('/task/:id/createGitlabBranch/', TaskController.createGitlabBranch);
 
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
