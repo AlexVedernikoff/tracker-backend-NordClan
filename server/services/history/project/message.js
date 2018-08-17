@@ -4,7 +4,7 @@ const { getChangedProperty } = require('./../utils');
 const { detectAction } = require('./../utils');
 const constants = require('./../constants');
 
-module.exports = function (model) {
+module.exports = async function (model) {
   const changedProperty = getChangedProperty(model);
   const resourceName = getResourceName(model, changedProperty);
   const resource = constants.resources[resourceName];
@@ -13,7 +13,7 @@ module.exports = function (model) {
     return;
   }
 
-  const { message, entities, messageEn } = getResources(resource, model, changedProperty);
+  const { message, entities, messageEn } = await getResources(resource, model, changedProperty);
   return { message, entities, messageEn };
 };
 
@@ -24,10 +24,11 @@ function getResourceName (model, changedProperty) {
     : `${action}_${model.entity}`.toUpperCase();
 }
 
-function getResources (resource, model, changedProperty) {
-  const message = transformMessage(resource.message, changedProperty, model);
-  const messageEn = transformMessage(resource.messageEn, changedProperty, model);
-  const properties = transformProperties(model.entity, model.field, changedProperty);
+async function getResources (resource, model, changedProperty) {
+  const message = await transformMessage(resource.message, changedProperty, model);
+  const messageEn = await transformMessage(resource.messageEn, changedProperty, model, 'en');
+  const properties = await transformProperties(model.entity, model.field, changedProperty);
+  const propertiesEn = await transformProperties(model.entity, model.field, changedProperty, 'en');
   const entitiesName = resource.entities || [];
   const entities = entitiesName.reduce((acc, name) => {
     const key = getKey(name);
@@ -37,7 +38,7 @@ function getResources (resource, model, changedProperty) {
 
   return {
     message: insertChangedProperties(message, properties),
-    messageEn: insertChangedProperties(messageEn, properties),
+    messageEn: insertChangedProperties(messageEn, propertiesEn),
     entities
   };
 }
@@ -51,30 +52,40 @@ function getEntity (name, model) {
   return name.split('.').reduce((acc, item) => acc[item], model);
 }
 
-function transformMessage (message, changedProperty, model) {
+async function transformMessage (message, changedProperty, model, locale = 'ru') {
   const flags = message.match(/{([^{}]+)}/g) || [];
   const dictionary = {
-    role: () => getUserRole(changedProperty),
-    action: () => getUserAction(changedProperty),
+    role: async () => await getUserRole(changedProperty, locale),
+    action: () => getUserAction(changedProperty, locale),
     tag: () => model.itemTag.tag.name
   };
 
-  return flags
+  return await flags
     .map(flag => flag.replace(/[{}]/g, ''))
     .filter(flag => dictionary[flag])
-    .reduce((acc, flag) => {
-      const replacement = dictionary[flag]();
+    .reduce(async (pr, flag) => {
+      const acc = await pr;
+      const replacement = await dictionary[flag]();
       return acc.replace(`{${flag}}`, replacement);
-    }, message);
+    }, Promise.resolve(message));
 }
 
-function getUserAction (changedProperty) {
-  return changedProperty.value.length > changedProperty.prevValue.length
-    ? 'добавил'
-    : 'удалил';
+function getUserAction (changedProperty, locale = 'ru') {
+  switch (locale) {
+  case 'ru':
+    return changedProperty.value.length > changedProperty.prevValue.length
+      ? 'добавил'
+      : 'удалил';
+  case 'en':
+    return changedProperty.value.length > changedProperty.prevValue.length
+      ? 'added'
+      : 'removed';
+  default:
+    return undefined;
+  }
 }
 
-function getUserRole (changedProperty) {
+async function getUserRole (changedProperty, locale = 'ru') {
   const rolesBefore = changedProperty.prevValue.match(/[0-9]+/g) || [];
   const rolesAfter = changedProperty.value.match(/[0-9]+/g) || [];
   const [ biggerArray, smallerArray ] = rolesBefore.length < rolesAfter.length
@@ -82,7 +93,7 @@ function getUserRole (changedProperty) {
     : [ rolesBefore, rolesAfter ];
 
   const value = _.difference(biggerArray, smallerArray)[0];
-  return queries.dictionary.getName('ProjectRolesDictionary', value);
+  return await queries.dictionary.getName('ProjectRolesDictionary', value, locale);
 }
 
 function insertChangedProperties (message, changedProperty) {
@@ -97,21 +108,21 @@ function insertChangedProperties (message, changedProperty) {
   return updatedMessage;
 }
 
-function transformProperties (entity, field, changedProperty) {
-  const transformValue = (value) => {
+async function transformProperties (entity, field, changedProperty, locale = 'ru') {
+  const transformValue = async (value) => {
     const dictionary = {
-      [field]: queries.dictionary.getName(`${entity}StatusesDictionary`, value)
+      [field]: await queries.dictionary.getName(`${entity}StatusesDictionary`, value, locale)
     };
 
     return dictionary[field] || value;
   };
 
   const value = changedProperty
-    ? transformValue(changedProperty.value)
+    ? await transformValue(changedProperty.value)
     : null;
 
   const prevValue = changedProperty
-    ? transformValue(changedProperty.prevValue)
+    ? await transformValue(changedProperty.prevValue)
     : null;
 
   return { value, prevValue };

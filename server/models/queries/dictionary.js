@@ -2,13 +2,20 @@ const models = require('../');
 
 exports.name = 'dictionary';
 
-exports.getName = function (dictionaryName, valueId) {
+exports.getName = async function (dictionaryName, valueId, locale = 'ru') {
   if (!models[dictionaryName]) { return undefined; }
 
-  const array = models[dictionaryName].values || [];
+  const array = await models[dictionaryName].findAll() || [];
   for (let i = 0; i < array.length; i++) {
     if (array[i].id === +valueId) {
-      return array[i].name;
+      switch (locale) {
+      case 'ru':
+        return array[i].name;
+      case 'en':
+        return array[i].nameEn;
+      default:
+        return array[i].name;
+      }
     }
   }
 

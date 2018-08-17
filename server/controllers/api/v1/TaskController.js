@@ -90,7 +90,8 @@ exports.update = async function (req, res, next) {
   try {
     let updatedTasks, activeTask, createdDraft, projectId, changedTaskData, updatedTask;
     const result = { updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
-    sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId);
+    sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData);
+    console.log(JSON.stringify(changedTaskData));
     if (changedTaskData.performerId && !taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
@@ -128,19 +129,23 @@ function isErrorReqUpdateAll (req) {
     || req.body.taskIds.some(id => isNaN(id));
 }
 
-function sendUpdates (io, userId, updatedTasks, updatedTaskPlayer, activeTask, createdDraft, projectId) {
+function sendUpdates (io, userId, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData) {
+
+  if (changedTaskData.statusId || changedTaskData.performerId) {
+    TimesheetsChannel.sendAction('setActiveTask', updatedTask, io, updatedTask.dataValues.performerId);
+  }
+
   if (createdDraft) {
     TimesheetsChannel.sendAction('create', createdDraft, io, userId);
   }
 
-  if (activeTask) {
-    TimesheetsChannel.sendAction('setActiveTask', activeTask, io, userId);
-  } else {
-    TimesheetsChannel.sendAction('setActiveTask', updatedTaskPlayer, io, userId);
+  if (updatedTasks) {
+    TimesheetsChannel.sendAction('setActiveTask', updatedTask, io, updatedTask.dataValues.performerId);
+    TimesheetsChannel.sendTaskUpdate(updatedTask, io);
   }
 
-  updatedTasks.forEach(updatedTask => {
-    TasksChannel.sendAction('update', updatedTask.dataValues, io, projectId);
+  updatedTasks.forEach(task => {
+    TasksChannel.sendAction('update', task.dataValues, io, projectId);
   });
 }
 
