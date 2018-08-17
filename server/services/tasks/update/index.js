@@ -122,7 +122,7 @@ async function createDraftIfNeeded (task, statusId) {
     ];
     const onDate = moment().format('YYYY-MM-DD');
     const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
-    if (needCreateDraft) {
+    if (needCreateDraft && task.performer) {
       const currentStageStatuses = statuses.find(item => item.includes(statusId));
       const draftParams = {
         taskId: task.id,
