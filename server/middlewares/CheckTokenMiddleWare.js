@@ -133,7 +133,7 @@ exports.getUserByToken = function (header) {
       ]
     });
   } catch (err) {
-    return null;
+    return Promise.reject();
   }
 };
 

@@ -1,6 +1,6 @@
 const moment = require('moment');
 const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, Timesheet, TaskHistory, TaskStatusesDictionary,
-  User, Metrics, MetricTypesDictionary, Sequelize, sequelize } = require('../../../models');
+  User, Metrics, MetricTypesDictionary, Sequelize, sequelize, TaskTypesDictionary } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -102,6 +102,22 @@ async function getMetrics (projectId){
 
   const projects = await Project.findAll(projectsQuery);
 
+  const bugNameEn = 'Bug';
+  const taskStatusDoneEn = 'Done';
+  const [taskTypeBug, taskStatusDone, metricTypes] = await Promise.all([
+    TaskTypesDictionary.findAll({where: {name_en: bugNameEn}}),
+    TaskStatusesDictionary.findAll({where: {name: taskStatusDoneEn}}),
+    MetricTypesDictionary.findAll()
+  ]);
+
+  const bugs = await Task.findAll({
+    where: {
+      typeId: taskTypeBug[0].id,
+      statusId: taskStatusDone[0].id
+    },
+    attributes: ['id', 'sprintId', 'projectId', 'factExecutionTime' ]
+  });
+
   const tasksInBacklog = await Task.findAll({
     where: {
       sprintId: null
@@ -127,10 +143,10 @@ async function getMetrics (projectId){
     .map(timesheet => timesheet.get({ 'plain': true })));
 
   const projectMetricsTasks = [];
-
   projects.forEach(function (project){
     const plainProject = project.get({ 'plain': true });
     plainProject.tasksInBacklog = tasksInBacklog.filter(task => task.projectId === plainProject.id);
+    plainProject.bugs = bugs.filter(bug => bug.projectId === plainProject.id);
     plainProject.otherTimeSheets = otherTimeSheets.filter(timesheet => timesheet.projectId === plainProject.id);
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint, sprintKey){
@@ -139,8 +155,8 @@ async function getMetrics (projectId){
         plainProject.sprints[sprintKey].regressionBugsAmount = parseInt(sprint.regressionBugsAmount, 10);
       });
     }
-    MetricTypesDictionary.values.forEach(function (value){
-      if (value.id > 29) return;
+    metricTypes.forEach(function (value){
+      if (value.id > 29 && value.id !== 57) { return; }
       projectMetricsTasks.push(metricsLib(value.id, {
         project: plainProject,
         executeDate
@@ -148,8 +164,8 @@ async function getMetrics (projectId){
     });
     if (plainProject.sprints.length > 0){
       plainProject.sprints.forEach(function (sprint){
-        MetricTypesDictionary.values.forEach(function (value){
-          if (value.id < 30 || value.id > 41) return;
+        metricTypes.forEach(function (value){
+          if ((value.id < 30 || value.id > 41) && value.id !== 57) { return; }
           projectMetricsTasks.push(metricsLib(value.id, {
             project: plainProject,
             sprint,
@@ -166,6 +182,6 @@ async function getMetrics (projectId){
 
 async function saveMetrics (metricsData){
   return await sequelize.transaction(function (t){
-    return Metrics.bulkCreate(metricsData, {transaction: t});
+    return Metrics.bulkCreate(metricsData.filter(md => md), {transaction: t});
   });
 }
