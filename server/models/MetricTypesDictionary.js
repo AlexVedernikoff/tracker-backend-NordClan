@@ -67,8 +67,9 @@ module.exports = function (sequelize, DataTypes) {
     {id: 52, name: '% часов затраченных на роль 12 (iOS)'},
     {id: 53, name: 'Часы затраченные на роль 11(Android)'},
     {id: 54, name: 'Часы затраченные на роль 12(iOS)'},
-    { id: 55, name: '% часов затраченных на роль 13(DevOps)' },
-    { id: 56, name: 'Часы затраченные на роль 13(DevOps)' }
+    {id: 55, name: '% часов затраченных на роль 13(DevOps)'},
+    {id: 56, name: 'Часы затраченные на роль 13(DevOps)'},
+    {id: 57, name: 'Часы затраченные на фикс багов'}
   ];
 
   return MetricTypes;
