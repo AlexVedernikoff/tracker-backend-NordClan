@@ -167,14 +167,20 @@ module.exports = async function (metricsTypeId, input){
 
   case (8):
     totalClientBugsAmount = 0;
-    if (input.project.sprints.length > 0){
-      input.project.sprints.forEach(function (sprint){
-        const clientBugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
-        });
-        totalClientBugsAmount += clientBugs.length;
+    const calculateClientBugs = (tasks) => {
+      const clientBugs = _.filter(tasks, (task) => {
+        return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
       });
+      totalClientBugsAmount += clientBugs.length;
+    };
+    if (Array.isArray(input.project.sprints)){
+      input.project.sprints.forEach(sprint => calculateClientBugs(sprint.tasks));
+
+      if (Array.isArray(input.project.tasksInBacklog)){
+        calculateClientBugs(input.project.tasksInBacklog);
+      }
     }
+
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
