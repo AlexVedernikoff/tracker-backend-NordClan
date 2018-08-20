@@ -122,7 +122,7 @@ async function getMetrics (projectId){
     where: {
       sprintId: null
     },
-    attributes: ['id', 'sprintId', 'projectId'],
+    attributes: ['id', 'sprintId', 'projectId', 'typeId', 'statusId', 'isTaskByClient'],
     include: [
       {
         as: 'timesheets',
@@ -132,8 +132,7 @@ async function getMetrics (projectId){
       }
     ]
   }).then(tasks => tasks
-    .map(task => task.get({ 'plain': true }))
-    .filter(task => task.timesheets.length > 0));
+    .map(task => task.get({ 'plain': true })));
 
   const otherTimeSheets = await Timesheet.findAll({
     where: {
