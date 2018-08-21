@@ -73,6 +73,7 @@ exports.getReport = async function (projectId, criteria) {
             model: ProjectUsers,
             where: { projectId: queryParams.projectId },
             attributes: ['id', 'rolesIds'],
+            paranoid: false,
             include: [
               {
                 as: 'roles',
