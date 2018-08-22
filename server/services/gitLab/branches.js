@@ -5,11 +5,11 @@ const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { Task, TaskTypesDictionary, Project } = require('../../models/');
 
-const createBranch = async function (taskId, repoId, sourceBranch = 'develop') {
+const createBranch = async function (taskId, repoId, branchSource = 'develop', branchName) {
 
 
   const taskTypesDictionary = await TaskTypesDictionary.findAll();
-  const task = await Task.find({where: {id: taskId}, attributes: ['id', 'typeId', 'projectId']});
+  const task = await Task.find({where: {id: taskId}, attributes: ['id', 'typeId', 'projectId', 'gitlabBranchIds']});
   const project = await Project.find({where: {id: task.projectId}, attributes: ['id', 'prefix', 'gitlabProjectIds']});
 
   if (!project.gitlabProjectIds.includes(+repoId)) {
@@ -18,12 +18,22 @@ const createBranch = async function (taskId, repoId, sourceBranch = 'develop') {
   const taskType = taskTypesDictionary.find(i => i.id === task.typeId);
 
   const postData = {
-    branch: `${taskType.nameEn.toLowerCase().search(/feature/g) ? 'feature' : 'bug'}/${project.prefix}-${task.id}`,
-    ref: sourceBranch
+    branch: branchName || `${taskType.nameEn.toLowerCase().search(/feature/g) ? 'feature' : 'bug'}/${project.prefix}-${task.id}`,
+    ref: branchSource
   };
-
-  return http.post({ host, path: `/api/v4/projects/${repoId}/repository/branches`, headers}, postData);
-
+  try {
+    const branch = await http.post({ host, path: `/api/v4/projects/${repoId}/repository/branches`, headers}, postData);
+    if (task.gitlabBranchIds instanceof Array) {
+      task.gitlabBranchIds.push({[repoId]: branch.name});
+    } else {
+      task.gitlabBranchIds = [{[repoId]: branch.name}];
+    }
+    await task.set('gitlabBranchIds', task.gitlabBranchIds);
+    await task.save();
+    return branch;
+  } catch (e) {
+    throw new Error(400, 'Can not create branch');
+  }
 };
 
 module.exports = {

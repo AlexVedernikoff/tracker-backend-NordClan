@@ -73,6 +73,11 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    gitlabBranchIds: {
+      field: 'gitlab_branch_ids',
+      type: DataTypes.JSON,
+      allowNull: true
+    },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
     updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
     deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }

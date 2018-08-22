@@ -214,9 +214,9 @@ exports.getSpentTime = async function (req, res, next) {
 
 exports.createGitlabBranch = async function (req, res, next) {
   const taskId = req.params.id;
-  const { repoId, sourceBranch } = req.body;
+  const { repoId, branchSource, branchName } = req.body;
   try {
-    const createdBranch = await branches.createBranch(taskId, repoId, sourceBranch);
+    const createdBranch = await branches.createBranch(taskId, repoId, branchSource, branchName);
     res.json(createdBranch);
   } catch (e) {
     next(createError(400, 'Can not create branch'));
