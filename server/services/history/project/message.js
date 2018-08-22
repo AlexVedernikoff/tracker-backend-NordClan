@@ -10,6 +10,7 @@ module.exports = async function (model) {
   const resource = constants.resources[resourceName];
 
   if (!resource) {
+    console.error('Message not found');
     return;
   }
 

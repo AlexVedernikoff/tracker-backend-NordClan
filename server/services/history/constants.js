@@ -179,6 +179,11 @@ module.exports = {
       message: 'удалил(а) проект из портфеля {portfolio}',
       entities: ['portfolio'],
       messageEn: 'removed project from portfolio {portfolio}'
+    },
+    CHANGE_SPRINT_QAPERCENT: {
+      message: 'изменил(-а) процент на тестирование \'{sprint}\' c \'{prevValue}\' на \'{value}\'',
+      entities: ['sprint'],
+      messageEn: 'changed the percentage testing for \'{sprint}\' from \'{prevValue}\' to \'{value}\''
     }
   }
 };
