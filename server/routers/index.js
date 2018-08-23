@@ -44,6 +44,7 @@ router.get('/:taggable(project|task)/tag', GlobalAccess.can('tag', 'autocomplite
 router.post('/:taggable(project|task)/:taggableId/tag', GlobalAccess.can('tag', 'create'), TagController.create);
 router.get('/:taggable(project|task)/:taggableId/tag', GlobalAccess.can('tag', 'list'), TagController.list);
 router.delete('/:taggable(project|task)/:taggableId/tag/:tag', GlobalAccess.can('tag', 'delete'), TagController.delete);
+router.get('/project/:projectId/tags:', GlobalAccess.can('project', 'read'), TagController.listByProject);
 
 // Projects
 router.post('/project', GlobalAccess.can('project', 'create'), ProjectController.create);

@@ -26,6 +26,14 @@ exports.list = async function (req, res, next){
     });
 };
 
+exports.list = async function (req, res, next) {
+  if (req.body.params.projectId) {
+    return next(createError(404, 'projectId not found'));
+  }
+  const query = createQuery(req.params);
+  const tasks = await models.Task.findAll();
+};
+
 exports.create = async function (req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
@@ -151,3 +159,16 @@ exports.autocompliter = function (req, res, next){
     })
     .catch((err) => next(createError(err)));
 };
+
+function createQuery (params) {
+  return {
+    where: {
+      projectId: {
+        $eq: params.projectId
+      }
+    }
+    include: {
+
+    }
+  };
+}
