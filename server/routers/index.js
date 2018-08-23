@@ -51,11 +51,14 @@ router.get('/project/:id', GlobalAccess.can('project', 'read'), ProjectControlle
 router.put('/project/:id', GlobalAccess.can('project', 'update'), ProjectController.update);
 router.delete('/project/:id', GlobalAccess.can('project', 'delete'), ProjectController.delete);
 router.get('/project', GlobalAccess.can('project', 'read'), ProjectController.list);
-router.post('/project/addGitlabProject', GlobalAccess.can('project', 'read'), ProjectController.addGitlabProject);
+router.post('/project/addGitlabProject', GlobalAccess.can('project', 'addGitlabProject'), ProjectController.addGitlabProject);
 
 router.post('/project/:projectId/users', GlobalAccess.can('projectUsers', 'create'), ProjectUsersController.create);
 router.get('/project/:projectId/users', GlobalAccess.can('projectUsers', 'list'), ProjectUsersController.list);
 router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUsers', 'delete'), ProjectUsersController.delete);
+
+router.get('/project/:id/getGitlabNamespaces', GlobalAccess.can('project', 'getGitlabNamespaces'), ProjectController.getGitlabNamespaces);
+router.post('/project/:id/createGitlabProject', GlobalAccess.can('project', 'createGitlabProject'), ProjectController.createGitlabProject);
 
 // Project reports
 router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);

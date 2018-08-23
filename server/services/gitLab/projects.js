@@ -3,7 +3,6 @@ const config = require('../../configs').gitLab;
 const token = config.token;
 const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
-const createError = require('http-errors');
 const { Project } = require('../../models');
 
 const getProject = id => http.get({ host, path: `/api/v4/projects/${id}`, headers });
@@ -18,23 +17,45 @@ const getProjects = async function (ids) {
 };
 
 const addProjectByPath = async function (projectId, path) {
-  try {
-    const gitlabProject = await http.get({ host, path: `/api/v4/projects/${encodeURIComponent(path)}`, headers });
-    const project = await Project.find({where: {id: projectId}});
-    if (project.gitlabProjectIds instanceof Array) {
-      project.gitlabProjectIds.push(gitlabProject.id);
-    } else {
-      project.gitlabProjectIds = [gitlabProject.id];
-    }
-    await project.save();
-  } catch (e) {
-    throw createError(400, 'Can not add Gitlab project');
+  const gitlabProject = await http.get({ host, path: `/api/v4/projects/${encodeURIComponent(path)}`, headers });
+  const project = await Project.find({where: {id: projectId}});
+  if (project.gitlabProjectIds instanceof Array) {
+    project.gitlabProjectIds.push(gitlabProject.id);
+  } else {
+    project.gitlabProjectIds = [gitlabProject.id];
   }
+
+  await project.set('gitlabProjectIds', project.gitlabProjectIds);
+  await project.save();
+
 };
 
+const createProject = async function (name, namespace_id, projectId) {
+  const postData = {
+    merge_requests_enabled: true,
+    name,
+    namespace_id
+  };
+  const gitlabProject = await http.post({ host, path: '/api/v4/projects', headers}, postData);
+  const project = await Project.find({where: {id: projectId}});
+  if (project.gitlabProjectIds instanceof Array) {
+    project.gitlabProjectIds.push(gitlabProject.id);
+  } else {
+    project.gitlabProjectIds = [gitlabProject.id];
+  }
+  await project.set('gitlabProjectIds', project.gitlabProjectIds);
+  await project.save();
+
+  return gitlabProject;
+};
+
+const getNamespacesList = () => http.get({ host, path: '/api/v4/namespaces', headers });
+
 module.exports = {
+  addProjectByPath,
   getProject,
   getProjects,
-  addProjectByPath
+  createProject,
+  getNamespacesList
 };
 

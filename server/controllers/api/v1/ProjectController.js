@@ -568,3 +568,23 @@ exports.addGitlabProject = async function (req, res, next) {
     next(e);
   }
 };
+
+exports.getGitlabNamespaces = async function (req, res, next) {
+  try {
+    const namespaces = await gitLabService.projects.getNamespacesList();
+    res.json(namespaces);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.createGitlabProject = async function (req, res, next) {
+  const {name, namespace_id} = req.body;
+  const projectId = req.params.id;
+  try {
+    const project = await gitLabService.projects.createProject(name, namespace_id, projectId);
+    res.json(project);
+  } catch (e) {
+    next(e);
+  }
+};
