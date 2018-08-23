@@ -1,7 +1,7 @@
 const ACTIONS = require('./constants').actions;
 
 exports.getChangedProperty = function(model) {
-  const types = ['Int', 'Str', 'Date', 'Float', 'Text'];
+  const types = ['Int', 'Str', 'Date', 'Float', 'Text', 'Boolean'];
   const currentType = types.filter(type => {
     return model[`value${type}`] || model[`prevValue${type}`];
   })[0];

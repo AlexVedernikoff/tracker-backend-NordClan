@@ -79,16 +79,25 @@ exports.autocomplete = function (req, res, next) {
                 fullNameRu: {
                   $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
                 }
+              },
+              {
+                fullNameEn: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
+              },
+              {
+                fullNameEn: {
+                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
+                }
               }
             ]
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu']
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn']
         })
         .then((users) => {
-
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, id: user.id});
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
           });
           res.end(JSON.stringify(result));
         })
@@ -106,20 +115,22 @@ exports.getUsersRoles = async function (req, res, next) {
       .findAll({
         where: {
           active: 1,
-          globalRole: { $not: 'EXTERNAL_USER' },
+          globalRole: { $not: 'EXTERNAL_USER' }
         },
         order: [
           ['last_name_ru']
         ],
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'globalRole']
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'globalRole']
       });
 
     const usersWithFilteredData = users.map(user => {
-      const {id, firstNameRu, lastNameRu, globalRole} = user;
+      const {id, firstNameRu, lastNameRu, globalRole, firstNameEn, lastNameEn} = user;
       return {
         id,
         firstNameRu,
         lastNameRu,
+        firstNameEn,
+        lastNameEn,
         globalRole
       };
     });
@@ -149,7 +160,9 @@ exports.updateUserRole = async function (req, res, next) {
               id: updatedModel.id,
               globalRole: updatedModel.globalRole,
               firstNameRu: updatedModel.firstNameRu,
-              lastNameRu: updatedModel.lastNameRu
+              lastNameRu: updatedModel.lastNameRu,
+              firstNameEn: updatedModel.firstNameEn,
+              lastNameEn: updatedModel.lastNameEn
             };
             res.json(updatedUser);
           });
@@ -216,7 +229,7 @@ exports.updateExternal = async function (req, res, next) {
           return next(createError(404));
         }
 
-        return model.updateAttributes(req.body , { transaction: t })
+        return model.updateAttributes(req.body, { transaction: t })
           .then((updatedModel) => {
             res.json(updatedModel);
           });
@@ -307,15 +320,20 @@ exports.autocompleteExternal = function (req, res, next) {
                 firstNameRu: {
                   $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
                 }
+              },
+              {
+                firstNameEn: {
+                  $iLike: '%' + req.query.userName.trim() + '%'
+                }
               }
             ]
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu']
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
         })
         .then((users) => {
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, id: user.id});
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id});
           });
           res.end(JSON.stringify(result));
         })

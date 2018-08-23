@@ -18,6 +18,10 @@ module.exports = {
     username: 'serviceman',
     password: 'FdKg&$b*)FeA{'
   },
+  gitLab: {
+    host: process.env.GITLAB_HOST || 'gitlab-test.simbirsoft',
+    token: process.env.GITLAB_TOKEN || 'DBx1nxkqSEEpwhbAT4K5'
+  },
   auth: {
     accessTokenLifetime: 60 * 60 * 24 * 7
   },
@@ -32,7 +36,7 @@ module.exports = {
     login: 'sim-track@simbirsoft.com',
     password: 'AP2y2CHU',
     title: 'SimTrack',
-    templateBaseUrl: 'http://sim-track.simbirsoft'
+    templateBaseUrl: 'http://sim-track.simbirsoft1.com'
   },
   ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
 };

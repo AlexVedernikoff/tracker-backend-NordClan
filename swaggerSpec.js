@@ -45,6 +45,12 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'typeId',
+            description: 'можно разделять через ","',
+            type: 'integer',
+            in: 'query'
+          },
+          {
             name: 'portfolioId',
             type: 'integer',
             in: 'query'
@@ -200,6 +206,14 @@ module.exports = {
                   type: 'integer',
                   example: 1
                 },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
+                  type: 'integer',
+                  example: 1
+                },
                 budget: {
                   type: 'number',
                   example: 1
@@ -212,6 +226,11 @@ module.exports = {
                   description: '0 чтобы сбросить портфель у проекта',
                   type: 'integer',
                   example: 1
+                },
+                gitlabProjectIds: {
+                  description: 'Массив айдишников проектов GitLab',
+                  type: 'array',
+                  example: [1, 2]
                 }
               }
             }
@@ -281,7 +300,7 @@ module.exports = {
             name: 'isExternal',
             type: 'integer',
             in: 'query'
-          },
+          }
         ],
         responses: responsesCodes
       }
@@ -601,8 +620,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -662,8 +680,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -1591,20 +1608,26 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'taskId',
+            description: 'id задачи. Обязательный параметр в случае, если явно не указаны dateBegin и dateEnd.',
+            type: 'integer',
+            in: 'query'
+          },
+          {
             name: 'dateBegin',
-            description: 'yyyy-mm-dd',
+            description: 'В формате yyyy-mm-dd. Обязательный параметр в случае, если явно не указан taskId',
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           },
           {
             name: 'dateEnd',
-            description: 'yyyy-mm-dd',
+            description: 'В формате yyyy-mm-dd. Обязательный параметр в случае, если явно не указан taskId',
             type: 'string',
             format: 'date',
             in: 'query',
-            required: true
+            required: false
           }
         ],
         responses: responsesCodes
@@ -1778,6 +1801,13 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/dictionary/project/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов проектов',
+        responses: responsesCodes
+      }
+    },
     '/dictionary/sprint/status': {
       get: {
         tags: ['Dictionary'],
@@ -1817,6 +1847,29 @@ module.exports = {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник типов активности в таймшитах',
+        responses: responsesCodes
+      }
+    },
+    '/dictionary/milestone/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов майлстоунов',
+        responses: responsesCodes
+      }
+    },
+    '/milestones/{id}': {
+      delete: {
+        tags: ['Milestone'],
+        summary: 'Вех проекта',
+        parameters: [
+          {
+            name: 'id',
+            description: 'id вех',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
         responses: responsesCodes
       }
     }

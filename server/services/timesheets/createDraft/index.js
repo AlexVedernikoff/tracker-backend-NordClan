@@ -1,8 +1,17 @@
 const models = require('../../../models');
 const moment = require('moment');
+const queries = require('../../../models/queries');
 
 exports.createDraft = async (params) => {
-  await models.TimesheetDraft.create(params, { returning: true });
+  const isNeedCreateDraft = await queries.timesheet.isNeedCreateTimesheet(params);
+  if (!isNeedCreateDraft) {
+    throw new Error(`Some timesheet already exists on date ${params.onDate}`);
+  }
+  try {
+    await models.TimesheetDraft.create(params, {returning: true});
+  } catch (e) {
+    throw new Error(e);
+  }
 };
 
 exports.getDraft = async (params) => {
@@ -13,7 +22,10 @@ exports.getDraft = async (params) => {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
         paranoid: false,
         include: [
           {

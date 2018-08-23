@@ -19,3 +19,23 @@ exports.update = (req, res, next) => {
     .then(milestone => res.json(milestone[1][0]))
     .catch(e => next(createError(e)));
 };
+
+exports.delete = (req, res, next) => {
+  if (!req.params.id.match(/^[0-9]+$/)) {
+    return next(createError(400, 'id must be int'));
+  }
+  Milestone
+    .findByPrimary(req.params.id, { attributes: ['id'] })
+    .then((milestone) => {
+      if (!milestone) {
+        return next(createError(404));
+      }
+      return milestone.destroy()
+        .then(()=>{
+          res.end();
+        });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};

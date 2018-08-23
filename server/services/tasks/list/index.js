@@ -1,6 +1,7 @@
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const _ = require('underscore');
+const moment = require('moment');
 const { Task, Tag, ItemTag } = models;
 
 exports.list = async function (req) {
@@ -160,6 +161,14 @@ function createWhereForRequest (req) {
     }
   }
 
+  if (req.query.dateFrom) {
+    where.created_at = {...where.created_at, $gte: moment(req.query.dateFrom, 'DD.MM.YYYY').startOf('day').toDate()};
+  }
+
+  if (req.query.dateTo) {
+    where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
+  }
+
   return where;
 }
 
@@ -180,11 +189,33 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: models.User.defaultSelect
   };
 
+  const includeParentTask = {
+    as: 'parentTask',
+    model: models.Task,
+    attributes: ['id', 'name']
+  };
+
+  const includeSubTasks = {
+    as: 'subTasks',
+    model: models.Task,
+    attributes: ['id', 'name']
+  };
+
+  const includeLLnkedTasks = {
+    as: 'linkedTasks',
+    model: models.Task,
+    attributes: ['id', 'name'],
+    through: {
+      model: models.TaskTasks,
+      attributes: []
+    }
+  };
+
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
     attributes: role !== 'EXTERNAL_USER'
-      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate'/*, allottedTime' DEPRECATED*/, 'budget']
       : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
   };
 
@@ -223,7 +254,15 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: ['prefix']
   };
 
-  const includeForSelect = [ includeAuthor, includePerformer, includeSprint, includeTagSelect ];
+  const includeForSelect = [
+    includeAuthor,
+    includeParentTask,
+    includeSubTasks,
+    includeLLnkedTasks,
+    includePerformer,
+    includeSprint,
+    includeTagSelect
+  ];
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];

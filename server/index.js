@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const sequelize = require('./orm');
 const routes = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
+const getUserByToken = require('./middlewares/CheckTokenMiddleWare').getUserByToken;
 const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 const Access = require('./middlewares/Access/SetUserAccessMiddleWare');
@@ -17,8 +18,17 @@ const io = require('socket.io')(server, {
   path: '/api/v1/socket'
 });
 
+
+io.sockets.on('connection', function (socket) {
+  getUserByToken(socket.handshake.headers).then(user => {
+    if (user) {
+      socket.join(`user_${ user.dataValues.id }`);
+    }
+  });
+});
+
 exports.run = function () {
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, '../public')));
   app.use(bodyParser.json());
   app.use(expressValidator());
   app.use(cookieParser());

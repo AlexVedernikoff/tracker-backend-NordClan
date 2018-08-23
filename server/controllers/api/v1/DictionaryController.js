@@ -6,11 +6,15 @@ exports.status = function (req, res, next){
   if (!req.params.entity) return next(createError(400, 'entity need'));
   if (['project', 'sprint', 'task', 'timesheet'].indexOf(req.params.entity) === -1) return next(createError(400, 'entity must be only \'project\', \'sprint\' or \'task\''));
   const modelName = StringHelper.firstLetterUp(req.params.entity) + 'StatusesDictionary';
-  res.end(JSON.stringify(models[modelName].values));
+  return models[modelName]
+    .findAll()
+    .then(data => res.json(data));
 };
 
 exports.projectRoles = function (req, res){
-  res.end(JSON.stringify(models.ProjectRolesDictionary.values));
+  return models.ProjectRolesDictionary
+    .findAll()
+    .then(data => res.json(data));
 };
 
 exports.timesheetTypes = function (req, res){
@@ -20,5 +24,21 @@ exports.timesheetTypes = function (req, res){
 };
 
 exports.taskTypes = function (req, res){
-  res.end(JSON.stringify(models.TaskTypesDictionary.values));
+  return models.TaskTypesDictionary
+    .findAll()
+    .then(data => res.json(data));
+};
+
+exports.projectTypes = function (req, res){
+  return models.ProjectTypesDictionary
+    .findAll()
+    .then(data => res.json(data));
+};
+
+exports.milestoneTypes = function (req, res){
+  return models.MilestoneTypesDictionary
+    .findAll({
+      order: [['id', 'ASC']]
+    })
+    .then(data => res.json(data));
 };

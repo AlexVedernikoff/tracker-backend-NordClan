@@ -10,7 +10,7 @@ module.exports = async function (metricsTypeId, input){
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
     spentTimeBySprint, spentTimeByTask;
-
+  let timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
       return 0;
@@ -167,14 +167,20 @@ module.exports = async function (metricsTypeId, input){
 
   case (8):
     totalClientBugsAmount = 0;
-    if (input.project.sprints.length > 0){
-      input.project.sprints.forEach(function (sprint){
-        const clientBugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 5);
-        });
-        totalClientBugsAmount += clientBugs.length;
+    const calculateClientBugs = (tasks) => {
+      const clientBugs = _.filter(tasks, (task) => {
+        return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
       });
+      totalClientBugsAmount += clientBugs.length;
+    };
+    if (Array.isArray(input.project.sprints)){
+      input.project.sprints.forEach(sprint => calculateClientBugs(sprint.tasks));
+
+      if (Array.isArray(input.project.tasksInBacklog)){
+        calculateClientBugs(input.project.tasksInBacklog);
+      }
     }
+
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
@@ -446,6 +452,19 @@ module.exports = async function (metricsTypeId, input){
       'value': unsceduledOpenedFeatures,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
+      'userId': null
+    };
+
+  case (57):
+    input.project.bugs.map(b => {
+      timeSpentForBugs += parseFloat(b.factExecutionTime);
+    });
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': input.project.bugs.length ? timeSpentForBugs / input.project.bugs.length : 0,
+      'projectId': input.project.id,
+      'sprintId': input.sprint ? input.sprint.id : null,
       'userId': null
     };
 

@@ -5,39 +5,44 @@ const taskAnswer = require('./task/message');
 const models = require('../../models');
 const { firstLetterUp } = require('../../components/StringHelper');
 
-module.exports = () => {
-  const requestBuilder = {
-    task: taskRequest,
-    project: projectRequest
-  };
+async function createResponse (entity, histories, countAll, pageSize, currentPage) {
+  try {
+    const messageBuilder = {
+      task: taskAnswer,
+      project: projectAnswer
+    };
 
-  const messageBuilder = {
-    task: taskAnswer,
-    project: projectAnswer
-  };
-
-  function createResponse (entity, histories, countAll, pageSize, currentPage) {
-    return {
+    return await {
       currentPage: currentPage,
       pagesCount: Math.ceil(countAll / pageSize),
       pageSize: pageSize,
       rowsCountAll: countAll,
       rowsCountOnCurrentPage: histories.length,
-      data: histories
-        .map(model => {
-          const response = messageBuilder[entity](model);
-
+      data: await Promise.all(histories
+        .map(async (model) => {
+          const response = await messageBuilder[entity](model);
           return response ? {
             id: model.id,
             date: model.createdAt,
             message: response.message,
+            messageEn: response.messageEn,
             entities: response.entities,
             author: model.author
           } : null;
         })
-        .filter(response => response)
+        .filter(response => response))
     };
+  } catch (error) {
+    throw error;
   }
+}
+
+module.exports = () => {
+
+  const requestBuilder = {
+    task: taskRequest,
+    project: projectRequest
+  };
 
   return {
     call: async (entity, entityId, pageSize, currentPage) => {
@@ -46,7 +51,7 @@ module.exports = () => {
       const histories = await models[modelName].findAll(request);
       const countAll = await models[modelName].count(request);
 
-      return createResponse(entity, histories, countAll, pageSize, currentPage);
+      return await createResponse(entity, histories, countAll, pageSize, currentPage);
     }
   };
 };

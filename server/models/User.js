@@ -77,6 +77,14 @@ module.exports = function (sequelize, DataTypes) {
         len: [2, 200]
       }
     },
+    fullNameEn: {
+      field: 'full_name_en',
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        len: [2, 200]
+      }
+    },
     active: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -178,6 +186,10 @@ module.exports = function (sequelize, DataTypes) {
       fullNameRu: function (){
         const fullNameRuArr = [this.firstNameRu, this.lastNameRu].filter(i => i);
         return fullNameRuArr.join(' ');
+      },
+      fullNameEn: function (){
+        const fullNameEnArr = [this.firstNameEn, this.lastNameEn].filter(i => i);
+        return fullNameEnArr.join(' ');
       }
     }
   });
@@ -220,7 +232,7 @@ module.exports = function (sequelize, DataTypes) {
 
   };
 
-  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'lastNameEn',
+  User.defaultSelect = ['id', 'fullNameRu', 'firstNameRu', 'lastNameRu', ['ldap_login', 'fullNameEn'], 'fullNameEn', 'lastNameEn',
     'firstNameEn', 'skype', 'birthDate', 'emailPrimary', 'phone', 'mobile', 'photo', 'psId', 'deletedAt', 'globalRole',
     'expiredDate', 'isActive'];
 

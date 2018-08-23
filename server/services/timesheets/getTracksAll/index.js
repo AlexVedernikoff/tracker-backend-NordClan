@@ -23,8 +23,7 @@ exports.getTracksAll = async (startDate, endDate, userId) => {
 };
 
 async function getTracks (params) {
-  const timesheets = await getTimesheets(params);
-  const drafts = await getDrafts(params);
+  const [ timesheets, drafts ] = await Promise.all([getTimesheets(params), getDrafts(params)]);
   return [ ...timesheets, ...drafts ];
 }
 
@@ -73,7 +72,7 @@ function getConditions (query) {
 async function getTimesheets (conditions) {
   const queryParams = getConditions(conditions);
   const timesheets = await queries.timesheet.all(queryParams);
-  return timesheets.map(timesheet => transformTimesheet(timesheet));
+  return timesheets.map(transformTimesheet);
 }
 
 function transformTimesheet (timesheet) {
@@ -87,9 +86,11 @@ function transformTimesheet (timesheet) {
   }
   if (timesheet.dataValues.task && timesheet.dataValues.task.dataValues.sprint) {
     Object.assign(timesheet.dataValues, { sprint: timesheet.dataValues.task.dataValues.sprint });
-    delete timesheet.dataValues.task.dataValues.sprint;
   }
-
+  if (timesheet.dataValues.task) {
+    timesheet.dataValues.task = timesheet.dataValues.task.dataValues;
+    delete timesheet.dataValues.task.dataValues;
+  }
   timesheet.dataValues.onDate = timesheet.onDate;
   timesheet.dataValues.isDraft = false;
   return timesheet.dataValues;

@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const SprintStatuses = sequelize.define('SprintStatusesDictionary', {
     id: {
       type: DataTypes.INTEGER,
@@ -14,6 +14,15 @@ module.exports = function(sequelize, DataTypes) {
         len: [1, 20]
       }
     },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(20),
+      trim: true,
+      allowNull: false,
+      validate: {
+        len: [1, 20]
+      }
+    }
   }, {
     underscored: true,
     timestamps: false,
@@ -21,12 +30,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'sprint_statuses'
   });
 
-  SprintStatuses.values = [
-    {id: 1, name: 'Не в процессе'},
-    {id: 2, name: 'В процессе'},
-  ];
-  
-  SprintStatuses.associate = function(models) {
+  SprintStatuses.associate = function (models) {
     SprintStatuses.hasMany(models.Sprint, {
       as: 'sprintStatuses',
       foreignKey: {

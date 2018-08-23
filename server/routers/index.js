@@ -21,6 +21,7 @@ const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare
 
 router.post('/milestones', MilestonesController.create);
 router.put('/milestones/:id', MilestonesController.update);
+router.delete('/milestones/:id', MilestonesController.delete);
 
 // Auth
 router.post('/auth/login', AuthController.login);
@@ -58,6 +59,9 @@ router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUser
 // Project reports
 router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
 
+// Project time sheets
+router.get('/project/:projectId/timesheet', GlobalAccess.can('project', 'read'), TimesheetController.listProject);
+
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
 router.put('/portfolio/:id', GlobalAccess.can('portfolio', 'update'), PortfolioController.update);
@@ -78,6 +82,7 @@ router.get('/sprint', GlobalAccess.can('sprint', 'list'), SprintController.list)
 router.post('/task', GlobalAccess.can('task', 'create'), TaskController.create);
 router.get('/task/:id', GlobalAccess.can('task', 'read'), TaskController.read);
 router.put('/task/:id', GlobalAccess.can('task', 'update'), TaskController.update);
+router.put('/tasks', GlobalAccess.can('task', 'update'), TaskController.updateAllByAttribute);
 router.delete('/task/:id', GlobalAccess.can('task', 'delete'), TaskController.delete);
 router.get('/task', GlobalAccess.can('task', 'list'), TaskController.list);
 router.post('/task/:taskId/links/', GlobalAccess.can('taskLinks', 'create'), TaskTasksController.create);
@@ -101,12 +106,14 @@ router.get('/task/:taskId/comment', GlobalAccess.can('comment', 'list'), Comment
 // Dictionaries
 router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
+router.get('/dictionary/project/types', DictionaryController.projectTypes);
 router.get('/dictionary/task/types', DictionaryController.taskTypes);
 router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
 router.get('/:entity(project|task|sprint|timesheet)/status/dictionary/', DictionaryController.status); // Deprecated. но еще используется
 router.get('/project/roles/dictionary', DictionaryController.projectRoles); // Deprecated. но еще используется
 router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
+router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
 
 // Attachments
 router.post('/:entity(project|task)/:entityId/attachment', GlobalAccess.can('attachment', 'upload'), UploadController.upload);

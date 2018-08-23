@@ -44,6 +44,16 @@ module.exports = function (sequelize, DataTypes) {
         max: 9
       }
     },
+    typeId: {
+      field: 'type_id',
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: 0,
+        max: 9
+      }
+    },
     notbillable: {
       type: DataTypes.INTEGER,
       defaultValue: 1,
@@ -68,6 +78,12 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       }
     },
+    qaPercent: {
+      field: 'qa_percent',
+      type: DataTypes.INTEGER,
+      defaultValue: 30,
+      allowNull: false
+    },
     portfolioId: {
       field: 'portfolio_id',
       type: DataTypes.INTEGER,
@@ -75,6 +91,11 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true
       }
+    },
+    gitlabProjectIds: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      field: 'gitlab_project_ids',
+      defaultValue: []
     },
     authorId: {
       field: 'author_id',
@@ -225,9 +246,11 @@ module.exports = function (sequelize, DataTypes) {
     'budget',
     'riskBudget',
     'portfolioId',
+    'gitlabProjectIds',
     'authorId',
     'completedAt',
-    'createdAt'
+    'createdAt',
+    'qaPercent'
   ];
 
   Project.addHistoryForProject();

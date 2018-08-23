@@ -9,22 +9,26 @@ module.exports = function (sequelize, DataTypes) {
     projectId: {
       field: 'project_id',
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      unique: false
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      unique: false
     },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      unique: false
     },
     onDate: {
       field: 'on_date',
       type: DataTypes.DATEONLY,
-      allowNull: false
+      allowNull: false,
+      unique: false
     },
     typeId: {
       field: 'type_id',
