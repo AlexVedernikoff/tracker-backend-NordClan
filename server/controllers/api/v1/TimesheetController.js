@@ -109,7 +109,7 @@ exports.listProject = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
-exports.update = async (req, res, next) => {console.log('update Timesheet');
+exports.update = async (req, res, next) => {
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
   }
@@ -117,16 +117,13 @@ exports.update = async (req, res, next) => {console.log('update Timesheet');
   const {taskId} = req.body;//eslint-disable-line
   TimesheetService
     .update(req)
-    .then(sheet => {
-      console.log(JSON.stringify(sheet));
-      return Promise.all([
-        taskId && TasksService
-          .read(taskId, req.user),
-        sheet,
-        TasksService
-          .read(sheet.taskId, req.user)
-      ]);
-    })
+    .then(sheet => Promise.all([
+      taskId && TasksService
+        .read(taskId, req.user),
+      sheet,
+      TasksService
+        .read(sheet.taskId, req.user)
+    ]))
     .then(([task, sheet, taskSheet]) => {
       TimesheetsChannel.sendAction('update', !task ? sheet : {...sheet, task }, res.io, sheet.userId);
       TaskChannel.sendAction('update', taskSheet, res.io, taskSheet.projectId);
@@ -156,7 +153,6 @@ exports.delete = async (req, res, next) => {
 };
 
 exports.updateDraft = async function (req, res, next) {
-  console.log('updateDraft');
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
   }
