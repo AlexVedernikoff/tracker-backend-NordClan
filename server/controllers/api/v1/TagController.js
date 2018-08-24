@@ -26,12 +26,27 @@ exports.list = async function (req, res, next){
     });
 };
 
-exports.list = async function (req, res, next) {
-  if (req.body.params.projectId) {
-    return next(createError(404, 'projectId not found'));
+exports.listByProject = async function (req, res, next) {
+  if (!req.params.projectId || !parseInt(req.params.projectId)) {
+    res.sendStatus(400);
+    return next(createError(400, 'Validation failed'));
   }
+  let tasks;
   const query = createQuery(req.params);
-  const tasks = await models.Task.findAll();
+  try {
+    tasks = await models.Task.findAll(query);
+  } catch (error) {
+    res.sendStatus(500);
+    return next(createError(error));
+  }
+
+  const tags = [];
+  tasks.forEach(task => task.tags.forEach(tag => {
+    if (!tags.find(el => el.id === tag.dataValues.id)) {
+      tags.push({id: tag.dataValues.id, name: tag.dataValues.name});
+    }
+  }));
+  res.json(tags);
 };
 
 exports.create = async function (req, res, next){
@@ -166,9 +181,12 @@ function createQuery (params) {
       projectId: {
         $eq: params.projectId
       }
-    }
+    },
     include: {
-
+      as: 'tags',
+      model: models.Tag,
+      attribute: ['name'],
+      required: true
     }
   };
 }
