@@ -26,6 +26,29 @@ exports.list = async function (req, res, next){
     });
 };
 
+exports.listByProject = async function (req, res, next) {
+  if (!req.params.projectId || !parseInt(req.params.projectId)) {
+    res.sendStatus(400);
+    return next(createError(400, 'Validation failed'));
+  }
+  let tasks;
+  const query = createQuery(req.params);
+  try {
+    tasks = await models.Task.findAll(query);
+  } catch (error) {
+    res.sendStatus(500);
+    return next(createError(error));
+  }
+
+  const tags = [];
+  tasks.forEach(task => task.tags.forEach(tag => {
+    if (!tags.find(el => el.id === tag.dataValues.id)) {
+      tags.push({id: tag.dataValues.id, name: tag.dataValues.name});
+    }
+  }));
+  res.json(tags);
+};
+
 exports.create = async function (req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
@@ -151,3 +174,19 @@ exports.autocompliter = function (req, res, next){
     })
     .catch((err) => next(createError(err)));
 };
+
+function createQuery (params) {
+  return {
+    where: {
+      projectId: {
+        $eq: params.projectId
+      }
+    },
+    include: {
+      as: 'tags',
+      model: models.Tag,
+      attribute: ['name'],
+      required: true
+    }
+  };
+}
