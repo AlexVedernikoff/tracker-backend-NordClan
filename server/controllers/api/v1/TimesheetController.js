@@ -117,12 +117,14 @@ const updateTimesheet = async (req, res) => {
       taskId && TasksService
         .read(taskId, req.user),
       sheet,
-      TasksService
+      taskId && TasksService
         .read(sheet.taskId, req.user)
     ]))
     .then(([task, sheet, taskSheet]) => {
       TimesheetsChannel.sendAction('update', !task ? sheet : {...sheet, task }, res.io, sheet.userId);
-      TaskChannel.sendAction('update', taskSheet, res.io, taskSheet.projectId);
+      if (task) {
+        TaskChannel.sendAction('update', taskSheet, res.io, taskSheet.projectId);
+      }
     });
 };
 
