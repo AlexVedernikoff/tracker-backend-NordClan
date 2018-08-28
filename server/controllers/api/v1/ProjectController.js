@@ -562,8 +562,8 @@ exports.list = function (req, res, next){
 exports.addGitlabProject = async function (req, res, next) {
   const { projectId, path } = req.body;
   try {
-    await gitLabService.projects.addProjectByPath(projectId, path);
-    res.json({data: 'ok'});
+    const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
+    res.json(gitlabProject);
   } catch (e) {
     next(e);
   }

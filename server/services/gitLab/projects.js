@@ -19,6 +19,11 @@ const getProjects = async function (ids) {
 const addProjectByPath = async function (projectId, path) {
   const gitlabProject = await http.get({ host, path: `/api/v4/projects/${encodeURIComponent(path)}`, headers });
   const project = await Project.find({where: {id: projectId}});
+
+  if (project.gitlabProjectIds.includes(gitlabProject.id)) {
+    throw new Error(400, 'Gitlab identifier is invalid');
+  }
+
   if (project.gitlabProjectIds instanceof Array) {
     project.gitlabProjectIds.push(gitlabProject.id);
   } else {
@@ -27,7 +32,7 @@ const addProjectByPath = async function (projectId, path) {
 
   await project.set('gitlabProjectIds', project.gitlabProjectIds);
   await project.save();
-
+  return gitlabProject;
 };
 
 const createProject = async function (name, namespace_id, projectId) {
