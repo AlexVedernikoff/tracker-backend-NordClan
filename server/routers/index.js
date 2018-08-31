@@ -57,7 +57,7 @@ router.post('/project/:projectId/users', GlobalAccess.can('projectUsers', 'creat
 router.get('/project/:projectId/users', GlobalAccess.can('projectUsers', 'list'), ProjectUsersController.list);
 router.delete('/project/:projectId/users/:userId', GlobalAccess.can('projectUsers', 'delete'), ProjectUsersController.delete);
 
-router.get('/project/:id/getGitlabNamespaces', GlobalAccess.can('project', 'getGitlabNamespaces'), ProjectController.getGitlabNamespaces);
+router.get('/project/gitLab/getGitlabNamespaces', GlobalAccess.can('project', 'getGitlabNamespaces'), ProjectController.getGitlabNamespaces);
 router.post('/project/:id/createGitlabProject', GlobalAccess.can('project', 'createGitlabProject'), ProjectController.createGitlabProject);
 
 // Project reports
