@@ -4,7 +4,7 @@ const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptio
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment;
+  let receivers, task, comment, projectRolesValues;
 
   console.log('event', eventId);
 
@@ -16,6 +16,14 @@ module.exports = async function (eventId, input, user){
     // input = { taskId }
 
     task = await getTask(input.taskId);
+    projectRolesValues = await ProjectRolesDictionary.findAll({
+      attributes: ['id'],
+      where: {
+        nameEn: {
+          $or: ['PM', 'QA']
+        }
+      }});
+    projectRolesValues = projectRolesValues.map(el => el.id);
     receivers = await ProjectUsers.findAll({
       include: [
         {
@@ -31,7 +39,7 @@ module.exports = async function (eventId, input, user){
           model: ProjectUsersRoles,
           where: {
             projectRoleId: {
-              '$in': [ProjectRolesDictionary.values[1].id, ProjectRolesDictionary.values[8].id]// PM QA
+              '$in': projectRolesValues// PM QA
             }
           }
         }
@@ -103,6 +111,11 @@ module.exports = async function (eventId, input, user){
     // input = { taskId }
 
     task = await getTask(input.taskId);
+    projectRolesValues = await ProjectRolesDictionary.find({
+      attributes: ['id'],
+      where: {
+        nameEn: 'PM'
+      }});
     receivers = await ProjectUsers.findAll({
       include: [
         {
@@ -118,7 +131,7 @@ module.exports = async function (eventId, input, user){
           model: ProjectUsersRoles,
           where: {
             projectRoleId: {
-              '$in': [ProjectRolesDictionary.values[1].id]// PM
+              '$in': [projectRolesValues.id]// PM
             }
           }
         }
