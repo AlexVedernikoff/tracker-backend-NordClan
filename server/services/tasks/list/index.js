@@ -27,7 +27,7 @@ exports.list = async function (req) {
     ? req.query.tags.split(',')
     : req.query.tags;
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole);
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole, req.query.noTag);
   const queryWhere = createWhereForRequest(req);
 
   if (!req.query.pageSize && !queryWhere.projectId && !queryWhere.sprintId && !queryWhere.performerId) {
@@ -50,17 +50,18 @@ exports.list = async function (req) {
     offset: queryOffset,
     include: includeForSelect,
     where: queryWhere,
-    subQuery: true,
+    subQuery: false,
     order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
       + ', "sprint"."fact_start_date" ASC'
-      + ', "Task"."statusId" ASC'
-      + ', "Task"."prioritiesId" ASC'
-      + ', "Task"."name" ASC')
+      + ', "statusId" ASC'
+      + ', "prioritiesId" ASC'
+      + ', "name" ASC')
   });
 
   const count = await Task.count({
     where: queryWhere,
     include: includeForCount,
+    subQuery: false,
     group: ['Task.id']
   });
 
@@ -169,10 +170,16 @@ function createWhereForRequest (req) {
     where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
   }
 
+  if (req.query.noTag) {
+    where['$"tags.ItemTag"."tag_id"$'] = {
+      $is: null
+    };
+  }
+
   return where;
 }
 
-async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role) {
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, noTag) {
   const parsedTags = tagsParams
     ? tagsParams.map((el) => el.toString().trim().toLowerCase())
     : null;
@@ -266,6 +273,9 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];
+  if (noTag) {
+    includeForCount.push(includeTagSelect);
+  }
   if (parsedTags) {
     includeForCount.push(includeTagConst);
 
