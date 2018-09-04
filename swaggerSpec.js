@@ -1533,6 +1533,46 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/user/external/refresh': {
+      put: {
+        tags: ['User'],
+        summary: 'Обновление ссылки регистрации для внешнего пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                firstNameRu: {
+                  type: 'string',
+                  example: 'string'
+                },
+                expiredDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                active: {
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
 
     '/timesheetDraft/{timesheetDraftId}/': {
       put: {

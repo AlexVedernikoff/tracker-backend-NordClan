@@ -212,6 +212,52 @@ exports.createExternal = async function (req, res, next){
     });
 };
 
+exports.refreshTokenExternal = async function (req, res, next) {
+  req.checkBody('login', 'login must be email').isEmail();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const buf = crypto.randomBytes(20);
+  const setPasswordToken = buf.toString('hex');
+  const setPasswordExpired = moment().add(1, 'days');
+
+  const params = {
+    active: 1,
+    isActive: 0,
+    updatedAt: new Date(),
+    setPasswordToken,
+    setPasswordExpired,
+    password: null,
+    ...req.body
+  };
+
+  return models.sequelize.transaction(function (t) {
+    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
+      .then((model) => {
+        if (!model) {
+          return next(createError(404));
+        }
+
+        return model.updateAttributes(params, { transaction: t })
+          .then((updatedModel) => {
+            const template = emailService.template('activateExternalUser', { token: setPasswordToken });
+            emailService.send({
+              receiver: req.body.login,
+              subject: template.subject,
+              html: template.body
+            });
+            res.json(updatedModel);
+          });
+      });
+  })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 exports.updateExternal = async function (req, res, next) {
   if (req.body.login) {
     req.checkBody('login', 'login must be email').isEmail();

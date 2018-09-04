@@ -93,7 +93,8 @@ module.exports = {
       'updateRole': true,
       'createExternal': true,
       'getExternalUsers': true,
-      'updateExternal': true
+      'updateExternal': true,
+      'refreshTokenExternal': true
     }
   },
   SYSTEM_USER: {
