@@ -170,7 +170,7 @@ function createWhereForRequest (req) {
     where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
   }
 
-  if (req.query.noTag) {
+  if (req.query.noTag === 'true') {
     where['$"tags.ItemTag"."tag_id"$'] = {
       $is: null
     };
@@ -273,7 +273,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];
-  if (noTag) {
+  if (noTag === 'true') {
     includeForCount.push(includeTagSelect);
   }
   if (parsedTags) {
