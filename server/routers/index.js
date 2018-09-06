@@ -119,7 +119,9 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 // Metrics
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
-// Metrics
+// JiraSynchronize
 router.post('/jiraSynchronize', TaskSynchronizeController.jiraSynchronize);
+router.post('/createJiraProject', TaskSynchronizeController.createJiraProject);
+router.post('/setJiraProjectAssociation', TaskSynchronizeController.setJiraProjectAssociation);
 
 module.exports = router;

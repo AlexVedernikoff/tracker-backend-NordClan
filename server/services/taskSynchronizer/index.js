@@ -1,5 +1,7 @@
-const { jiraSync } = require('./jira');
+const { jiraSync, createProject, setProjectAssociation } = require('./jira');
 
 module.exports = {
-  jiraSync
+  jiraSync,
+  createProject,
+  setProjectAssociation
 };

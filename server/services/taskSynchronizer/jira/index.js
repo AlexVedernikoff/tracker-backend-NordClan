@@ -2,7 +2,8 @@ const TasksService = require('../syncMethods/task');
 const SprintService = require('../syncMethods/sprint');
 const models = require('../../../models');
 const createError = require('http-errors');
-const { Project } = models;
+const { Project, TaskStatusesAssociation, TaskTypesAssociation } = models;
+const request = require('./../request');
 
 
 /**
@@ -11,9 +12,9 @@ const { Project } = models;
 exports.jiraSync = async function (data) {
   // тело сервиса. Вся логика тут
   /**
-   *  
+   *
    * Приходят данные за неделю. по externalId сравниваем таски если нет заводим новую, если есть обновляем старую
-   * 
+   *
    * */
   // req.body =  [{},{}]; задачи - это будут ишьюсы
   const taskProjectIds = data.map((task) => task.projectId.toString());
@@ -86,4 +87,55 @@ exports.jiraSync = async function (data) {
 
 };
 
-// когда создается проект, аккаунт-менеджер из джиры подгружает типы задач, баги фичи итд и аккаунт прокидывает связи. 
+
+// создание проекта
+// создание ассоциаций со статусами
+// создание ассоциаций с типами задач
+// отправлять пользователя на страницу создания ассоциаций если
+// не была закончена
+
+/**
+ * @param {string} key - ключ проекта
+ */
+exports.createProject = async function (uri, key) {
+  const jiraProject = await request.getRequest(uri, key);
+  let project = await Project.create({
+    name: jiraProject.name,
+    createdBySysUser: true,
+    externalId: jiraProject.id
+  });
+  project = {
+    ...project,
+    ...jiraProject.issue_types,
+    ...jiraProject.status_type
+  };
+  return project;
+};
+
+/**
+ *
+ * @param {object} issueTypesAssociation
+ * @param {object} statusesAssociation
+ */
+exports.setProjectAssociation = async function (projectId, issueTypesAssociation, statusesAssociation) {
+  const ita = issueTypesAssociation.map(it => {
+    it.projectId = projectId;
+    return it;
+  });
+
+  const sa = statusesAssociation.map(s => {
+    s.projectId = projectId;
+    return s;
+  });
+  // TODO: проверять есть ли ассоциации для этого проекта
+  await Promise.all([TaskTypesAssociation.bulkCreate(ita), TaskStatusesAssociation.bulkCreate(sa)]);
+
+  const res = await Promise.all(
+    [
+      TaskTypesAssociation.findAll({where: {projectId}}),
+      TaskStatusesAssociation.findAll({where: {projectId}})
+    ]
+  );
+
+  return {taskTypes: res[0], taskStatuses: res[1]};
+};
