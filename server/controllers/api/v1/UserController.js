@@ -234,28 +234,15 @@ exports.refreshTokenExternal = async function (req, res, next) {
     ...req.body
   };
 
-  return models.sequelize.transaction(function (t) {
-    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
-      .then((model) => {
-        if (!model) {
-          return next(createError(404));
-        }
+  const updatedModel = await User.update(params, {where: {id: req.params.id}}).catch((err) => next(err));
+  const template = emailService.template('activateExternalUser', { token: setPasswordToken });
+  emailService.send({
+    receiver: req.body.login,
+    subject: template.subject,
+    html: template.body
+  });
+  res.json(updatedModel);
 
-        return model.updateAttributes(params, { transaction: t })
-          .then((updatedModel) => {
-            const template = emailService.template('activateExternalUser', { token: setPasswordToken });
-            emailService.send({
-              receiver: req.body.login,
-              subject: template.subject,
-              html: template.body
-            });
-            res.json(updatedModel);
-          });
-      });
-  })
-    .catch((err) => {
-      next(err);
-    });
 };
 
 exports.updateExternal = async function (req, res, next) {

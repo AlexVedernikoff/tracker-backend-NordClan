@@ -42,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        len: [2, 100]
+        len: [0, 100]
       }
     },
     firstNameEn: {
@@ -50,7 +50,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        len: [2, 100]
+        len: [0, 100]
       }
     },
     lastNameRu: {
@@ -58,7 +58,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        len: [2, 100]
+        len: [0, 100]
       }
     },
     firstNameRu: {
@@ -66,7 +66,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        len: [2, 100]
+        len: [0, 100]
       }
     },
     fullNameRu: {
@@ -74,7 +74,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        len: [2, 200]
+        len: [0, 200]
       }
     },
     fullNameEn: {
@@ -82,7 +82,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
-        len: [2, 200]
+        len: [0, 200]
       }
     },
     active: {
