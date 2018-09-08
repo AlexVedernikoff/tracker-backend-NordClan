@@ -222,3 +222,13 @@ exports.createGitlabBranch = async function (req, res, next) {
     next(createError(400, 'Can not create branch'));
   }
 };
+
+exports.getGitlabBranchesById = async function (req, res, next) {
+  const taskId = req.params.id;
+  try {
+    const loadBranches = await branches.getBranchesByTaskId(taskId);
+    res.json(loadBranches);
+  } catch (e) {
+    next(createError(400, 'Can not load branches'));
+  }
+};
