@@ -12,11 +12,9 @@ exports.postRequest = function (uri, params) {
   });
 };
 
-exports.getRequest = function (uri, params) {
+exports.getRequest = function (uri) {
   return new Promise(function (resolve, reject) {
-    axios.get(uri, {
-      params
-    })
+    axios.get(uri)
       .then(function (response) {
         resolve(response);
       })

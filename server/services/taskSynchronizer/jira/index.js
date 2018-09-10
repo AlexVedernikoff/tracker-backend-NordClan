@@ -4,6 +4,7 @@ const models = require('../../../models');
 const createError = require('http-errors');
 const { Project, TaskStatusesAssociation, TaskTypesAssociation } = models;
 const request = require('./../request');
+const config = require('../../../configs');
 
 
 /**
@@ -97,8 +98,8 @@ exports.jiraSync = async function (data) {
 /**
  * @param {string} key - ключ проекта
  */
-exports.createProject = async function (uri, key) {
-  const jiraProject = await request.getRequest(uri, key);
+exports.createProject = async function (key) {
+  const jiraProject = await request.getRequest(`${config.ttiUrl}/project/${key}`);
   let project = await Project.create({
     name: jiraProject.name,
     createdBySysUser: true,
@@ -127,15 +128,31 @@ exports.setProjectAssociation = async function (projectId, issueTypesAssociation
     s.projectId = projectId;
     return s;
   });
-  // TODO: проверять есть ли ассоциации для этого проекта
+
+
+  const beforeCreateRes = await Promise.all(
+    [
+      TaskTypesAssociation.findAll({where: {projectId}}),
+      TaskStatusesAssociation.findAll({where: {projectId}})
+    ]
+  );
+  if (beforeCreateRes[0].length !== 0 || beforeCreateRes[0].length !== 0) {
+    throw new Error(400, 'Project already has associations');
+  }
+
   await Promise.all([TaskTypesAssociation.bulkCreate(ita), TaskStatusesAssociation.bulkCreate(sa)]);
 
-  const res = await Promise.all(
+  const afterCreateRes = await Promise.all(
     [
       TaskTypesAssociation.findAll({where: {projectId}}),
       TaskStatusesAssociation.findAll({where: {projectId}})
     ]
   );
 
-  return {taskTypes: res[0], taskStatuses: res[1]};
+  return {taskTypes: afterCreateRes[0], taskStatuses: afterCreateRes[1]};
+
+};
+
+exports.jiraAuth = async function (username, password, server) {
+  return request.postRequest(`${config.ttiUrl}/auth`, {username, password, server});
 };
