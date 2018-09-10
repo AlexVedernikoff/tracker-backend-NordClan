@@ -1,6 +1,7 @@
 const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
+const { getMentions } = require('../../services/comment');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
@@ -83,15 +84,41 @@ module.exports = async function (eventId, input, user){
 
     break;
 
-  case (3):
+  case (3): {
     // event description : new comment to task
-    // receivers : task author, task performer
+    // receivers : task author, task performer, comment mentions
     // input = { taskId, commentId }
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
     receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
+    const mentionIds = getMentions(comment.text);
+    if (mentionIds.length) {
+      const receiverIds = receivers.map(receiver => receiver.id);
+      const diffMentionIds = mentionIds.filter(mentionId => !receiverIds.includes(mentionId));
+      if (diffMentionIds.length) {
+        const users = await User.findAll({
+          where: {
+            id: diffMentionIds
+          },
+          include: [
+            {
+              as: 'usersProjects',
+              model: ProjectUsers,
+              where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
+              include: [
+                {
+                  as: 'subscriptions',
+                  model: ProjectUsersSubscriptions
+                }
+              ]
+            }
+          ]
+        });
+        receivers = receivers.concat(users);
+      }
+    }
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
@@ -104,7 +131,7 @@ module.exports = async function (eventId, input, user){
     });
 
     break;
-
+  }
   case (4):
     // event description : task status changed to done
     // receivers : PM
