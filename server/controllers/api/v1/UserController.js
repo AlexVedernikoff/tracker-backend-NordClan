@@ -183,8 +183,7 @@ exports.createExternal = async function (req, res, next){
 
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
-  const setPasswordExpired = moment().add(1, 'days');
-
+  const setPasswordExpired = new Date(moment().add(1, 'days'));
   const params = {
     active: 1,
     isActive: 0,
@@ -222,8 +221,7 @@ exports.refreshTokenExternal = async function (req, res, next) {
 
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
-  const setPasswordExpired = moment().add(1, 'days');
-
+  const setPasswordExpired = new Date(moment().add(1, 'days'));
   const params = {
     active: 1,
     isActive: 0,
