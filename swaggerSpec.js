@@ -760,6 +760,7 @@ module.exports = {
           {
             name: 'sprintId',
             type: 'integer',
+            description: 'можно разделять через ","',
             in: 'query'
           },
           {
@@ -772,6 +773,11 @@ module.exports = {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
+            in: 'query'
+          },
+          {
+            name: 'noTag',
+            type: 'boolean',
             in: 'query'
           },
           {

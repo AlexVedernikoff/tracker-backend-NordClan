@@ -6,6 +6,7 @@ const { Task, Tag, ItemTag } = models;
 
 exports.list = async function (req) {
   let prefixNeed = false;
+  const selectWithoutTags = req.query.noTag === 'true';
 
   if (req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
@@ -27,8 +28,8 @@ exports.list = async function (req) {
     ? req.query.tags.split(',')
     : req.query.tags;
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole, req.query.noTag);
-  const queryWhere = createWhereForRequest(req);
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole, selectWithoutTags);
+  const queryWhere = createWhereForRequest(req, selectWithoutTags);
 
   if (!req.query.pageSize && !queryWhere.projectId && !queryWhere.sprintId && !queryWhere.performerId) {
     req.query.pageSize = 100;
@@ -86,7 +87,7 @@ exports.list = async function (req) {
   return responseObject;
 };
 
-function createWhereForRequest (req) {
+function createWhereForRequest (req, selectWithoutTags) {
   const where = {
     deletedAt: { $eq: null } // IS NULL
   };
@@ -170,7 +171,7 @@ function createWhereForRequest (req) {
     where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
   }
 
-  if (req.query.noTag) {
+  if (selectWithoutTags) {
     where['$"tags.ItemTag"."tag_id"$'] = {
       $is: null
     };
@@ -179,7 +180,7 @@ function createWhereForRequest (req) {
   return where;
 }
 
-async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, noTag) {
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
   const parsedTags = tagsParams
     ? tagsParams.map((el) => el.toString().trim().toLowerCase())
     : null;
@@ -273,7 +274,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];
-  if (noTag) {
+  if (selectWithoutTags) {
     includeForCount.push(includeTagSelect);
   }
   if (parsedTags) {
