@@ -183,8 +183,7 @@ exports.createExternal = async function (req, res, next){
 
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
-  const setPasswordExpired = moment().add(1, 'days');
-
+  const setPasswordExpired = new Date(moment().add(1, 'days'));
   const params = {
     active: 1,
     isActive: 0,
@@ -210,6 +209,38 @@ exports.createExternal = async function (req, res, next){
     .catch((err) => {
       next(err);
     });
+};
+
+exports.refreshTokenExternal = async function (req, res, next) {
+  req.checkBody('login', 'login must be email').isEmail();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const buf = crypto.randomBytes(20);
+  const setPasswordToken = buf.toString('hex');
+  const setPasswordExpired = new Date(moment().add(1, 'days'));
+  const params = {
+    active: 1,
+    isActive: 0,
+    updatedAt: new Date(),
+    setPasswordToken,
+    setPasswordExpired,
+    password: null,
+    ...req.body
+  };
+
+  const updatedModel = await User.update(params, {where: {id: req.params.id}}).catch((err) => next(err));
+  const template = emailService.template('activateExternalUser', { token: setPasswordToken });
+  emailService.send({
+    receiver: req.body.login,
+    subject: template.subject,
+    html: template.body
+  });
+  res.json(updatedModel);
+
 };
 
 exports.updateExternal = async function (req, res, next) {
