@@ -9,7 +9,7 @@ const it = mocha.it;
 
 describe('Parse user ids', () => {
   it('should return ids by comment with ids', () => {
-    expect(getMentions('test {@1} test {@2}')).deep.eql([1, 2]);
+    expect(getMentions('test {@1} test {@2} test {@all}')).deep.eql([1, 2, 'all']);
   });
 
   it('should return empty array by comment with no ids', () => {

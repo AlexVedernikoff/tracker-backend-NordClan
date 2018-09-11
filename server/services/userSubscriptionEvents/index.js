@@ -7,8 +7,6 @@ module.exports = async function (eventId, input, user){
   const emails = [];
   let receivers, task, comment, projectRolesValues;
 
-  console.log('event', eventId);
-
   switch (eventId){
 
   case (1):
@@ -93,7 +91,22 @@ module.exports = async function (eventId, input, user){
     comment = _.find(task.comments, { id: input.commentId });
     receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
-    const mentionIds = getMentions(comment.text);
+    let mentionIds = getMentions(comment.text);
+    if (mentionIds.includes('all')) {
+      mentionIds = mentionIds.filter(id => id !== 'all');
+      const projectUsers = await ProjectUsers.findAll({
+        attributes: ['id'],
+        where: {
+          projectId: task.project.id
+        }
+      });
+      mentionIds = [
+        ...mentionIds,
+        ...projectUsers.map(projectUser => projectUser.id),
+        task.project.authorId
+      ];
+    }
+
     if (mentionIds.length) {
       const receiverIds = receivers.map(receiver => receiver.id);
       const diffMentionIds = mentionIds.filter(mentionId => !receiverIds.includes(mentionId));
