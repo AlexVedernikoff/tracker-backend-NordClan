@@ -91,25 +91,27 @@ module.exports = async function (eventId, input, user){
     comment = _.find(task.comments, { id: input.commentId });
     receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
 
-    let mentionIds = getMentions(comment.text);
-    if (mentionIds.includes('all')) {
-      mentionIds = mentionIds.filter(id => id !== 'all');
+    const mentions = getMentions(comment.text);
+    let mentionIds = [];
+    if (mentions.includes('all')) {
       const projectUsers = await ProjectUsers.findAll({
-        attributes: ['id'],
+        attributes: ['user_id'],
         where: {
           projectId: task.project.id
         }
       });
       mentionIds = [
-        ...mentionIds,
-        ...projectUsers.map(projectUser => projectUser.id),
+        ...projectUsers.map(projectUser => projectUser.dataValues.user_id),
         task.project.authorId
       ];
+    } else if (mentions.length) {
+      mentionIds = mentions;
     }
 
     if (mentionIds.length) {
-      const receiverIds = receivers.map(receiver => receiver.id);
+      const receiverIds = receivers.map(receiver => receiver.dataValues.id);
       const diffMentionIds = mentionIds.filter(mentionId => !receiverIds.includes(mentionId));
+
       if (diffMentionIds.length) {
         const users = await User.findAll({
           where: {
@@ -132,6 +134,7 @@ module.exports = async function (eventId, input, user){
         receivers = receivers.concat(users);
       }
     }
+
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
