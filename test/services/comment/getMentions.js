@@ -12,6 +12,10 @@ describe('Parse user ids', () => {
     expect(getMentions('test {@1} test {@2}')).deep.eql([1, 2]);
   });
 
+  it('should return all by comment with all', () => {
+    expect(getMentions('test {@1} test {@all} test {@2}')).deep.eql(['all']);
+  });
+
   it('should return empty array by comment with no ids', () => {
     expect(getMentions('test test')).deep.eql([]);
   });
