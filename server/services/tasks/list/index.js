@@ -1,9 +1,8 @@
 const models = require('../../../models');
 const queries = require('../../../models/queries');
-const _ = require('underscore');
 const moment = require('moment');
 const { Task, Tag, ItemTag } = models;
-
+const layoutAgnostic = require('../../layoutAgnostic');
 exports.list = async function (req) {
   let prefixNeed = false;
   const selectWithoutTags = req.query.noTag === 'true';
@@ -107,7 +106,7 @@ function createWhereForRequest (req, selectWithoutTags) {
       where.id = req.query.name;
     } else {
       where.name = {
-        $iLike: '%' + req.query.name + '%'
+        $iLike: layoutAgnostic(req.query.name)
       };
     }
   }

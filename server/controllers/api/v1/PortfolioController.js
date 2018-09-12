@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const models = require('../../../models');
 const { Portfolio } = models;
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 exports.create = function (req, res, next){
   Portfolio.beforeValidate((model) => {
@@ -84,7 +85,7 @@ exports.list = function (req, res, next){
 
   if (req.query.name) {
     where.name = {
-      $iLike: '%' + req.query.name + '%'
+      $iLike: layoutAgnostic(req.query.name.trim())
     };
   }
 
