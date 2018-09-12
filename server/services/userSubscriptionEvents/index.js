@@ -89,10 +89,9 @@ module.exports = async function (eventId, input, user){
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
-
     const mentions = getMentions(comment.text);
-    let mentionIds = [];
+    let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
+      .map(receiver => receiver.dataValues.id);
     if (mentions.includes('all')) {
       const projectUsers = await ProjectUsers.findAll({
         attributes: ['user_id'],
@@ -100,40 +99,36 @@ module.exports = async function (eventId, input, user){
           projectId: task.project.id
         }
       });
-      mentionIds = [
+      receiverIds = [
         ...projectUsers.map(projectUser => projectUser.dataValues.user_id),
         task.project.authorId
       ];
     } else if (mentions.length) {
-      mentionIds = mentions;
+      receiverIds = [
+        ...receiverIds,
+        ...mentions
+      ];
     }
 
-    if (mentionIds.length) {
-      const receiverIds = receivers.map(receiver => receiver.dataValues.id);
-      const diffMentionIds = mentionIds.filter(mentionId => !receiverIds.includes(mentionId));
 
-      if (diffMentionIds.length) {
-        const users = await User.findAll({
-          where: {
-            id: diffMentionIds
-          },
+    receivers = await User.findAll({
+      where: {
+        id: _.unique(receiverIds)
+      },
+      include: [
+        {
+          as: 'usersProjects',
+          model: ProjectUsers,
+          where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
           include: [
             {
-              as: 'usersProjects',
-              model: ProjectUsers,
-              where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
-              include: [
-                {
-                  as: 'subscriptions',
-                  model: ProjectUsersSubscriptions
-                }
-              ]
+              as: 'subscriptions',
+              model: ProjectUsersSubscriptions
             }
           ]
-        });
-        receivers = receivers.concat(users);
-      }
-    }
+        }
+      ]
+    });
 
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
