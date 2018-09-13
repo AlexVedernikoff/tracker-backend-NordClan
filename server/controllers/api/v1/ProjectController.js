@@ -6,7 +6,7 @@ const models = require('../../../models');
 const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
-
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 const gitLabService = require('../../../services/gitLab');
 
 exports.create = function (req, res, next){
@@ -328,7 +328,7 @@ exports.list = function (req, res, next){
   }
 
   if (req.query.name) {
-    where.name = { $iLike: '%' + req.query.name + '%' };
+    where.name = { $iLike: layoutAgnostic(req.query.name.trim()) };
   }
 
   if (req.query.statusId) {

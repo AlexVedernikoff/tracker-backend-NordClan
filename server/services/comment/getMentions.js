@@ -1,11 +1,16 @@
 module.exports = function (str){
   let match;
-  const ids = [];
-  const reg = /\{@(\d+?)\}/gm;
+  let ids = [];
+  const reg = /\{@(\d+|all)\}/gm;
   while ((match = reg.exec(str)) && match) {
-    const userId = parseInt(match[1]);
-    if (userId > 0) {
-      ids.push(userId);
+    if (match[1] === 'all') {
+      ids = ['all'];
+      break;
+    } else {
+      const userId = parseInt(match[1]);
+      if (userId > 0) {
+        ids.push(userId);
+      }
     }
   }
   return ids;

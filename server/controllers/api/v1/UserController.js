@@ -5,6 +5,7 @@ const { User } = models;
 const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 exports.me = function (req, res, next) {
   try {
@@ -66,63 +67,49 @@ exports.autocomplete = function (req, res, next) {
       if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
 
       const result = [];
-
-      return models.User.findAll({
-        where: {
-          active: 1,
-          $or: [
-            {
-              fullNameRu: {
-                $iLike: '%' + req.query.userName.trim() + '%'
-              }
-            },
-            {
-              fullNameRu: {
-                $iLike:
-                  '%'
-                  + req.query.userName
-                    .split(' ')
-                    .reverse()
-                    .join(' ')
-                    .trim()
-                  + '%'
-              }
-            },
-            {
-              fullNameEn: {
-                $iLike: '%' + req.query.userName.trim() + '%'
-              }
-            },
-            {
-              fullNameEn: {
-                $iLike:
-                  '%'
-                  + req.query.userName
-                    .split(' ')
-                    .reverse()
-                    .join(' ')
-                    .trim()
-                  + '%'
-              }
-            }
-          ]
+      const userName = req.query.userName.trim();
+      let $iLike = layoutAgnostic(userName);
+      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла
+      let $or = [
+        {
+          fullNameRu: {
+            $iLike
+          }
         },
-        limit: req.query.pageSize ? +req.query.pageSize : 10,
-        attributes: [
-          'id',
-          'firstNameRu',
-          'lastNameRu',
-          'firstNameEn',
-          'lastNameEn'
-        ]
-      })
-        .then(users => {
-          users.forEach(user => {
-            result.push({
-              fullNameRu: user.fullNameRu,
-              fullNameEn: user.fullNameEn,
-              id: user.id
-            });
+        {
+          fullNameEn: {
+            $iLike
+          }
+        }
+      ];
+      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
+        $iLike = layoutAgnostic(reverseUserName);
+        $or = $or.concat([
+          {
+            fullNameRu: {
+              $iLike
+            }
+          },
+          {
+            fullNameEn: {
+              $iLike
+            }
+          }
+        ]);
+      }
+
+      return models.User
+        .findAll({
+          where: {
+            active: 1,
+            $or
+          },
+          limit: req.query.pageSize ? +req.query.pageSize : 10,
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn']
+        })
+        .then((users) => {
+          users.forEach((user) => {
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
           });
           res.end(JSON.stringify(result));
         })
@@ -387,56 +374,39 @@ exports.autocompleteExternal = function (req, res, next) {
       if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
 
       const result = [];
-
-      return models.User.findAll({
-        where: {
-          globalRole: 'EXTERNAL_USER',
-          active: 1,
-          $or: [
-            {
-              firstNameRu: {
-                $iLike: '%' + req.query.userName.trim() + '%'
-              }
-            },
-            {
-              firstNameRu: {
-                $iLike:
-                  '%'
-                  + req.query.userName
-                    .split(' ')
-                    .reverse()
-                    .join(' ')
-                    .trim()
-                  + '%'
-              }
-            },
-            {
-              firstNameEn: {
-                $iLike: '%' + req.query.userName.trim() + '%'
-              }
+      const userName = req.query.userName.trim();
+      let $iLike = layoutAgnostic(userName);
+      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла (хоть и пишем только в firstNameRu)
+      let $or = [
+        {
+          firstNameRu: {
+            $iLike
+          }
+        }
+      ];
+      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
+        $iLike = layoutAgnostic(reverseUserName);
+        $or = $or.concat([
+          {
+            firstNameRu: {
+              $iLike
             }
-          ]
-        },
-        limit: req.query.pageSize ? +req.query.pageSize : 10,
-        attributes: [
-          'id',
-          'firstNameRu',
-          'lastNameRu',
-          'firstNameEn',
-          'lastNameEn',
-          'fullNameRu',
-          'fullNameEn'
-        ]
-      })
-        .then(users => {
-          users.forEach(user => {
-            result.push({
-              fullNameRu: user.fullNameRu,
-              fullNameEn: user.fullNameEn,
-              firstNameEn: user.firstNameEn,
-              firstNameRu: user.firstNameRu,
-              id: user.id
-            });
+          }
+        ]);
+      }
+      return models.User
+        .findAll({
+          where: {
+            globalRole: 'EXTERNAL_USER',
+            active: 1,
+            $or
+          },
+          limit: req.query.pageSize ? +req.query.pageSize : 10,
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
+        })
+        .then((users) => {
+          users.forEach((user) => {
+            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id});
           });
           res.end(JSON.stringify(result));
         })

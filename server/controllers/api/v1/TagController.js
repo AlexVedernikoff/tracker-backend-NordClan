@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const StringHelper = require('../../../components/StringHelper');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 exports.list = async function (req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
@@ -149,7 +150,7 @@ exports.autocompliter = function (req, res, next){
         group: ['Tag.id', 'Tag.name'],
         where: {
           name: {
-            $iLike: '%' + req.query.tagName + '%'
+            $iLike: layoutAgnostic(req.query.tagName.trim())
           }
         },
         include: [
