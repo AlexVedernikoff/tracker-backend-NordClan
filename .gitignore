@@ -8,3 +8,5 @@ tmp
 package-lock.json
 
 /public/uploads*
+/pg_db/dumps/*.sql
+/pg_db/dumps/*.old
