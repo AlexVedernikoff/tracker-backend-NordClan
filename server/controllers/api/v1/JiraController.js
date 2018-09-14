@@ -1,4 +1,4 @@
-const { jiraSync, createProject, setProjectAssociation, jiraAuth } = require('../../../services/taskSynchronizer/index');
+const { jiraSync, createProject, setProjectAssociation, jiraAuth } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
 exports.jiraSynchronize = function (req, res, next) {
