@@ -232,3 +232,13 @@ exports.getGitlabBranchesById = async function (req, res, next) {
     next(createError(400, 'Can not load branches'));
   }
 };
+
+exports.getGitlabBranchesByRepoId = async function (req, res, next) {
+  const { repoId } = req.query;
+  try {
+    const loadBranches = await branches.getBranchesByRepoId(repoId);
+    res.json(loadBranches);
+  } catch (e) {
+    next(createError(400, 'Can not load branches'));
+  }
+};

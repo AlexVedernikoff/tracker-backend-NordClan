@@ -52,6 +52,7 @@ router.put('/project/:id', GlobalAccess.can('project', 'update'), ProjectControl
 router.delete('/project/:id', GlobalAccess.can('project', 'delete'), ProjectController.delete);
 router.get('/project', GlobalAccess.can('project', 'read'), ProjectController.list);
 router.post('/project/addGitlabProject', GlobalAccess.can('project', 'addGitlabProject'), ProjectController.addGitlabProject);
+router.get('/project/:id/getGitlabProjects', GlobalAccess.can('project', 'getGitlabProjects'), ProjectController.getProjects);
 
 router.post('/project/:projectId/users', GlobalAccess.can('projectUsers', 'create'), ProjectUsersController.create);
 router.get('/project/:projectId/users', GlobalAccess.can('projectUsers', 'list'), ProjectUsersController.list);
@@ -94,6 +95,7 @@ router.delete('/task/:taskId/links/:linkedTaskId', GlobalAccess.can('taskLinks',
 router.get('/task/:id/spent/', GlobalAccess.can('task', 'read'), TaskController.getSpentTime);
 router.post('/task/:id/createGitlabBranch/', TaskController.createGitlabBranch);
 router.get('/task/:id/getGitlabBranchesById/', TaskController.getGitlabBranchesById);
+router.get('/task/:id/getGitlabBranchesByRepoId/', TaskController.getGitlabBranchesById);
 
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);

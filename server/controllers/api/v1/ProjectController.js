@@ -588,3 +588,15 @@ exports.createGitlabProject = async function (req, res, next) {
     next(e);
   }
 };
+
+exports.getProjects = async function (req, res, next) {
+  const { id } = req.params;
+  const project = await Project.find({where: {id}});
+  try {
+    const gitlabProjects = await gitLabService.projects.getProjects(project.gitlabProjectIds);
+    res.json(gitlabProjects);
+  } catch (e) {
+    next(e);
+  }
+};
+

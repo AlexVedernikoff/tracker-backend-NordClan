@@ -17,7 +17,8 @@ const USER = {
     'update': true,
     'getGitlabNamespaces': true,
     'createGitlabProject': true,
-    'addGitlabProject': true
+    'addGitlabProject': true,
+    'getGitlabProjects': true
   },
   projectUsers: {
     'create': true,

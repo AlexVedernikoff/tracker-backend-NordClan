@@ -4,6 +4,8 @@ const token = config.token;
 const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { Project } = require('../../models');
+const { createBranch } = require('./branches');
+const { createMasterCommit } = require('./commits');
 
 const getProject = id => http.get({ host, path: `/api/v4/projects/${id}`, headers });
 const getProjects = async function (ids) {
@@ -15,6 +17,7 @@ const getProjects = async function (ids) {
   }));
   return projects;
 };
+
 
 const addProjectByPath = async function (projectId, path) {
   const gitlabProject = await http.get({ host, path: `/api/v4/projects/${encodeURIComponent(path)}`, headers });
@@ -41,7 +44,14 @@ const createProject = async function (name, namespace_id, projectId) {
     name,
     namespace_id
   };
-  const gitlabProject = await http.post({ host, path: '/api/v4/projects', headers}, postData);
+  let gitlabProject;
+  try {
+    gitlabProject = await http.post({ host, path: '/api/v4/projects', headers}, postData);
+    await createMasterCommit(gitlabProject.id);
+  } catch (e) {
+    throw new Error(404, 'Gitlab error');
+  }
+
   const project = await Project.find({where: {id: projectId}});
   if (project.gitlabProjectIds instanceof Array) {
     project.gitlabProjectIds.push(gitlabProject.id);
@@ -49,7 +59,7 @@ const createProject = async function (name, namespace_id, projectId) {
     project.gitlabProjectIds = [gitlabProject.id];
   }
   await project.set('gitlabProjectIds', project.gitlabProjectIds);
-  await project.save();
+  await Promise.all([project.save(), createBranch(null, gitlabProject.id, null, 'master')]);
 
   return gitlabProject;
 };
