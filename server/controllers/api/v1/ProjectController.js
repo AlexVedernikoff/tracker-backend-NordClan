@@ -120,8 +120,29 @@ exports.read = function (req, res, next){
           ],
           order: [
             ['id', 'DESC']
-            // [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
-            // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
+          ]
+        },
+        {
+          as: 'externalUsers',
+          model: models.ProjectUsers,
+          attributes: models.ProjectUsers.defaultSelect,
+          separate: true,
+          include: [
+            {
+              as: 'user',
+              model: models.User,
+              where: {
+                globalRole: models.User.EXTERNAL_USER_ROLE
+              },
+              attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'photo', 'skype', 'emailPrimary', 'mobile', 'description']
+            },
+            {
+              as: 'roles',
+              model: models.ProjectUsersRoles
+            }
+          ],
+          order: [
+            ['id', 'DESC']
           ]
         },
         {
