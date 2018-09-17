@@ -44,6 +44,7 @@
  - на 5432 - база
 
 ##### дополнительные инструкции (не обязательны)
+для работы с дампами поставить локально postgres 9.6.8 и выше [инструкция](https://www.postgresql.org/download/linux/ubuntu/) - нужны инструменты pg_dump
 - Если нужно обновить локальный файл дампа бд с сервера simtrack-test.simbirsoft
 
         npm run dump:test
@@ -52,7 +53,7 @@
 
         обновленный файл simtrack.sql исключать из коммитов
 
-- Если нужно обновить локальный файл дампа бд с сервера simtrack-dev.simbirsoft
+- Если нужно обновить локальный файл дампа бд с сервера simtrack-dev.simbirsoft 
 
         npm run dump:dev
 
