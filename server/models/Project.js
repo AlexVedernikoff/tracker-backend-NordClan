@@ -229,6 +229,12 @@ module.exports = function (sequelize, DataTypes) {
     });
 
 
+    Project.hasMany(models.ProjectUsers, {
+      as: 'externalUsers',
+      foreignKey: 'project_id'
+    });
+
+
     Project.hasMany(models.ProjectAttachments, {
       as: 'attachments',
       foreignKey: 'project_id'
