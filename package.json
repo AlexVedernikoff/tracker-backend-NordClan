@@ -1,7 +1,7 @@
 {
   "name": "sim-track-back",
   "version": "1.0.0",
-  "description": "readme",
+  "description": "Simbirsoft task tracker backend",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --recursive",
@@ -11,7 +11,9 @@
     "restart:dev": "docker-compose -f docker-compose.dev.yml up --abort-on-container-exit --no-build",
     "precommit": "lint-staged",
     "migrate": "node_modules/.bin/sequelize db:migrate",
-    "rollback": "node_modules/.bin/sequelize db:migrate:undo"
+    "rollback": "node_modules/.bin/sequelize db:migrate:undo",
+    "dump:test": "pg_db/dumps/pg_dump_test.sh",
+    "dump:dev": "pg_db/dumps/pg_dump_dev.sh"
   },
   "lint-staged": {
     "*.js": [
@@ -30,6 +32,7 @@
     "async": "^2.4.1",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.2",
+    "convert-layout": "^0.7.0",
     "cookie-parser": "^1.4.3",
     "crypto": "^1.0.1",
     "exact-math": "^1.0.0",
