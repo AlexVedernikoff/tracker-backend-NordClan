@@ -32,6 +32,14 @@ exports.create = async function (req, res, next){
       input: { taskId: task.id, commentId: comment.id },
       user: { ...req.user.get() }
     });
+    if (req.body.parentId) {
+      const mention = await queries.comment.getOne(req.body.parentId);
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[4].id,
+        input: { taskId: task.id, commentId: comment.id },
+        user: mention.author.dataValues
+      });
+    }
     res.json(getOne);
   } catch (e) {
     return next(createError(e));
