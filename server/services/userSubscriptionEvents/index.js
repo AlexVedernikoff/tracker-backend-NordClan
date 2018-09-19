@@ -130,7 +130,7 @@ module.exports = async function (eventId, input, user){
       ]
     });
 
-    comment = mentions.length ? await replaceMention(comment, receivers, mentions) : comment;
+    comment.text = mentions.length ? await replaceMention(comment.text, receivers) : comment.text;
 
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;

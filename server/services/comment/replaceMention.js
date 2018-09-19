@@ -1,13 +1,18 @@
-const _ = require('underscore');
+const expectedMentionReg = /({@all}|{@[0-9]+})/;
+const expectedMentionSeparatorsReg = /[{@}]/g;
 
-module.exports = async (comment, receivers, mentions) => {
-  if (mentions.includes('all')) {
-    comment.text = comment.text.replace(/\{@(all)\}/gm, 'ALL').replace(/\{@(\d+)\}/gm, '');
-  } else {
-    mentions.forEach(id => {
-      const name = _.find(receivers, {id: id}).fullNameRu;
-      comment.text = comment.text.replace(new RegExp(`\\{@(${id})}`, 'gm'), name);
-    });
-  }
-  return comment;
+const splitCommentByMentions = text =>
+  typeof text === 'string' ? text.split(expectedMentionReg).filter(x => x) : [];
+
+const replaceWithMentions = (array, receivers) => {
+  return array.map((x) => {
+    if (!expectedMentionReg.test(x)) return x;
+    const id = x.replace(expectedMentionSeparatorsReg, '');
+    const mention = receivers.find(s => s.id === (id !== 'all' ? +id : 'all'));
+    return mention ? mention.fullNameRu : id.toUpperCase();
+  }).join('');
 };
+
+module.exports = async (text, receivers) =>
+  replaceWithMentions(splitCommentByMentions(text), receivers);
+
