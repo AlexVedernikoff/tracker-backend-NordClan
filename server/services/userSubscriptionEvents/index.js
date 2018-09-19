@@ -69,7 +69,7 @@ module.exports = async function (eventId, input, user){
     task = await getTask(input.taskId);
     receivers = task.performer ? [task.performer] : [];
 
-    receivers.forEach(function (performer){
+    receivers.forEach(function (performer) {
       if (!isUserSubscribed(eventId, performer.usersProjects[0])) return;
       if (user.id === performer.dataValues.id) return;
       const emailTemplate = email.template('newTaskForPerformer', { task });
@@ -191,9 +191,42 @@ module.exports = async function (eventId, input, user){
 
     break;
 
-  case (5): // need to implement that on backend
+  case (5):
     // event description : task comment has mention
     // receivers : mentioned user (which has subscription)
+    // input : { taskId, commentId }
+    task = await getTask(input.taskId);
+    comment = _.find(task.comments, { id: input.commentId });
+
+    receivers = await User.findAll({
+      where: {
+        id: user.id
+      },
+      include: [
+        {
+          as: 'usersProjects',
+          model: ProjectUsers,
+          where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
+          include: [
+            {
+              as: 'subscriptions',
+              model: ProjectUsersSubscriptions
+            }
+          ]
+        }
+      ]
+    });
+
+    receivers.forEach(receiver => {
+      if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return; // if user subscribed to this event
+      if (user.id === comment.author.dataValues.id) return; // if user mentioned himself
+      const emailTemplate = email.template('newTaskCommentMention', { task, comment });
+      emails.push({
+        'receiver': receiver.emailPrimary,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
+      });
+    });
     break;
 
   default:
