@@ -1,7 +1,7 @@
 const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
-const { getMentions } = require('../../services/comment');
+const { getMentions, replaceMention } = require('../../services/comment');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
@@ -129,6 +129,8 @@ module.exports = async function (eventId, input, user){
         }
       ]
     });
+
+    comment.text = mentions.length ? await replaceMention(comment.text, receivers) : comment.text;
 
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
