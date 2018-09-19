@@ -1,5 +1,5 @@
 const models = require('../../../models');
-const { Task, Timesheet, TimesheetDraft } = models;
+const { Timesheet, TimesheetDraft } = models;
 const queries = require('../../../models/queries');
 const createError = require('http-errors');
 
