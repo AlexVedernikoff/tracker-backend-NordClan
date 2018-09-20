@@ -15,7 +15,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     rolesIds: {
-      type: DataTypes.VIRTUAL,
+      type: DataTypes.VIRTUAL(DataTypes.STRING),
       get: function (){
         const roles = this.get('roles');
         if (!roles) {

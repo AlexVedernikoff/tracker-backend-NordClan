@@ -6,11 +6,13 @@ const ACTIONS = constants.actions;
 const entityWord = {
   ru: {
     create: 'задачу',
-    update: 'задачи'
+    update: 'задачи',
+    delete: 'задачу'
   },
   en: {
     create: 'task',
-    update: 'task'
+    update: 'task',
+    delete: 'task'
   }
 };
 
@@ -169,7 +171,22 @@ function declarativeHandlers () {
       answer: (model) => {
         return {
           message: `создал(-а) под${entityWord.ru.create} {subTask}`,
-          messageEn: `created as${entityWord.en.create} {subTask}`,
+          messageEn: `created sub${entityWord.en.create} {subTask}`,
+          entities: {
+            subTask: model.subTask
+          }
+        };
+      }
+    },
+    {
+      name: 'remove Subtask',
+      statement: (model) => {
+        return model.action === 'update' && model.entity === 'Task' && model.entityId !== model.taskId;
+      },
+      answer: (model) => {
+        return {
+          message: `отменил(-а) под${entityWord.ru.delete} {subTask}`,
+          messageEn: `removed sub${entityWord.en.delete} {subTask}`,
           entities: {
             subTask: model.subTask
           }
