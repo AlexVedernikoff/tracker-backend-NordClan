@@ -38,7 +38,7 @@ exports.create = async function (req, res, next){
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[4].id,
         input: { taskId: task.id, commentId: comment.id },
-        user: mention.author.dataValues
+        user: [mention.author.dataValues.id]
       });
     }
     res.json(getOne);
@@ -85,12 +85,10 @@ exports.update = function (req, res, next){
       const { text } = req.body;
       const newMentions = getMentionDiff(text, comment.text);
       if (newMentions.length) {
-        newMentions.forEach((id) => {
-          emailSubprocess({
-            eventId: models.ProjectEventsDictionary.values[4].id,
-            input: { taskId: task.id, commentId: comment.id },
-            user: { id }
-          });
+        emailSubprocess({
+          eventId: models.ProjectEventsDictionary.values[4].id,
+          input: { taskId: task.id, commentId: comment.id },
+          user: newMentions
         });
       }
 
