@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const emailSubprocess = require('../../../services/email/subprocess');
+const { isMentionsUpdated } = require('./../../../services/comment');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -59,7 +60,7 @@ exports.update = function (req, res, next){
           attributes: ['id', 'projectId']
         }), models.Comment
         .findByPrimary(req.params.commentId, {
-          attributes: ['id', 'deletedAt', 'authorId', 'createdAt']
+          attributes: ['id', 'deletedAt', 'authorId', 'createdAt', 'text']
         })]);
     })
     .then(([task, comment])=>{
@@ -82,6 +83,16 @@ exports.update = function (req, res, next){
       }
 
       const { text } = req.body;
+      const newMentions = isMentionsUpdated(text, comment.text);
+      if (newMentions.length) {
+        newMentions.forEach((id) => {
+          emailSubprocess({
+            eventId: models.ProjectEventsDictionary.values[4].id,
+            input: { taskId: task.id, commentId: comment.id },
+            user: { id }
+          });
+        });
+      }
 
       return comment
         .updateAttributes({ text })
