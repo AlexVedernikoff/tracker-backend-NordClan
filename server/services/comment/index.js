@@ -1,9 +1,9 @@
 const getMentions = require('./getMentions');
 const replaceMention = require('./replaceMention');
-const isMentionsUpdated = require('./isMentionsUpdated');
+const getMentionDiff = require('./getMentionDiff');
 
 module.exports = {
   getMentions,
   replaceMention,
-  isMentionsUpdated
+  getMentionDiff
 };

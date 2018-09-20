@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const emailSubprocess = require('../../../services/email/subprocess');
-const { isMentionsUpdated } = require('./../../../services/comment');
+const { getMentionDiff } = require('./../../../services/comment');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -83,7 +83,7 @@ exports.update = function (req, res, next){
       }
 
       const { text } = req.body;
-      const newMentions = isMentionsUpdated(text, comment.text);
+      const newMentions = getMentionDiff(text, comment.text);
       if (newMentions.length) {
         newMentions.forEach((id) => {
           emailSubprocess({
