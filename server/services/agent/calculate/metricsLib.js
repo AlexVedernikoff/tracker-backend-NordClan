@@ -11,7 +11,7 @@ module.exports = async function (metricsTypeId, input) {
   let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
-    spentTimeBySprint, spentTimeByTask;
+    spentTimeBySprint, spentTimeByTask, isFromClient, isTaskFromClient;
   let timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
@@ -384,34 +384,6 @@ module.exports = async function (metricsTypeId, input) {
       'userId': null
     };
 
-  case (35):
-  case (36):
-  case (37):
-  case (38):
-  case (39):
-    taskTypeIdsConf = {
-      '1': 1,
-      '2': 2,
-      '3': 3,
-      '4': 4
-    };
-    taskTypeId = taskTypeIdsConf[metricsTypeId.toString()];
-    openedTasksAmount = 0;
-    if (input.sprint.tasks.length > 0) {
-      input.sprint.tasks.forEach(function (task) {
-        if (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) !== -1 || task.typeId !== taskTypeId) return;
-        openedTasksAmount++;
-      });
-    }
-    return {
-      'typeId': metricsTypeId,
-      'createdAt': input.executeDate,
-      'value': openedTasksAmount,
-      'projectId': input.project.id,
-      'sprintId': input.sprint.id,
-      'userId': null
-    };
-
   case (40):
     unratedFeaturesTotal = 0;
     if (input.sprint.tasks.length > 0) {
@@ -470,8 +442,43 @@ module.exports = async function (metricsTypeId, input) {
       'userId': null
     };
 
+  case (58): // количество открытых задач от клиента
+  case (59): // количество открытых доп фич от клиента
+  case (60): // количество открытых регрессионных багов от клиента
+  case (35): // количество открытых задач
+  case (36): // количество открытых доп фич
+  case (37): // количество открытых багов
+  case (38): // количество открытых регрессионных багов
+  case (39): // количество открытых багов от клиента
+    taskTypeIdsConf = {
+      // второй признак принадлежность к клиенту
+      '35': [1, false],
+      '36': [3, false],
+      '37': [2, false],
+      '38': [4, false],
+      '58': [1, true],
+      '59': [3, true],
+      '39': [2, true],
+      '60': [4, true]
+    };
+    [taskTypeId, isTaskFromClient] = taskTypeIdsConf[metricsTypeId.toString()];
+    openedTasksAmount = 0;
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
+        if (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) !== -1 || task.typeId !== taskTypeId || task.isTaskByClient !== isTaskFromClient) return;
+        openedTasksAmount++;
+      });
+    }
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': openedTasksAmount,
+      'projectId': input.project.id,
+      'sprintId': input.sprint.id,
+      'userId': null
+    };
+
   default:
     break;
-
   }
 };
