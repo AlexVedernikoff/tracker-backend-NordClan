@@ -5,7 +5,7 @@ const { getMentions, replaceMention } = require('../../services/comment');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment, projectRolesValues;
+  let receivers, task, comment, projectRolesValues, mentionedUsers;
 
   switch (eventId){
 
@@ -193,16 +193,30 @@ module.exports = async function (eventId, input, user){
 
     break;
 
-  case (5):
+  case (5): {
     // event description : task comment has mention
-    // receivers : mentioned user (which has subscription)
+    // receivers : mentioned users (which has subscription)
     // input : { taskId, commentId }
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-
+    const mentions = getMentions(comment.text);
+    let receiverIds;
+    if (user[0] === 'all') {
+      const projectUsers = await ProjectUsers.findAll({
+        attributes: ['user_id'],
+        where: {
+          projectId: task.project.id
+        }
+      });
+      receiverIds = [
+        ...projectUsers.map(projectUser => projectUser.dataValues.user_id)
+      ];
+    } else {
+      receiverIds = user;
+    }
     receivers = await User.findAll({
       where: {
-        id: user.id
+        id: _.unique(receiverIds)
       },
       include: [
         {
@@ -219,6 +233,31 @@ module.exports = async function (eventId, input, user){
       ]
     });
 
+    if (mentions[0] !== 'all') {
+      mentionedUsers = await User.findAll({
+        where: {
+          id: _.unique(mentions)
+        },
+        include: [
+          {
+            as: 'usersProjects',
+            model: ProjectUsers,
+            where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
+            include: [
+              {
+                as: 'subscriptions',
+                model: ProjectUsersSubscriptions
+              }
+            ]
+          }
+        ]
+      });
+    } else {
+      mentionedUsers = receivers;
+    }
+
+    comment.text = mentions.length ? await replaceMention(comment.text, mentionedUsers) : comment.text;
+
     receivers.forEach(receiver => {
       if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return; // if user subscribed to this event
       if (user.id === comment.author.dataValues.id) return; // if user mentioned himself
@@ -230,7 +269,7 @@ module.exports = async function (eventId, input, user){
       });
     });
     break;
-
+  }
   default:
     break;
 
