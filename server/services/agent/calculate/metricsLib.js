@@ -388,7 +388,8 @@ module.exports = async function (metricsTypeId, input) {
     unratedFeaturesTotal = 0;
     if (input.sprint.tasks.length > 0) {
       input.sprint.tasks.forEach(function (task) {
-        if (task.plannedExecutionTime || task.typeId !== 1) return;
+        if ((task.plannedExecutionTime && parseInt(task.plannedExecutionTime) !== 0)
+            || task.typeId !== 1) return;
         unratedFeaturesTotal++;
       });
     }
