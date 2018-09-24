@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const emailSubprocess = require('../../../services/email/subprocess');
+const { getMentionDiff } = require('./../../../services/comment');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -37,7 +38,7 @@ exports.create = async function (req, res, next){
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[4].id,
         input: { taskId: task.id, commentId: comment.id },
-        user: mention.author.dataValues
+        user: [mention.author.dataValues.id]
       });
     }
     res.json(getOne);
@@ -59,7 +60,7 @@ exports.update = function (req, res, next){
           attributes: ['id', 'projectId']
         }), models.Comment
         .findByPrimary(req.params.commentId, {
-          attributes: ['id', 'deletedAt', 'authorId', 'createdAt']
+          attributes: ['id', 'deletedAt', 'authorId', 'createdAt', 'text']
         })]);
     })
     .then(([task, comment])=>{
@@ -82,6 +83,14 @@ exports.update = function (req, res, next){
       }
 
       const { text } = req.body;
+      const newMentions = getMentionDiff(text, comment.text);
+      if (newMentions.length) {
+        emailSubprocess({
+          eventId: models.ProjectEventsDictionary.values[4].id,
+          input: { taskId: task.id, commentId: comment.id },
+          user: newMentions
+        });
+      }
 
       return comment
         .updateAttributes({ text })

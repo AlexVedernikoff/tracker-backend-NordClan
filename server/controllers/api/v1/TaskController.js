@@ -173,7 +173,7 @@ exports.list = function (req, res, next) {
 
   if (req.query.performerId) {
     if (Array.isArray(req.query.performerId)) {
-      if (req.query.performerId.some(performerId => parseInt(performerId) < 1)) return next(createError(400, 'performerId must be correct array'));
+      if (req.query.performerId.some(performerId => !performerId.match(/^\d+$/))) return next(createError(400, 'performerId must be array of int'));
     } else if (!req.query.performerId.match(/^\d+$/)) {
       return next(createError(400, 'performerId must be int'));
     }
