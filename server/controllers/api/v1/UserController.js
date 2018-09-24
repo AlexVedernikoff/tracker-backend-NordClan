@@ -269,7 +269,7 @@ exports.refreshTokenExternal = async function (req, res, next) {
     res.json(updatedModel);
   } catch (err) {
     next(
-      createError(500, 'Error when refresh token')
+      createError(500, `Error when refresh token. ${err.message} `)
     );
   }
 
