@@ -13,8 +13,8 @@
     "preinstall": "rm -rf node_modules/",
     "migrate": "node_modules/.bin/sequelize db:migrate",
     "rollback": "node_modules/.bin/sequelize db:migrate:undo",
-    "dump:test": "pg_db/dumps/pg_dump_test.sh",
-    "dump:dev": "pg_db/dumps/pg_dump_dev.sh"
+    "dump:test": "chmod +x pg_db/pg_dump_test.sh && pg_db/pg_dump_test.sh",
+    "dump:dev": "chmod +x pg_db/pg_dump_dev.sh && pg_db/pg_dump_dev.sh"
   },
   "lint-staged": {
     "*.js": [
