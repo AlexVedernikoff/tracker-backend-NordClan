@@ -10,4 +10,4 @@ package-lock.json
 /public/uploads*
 /pg_db/*.sql
 /pg_db/dumps/*.sql
-/pg_db/dumps/*.old
+/pg_db/*.old
