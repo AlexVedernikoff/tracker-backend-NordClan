@@ -4,12 +4,14 @@ const _ = require('underscore');
 const exactMath = require('exact-math');
 
 
-module.exports = async function (metricsTypeId, input){
+module.exports = async function (metricsTypeId, input) {
+
+  let calculateClientBugs;
 
   let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
-    spentTimeBySprint, spentTimeByTask;
+    spentTimeBySprint, spentTimeByTask, isFromClient, isTaskFromClient;
   let timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
@@ -75,7 +77,7 @@ module.exports = async function (metricsTypeId, input){
     return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
   };
 
-  switch (metricsTypeId){
+  switch (metricsTypeId) {
   case (1):
     return {
       'typeId': metricsTypeId,
@@ -119,7 +121,7 @@ module.exports = async function (metricsTypeId, input){
   case (5):
     projectBurndown = parseFloat(input.project.budget) || 0;
     if (input.project.sprints.length === 0
-      && input.project.tasksInBacklog.length === 0) return;
+        && input.project.tasksInBacklog.length === 0) return;
     totalTimeSpent = countSpentTimeByProject(input.project);
     projectBurndown = exactMath.sub(projectBurndown, parseFloat(totalTimeSpent));
     return {
@@ -134,7 +136,7 @@ module.exports = async function (metricsTypeId, input){
   case (6):
     projectRiskBurndown = parseFloat(input.project.riskBudget) || 0;
     if (input.project.sprints.length === 0
-      && input.project.tasksInBacklog.length === 0) return;
+        && input.project.tasksInBacklog.length === 0) return;
     totalTimeSpent = countSpentTimeByProject(input.project);
     projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(totalTimeSpent));
     return {
@@ -148,10 +150,10 @@ module.exports = async function (metricsTypeId, input){
 
   case (7):
     totalBugsAmount = 0;
-    if (input.project.sprints.length > 0){
-      input.project.sprints.forEach(function (sprint){
+    if (input.project.sprints.length > 0) {
+      input.project.sprints.forEach(function (sprint) {
         const bugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2);
+          return (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) === -1 && task.typeId === 2);
         });
         totalBugsAmount += bugs.length;
       });
@@ -167,16 +169,16 @@ module.exports = async function (metricsTypeId, input){
 
   case (8):
     totalClientBugsAmount = 0;
-    const calculateClientBugs = (tasks) => {
+    calculateClientBugs = (tasks) => {
       const clientBugs = _.filter(tasks, (task) => {
-        return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
+        return (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
       });
       totalClientBugsAmount += clientBugs.length;
     };
-    if (Array.isArray(input.project.sprints)){
+    if (Array.isArray(input.project.sprints)) {
       input.project.sprints.forEach(sprint => calculateClientBugs(sprint.tasks));
 
-      if (Array.isArray(input.project.tasksInBacklog)){
+      if (Array.isArray(input.project.tasksInBacklog)) {
         calculateClientBugs(input.project.tasksInBacklog);
       }
     }
@@ -190,12 +192,13 @@ module.exports = async function (metricsTypeId, input){
       'userId': null
     };
 
+
   case (9):
     totalRegressionBugsAmount = 0;
-    if (input.project.sprints.length > 0){
-      input.project.sprints.forEach(function (sprint){
+    if (input.project.sprints.length > 0) {
+      input.project.sprints.forEach(function (sprint) {
         const regressionBugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) === -1 && task.typeId === 4);
+          return (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) === -1 && task.typeId === 4);
         });
         totalRegressionBugsAmount = exactMath.add(totalRegressionBugsAmount, regressionBugs.length);
       });
@@ -233,9 +236,9 @@ module.exports = async function (metricsTypeId, input){
     };
     roleId = rolesIdsConf[metricsTypeId.toString()];
     if (input.project.sprints.length === 0
-      && !checkSprintsHaveTask(input.project.sprints)
-      && input.project.tasksInBacklog.length === 0
-      || input.project.projectUsers.length === 0
+        && !checkSprintsHaveTask(input.project.sprints)
+        && input.project.tasksInBacklog.length === 0
+        || input.project.projectUsers.length === 0
     ) return;
     totalTimeSpent = countSpentTimeByProject(input.project);
     totalTimeSpentWithRole = countSpentTimeByRole(input.project, roleId);
@@ -274,9 +277,9 @@ module.exports = async function (metricsTypeId, input){
     };
     roleId = rolesIdsConf[metricsTypeId.toString()];
     if (input.project.sprints.length === 0
-      && !checkSprintsHaveTask(input.project.sprints)
-      && input.project.tasksInBacklog.length === 0
-      || input.project.projectUsers.length === 0
+        && !checkSprintsHaveTask(input.project.sprints)
+        && input.project.tasksInBacklog.length === 0
+        || input.project.projectUsers.length === 0
     ) return;
     totalTimeSpentWithRole = countSpentTimeByRole(input.project, roleId);
     return {
@@ -320,8 +323,8 @@ module.exports = async function (metricsTypeId, input){
     closedTasksDynamics = 0;
     laborCostsTotal = 0;
     laborCostsClosedTasks = 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
         if (!task.plannedExecutionTime) return;
         laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(task.plannedExecutionTime) || 0);
         if (task.typeId === 1 && task.statusId === TaskStatusesDictionary.CLOSED_STATUS) {
@@ -342,8 +345,8 @@ module.exports = async function (metricsTypeId, input){
 
   case (33):
     laborCostsWithoutRating = 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
         spentTimeByTask = countSpentTimeByTask(task);
         if (
           task.plannedExecutionTime
@@ -365,8 +368,8 @@ module.exports = async function (metricsTypeId, input){
 
   case (34):
     laborCostsTotal = 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
         spentTimeByTask = countSpentTimeByTask(task);
         if (!task.spentTimeByTask || task.typeId !== 1) return;
         laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(spentTimeByTask));
@@ -381,40 +384,12 @@ module.exports = async function (metricsTypeId, input){
       'userId': null
     };
 
-  case (35):
-  case (36):
-  case (37):
-  case (38):
-  case (39):
-    taskTypeIdsConf = {
-      '1': 1,
-      '2': 2,
-      '3': 3,
-      '4': 4,
-      '5': 5
-    };
-    taskTypeId = taskTypeIdsConf[metricsTypeId.toString()];
-    openedTasksAmount = 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
-        if (TaskStatusesDictionary.DONE_STATUSES.indexOf(task.statusId) !== -1 || task.typeId !== taskTypeId) return;
-        openedTasksAmount++;
-      });
-    }
-    return {
-      'typeId': metricsTypeId,
-      'createdAt': input.executeDate,
-      'value': openedTasksAmount,
-      'projectId': input.project.id,
-      'sprintId': input.sprint.id,
-      'userId': null
-    };
-
   case (40):
     unratedFeaturesTotal = 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
-        if (task.plannedExecutionTime || task.typeId !== 1) return;
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
+        if ((task.plannedExecutionTime && parseInt(task.plannedExecutionTime) !== 0)
+            || task.typeId !== 1) return;
         unratedFeaturesTotal++;
       });
     }
@@ -429,19 +404,19 @@ module.exports = async function (metricsTypeId, input){
 
   case (41):
     unsceduledOpenedFeatures = 0;
-    if (input.sprint.tasks.length > 0){
-      input.sprint.tasks.forEach(function (task){
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
         if (
           task.typeId === 1
-          && (
-            moment(task.createdAt).isAfter(input.sprint.factStartDate)
-            || (
-              task.history
-              && task.history.length > 0
-              && moment(task.history[task.history.length - 1].createdAt).isAfter(input.sprint.factStartDate)
+            && (
+              moment(task.createdAt).isAfter(input.sprint.factStartDate)
+              || (
+                task.history
+                && task.history.length > 0
+                && moment(task.history[task.history.length - 1].createdAt).isAfter(input.sprint.factStartDate)
+              )
             )
-          )
-        ){
+        ) {
           unsceduledOpenedFeatures++;
         }
       });
@@ -468,8 +443,43 @@ module.exports = async function (metricsTypeId, input){
       'userId': null
     };
 
+  case (58): // количество открытых задач от клиента
+  case (59): // количество открытых доп фич от клиента
+  case (60): // количество открытых регрессионных багов от клиента
+  case (35): // количество открытых задач
+  case (36): // количество открытых доп фич
+  case (37): // количество открытых багов
+  case (38): // количество открытых регрессионных багов
+  case (39): // количество открытых багов от клиента
+    taskTypeIdsConf = {
+      // второй признак принадлежность к клиенту
+      '35': [1, false],
+      '36': [3, false],
+      '37': [2, false],
+      '38': [4, false],
+      '58': [1, true],
+      '59': [3, true],
+      '39': [2, true],
+      '60': [4, true]
+    };
+    [taskTypeId, isTaskFromClient] = taskTypeIdsConf[metricsTypeId.toString()];
+    openedTasksAmount = 0;
+    if (input.sprint.tasks.length > 0) {
+      input.sprint.tasks.forEach(function (task) {
+        if (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) !== -1 || task.typeId !== taskTypeId || task.isTaskByClient !== isTaskFromClient) return;
+        openedTasksAmount++;
+      });
+    }
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': openedTasksAmount,
+      'projectId': input.project.id,
+      'sprintId': input.sprint.id,
+      'userId': null
+    };
+
   default:
     break;
-
   }
 };
