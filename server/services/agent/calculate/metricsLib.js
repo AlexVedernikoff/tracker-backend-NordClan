@@ -340,7 +340,7 @@ module.exports = async function (metricsTypeId, input){
       input.sprint.tasks.forEach(function (task){
         spentTimeByTask = countSpentTimeByTask(task);
         if (
-          task.plannedExecutionTime
+          +task.plannedExecutionTime
             || task.typeId !== 1
             || task.statusId !== TaskStatusesDictionary.CLOSED_STATUS
             || !spentTimeByTask
