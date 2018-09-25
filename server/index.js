@@ -24,7 +24,10 @@ io.sockets.on('connection', function (socket) {
     if (user) {
       socket.join(`user_${ user.dataValues.id }`);
     }
-  });
+  })
+    .catch((err) => {
+      console.error('Error when connection socket io. Reason: ', err);
+    });
 });
 
 exports.run = function () {
