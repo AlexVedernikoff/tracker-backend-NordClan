@@ -371,7 +371,7 @@ module.exports = async function (metricsTypeId, input) {
     if (input.sprint.tasks.length > 0) {
       input.sprint.tasks.forEach(function (task) {
         spentTimeByTask = countSpentTimeByTask(task);
-        if (!task.spentTimeByTask || task.typeId !== 1) return;
+        if (!spentTimeByTask || task.typeId !== 1) return;
         laborCostsTotal = exactMath.add(laborCostsTotal, parseFloat(spentTimeByTask));
       });
     }
