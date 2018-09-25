@@ -58,6 +58,11 @@ module.exports = function (sequelize, DataTypes) {
     TaskStatuses.DONE_STATUS,
     TaskStatuses.CLOSED_STATUS
   ];
+  TaskStatuses.DONE_STATUSES_WITH_CANCELLED = [ // Готовые и закрытые задачи
+    TaskStatuses.DONE_STATUS,
+    TaskStatuses.CLOSED_STATUS,
+    TaskStatuses.CANCELED_STATUS
+  ];
   TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = [
     TASK_STATUS_DEVELOP_PLAY,
     TASK_STATUS_DEVELOP_STOP,
