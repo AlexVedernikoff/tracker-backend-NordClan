@@ -1,7 +1,7 @@
-const querystring = require('querystring');
+const querystring = require('qs');
 const http = require('http');
 
-function httpRequest (params, data) {
+function httpRequest (params, data, stringify = querystring.stringify) {
   return new Promise(function (resolve, reject) {
     const req = http.request(params, (res) => {
       if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -26,7 +26,7 @@ function httpRequest (params, data) {
     });
 
     if (data) {
-      const post_data = querystring.stringify(data);
+      const post_data = stringify(data);
       req.write(post_data);
     }
 
@@ -45,12 +45,12 @@ exports.get = (requestOptions) => {
   return httpRequest(options);
 };
 
-exports.post = (requestOptions, postData) => {
+exports.post = (requestOptions, postData, stringify) => {
 
   const options = {
     method: 'POST',
     ...requestOptions
   };
 
-  return httpRequest(options, postData);
+  return httpRequest(options, postData, stringify);
 };
