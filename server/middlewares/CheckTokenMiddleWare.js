@@ -106,8 +106,13 @@ exports.getUserByToken = function (header) {
   }
 
   try {
-    const authorization = header.cookie;
-    const token = authorization.split('=')[1].split('%20')[1];
+    const headerObj = header.cookie.split(';').reduce((acc, cur) => {
+      const arr = (cur.trim()).split('=');
+      acc[arr[0]] = arr[1];
+      return acc;
+    }, {});
+
+    const token = headerObj.authorization.split('%20')[1];
     const decoded = jwt.decode(token, tokenSecret);
 
 
@@ -133,7 +138,7 @@ exports.getUserByToken = function (header) {
       ]
     });
   } catch (err) {
-    return Promise.reject();
+    return Promise.reject(err);
   }
 };
 
