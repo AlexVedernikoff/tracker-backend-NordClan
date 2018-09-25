@@ -205,7 +205,12 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeSubTasks = {
     as: 'subTasks',
     model: models.Task,
-    attributes: ['id', 'name']
+    attributes: ['id', 'name'],
+    where: {
+      statusId: {
+        $notIn: [9] // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
+      }
+    }
   };
 
   const includeLLnkedTasks = {
