@@ -210,7 +210,8 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
       statusId: {
         $notIn: [9] // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
       }
-    }
+    },
+    required: false
   };
 
   const includeLLnkedTasks = {
