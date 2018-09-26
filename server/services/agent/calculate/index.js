@@ -8,30 +8,15 @@ const executeDate = moment().toISOString();
 module.exports.calculate = async function (projectId) {
   try {
     await init();
-  } catch (err) {
-    console.error('Unable to connect to the database:', err);
-    process.exit(-1);
-  }
-
-  console.log('Database connection has been established successfully.');
-
-  let metricsData;
-
-  try {
-    metricsData = await getMetrics(projectId);
-  } catch (err) {
-    console.error('getMetrics err', err);
-    process.exit(-1);
-  }
-
-  try {
+    const metricsData = await getMetrics(projectId);
     await saveMetrics(metricsData);
+    process.exit(0);
+
   } catch (err) {
-    console.error('saveMetrics err', err);
+    console.error('Error. Can not calculate metrics. Reason: ', err);
+    // TODO: send email about error, task ST-6631
     process.exit(-1);
   }
-
-  process.exit(0);
 };
 
 async function init () {
