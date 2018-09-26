@@ -12,12 +12,14 @@ exports.index = async (instance, options) => {
     return;
   }
 
+  const userId = instance.userId || options.userId;
+
   /** Активность проекта, например совещание*/
   if (isMagicActivityWithProject(instance)) {
     const projectUsers = await models.ProjectUsers.findOne({
       where: {
         projectId: instance.projectId,
-        userId: instance.userId
+        userId: userId
       },
       attributes: ['rolesIds'],
       include: [/** обязательно для формирования виртуального свойства roleIds*/
@@ -45,7 +47,7 @@ exports.index = async (instance, options) => {
     const projectUsers = await models.ProjectUsers.findOne({
       where: {
         projectId: task.projectId,
-        userId: instance.userId
+        userId: userId
       },
       attributes: ['rolesIds'],
       include: [/** обязательно для формирования виртуального свойства roleIds*/
