@@ -93,18 +93,9 @@ module.exports = function (sequelize, DataTypes) {
         field: 'parent_id'
       }
     });
-    Comment.belongsTo(models.TaskAttachments, {
-      as: 'attachments',
-      foreignKey: {
-        name: 'attachmentIds',
-        field: 'attachment_ids',
-        allowNull: true
-      },
-      constraints: false
-    });
   };
 
-  Comment.defaultSelect = ['id', 'taskId', 'parentId', 'authorId', 'text', 'createdAt', 'updatedAt'];
+  Comment.defaultSelect = ['id', 'taskId', 'parentId', 'authorId', 'text', 'createdAt', 'updatedAt', 'attachmentIds'];
 
   return Comment;
 };
