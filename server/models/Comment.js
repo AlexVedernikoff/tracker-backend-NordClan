@@ -1,6 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Comment = sequelize.define('Comment', {
     id: {
       type: DataTypes.INTEGER,
@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
     taskId: {
@@ -16,21 +16,26 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true,
+        isInt: true
       }
+    },
+    attachmentIds: {
+      field: 'attachment_ids',
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     parentId: {
       field: 'parent_id',
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-        isInt: true,
+        isInt: true
       }
     },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     text: {
       trim: true,
@@ -52,14 +57,14 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: true,
     tableName: 'comments',
     hooks: {
-      afterFind: function(model) {
+      afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
     }
 
   });
 
-  Comment.associate = function(models) {
+  Comment.associate = function (models) {
     Comment.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
@@ -87,6 +92,15 @@ module.exports = function(sequelize, DataTypes) {
         name: 'parentId',
         field: 'parent_id'
       }
+    });
+    Comment.belongsTo(models.TaskAttachments, {
+      as: 'attachments',
+      foreignKey: {
+        name: 'attachmentIds',
+        field: 'attachment_ids',
+        allowNull: true
+      },
+      constraints: false
     });
   };
 
