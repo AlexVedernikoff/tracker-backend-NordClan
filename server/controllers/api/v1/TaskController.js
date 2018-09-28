@@ -84,7 +84,7 @@ exports.update = async function (req, res, next) {
   req.checkParams('id', 'id must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
-  if (req.body.plannedExecutionTime > 99) return next(createError(400, 'Planned Execution Time must be lower than 100 hours'));
+  if (req.body.plannedExecutionTime > 99) return next(createError(400, 'Planned Execution Time must be lower than 99 hours'));
 
   const taskId = req.params.id;
 
