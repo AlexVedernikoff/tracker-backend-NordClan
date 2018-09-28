@@ -4,23 +4,28 @@ const token = config.token;
 const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { Project } = require('../../models');
-const { createBranch } = require('./branches');
 const { createMasterCommit } = require('./commits');
 
-const getProject = id => http.get({ host, path: `/api/v4/projects/${id}`, headers });
+const getProject = id =>
+  http.get({ host, path: `/api/v4/projects/${id}`, headers });
 const getProjects = async function (ids) {
   const projects = [];
-  await Promise.all(ids.map(id => {
-    return getProject(id)
-      .then(gitlabResponse => projects.push(gitlabResponse))
-      .catch(error => projects.push({ id, error: error.message }));
-  }));
+  await Promise.all(
+    ids.map(id => {
+      return getProject(id)
+        .then(gitlabResponse => projects.push(gitlabResponse))
+        .catch(error => projects.push({ id, error: error.message }));
+    })
+  );
   return projects;
 };
 
-
 const addProjectByPath = async function (projectId, path) {
-  const gitlabProject = await http.get({ host, path: `/api/v4/projects/${encodeURIComponent(path)}`, headers });
+  const gitlabProject = await http.get({
+    host,
+    path: `/api/v4/projects/${encodeURIComponent(path)}`,
+    headers
+  });
   const project = await Project.find({ where: { id: projectId } });
 
   if (project.gitlabProjectIds.includes(gitlabProject.id)) {
@@ -46,7 +51,10 @@ const createProject = async function (name, namespace_id, projectId) {
   };
   let gitlabProject;
   try {
-    gitlabProject = await http.post({ host, path: '/api/v4/projects', headers }, postData);
+    gitlabProject = await http.post(
+      { host, path: '/api/v4/projects', headers },
+      postData
+    );
     await createMasterCommit(gitlabProject.id);
   } catch (e) {
     throw new Error(404, 'Gitlab error');
@@ -64,13 +72,13 @@ const createProject = async function (name, namespace_id, projectId) {
   return gitlabProject;
 };
 
-const getNamespacesList = () => http.get({ host, path: '/api/v4/namespaces', headers });
+const getNamespacesList = () =>
+  http.get({ host, path: '/api/v4/namespaces', headers });
 
 module.exports = {
-  addProjectByPath,
   getProject,
+  addProjectByPath,
   getProjects,
   createProject,
   getNamespacesList
 };
-
