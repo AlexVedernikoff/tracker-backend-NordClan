@@ -11,7 +11,7 @@ module.exports = async function (metricsTypeId, input) {
   let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
-    spentTimeBySprint, spentTimeByTask, isFromClient, isTaskFromClient;
+    spentTimeBySprint, spentTimeByTask, isTaskFromClient;
   let timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
@@ -479,6 +479,108 @@ module.exports = async function (metricsTypeId, input) {
       'userId': null
     };
 
+  case (61): {
+
+    const history = {};
+
+    input.sprint.tasks.forEach((task) => {
+
+      const taskUserHistory = {};
+
+      task.timesheets.sort((a, b) => a.onDate - b.onDate).forEach((sheetItem) => {
+        // Пропускаю пустые шиты
+        if (+sheetItem.spentTime === 0) {
+          return;
+        }
+        console.log('userId', sheetItem.userId, 'taskStatusId', sheetItem.taskStatusId, 'onDate', sheetItem.onDate, 'time', sheetItem.spentTime);
+
+        // Разработка
+        if (sheetItem.taskStatusId === 3) {
+          if (!taskUserHistory[sheetItem.userId]) {
+            taskUserHistory[sheetItem.userId] = {
+              dev: false,
+              qa: false,
+              return: false
+            };
+          }
+
+          // Проверка возврат ли?
+          for (const userId in taskUserHistory) {
+            if (taskUserHistory[userId].qa && taskUserHistory[userId].dev) {
+              taskUserHistory[userId].return = true;
+            }
+          }
+
+          taskUserHistory[sheetItem.userId].dev = true;
+        }
+
+        // Тестирование
+        if (sheetItem.taskStatusId === 7) {
+          for (const userId in taskUserHistory) {
+            taskUserHistory[userId].qa = true;
+          }
+        }
+
+
+      });
+
+      // Подвожу итоги задачи dev и qa
+      for (const userId in taskUserHistory) {
+        if (taskUserHistory[userId].dev && taskUserHistory[userId].qa) {
+          if (!history[userId]) {
+            history[userId] = {};
+          }
+
+          if (!history[userId][task.id]) {
+            history[userId][task.id] = {
+              userId: userId,
+              doneCount: 1,
+              returnCount: taskUserHistory[userId].return && 1 || 0,
+              linkedBugsCount: task.linkedTasks.length
+            };
+          }
+
+        }
+
+      }
+
+      console.log('taskUserHistory', taskUserHistory);
+      console.log('history', history);
+
+    });
+
+    const result = [];
+
+    for (const userId in history) {
+      const userMetric = {
+        userId: +userId,
+        done: 0,
+        return: 0,
+        linkedBugs: 0
+      };
+
+      for (const taskId in history[userId]) {
+        history[userId][taskId].doneCount && userMetric.done++;
+        history[userId][taskId].returnCount && userMetric.return++;
+        if (history[userId][taskId].linkedBugsCount) {
+          userMetric.linkedBugsCount += history[userId][taskId].linkedBugs;
+        }
+      }
+
+      result.push(userMetric);
+    }
+
+    console.log('result', result);
+
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': JSON.stringify(result),
+      'projectId': input.project.id,
+      'sprintId': input.sprint ? input.sprint.id : null,
+      'userId': null
+    };
+  }
   default:
     break;
   }

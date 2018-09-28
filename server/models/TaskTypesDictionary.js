@@ -38,5 +38,10 @@ module.exports = function (sequelize, DataTypes) {
 
   TaskTypes.defaultSelect = ['id', 'name', 'nameEn'];
 
+  TaskTypes.FEATURE = 1; // Фича
+  TaskTypes.BUG = 2; // Баг
+  TaskTypes.ADD_FEATURE = 3; // Дополнительная фича
+  TaskTypes.REGRES_BUG = 4; // Регресс баг
+
   return TaskTypes;
 };

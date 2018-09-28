@@ -1,6 +1,6 @@
 const moment = require('moment');
 const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, Timesheet, TaskHistory, TaskStatusesDictionary,
-  User, Metrics, MetricTypesDictionary, Sequelize, sequelize, TaskTypesDictionary } = require('../../../models');
+  User, Metrics, MetricTypesDictionary, sequelize, TaskTypesDictionary, TaskTasks } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -48,6 +48,24 @@ async function getMetrics (projectId) {
             },
             include: [
               {
+                as: 'linkedTasks', // Связанные с задачей баги
+                model: Task,
+                attributes: ['id', 'createdAt'],
+                through: {
+                  model: TaskTasks,
+                  attributes: []
+                },
+                where: {
+                  statusId: {
+                    $notIn: [ TaskStatusesDictionary.CANCELED_STATUS ]
+                  },
+                  typeId: {
+                    $in: [TaskTypesDictionary.BUG, TaskTypesDictionary.REGRES_BUG]
+                  }
+                },
+                required: false
+              },
+              {
                 as: 'history',
                 model: TaskHistory,
                 where: {
@@ -58,7 +76,7 @@ async function getMetrics (projectId) {
               {
                 as: 'timesheets',
                 model: Timesheet,
-                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable'],
+                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable', 'userId', 'onDate', 'taskStatusId'],
                 required: false
               }
             ],
