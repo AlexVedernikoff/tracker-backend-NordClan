@@ -492,13 +492,14 @@ module.exports = async function (metricsTypeId, input) {
         if (+sheetItem.spentTime === 0) {
           return;
         }
+
         console.log('userId', sheetItem.userId, 'taskStatusId', sheetItem.taskStatusId, 'onDate', sheetItem.onDate, 'time', sheetItem.spentTime);
 
         // Разработка
         if (sheetItem.taskStatusId === 3) {
+          // Чувак разрабатывал это проект! Занести его в список!
           if (!taskUserHistory[sheetItem.userId]) {
             taskUserHistory[sheetItem.userId] = {
-              dev: false,
               qa: false,
               return: false
             };
@@ -506,12 +507,11 @@ module.exports = async function (metricsTypeId, input) {
 
           // Проверка возврат ли?
           for (const userId in taskUserHistory) {
-            if (taskUserHistory[userId].qa && taskUserHistory[userId].dev) {
+            if (taskUserHistory[userId].qa) {
               taskUserHistory[userId].return = true;
             }
           }
 
-          taskUserHistory[sheetItem.userId].dev = true;
         }
 
         // Тестирование
@@ -524,9 +524,9 @@ module.exports = async function (metricsTypeId, input) {
 
       });
 
-      // Подвожу итоги задачи dev и qa
+      // Подвожу итоги задачи dev и qa через другую переменную что бы легче было отлаживать
       for (const userId in taskUserHistory) {
-        if (taskUserHistory[userId].dev && taskUserHistory[userId].qa) {
+        if (taskUserHistory[userId].qa) {
           if (!history[userId]) {
             history[userId] = {};
           }
@@ -538,6 +538,12 @@ module.exports = async function (metricsTypeId, input) {
               returnCount: taskUserHistory[userId].return && 1 || 0,
               linkedBugsCount: task.linkedTasks.length
             };
+          } else {
+            history[userId][task.id].doneCount++;
+            history[userId][task.id].doneCount += task.linkedTasks.length;
+            if (taskUserHistory[userId].return) {
+              history[userId][task.id].return++;
+            }
           }
 
         }
@@ -549,8 +555,8 @@ module.exports = async function (metricsTypeId, input) {
 
     });
 
+    // Финальное преобразование данных
     const result = [];
-
     for (const userId in history) {
       const userMetric = {
         userId: +userId,
