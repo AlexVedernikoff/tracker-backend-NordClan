@@ -485,7 +485,10 @@ module.exports = async function (metricsTypeId, input) {
 
     input.sprint.tasks.forEach((task) => {
 
-      const taskUserHistory = {};
+      const taskUserHistory = {}; // История по выполнениям и возвратоам у исполнителей задачи
+      let activePerformerId = null; // Текущий исполнитель
+      let previousPerformerId = null; // Предыдущий исполнетель
+      let isQaPrevious = false;
 
       task.timesheets.sort((a, b) => a.onDate - b.onDate).forEach((sheetItem) => {
         // Пропускаю пустые шиты
@@ -497,28 +500,34 @@ module.exports = async function (metricsTypeId, input) {
 
         // Разработка
         if (sheetItem.taskStatusId === 3) {
+          isQaPrevious = false;
+          previousPerformerId = activePerformerId;
+          activePerformerId = sheetItem.userId;
+
           // Чувак разрабатывал это проект! Занести его в список!
           if (!taskUserHistory[sheetItem.userId]) {
             taskUserHistory[sheetItem.userId] = {
-              qa: false,
-              return: false
+              qa: 0, // qa проверки
+              return: 0 // возвраты
             };
           }
 
           // Проверка возврат ли?
           for (const userId in taskUserHistory) {
-            if (taskUserHistory[userId].qa) {
-              taskUserHistory[userId].return = true;
+            // Засчитываем возврат только предыдущему исполнетелю, а не всем. И только если перед этим был qa таймшит
+            if (taskUserHistory[userId].qa && userId === previousPerformerId && isQaPrevious) {
+              taskUserHistory[userId].return += 1;
             }
           }
 
         }
 
-        // Тестирование
+        // Тестирование. Делаю так что бы условие срабатывало только если тестированием ним шла разработка
         if (sheetItem.taskStatusId === 7) {
           for (const userId in taskUserHistory) {
             taskUserHistory[userId].qa = true;
           }
+          isQaPrevious = false;
         }
 
 
@@ -535,7 +544,7 @@ module.exports = async function (metricsTypeId, input) {
             history[userId][task.id] = {
               userId: userId,
               doneCount: 1,
-              returnCount: taskUserHistory[userId].return && 1 || 0,
+              returnCount: taskUserHistory[userId].return,
               linkedBugsCount: task.linkedTasks.length
             };
           } else {
