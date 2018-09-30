@@ -1,6 +1,5 @@
-const models = require('../../../models');
+const models = require('../../../../models');
 const { Task } = models;
-
 
 /**
  * Синхронизация задач
@@ -8,7 +7,9 @@ const { Task } = models;
  */
 exports.synchronizeTasks = async function (tasks) {
   const extIds = tasks.map(s => s.externalId);
-  let createdTasks = await Task.findAll({ where: { externalId: { $in: extIds } } });
+  let createdTasks = await Task.findAll({
+    where: { externalId: { $in: extIds } }
+  });
   let newTasks = tasks.filter(t => {
     const ind = createdTasks.findIndex(ct => {
       if (ct.externalId === t.externalId) return true;
@@ -27,16 +28,16 @@ exports.synchronizeTasks = async function (tasks) {
       });
       if (ind >= -1) {
         const updObj = tasks[i];
-        await Task.update(updObj, { where: { externalId: t.externalId.toString() } });
+        await Task.update(updObj, {
+          where: { externalId: t.externalId.toString() }
+        });
       }
     });
-
   }
 
   // создание новых спринтов
   if (newTasks.length > 0) newTasks = await Task.bulkCreate(newTasks);
   return newTasks.concat(createdTasks);
 };
-
 
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ СРАВНЕНИЯ И ОБНОВЛЕНИЯ

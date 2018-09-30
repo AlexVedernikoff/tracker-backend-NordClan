@@ -1,4 +1,9 @@
-const { jiraSync, createProject, setProjectAssociation, jiraAuth } = require('../../../services/synchronizer/index');
+const {
+  jiraSync,
+  createProject,
+  setProjectAssociation,
+  jiraAuth
+} = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
 exports.jiraSynchronize = function (req, res, next) {
@@ -12,14 +17,12 @@ exports.jiraSynchronize = function (req, res, next) {
   } catch (e) {
     next(createError(e));
   }
-
-
 };
 
 exports.createJiraProject = async function (req, res, next) {
   // TODO:
-// заренеймить файлы и пути в симтреке касательно джиры
-// заменить аксиос на стоковый реквестер в ноде
+  // заренеймить файлы и пути в симтреке касательно джиры
+  // заменить аксиос на стоковый реквестер в ноде
   const { key } = req.body;
   try {
     const project = await createProject(key);
@@ -43,7 +46,11 @@ exports.createJiraProject = async function (req, res, next) {
  */
 exports.setJiraProjectAssociation = async function (req, res, next) {
   try {
-    const projectAssociations = await setProjectAssociation(req.body.projectId, req.body.issueTypesAssociation, req.body.statusesAssociation);
+    const projectAssociations = await setProjectAssociation(
+      req.body.projectId,
+      req.body.issueTypesAssociation,
+      req.body.statusesAssociation
+    );
     res.json(projectAssociations);
   } catch (e) {
     next(createError(e));

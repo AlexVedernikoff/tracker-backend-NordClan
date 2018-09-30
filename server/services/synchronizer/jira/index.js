@@ -116,9 +116,7 @@ exports.jiraSync = async function (data) {
  * @param {string} key - ключ проекта
  */
 exports.createProject = async function (key) {
-  const jiraProject = await request.getRequest(
-    `${config.ttiUrl}/project/${key}`
-  );
+  const jiraProject = await request.get(`${config.ttiUrl}/project/${key}`);
   let project = await Project.create({
     name: jiraProject.name,
     createdBySysUser: true,
@@ -174,7 +172,7 @@ exports.setProjectAssociation = async function (
 };
 
 exports.jiraAuth = async function (username, password, server) {
-  return request.postRequest(`${config.ttiUrl}/auth`, {
+  return request.post(`${config.ttiUrl}/auth`, {
     username,
     password,
     server

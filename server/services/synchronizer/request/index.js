@@ -1,8 +1,9 @@
 const axios = require('axios');
 
-exports.postRequest = function (uri, params) {
+exports.post = function (uri, params) {
   return new Promise(function (resolve, reject) {
-    axios.post(uri, params)
+    axios
+      .post(uri, params)
       .then(function (response) {
         resolve(response);
       })
@@ -12,9 +13,10 @@ exports.postRequest = function (uri, params) {
   });
 };
 
-exports.getRequest = function (uri) {
+exports.get = function (uri) {
   return new Promise(function (resolve, reject) {
-    axios.get(uri)
+    axios
+      .get(uri)
       .then(function (response) {
         resolve(response);
       })
