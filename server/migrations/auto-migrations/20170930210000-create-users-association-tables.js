@@ -1,6 +1,6 @@
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return queryInterface.createTable('task_statuses_association', {
+    return queryInterface.createTable('user_email_association', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,12 +11,11 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: { model: 'projects', key: 'id' }
       },
-      external_status_id: {
-        type: Sequelize.INTEGER
+      external_user_email: {
+        type: Sequelize.STRING
       },
-      internal_status_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'task_statuses', key: 'id' }
+      internal_user_email: {
+        type: Sequelize.STRING
       },
       created_at: {
         allowNull: false,
@@ -33,6 +32,6 @@ module.exports = {
     });
   },
   down: function (queryInterface) {
-    return queryInterface.dropTable('task_statuses_association');
+    return queryInterface.dropTable('user_email_association');
   }
 };
