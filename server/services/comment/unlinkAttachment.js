@@ -7,7 +7,7 @@ module.exports = async (taskId, attachmentId, next) => {
   try {
     comments.forEach(comment => {
       if (comment.attachmentIds && comment.attachmentIds.indexOf(attachmentId) !== -1) {
-        let ids = JSON.parse(comment.attachmentIds).filter(i => i !== parseInt(attachmentId));
+        let ids = comment.attachmentIds.filter(i => i !== attachmentId);
         ids = ids.length ? JSON.stringify(ids) : null;
         promises.push(comment.update({attachmentIds: ids}));
       }
