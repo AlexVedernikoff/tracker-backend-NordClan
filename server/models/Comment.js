@@ -22,6 +22,9 @@ module.exports = function (sequelize, DataTypes) {
     attachmentIds: {
       field: 'attachment_ids',
       type: DataTypes.TEXT,
+      get: function () {
+        return JSON.parse(this.getDataValue('attachmentIds'));
+      },
       allowNull: true
     },
     parentId: {
