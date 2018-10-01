@@ -7,7 +7,6 @@ module.exports = async (taskId, attachmentId, next) => {
   const id = parseInt(attachmentId);
   try {
     comments.forEach(comment => {
-      console.log('comment', comment);
       if (comment.attachmentIds && comment.attachmentIds.indexOf(id) !== -1) {
         let ids = comment.attachmentIds.filter(i => i !== id);
         ids = ids.length ? JSON.stringify(ids) : null;
