@@ -51,7 +51,7 @@ exports.delete = async function (req, res, next) {
       if (model) return model.destroy({ historyAuthorId: req.user.id });
     })
     .then(() => {
-      return req.params.entity === 'task' ? unlink(req.params.entityId, req.params.attachmentId) : null;
+      return req.params.entity === 'task' ? unlink(req.params.entityId, req.params.attachmentId, next) : null;
     })
     .then(()=>{
       return queries.file.getFilesByModel(modelFileName, req.params.entityId);
