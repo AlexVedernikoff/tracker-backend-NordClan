@@ -617,3 +617,45 @@ exports.list = function (req, res, next){
     })
     .catch(err => next(err));
 };
+
+exports.addGitlabProject = async function (req, res, next) {
+  const { projectId, path } = req.body;
+  try {
+    const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
+    res.json(gitlabProject);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.getGitlabNamespaces = async function (req, res, next) {
+  try {
+    const namespaces = await gitLabService.projects.getNamespacesList();
+    res.json(namespaces);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.createGitlabProject = async function (req, res, next) {
+  const {name, namespace_id} = req.body;
+  const projectId = req.params.id;
+  try {
+    const project = await gitLabService.projects.createProject(name, namespace_id, projectId);
+    res.json(project);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.getProjects = async function (req, res, next) {
+  const { id } = req.params;
+  const project = await Project.find({where: {id}});
+  try {
+    const gitlabProjects = await gitLabService.projects.getProjects(project.gitlabProjectIds);
+    res.json(gitlabProjects);
+  } catch (e) {
+    next(e);
+  }
+};
+

@@ -7,6 +7,7 @@ const TasksService = require('../../../services/tasks');
 const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 const moment = require('moment');
+const { branches } = require('../../../services/gitLab/index');
 
 const taskIsDone = tasks => tasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS;
 
@@ -215,4 +216,35 @@ exports.getSpentTime = async function (req, res, next) {
         });
     })
     .catch((err) => next(createError(err)));
+};
+
+exports.createGitlabBranch = async function (req, res, next) {
+  const taskId = req.params.id;
+  const { repoId, branchSource, branchName } = req.body;
+  try {
+    const createdBranch = await branches.createBranch(taskId, repoId, branchSource, branchName);
+    res.json(createdBranch);
+  } catch (e) {
+    next(createError(400, 'Can not create branch'));
+  }
+};
+
+exports.getGitlabBranchesById = async function (req, res, next) {
+  const taskId = req.params.id;
+  try {
+    const loadBranches = await branches.getBranchesByTaskId(taskId);
+    res.json(loadBranches);
+  } catch (e) {
+    next(createError(400, 'Can not load branches'));
+  }
+};
+
+exports.getGitlabBranchesByRepoId = async function (req, res, next) {
+  const { repoId } = req.query;
+  try {
+    const loadBranches = await branches.getBranchesByRepoId(repoId);
+    res.json(loadBranches);
+  } catch (e) {
+    next(createError(400, 'Can not load branches'));
+  }
 };
