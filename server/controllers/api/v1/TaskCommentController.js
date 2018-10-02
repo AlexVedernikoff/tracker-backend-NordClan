@@ -81,8 +81,7 @@ exports.update = function (req, res, next){
       if (isTooLateForEdit) {
         return next(createError(400, 'Too late for changes'));
       }
-
-      const { text } = req.body;
+      const { text, attachmentIds } = req.body;
       const newMentions = getMentionDiff(text, comment.text);
       if (newMentions.length) {
         emailSubprocess({
@@ -93,7 +92,7 @@ exports.update = function (req, res, next){
       }
 
       return comment
-        .updateAttributes({ text })
+        .updateAttributes({ text, attachmentIds })
         .then((model)=>{
           res.json(model);
         });
