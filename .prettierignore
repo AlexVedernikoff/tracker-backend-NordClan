@@ -1,0 +1,9 @@
+node_modules/
+.idea/
+build/
+ci/
+LISENCE
+Dockerfile
+package*.json
+.*ignore
+*.yml
