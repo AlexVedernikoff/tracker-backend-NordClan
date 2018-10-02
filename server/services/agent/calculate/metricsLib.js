@@ -2,6 +2,7 @@ const { TaskStatusesDictionary } = require('../../../models');
 const moment = require('moment');
 const _ = require('underscore');
 const exactMath = require('exact-math');
+const commandMetrics = require('./commandMetrics');
 
 
 module.exports = async function (metricsTypeId, input) {
@@ -481,116 +482,10 @@ module.exports = async function (metricsTypeId, input) {
 
   case (61): {
 
-    const history = {};
-
-    input.sprint.tasks.forEach((task) => {
-
-      const taskUserHistory = {}; // История по выполнениям и возвратоам у исполнителей задачи
-      let activePerformerId = null; // Текущий исполнитель
-      let previousPerformerId = null; // Предыдущий исполнетель
-      let isQaPrevious = false;
-
-      task.timesheets.sort((a, b) => a.onDate - b.onDate).forEach((sheetItem) => {
-        // Пропускаю пустые шиты
-        if (+sheetItem.spentTime === 0) {
-          return;
-        }
-
-        console.log('userId', sheetItem.userId, 'taskStatusId', sheetItem.taskStatusId, 'onDate', sheetItem.onDate, 'time', sheetItem.spentTime);
-
-        // Разработка
-        if (sheetItem.taskStatusId === 3) {
-          isQaPrevious = false;
-          previousPerformerId = activePerformerId;
-          activePerformerId = sheetItem.userId;
-
-          // Чувак разрабатывал это проект! Занести его в список!
-          if (!taskUserHistory[sheetItem.userId]) {
-            taskUserHistory[sheetItem.userId] = {
-              qa: 0, // qa проверки
-              return: 0 // возвраты
-            };
-          }
-
-          // Проверка возврат ли?
-          for (const userId in taskUserHistory) {
-            // Засчитываем возврат только предыдущему исполнетелю, а не всем. И только если перед этим был qa таймшит
-            if (taskUserHistory[userId].qa && userId === previousPerformerId && isQaPrevious) {
-              taskUserHistory[userId].return += 1;
-            }
-          }
-
-        }
-
-        // Тестирование. Делаю так что бы условие срабатывало только если тестированием ним шла разработка
-        if (sheetItem.taskStatusId === 7) {
-          for (const userId in taskUserHistory) {
-            taskUserHistory[userId].qa = true;
-          }
-          isQaPrevious = false;
-        }
-
-
-      });
-
-      // Подвожу итоги задачи dev и qa через другую переменную что бы легче было отлаживать
-      for (const userId in taskUserHistory) {
-        if (taskUserHistory[userId].qa) {
-          if (!history[userId]) {
-            history[userId] = {};
-          }
-
-          if (!history[userId][task.id]) {
-            history[userId][task.id] = {
-              userId: userId,
-              doneCount: 1,
-              returnCount: taskUserHistory[userId].return,
-              linkedBugsCount: task.linkedTasks.length
-            };
-          } else {
-            history[userId][task.id].doneCount++;
-            history[userId][task.id].doneCount += task.linkedTasks.length;
-            if (taskUserHistory[userId].return) {
-              history[userId][task.id].return++;
-            }
-          }
-
-        }
-
-      }
-
-      console.log('taskUserHistory', taskUserHistory);
-      console.log('history', history);
-
-    });
-
-    // Финальное преобразование данных
-    const result = [];
-    for (const userId in history) {
-      const userMetric = {
-        userId: +userId,
-        done: 0,
-        return: 0,
-        linkedBugs: 0
-      };
-
-      for (const taskId in history[userId]) {
-        history[userId][taskId].doneCount && userMetric.done++;
-        history[userId][taskId].returnCount && userMetric.return++;
-        if (history[userId][taskId].linkedBugsCount) {
-          userMetric.linkedBugsCount += history[userId][taskId].linkedBugs;
-        }
-      }
-
-      result.push(userMetric);
-    }
-
-    console.log('result', result);
-
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': JSON.stringify(result),
+      'value': JSON.stringify(commandMetrics(input.sprint)),
       'projectId': input.project.id,
       'sprintId': input.sprint ? input.sprint.id : null,
       'userId': null

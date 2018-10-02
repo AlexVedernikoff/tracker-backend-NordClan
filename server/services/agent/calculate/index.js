@@ -69,14 +69,16 @@ async function getMetrics (projectId) {
                 as: 'history',
                 model: TaskHistory,
                 where: {
-                  field: 'sprintId'
+                  field: {
+                    $or: ['sprintId', 'statusId', 'performerId', null]
+                  }
                 },
                 required: false
               },
               {
                 as: 'timesheets',
                 model: Timesheet,
-                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable', 'userId', 'onDate', 'taskStatusId'],
+                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable', 'userId', 'onDate', 'taskStatusId', 'taskId'],
                 required: false
               }
             ],
