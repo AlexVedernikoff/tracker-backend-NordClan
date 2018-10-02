@@ -8,6 +8,7 @@ const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 const moment = require('moment');
 const { branches } = require('../../../services/gitLab/index');
+const { host: GITLAB_HOSTNAME } = require('../../../configs').gitLab;
 
 const taskIsDone = tasks => tasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS;
 
@@ -70,15 +71,17 @@ exports.create = async function (req, res, next) {
   }
 };
 
-exports.read = function (req, res, next) {
+exports.read = async function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) {
     return next(createError(400, 'id must be int'));
   }
-
-  TasksService
-    .read(req.params.id, req.user)
-    .then(task => res.json(task))
-    .catch((err) => next(createError(err)));
+  try {
+    const task = await TasksService.read(req.params.id, req.user);
+    Object.assign(task.dataValues, { GITLAB_HOSTNAME });
+    res.json(task);
+  } catch (err) {
+    return next(createError(err));
+  }
 };
 
 exports.update = async function (req, res, next) {
@@ -119,7 +122,7 @@ exports.updateAllByAttribute = async function (req, res, next) {
   if (isErrorReqUpdateAll(req)) return next(createError(400));
 
   try {
-    await TasksService.updateAllByAttribute({sprintId: req.body.sprintId}, req.body.taskIds, req.user);
+    await TasksService.updateAllByAttribute({ sprintId: req.body.sprintId }, req.body.taskIds, req.user);
     res.sendStatus(200);
   } catch (err) {
     next(createError(err));
