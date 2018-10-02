@@ -6,8 +6,8 @@ module.exports = {
       host: process.env.DATABASE_HOST || 'localhost',
       port: process.env.DATABASE_PORT || 5432,
       dialect: 'postgres',
-      name: process.env.DATABASE_NAME || 'simtrack',
-      username: process.env.DATABASE_USERNAME || 'simtrack',
+      name: process.env.DATABASE_NAME || 'sim-track',
+      username: process.env.DATABASE_USERNAME || 'postgres',
       password: process.env.DATABASE_PASSWORD || '123456'
     }
   },
