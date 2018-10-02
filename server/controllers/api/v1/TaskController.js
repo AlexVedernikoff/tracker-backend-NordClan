@@ -78,10 +78,10 @@ exports.create = async function (req, res, next) {
 };
 
 exports.read = async function (req, res, next) {
-  if (!req.params.id.match(/^[0-9]+$/)) {
-    return next(createError(400, 'id must be int'));
-  }
   try {
+    if (!req.params.id.match(/^[0-9]+$/)) {
+      return next(createError(400, 'id must be int'));
+    }
     const task = await TasksService.read(req.params.id, req.user);
     Object.assign(task.dataValues, { GITLAB_HOSTNAME });
     res.json(task);
@@ -233,9 +233,9 @@ exports.getSpentTime = async function (req, res, next) {
 };
 
 exports.createGitlabBranch = async function (req, res, next) {
-  const taskId = req.params.id;
-  const { repoId, branchSource, branchName } = req.body;
   try {
+    const taskId = req.params.id;
+    const { repoId, branchSource, branchName } = req.body;
     const createdBranch = await branches.createBranch(taskId, repoId, branchSource, branchName);
     res.json(createdBranch);
   } catch (e) {
@@ -244,8 +244,8 @@ exports.createGitlabBranch = async function (req, res, next) {
 };
 
 exports.getGitlabBranchesById = async function (req, res, next) {
-  const taskId = req.params.id;
   try {
+    const taskId = req.params.id;
     const loadBranches = await branches.getBranchesByTaskId(taskId);
     res.json(loadBranches);
   } catch (e) {
@@ -254,8 +254,8 @@ exports.getGitlabBranchesById = async function (req, res, next) {
 };
 
 exports.getGitlabBranchesByRepoId = async function (req, res, next) {
-  const { repoId } = req.query;
   try {
+    const { repoId } = req.query;
     const loadBranches = await branches.getBranchesByRepoId(repoId);
     res.json(loadBranches);
   } catch (e) {
