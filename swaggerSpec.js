@@ -776,11 +776,6 @@ module.exports = {
             in: 'query'
           },
           {
-            name: 'noTag',
-            type: 'boolean',
-            in: 'query'
-          },
-          {
             name: 'pageSize',
             type: 'integer',
             in: 'query'
