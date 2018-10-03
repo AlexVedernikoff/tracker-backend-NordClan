@@ -19,6 +19,9 @@ const MetricsController = require('../controllers/api/v1/MetricsController');
 const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 const JiraController = require('../controllers/api/v1/JiraController');
+const {
+  replaceAuthHeader
+} = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
 router.put('/milestones/:id', MilestonesController.update);
@@ -318,7 +321,17 @@ router.post(
 
 // JiraSynchronize
 router.post('/jira/synchronize', JiraController.jiraSynchronize);
-router.post('/jira/createProject', JiraController.createJiraProject);
+
+router.post(
+  '/jira/project',
+  replaceAuthHeader(),
+  JiraController.createJiraProject
+);
+router.get(
+  '/jira/projects',
+  replaceAuthHeader(),
+  JiraController.getJiraProjects
+);
 router.post(
   '/jira/setProjectAssociation',
   JiraController.setJiraProjectAssociation

@@ -40,5 +40,5 @@ module.exports = {
   },
   ldapUrl:
     process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
-  ttiUrl: process.env.TTI_HOST || 'http://docker-web.simbirsoft:5000/'
+  ttiUrl: process.env.TTI_HOST || 'http://docker-web.simbirsoft:5000'
 };

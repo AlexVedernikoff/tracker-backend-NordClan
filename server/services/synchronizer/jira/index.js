@@ -113,25 +113,34 @@ exports.jiraSync = async function (data) {
 // не была закончена
 
 /**
- * @param {string} key - ключ проекта
+ * @param {string} id
+ * @param {string} authorId
  */
-exports.createProject = async function (key) {
-  const jiraProject = await request.get(`${config.ttiUrl}/project/${key}`);
+exports.createProject = async function (headers, id, authorId, prefix) {
+  const { data: jiraProject } = await request.get(
+    `${config.ttiUrl}/project/${id}`,
+    {
+      headers
+    }
+  );
+  // TODO: authorId тут должен быть
   let project = await Project.create({
     name: jiraProject.name,
-    createdBySysUser: true,
-    externalId: jiraProject.id
+    createdBySystemUser: true,
+    externalId: jiraProject.id,
+    authorId,
+    prefix
   });
   project = {
-    ...project,
-    ...jiraProject.issue_types,
-    ...jiraProject.status_type
+    ...project.dataValues,
+    ...{ issue_types: jiraProject.issue_types },
+    ...{ status_types: jiraProject.status_type }
   };
   return project;
 };
 
 /**
- *
+ * @param {object} projectId - id проекта в симтреке
  * @param {object} issueTypesAssociation
  * @param {object} statusesAssociation
  */
@@ -163,12 +172,12 @@ exports.setProjectAssociation = async function (
     TaskStatusesAssociation.bulkCreate(sa)
   ]);
 
-  const afterCreateRes = await Promise.all([
+  const [taskTypes, taskStatuses] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
     TaskStatusesAssociation.findAll({ where: { projectId } })
   ]);
 
-  return { taskTypes: afterCreateRes[0], taskStatuses: afterCreateRes[1] };
+  return { taskTypes, taskStatuses };
 };
 
 exports.jiraAuth = async function (username, password, server) {
@@ -177,4 +186,12 @@ exports.jiraAuth = async function (username, password, server) {
     password,
     server
   });
+};
+
+exports.getJiraProjects = async function (headers) {
+  try {
+    return request.get(`${config.ttiUrl}/projects`, { headers });
+  } catch (e) {
+    throw e;
+  }
 };

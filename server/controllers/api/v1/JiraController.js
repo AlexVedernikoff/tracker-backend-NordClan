@@ -1,31 +1,31 @@
 const {
   jiraSync,
   createProject,
+  getJiraProjects,
   setProjectAssociation,
   jiraAuth
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
-exports.jiraSynchronize = function (req, res, next) {
-  // обработка запроса
-  //валидация каждой задачи и таймшита
-  // использование сервиса
+// TODO: провести ревью и допилить
+exports.jiraSynchronize = async function (req, res, next) {
   try {
-    const p = jiraSync(req.body.payload);
-    console.log(p);
+    const { payload } = req.body;
+    await jiraSync(payload);
     res.sendStatus(200);
   } catch (e) {
     next(createError(e));
   }
 };
 
+/**
+ * @param id - id проекта в jira
+ * @param authorId - id пользователя симтрека
+ */
 exports.createJiraProject = async function (req, res, next) {
-  // TODO:
-  // заренеймить файлы и пути в симтреке касательно джиры
-  // заменить аксиос на стоковый реквестер в ноде
-  const { key } = req.body;
   try {
-    const project = await createProject(key);
+    const { id, authorId, prefix } = req.body;
+    const project = await createProject(req.headers, id, authorId, prefix);
     res.json(project);
   } catch (e) {
     next(createError(e));
@@ -46,10 +46,11 @@ exports.createJiraProject = async function (req, res, next) {
  */
 exports.setJiraProjectAssociation = async function (req, res, next) {
   try {
+    const { projectId, issueTypesAssociation, statusesAssociation } = req.body;
     const projectAssociations = await setProjectAssociation(
-      req.body.projectId,
-      req.body.issueTypesAssociation,
-      req.body.statusesAssociation
+      projectId,
+      issueTypesAssociation,
+      statusesAssociation
     );
     res.json(projectAssociations);
   } catch (e) {
@@ -58,10 +59,21 @@ exports.setJiraProjectAssociation = async function (req, res, next) {
 };
 
 exports.jiraAuth = async function (req, res, next) {
-  const { username, password, server } = req.body;
   try {
-    const token = await jiraAuth(username, password, server);
-    res.json(token);
+    const { username, password, server } = req.body;
+    const {
+      data: { token }
+    } = await jiraAuth(username, password, server);
+    res.json({ token });
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.getJiraProjects = async function (req, res, next) {
+  try {
+    const { data: projects } = await getJiraProjects(req.headers);
+    res.json({ projects });
   } catch (e) {
     next(createError(e));
   }
