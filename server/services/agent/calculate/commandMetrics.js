@@ -6,23 +6,29 @@ module.exports = function (sprint) {
   sprint.tasks.forEach((task) => {
 
     // Для отладки
-    if (task.id !== 1951) {
+    if (task.id !== 2013) {
       return;
     }
-    const timesheetGroupByDay = getTimesheetGroupByDay(task.timesheets.sort((a, b) => a.onDate - b.onDate), new Map());
-    const statusHistory = getStatusHistoryForDayAndUser(task);
+    const taskTimesheets = task.timesheets.sort((a, b) => a.onDate - b.onDate);
+    /** Объеденяю таймшиты по дням */
+    const timesheetGroupByDay = getTimesheetGroupByDay(taskTimesheets);
+    /** Из истории таски создаю историю статусов и исполнителей в рамках задачи */
+    const statusHistory = getHistoryOfStatuses(task);
+    /** Сортирую тайшиты, в т.ч. по истории если нужно */
     const soretedSheets = getSortSheets(timesheetGroupByDay, statusHistory);
+    /** Делаю подсчет выполненных тасок, возвратов */
     const taskUserHistory = getTaskUsersHistory(soretedSheets);
-
+    /** Добавляю данные по таски в стоирю по спринту */
     taskHistoryToSprintHistory(taskUserHistory, sprintHistory, task);
 
+    // console.log('statusHistory', statusHistory);
     console.log('soretedSheets', soretedSheets);
     console.log('taskUserHistory', taskUserHistory);
     console.log('history', sprintHistory);
 
   });
 
-  // Финальное преобразование данных
+  /** Финальное преобразование данных, агрегирую данные в сводный объект */
   const result = finalCalc(sprintHistory);
   console.log('result', result);
 
@@ -30,8 +36,9 @@ module.exports = function (sprint) {
 };
 
 
-function getTimesheetGroupByDay (timesheets, map) {
-  // Заношу во мапу шиты с группировкой по дате, что бы потом осортировать то что в группе
+function getTimesheetGroupByDay (timesheets) {
+  const map = new Map();
+  // Заношу в мапу шиты с группировкой по дате, что бы потом осортировать то что в группе в другой функции
   timesheets.forEach((cur) => {
     // Пропускаю пустые шиты
     if (+cur.spentTime === 0) {
@@ -50,7 +57,7 @@ function getTimesheetGroupByDay (timesheets, map) {
   return map;
 }
 
-function getStatusHistoryForDayAndUser (task) {
+/*function getHistoryOfStatuses (task) {
   const localHistory = [];
   let prevUserId = null;
   let userId = null;
@@ -101,6 +108,54 @@ function getStatusHistoryForDayAndUser (task) {
   });
 
   return localHistory;
+}*/
+
+function getHistoryOfStatuses (task) {
+  /*
+  userId - dev|qa
+   */
+  const result = [];
+  const taskHistory = task.history.sort((a, b) => a.createdAt - b.createdAt);
+  const firstStatusRecord = taskHistory.find(item => item.field === 'statusId');
+  const firstUserRecord = taskHistory.find(item => item.field === 'performerId');
+  let statusId = firstStatusRecord && firstStatusRecord.prevValueInt || task.statusId;
+  let userId = firstUserRecord && firstUserRecord.prevValueInt || task.performerId;
+
+  result.push({
+    userId: userId,
+    dev: isDevelopStatus(statusId),
+    qa: isQaStatus(statusId),
+    createdAt: task.createdAt
+  });
+
+  // Сортирую от новых записей к старым что бы составить истрию переходов между исполнителями
+  taskHistory.forEach((historyItem) => {
+
+    if (historyItem.field === 'statusId') {
+      statusId = historyItem.valueInt;
+
+      result.push({
+        userId: userId,
+        dev: isDevelopStatus(statusId),
+        qa: isQaStatus(statusId),
+        createdAt: historyItem.createdAt
+      });
+      return;
+    }
+
+    if (historyItem.field === 'performerId') {
+      userId = historyItem.valueInt;
+
+      result.push({
+        userId: userId,
+        dev: isDevelopStatus(statusId),
+        qa: isQaStatus(statusId),
+        createdAt: historyItem.createdAt
+      });
+    }
+  });
+
+  return result;
 }
 
 function isQaAndDevExists (sheets) {
@@ -182,17 +237,15 @@ function getSortSheets (timesheetGroupByDay, statusHistory) {
       return;
     }
 
-    if (qaAndDev && day.length === 2) {
-      returnMap.set(day[0].id, day[0]);
-      returnMap.set(day[1].id, day[1]);
-      return;
-    }
-
     if (qaAndDev) {
       // Если в один день была и qa и dev, то нужно идти в историю и смотреть последовательность стадий dev или qa.
-      // Нужно остортировать все тш по истории статусов и владельцев
+      // Нужно остортировать все тш по истории статусов и исполнителей
 
       const dayHistory = filterHistoryByDay(statusHistory, index);
+      dayHistory.forEach((item) => {
+        console.log(item);
+      });
+
 
       const sortHandler = isQaFirstInHistory(dayHistory)
         ? (a, b) => b - a // DESC sort
