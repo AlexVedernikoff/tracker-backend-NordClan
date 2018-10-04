@@ -7,6 +7,7 @@ const mkdirp = require('mkdirp');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const stringHelper = require('../../../components/StringHelper');
+const { unlink } = require('../../../services/comment');
 
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 10;
@@ -47,8 +48,10 @@ exports.delete = async function (req, res, next) {
       if (req.params.entity === 'project' && !req.user.canUpdateProject(model.projectId)) {
         return next(createError(403, 'Access denied'));
       }
-
       if (model) return model.destroy({ historyAuthorId: req.user.id });
+    })
+    .then(() => {
+      return req.params.entity === 'task' ? unlink(req.params.entityId, req.params.attachmentId, next) : null;
     })
     .then(()=>{
       return queries.file.getFilesByModel(modelFileName, req.params.entityId);
@@ -57,9 +60,8 @@ exports.delete = async function (req, res, next) {
       res.json(files);
     })
     .catch((err) => next(createError(err)));
-
-
 };
+
 
 exports.upload = function (req, res, next) {
   req.sanitize('entity').trim();
