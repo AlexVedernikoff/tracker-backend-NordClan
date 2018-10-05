@@ -407,14 +407,16 @@ module.exports = async function (metricsTypeId, input) {
     unsceduledOpenedFeatures = 0;
     if (input.sprint.tasks.length > 0) {
       input.sprint.tasks.forEach(function (task) {
+        const changeSprint = task.history.filter((item) => item.field === 'sprintId');
+
         if (
           task.typeId === 1
             && (
               moment(task.createdAt).isAfter(input.sprint.factStartDate)
               || (
-                task.history
-                && task.history.length > 0
-                && moment(task.history[task.history.length - 1].createdAt).isAfter(input.sprint.factStartDate)
+                changeSprint
+                && changeSprint.length > 0
+                && moment(changeSprint[changeSprint.length - 1].createdAt).isAfter(input.sprint.factStartDate)
               )
             )
         ) {
