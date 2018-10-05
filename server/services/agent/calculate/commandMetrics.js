@@ -22,9 +22,9 @@ module.exports = function (sprint) {
     taskHistoryToSprintHistory(taskUserHistory, sprintHistory, task);
 
     // console.log('statusHistory', statusHistory);
-    console.log('soretedSheets', soretedSheets);
-    console.log('taskUserHistory', taskUserHistory);
-    console.log('history', sprintHistory);
+    // console.log('soretedSheets', soretedSheets);
+    // console.log('taskUserHistory', taskUserHistory);
+    // console.log('history', sprintHistory);
 
   });
 
@@ -56,59 +56,6 @@ function getTimesheetGroupByDay (timesheets) {
   });
   return map;
 }
-
-/*function getHistoryOfStatuses (task) {
-  const localHistory = [];
-  let prevUserId = null;
-  let userId = null;
-
-  let prevStatusId = null;
-  let statusId = task.statusId;
-
-  if (task.performerId) {
-    userId = task.performerId;
-    localHistory.push({
-      userId: userId,
-      prevUserId: null,
-      statusId: statusId,
-      prevStatusId: null,
-      createdAt: task.updatedAt
-    });
-  }
-
-  // Сортирую от новых записей к старым что бы составить истрию переходов между исполнителями
-  task.history.sort((a, b) => b.createdAt - a.createdAt).forEach((historyItem) => {
-
-    if (historyItem.field === 'statusId') {
-      prevStatusId = statusId;
-      statusId = historyItem.prevValueInt;
-
-      localHistory.push({
-        userId: userId,
-        prevUserId: prevUserId,
-        statusId: statusId,
-        prevStatusId: prevStatusId,
-        createdAt: historyItem.createdAt
-      });
-      return;
-    }
-
-    if (historyItem.field === 'performerId') {
-      prevUserId = userId;
-      userId = historyItem.prevValueInt;
-
-      localHistory.push({
-        userId: userId,
-        prevUserId: prevUserId,
-        statusId: statusId,
-        prevStatusId: prevStatusId,
-        createdAt: historyItem.createdAt
-      });
-    }
-  });
-
-  return localHistory;
-}*/
 
 function getHistoryOfStatuses (task) {
   /*
@@ -175,23 +122,6 @@ function isQaAndDevExists (sheets) {
   return dev && qa;
 }
 
-function isQaFirstInHistory (dayHistory) {
-  let isDevFirst = false;
-  let isQaFirst = false;
-  dayHistory.forEach((sheet) => {
-    if (isDevelopStatus(sheet.taskStatusId) && !isQaFirst) {
-      isDevFirst = true;
-      return;
-    }
-
-    if (isQaStatus(sheet.taskStatusId) && !isDevFirst) {
-      isQaFirst = true;
-    }
-  });
-
-  return isQaFirst;
-}
-
 function isDevelopStatus (statusId) {
   return TaskStatusesDictionary.DEVELOP_STATUSES.indexOf(statusId) !== -1 || statusId === TaskStatusesDictionary.STATUS_NEW;
 }
@@ -201,6 +131,7 @@ function isQaStatus (statusId) {
 }
 
 function filterHistoryByDay (history, date) {
+  let firstIndex;
   const from = new Date(date);
   from.setHours(0);
   from.setMinutes(0);
@@ -209,9 +140,24 @@ function filterHistoryByDay (history, date) {
   const to = new Date(from.valueOf());
   to.setMilliseconds(86400000 - 1);
 
-  return history.filter((item) => {
-    return from <= item.createdAt && item.createdAt <= to;
+  const result = history.filter((item, index) => {
+    if (from <= item.createdAt && item.createdAt <= to) {
+      if (!firstIndex) {
+        firstIndex = index;
+      }
+      return true;
+    }
   });
+
+  if (!firstIndex) {
+    firstIndex = history.length;
+  }
+
+  if (history[firstIndex - 1]) {
+    result.unshift(history[firstIndex - 1]);
+  }
+
+  return result;
 }
 
 function getSortSheets (timesheetGroupByDay, statusHistory) {
@@ -243,7 +189,10 @@ function getSortSheets (timesheetGroupByDay, statusHistory) {
       console.log('dayHistory', dayHistory);
       dayHistory.forEach((item) => {
         day.forEach((sheet, dayIndex) => {
-          if (item.userId === sheet.userId) {
+          if (
+            item.userId === sheet.userId
+            && ((item.qa && isQaStatus(sheet.taskStatusId)) || (item.dev && isDevelopStatus(sheet.taskStatusId)))
+          ) {
             returnMap.set(sheet.id, sheet);
             delete day[dayIndex];
           }
