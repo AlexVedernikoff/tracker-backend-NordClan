@@ -43,5 +43,8 @@ module.exports = function (sequelize, DataTypes) {
   TaskTypes.ADD_FEATURE = 3; // Дополнительная фича
   TaskTypes.REGRES_BUG = 4; // Регресс баг
 
+  TaskTypes.FEATURES_TYPES = [ TaskTypes.FEATURE, TaskTypes.ADD_FEATURE];
+  TaskTypes.BUGS_TYPES = [ TaskTypes.BUG, TaskTypes.REGRES_BUG];
+
   return TaskTypes;
 };
