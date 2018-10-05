@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const models = require('../');
+const { NOTAG } = require('../../components/utils');
 
 exports.name = 'tag';
 
@@ -41,6 +42,13 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
   if (tagsString) {
     tags = tagsString.toString().split(',');
   }
+
+  /** Прорверка спец. тега No tag. Нельзя создать тег "No tag". см. констану **/
+  tags.forEach(function (tag) {
+    if (NOTAG.indexOf(tag.toLowerCase()) !== -1) {
+      throw createError(400, 'tag must be not equal "' + NOTAG.join('", "') + '"');
+    }
+  });
 
   let chain = Promise.resolve();
 

@@ -3,9 +3,10 @@ const queries = require('../../../models/queries');
 const moment = require('moment');
 const { Task, Tag, ItemTag } = models;
 const layoutAgnostic = require('../../layoutAgnostic');
+const { NOTAG } = require('../../../components/utils');
+
 exports.list = async function (req) {
   let prefixNeed = false;
-  const selectWithoutTags = req.query.noTag === 'true';
 
   if (req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
@@ -23,9 +24,17 @@ exports.list = async function (req) {
 
   const userRole = req.user.dataValues.globalRole;
 
-  const tags = typeof req.query.tags === 'string'
+  let tags = typeof req.query.tags === 'string'
     ? req.query.tags.split(',')
     : req.query.tags;
+
+  // Поиск тасок без тега
+  const selectWithoutTags = Array.isArray(tags)
+    && tags.length === 1
+    && NOTAG.indexOf(tags[0].toLowerCase()) !== -1;
+  if (selectWithoutTags) {
+    tags = [];
+  }
 
   const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole, selectWithoutTags);
   const queryWhere = createWhereForRequest(req, selectWithoutTags);
