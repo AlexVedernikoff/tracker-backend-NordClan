@@ -1,22 +1,20 @@
 module.exports = {
   up: queryInterface => {
     return queryInterface.bulkInsert('metric_types', [
-      { id: 61, name: 'Количество возвратов dev->qa и обратно qa->dev|new' },
-      { id: 62, name: 'Количество связных багов ' },
-      { id: 63, name: 'Количество выполненных задач dev->qa ' }
+      { id: 61, name: 'Метрика по комманде. UserId, кол-во выполненных задач,, кол-во пофикшенных багов, кол-во возвратов, кол-во связанных багов' }
     ])
       .then(() => {
-        // return queryInterface.sequelize.query('ALTER TABLE metrics ALTER COLUMN "value" TYPE text');
+        return queryInterface.sequelize.query('ALTER TABLE metrics ALTER COLUMN "value" TYPE text');
       });
   },
 
   down: (queryInterface, Sequalize) => {
     return queryInterface.bulkDelete(
       'metric_types',
-      { id: { [Sequalize.Op.in]: [61, 62, 63] } }
+      { id: { [Sequalize.Op.in]: [61] } }
     )
       .then(() => {
-        // return queryInterface.sequelize.query('ALTER TABLE metrics ALTER COLUMN "value" TYPE character varying(255)');
+        return queryInterface.sequelize.query('ALTER TABLE metrics ALTER COLUMN "value" TYPE character varying(255)');
       });
   }
 };
