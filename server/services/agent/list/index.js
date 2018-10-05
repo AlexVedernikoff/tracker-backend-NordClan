@@ -1,5 +1,5 @@
-const { Metrics } = require('../../../models');
-const moment = require('moment');
+const { Metrics, User } = require('../../../models');
+const _ = require('lodash');
 
 exports.list = async (params) => {
   const startDate = params.startDate
@@ -13,7 +13,7 @@ exports.list = async (params) => {
   delete params.startDate;
   delete params.endDate;
 
-  return await Metrics.findAll({
+  const metrics = await Metrics.findAll({
     where: {
       createdAt: {
         $between: [startDate, endDate]
@@ -21,6 +21,10 @@ exports.list = async (params) => {
       ...params
     }
   });
+
+  const result = await addUsersObjetsToMetrics(metrics);
+
+  return result;
 };
 
 exports.validate = (params) => {
@@ -87,4 +91,47 @@ function generateMessage (errors) {
     .join(', ');
 
   return `Incorrect params - ${incorrectParams}`;
+}
+
+async function addUsersObjetsToMetrics (metrics) {
+  const indexes = [];
+  const usersIds = metrics
+    .reduce((acc, cur, index) => {
+      if (cur.typeId === 61 && cur.value.length > 3) {
+        indexes.push(index);
+        const value = JSON.parse(cur.value);
+        metrics[index].value = value;
+        value.forEach((item) => {
+          acc.push(item.userId);
+        });
+      }
+      return acc;
+    }, []);
+
+  const users = await User.findAll({
+    attributes: User.defaultSelect,
+    where: {
+      id: {
+        $in: _.uniq(usersIds)
+      }
+    }
+  })
+    .then((items) => {
+      const map = new Map();
+      items.forEach((user) => {
+        map.set(user.id, user.dataValues);
+      });
+      return map;
+    });
+
+
+  indexes.forEach((index) => {
+    metrics[index].value = metrics[index].value.map((item) => {
+      item.user = users.get(item.userId);
+      delete item.userId;
+      return item;
+    });
+  });
+
+  return metrics;
 }
