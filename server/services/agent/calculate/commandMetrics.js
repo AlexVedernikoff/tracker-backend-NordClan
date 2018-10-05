@@ -217,7 +217,6 @@ function filterHistoryByDay (history, date) {
 function getSortSheets (timesheetGroupByDay, statusHistory) {
   const returnMap = new Map();
 
-
   timesheetGroupByDay.forEach((day, index) => {
 
     // В этот день только 1 запись в таймшитах
@@ -240,25 +239,18 @@ function getSortSheets (timesheetGroupByDay, statusHistory) {
     if (qaAndDev) {
       // Если в один день была и qa и dev, то нужно идти в историю и смотреть последовательность стадий dev или qa.
       // Нужно остортировать все тш по истории статусов и исполнителей
-
       const dayHistory = filterHistoryByDay(statusHistory, index);
+      console.log('dayHistory', dayHistory);
       dayHistory.forEach((item) => {
-        console.log(item);
-      });
-
-
-      const sortHandler = isQaFirstInHistory(dayHistory)
-        ? (a, b) => b - a // DESC sort
-        : (a, b) => a - b; // ASC sort
-
-      const sortedDay = day.sort(sortHandler);
-      sortedDay.forEach(sheet => {
-        returnMap.set(sheet.id, sheet);
+        day.forEach((sheet, dayIndex) => {
+          if (item.userId === sheet.userId) {
+            returnMap.set(sheet.id, sheet);
+            delete day[dayIndex];
+          }
+        });
       });
 
     }
-
-    console.log(1);
 
   });
 
