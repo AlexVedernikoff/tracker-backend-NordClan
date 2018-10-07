@@ -1,18 +1,55 @@
 const TasksService = require('./synchronize/task');
+const TimesheetService = require('./synchronize/timesheet');
 const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
+const moment = require('moment');
 const createError = require('http-errors');
-const { Project, TaskStatusesAssociation, TaskTypesAssociation } = models;
+const {
+  Project,
+  TaskStatusesAssociation,
+  TaskTypesAssociation,
+  UserEmailAssociation,
+  User
+} = models;
 const request = require('./../request');
 const config = require('../../../configs');
 
 /**
  * @param data - Данные для синхронизации
  */
-exports.jiraSync = async function (data) {
-  const taskProjectIds = data.map(task => task.projectId.toString());
-  const projects = await Project.findAll({
-    where: { externalId: { $in: taskProjectIds } }
+exports.jiraSync = async function (headers, data) {
+  let resTimesheets, resSprints, resTasks;
+
+  // Подгрузка ассоциаций
+  const [
+    taskStatusesAssociation,
+    taskTypesAssociation,
+    userEmailAssociation
+  ] = await Promise.all([
+    TaskStatusesAssociation.findAll({}),
+    TaskTypesAssociation.findAll({}),
+    UserEmailAssociation.findAll({})
+  ]);
+  // Подготовка проекта
+  const [{ projectId }] = data;
+  const project = await Project.findOne({
+    where: { externalId: projectId }
+  });
+
+  // Подготовка пользователей
+  let { data: users } = await request.get(
+    `${config.ttiUrl}/project/${projectId}/users`,
+    {
+      headers
+    }
+  );
+  users = users.map(u => u.email);
+  let usersAssociation = await UserEmailAssociation.findAll({
+    where: { externalUserEmail: { $in: users } }
+  });
+  usersAssociation = usersAssociation.map(ua => ua.internalUserEmail);
+  users = await User.findAll({
+    where: { emailPrimary: { $in: usersAssociation } }
   });
 
   /**
@@ -20,13 +57,10 @@ exports.jiraSync = async function (data) {
    */
   const sprintsObj = {};
   data.map(task => {
-    const ind = projects.findIndex(p => {
-      return p.externalId.toString() === task.projectId.toString();
-    });
-    if (!Object.keys(sprintsObj).includes(task.sprint.id) && ind >= 0) {
+    if (!Object.keys(sprintsObj).includes(task.sprint.id)) {
       sprintsObj[task.sprint.id] = {
         name: task.sprint.name,
-        authorId: projects[ind].authorId
+        authorId: project.authorId
       };
     }
   });
@@ -39,41 +73,31 @@ exports.jiraSync = async function (data) {
     });
   }
 
-  let resSprints;
   try {
     resSprints = await SprintService.synchronizeSprints(sprints);
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
-  // return resSprints;
 
   /**
    * Модуль с задачами
    */
 
-  const [taskStatusesAssociation, taskTypesAssociation] = await Promise.all([
-    TaskStatusesAssociation.findAll({}),
-    TaskTypesAssociation.findAll({})
-  ]);
-
   const tasks = data.map(task => {
-    const pInd = projects.findIndex(p => {
-      return p.externalId.toString() === task.projectId.toString();
-    });
     const sInd = resSprints.findIndex(
       sp => sp.externalId.toString() === task.sprint.id.toString()
     );
     const statusAssociation = taskStatusesAssociation.find(tsa => {
       return (
-        tsa.projectId === projects[pInd].id
-        && tsa.externalTaskTypeId === task.typeId
+        tsa.projectId === project.id
+        && tsa.externalStatusId.toString() === task.status
       );
     });
 
     const typeAssociation = taskTypesAssociation.find(tsa => {
       return (
-        tsa.projectId === projects[pInd].id
-        && tsa.externalTaskTypeId === task.typeId
+        tsa.projectId === project.id
+        && tsa.externalTaskTypeId.toString() === task.type
       );
     });
     const t = Object.assign(
@@ -85,25 +109,71 @@ exports.jiraSync = async function (data) {
         sprintId: resSprints[sInd].id,
         typeId: typeAssociation.internalTaskTypeId,
         statusId: statusAssociation.internalStatusId,
-        authorId: projects[pInd].authorId,
-        projectId: projects[pInd].id
+        authorId: project.authorId,
+        projectId: project.id
       }
     );
     return t;
   });
 
-  let resTasks;
   try {
     resTasks = await TasksService.synchronizeTasks(tasks);
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
 
-  return resTasks;
-
   /**
    * Модуль с таймшитами
    */
+
+  let timesheets = [];
+
+  data.map(task => {
+    const ts = task.worklogs.map(worklog => {
+      // Поиск пользователя
+      const ueassociation = userEmailAssociation.find(ua => {
+        return ua.externalUserEmail === worklog.assignee;
+      });
+      const user = users.find(u => {
+        return u.emailPrimary === ueassociation.internalUserEmail;
+      });
+      // ------------------
+      // Поиск спринта
+      const sprint = resSprints.find(sp => {
+        return sp.externalId === task.sprint.id.toString();
+      });
+      // ------------------
+      // Поиск задачи
+      const tsk = resTasks.find(t => {
+        return t.externalId === task.id.toString();
+      });
+      // ------------------
+      return {
+        ...{
+          taskId: tsk.id,
+          sprintId: sprint.id,
+          userId: user.id,
+          onDate: moment(parseFloat(worklog.onDate)).format('YYYY-MM-DD'),
+          spentTime: worklog.timeSpent,
+          externalId: worklog.id,
+          comment: worklog.comment,
+          typeId: 1,
+          statusId: 1,
+          projectId: project.id,
+          isBillable: true
+        }
+      };
+    });
+    timesheets = [...timesheets, ...ts];
+  });
+
+  try {
+    resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets);
+  } catch (e) {
+    throw createError(400, 'Invalid input data');
+  }
+
+  return { resSprints, resTasks, resTimesheets };
 };
 
 // создание проекта
@@ -123,7 +193,13 @@ exports.createProject = async function (headers, id, authorId, prefix) {
       headers
     }
   );
-  // TODO: authorId тут должен быть
+  const { data: users } = await request.get(
+    `${config.ttiUrl}/project/${id}/users`,
+    {
+      headers
+    }
+  );
+
   let project = await Project.create({
     name: jiraProject.name,
     createdBySystemUser: true,
@@ -134,7 +210,8 @@ exports.createProject = async function (headers, id, authorId, prefix) {
   project = {
     ...project.dataValues,
     ...{ issue_types: jiraProject.issue_types },
-    ...{ status_types: jiraProject.status_type }
+    ...{ status_types: jiraProject.status_type },
+    ...{ users }
   };
   return project;
 };
@@ -147,7 +224,8 @@ exports.createProject = async function (headers, id, authorId, prefix) {
 exports.setProjectAssociation = async function (
   projectId,
   issueTypesAssociation,
-  statusesAssociation
+  statusesAssociation,
+  userEmailAssociation
 ) {
   const ita = issueTypesAssociation.map(it => {
     it.projectId = projectId;
@@ -159,25 +237,37 @@ exports.setProjectAssociation = async function (
     return s;
   });
 
+  const ua = userEmailAssociation.map(u => {
+    u.projectId = projectId;
+    return u;
+  });
+
   const beforeCreateRes = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
-    TaskStatusesAssociation.findAll({ where: { projectId } })
+    TaskStatusesAssociation.findAll({ where: { projectId } }),
+    UserEmailAssociation.findAll({ where: { projectId } })
   ]);
-  if (beforeCreateRes[0].length !== 0 || beforeCreateRes[0].length !== 0) {
+  if (
+    beforeCreateRes[0].length !== 0
+    || beforeCreateRes[1].length !== 0
+    || beforeCreateRes[2].length !== 0
+  ) {
     throw new Error(400, 'Project already has associations');
   }
 
   await Promise.all([
     TaskTypesAssociation.bulkCreate(ita),
-    TaskStatusesAssociation.bulkCreate(sa)
+    TaskStatusesAssociation.bulkCreate(sa),
+    UserEmailAssociation.bulkCreate(ua)
   ]);
 
-  const [taskTypes, taskStatuses] = await Promise.all([
+  const [taskTypes, taskStatuses, userEmail] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
-    TaskStatusesAssociation.findAll({ where: { projectId } })
+    TaskStatusesAssociation.findAll({ where: { projectId } }),
+    UserEmailAssociation.findAll({ where: { projectId } })
   ]);
 
-  return { taskTypes, taskStatuses };
+  return { taskTypes, taskStatuses, userEmail };
 };
 
 exports.jiraAuth = async function (username, password, server) {

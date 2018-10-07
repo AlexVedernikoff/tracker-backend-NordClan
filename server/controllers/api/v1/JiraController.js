@@ -7,12 +7,11 @@ const {
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
-// TODO: провести ревью и допилить
 exports.jiraSynchronize = async function (req, res, next) {
   try {
     const { payload } = req.body;
-    await jiraSync(payload);
-    res.sendStatus(200);
+    const response = await jiraSync(req.headers, payload);
+    res.json(response);
   } catch (e) {
     next(createError(e));
   }
@@ -41,16 +40,25 @@ exports.createJiraProject = async function (req, res, next) {
   ],
   "statusesAssociation": [
     {"internalStatusId":"1", "externalStatusId": 5}
+  ],
+  "userEmailAssociation": [
+    {"internalUserEmail":"abs@simbirsoft.com", "externalUserEmail": "anm@mail.ru"}
   ]
 }
  */
 exports.setJiraProjectAssociation = async function (req, res, next) {
   try {
-    const { projectId, issueTypesAssociation, statusesAssociation } = req.body;
+    const {
+      projectId,
+      issueTypesAssociation,
+      statusesAssociation,
+      userEmailAssociation
+    } = req.body;
     const projectAssociations = await setProjectAssociation(
       projectId,
       issueTypesAssociation,
-      statusesAssociation
+      statusesAssociation,
+      userEmailAssociation
     );
     res.json(projectAssociations);
   } catch (e) {

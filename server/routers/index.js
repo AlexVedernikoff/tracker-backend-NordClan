@@ -320,7 +320,11 @@ router.post(
 );
 
 // JiraSynchronize
-router.post('/jira/synchronize', JiraController.jiraSynchronize);
+router.post(
+  '/jira/synchronize',
+  replaceAuthHeader(),
+  JiraController.jiraSynchronize
+);
 
 router.post(
   '/jira/project',

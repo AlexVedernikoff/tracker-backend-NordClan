@@ -35,7 +35,7 @@ exports.synchronizeTasks = async function (tasks) {
     });
   }
 
-  // создание новых спринтов
+  // создание новых задач
   if (newTasks.length > 0) newTasks = await Task.bulkCreate(newTasks);
   return newTasks.concat(createdTasks);
 };
