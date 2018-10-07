@@ -81,9 +81,13 @@ exports.jiraSync = async function (headers, data) {
    */
 
   const tasks = data.map(task => {
-    const sInd = resSprints.findIndex(
-      sp => sp.externalId.toString() === task.sprint.id.toString()
-    );
+    let sInd;
+    if (task.sprint) {
+      sInd = resSprints.findIndex(
+        sp => sp.externalId.toString() === task.sprint.id.toString()
+      );
+    }
+
     const statusAssociation = taskStatusesAssociation.find(tsa => {
       return (
         tsa.projectId === project.id
@@ -97,13 +101,14 @@ exports.jiraSync = async function (headers, data) {
         && tsa.externalTaskTypeId.toString() === task.type
       );
     });
+
     const t = Object.assign(
       {},
       {
         externalId: task.id.toString(),
         name: task.summary,
         factExecutionTime: task.timeSpent,
-        sprintId: resSprints[sInd].id || null,
+        sprintId: sInd >= 0 ? resSprints[sInd].id : null,
         typeId: typeAssociation.internalTaskTypeId,
         statusId: statusAssociation.internalStatusId,
         authorId: project.authorId,
@@ -126,7 +131,7 @@ exports.jiraSync = async function (headers, data) {
   let timesheets = [];
 
   data.map(task => {
-    if (task.worklogs || task.worklogs.length === 0) {
+    if (task.worklogs && task.worklogs.length !== 0) {
       const ts = task.worklogs.map(worklog => {
         // Поиск пользователя
         const ueassociation = userEmailAssociation.find(ua => {
@@ -137,9 +142,13 @@ exports.jiraSync = async function (headers, data) {
         });
         // ------------------
         // Поиск спринта
-        const sprint = resSprints.find(sp => {
-          return sp.externalId === task.sprint.id.toString();
-        });
+        let sprint;
+        if (task.sprint) {
+          sprint = resSprints.find(sp => {
+            return sp.externalId === task.sprint.id.toString();
+          });
+        }
+
         // ------------------
         // Поиск задачи
         const tsk = resTasks.find(t => {
@@ -149,7 +158,7 @@ exports.jiraSync = async function (headers, data) {
         return {
           ...{
             taskId: tsk.id,
-            sprintId: sprint.id || null,
+            sprintId: sprint ? sprint.id : null,
             userId: user.id,
             onDate: moment(parseFloat(worklog.onDate)).format('YYYY-MM-DD'),
             spentTime: worklog.timeSpent,
