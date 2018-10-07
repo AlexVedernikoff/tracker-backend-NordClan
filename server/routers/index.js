@@ -320,6 +320,9 @@ router.post(
 );
 
 // JiraSynchronize
+
+router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
+
 router.post(
   '/jira/synchronize',
   replaceAuthHeader(),

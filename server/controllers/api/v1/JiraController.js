@@ -3,7 +3,8 @@ const {
   createProject,
   getJiraProjects,
   setProjectAssociation,
-  jiraAuth
+  jiraAuth,
+  getActiveSimtrackProjects
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -82,6 +83,15 @@ exports.getJiraProjects = async function (req, res, next) {
   try {
     const { data: projects } = await getJiraProjects(req.headers);
     res.json({ projects });
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.getActiveSimtrackProjects = async function (req, res, next) {
+  try {
+    const projects = await getActiveSimtrackProjects();
+    res.json(projects);
   } catch (e) {
     next(createError(e));
   }

@@ -30,6 +30,7 @@ exports.jiraSync = async function (headers, data) {
     TaskTypesAssociation.findAll({}),
     UserEmailAssociation.findAll({})
   ]);
+
   // Подготовка проекта
   const [{ projectId }] = data;
   const project = await Project.findOne({
@@ -37,12 +38,8 @@ exports.jiraSync = async function (headers, data) {
   });
 
   // Подготовка пользователей
-  let { data: users } = await request.get(
-    `${config.ttiUrl}/project/${projectId}/users`,
-    {
-      headers
-    }
-  );
+  let users = await getJiraProjectUsers(headers, projectId);
+
   users = users.map(u => u.email);
   let usersAssociation = await UserEmailAssociation.findAll({
     where: { externalUserEmail: { $in: users } }
@@ -57,7 +54,7 @@ exports.jiraSync = async function (headers, data) {
    */
   const sprintsObj = {};
   data.map(task => {
-    if (!Object.keys(sprintsObj).includes(task.sprint.id)) {
+    if (task.sprint && !Object.keys(sprintsObj).includes(task.sprint.id)) {
       sprintsObj[task.sprint.id] = {
         name: task.sprint.name,
         authorId: project.authorId
@@ -106,7 +103,7 @@ exports.jiraSync = async function (headers, data) {
         externalId: task.id.toString(),
         name: task.summary,
         factExecutionTime: task.timeSpent,
-        sprintId: resSprints[sInd].id,
+        sprintId: resSprints[sInd].id || null,
         typeId: typeAssociation.internalTaskTypeId,
         statusId: statusAssociation.internalStatusId,
         authorId: project.authorId,
@@ -129,42 +126,44 @@ exports.jiraSync = async function (headers, data) {
   let timesheets = [];
 
   data.map(task => {
-    const ts = task.worklogs.map(worklog => {
-      // Поиск пользователя
-      const ueassociation = userEmailAssociation.find(ua => {
-        return ua.externalUserEmail === worklog.assignee;
+    if (task.worklogs || task.worklogs.length === 0) {
+      const ts = task.worklogs.map(worklog => {
+        // Поиск пользователя
+        const ueassociation = userEmailAssociation.find(ua => {
+          return ua.externalUserEmail === worklog.assignee;
+        });
+        const user = users.find(u => {
+          return u.emailPrimary === ueassociation.internalUserEmail;
+        });
+        // ------------------
+        // Поиск спринта
+        const sprint = resSprints.find(sp => {
+          return sp.externalId === task.sprint.id.toString();
+        });
+        // ------------------
+        // Поиск задачи
+        const tsk = resTasks.find(t => {
+          return t.externalId === task.id.toString();
+        });
+        // ------------------
+        return {
+          ...{
+            taskId: tsk.id,
+            sprintId: sprint.id || null,
+            userId: user.id,
+            onDate: moment(parseFloat(worklog.onDate)).format('YYYY-MM-DD'),
+            spentTime: worklog.timeSpent,
+            externalId: worklog.id,
+            comment: worklog.comment,
+            typeId: 1,
+            statusId: 1,
+            projectId: project.id,
+            isBillable: true
+          }
+        };
       });
-      const user = users.find(u => {
-        return u.emailPrimary === ueassociation.internalUserEmail;
-      });
-      // ------------------
-      // Поиск спринта
-      const sprint = resSprints.find(sp => {
-        return sp.externalId === task.sprint.id.toString();
-      });
-      // ------------------
-      // Поиск задачи
-      const tsk = resTasks.find(t => {
-        return t.externalId === task.id.toString();
-      });
-      // ------------------
-      return {
-        ...{
-          taskId: tsk.id,
-          sprintId: sprint.id,
-          userId: user.id,
-          onDate: moment(parseFloat(worklog.onDate)).format('YYYY-MM-DD'),
-          spentTime: worklog.timeSpent,
-          externalId: worklog.id,
-          comment: worklog.comment,
-          typeId: 1,
-          statusId: 1,
-          projectId: project.id,
-          isBillable: true
-        }
-      };
-    });
-    timesheets = [...timesheets, ...ts];
+      timesheets = [...timesheets, ...ts];
+    }
   });
 
   try {
@@ -175,12 +174,6 @@ exports.jiraSync = async function (headers, data) {
 
   return { resSprints, resTasks, resTimesheets };
 };
-
-// создание проекта
-// создание ассоциаций со статусами
-// создание ассоциаций с типами задач
-// отправлять пользователя на страницу создания ассоциаций если
-// не была закончена
 
 /**
  * @param {string} id
@@ -193,12 +186,7 @@ exports.createProject = async function (headers, id, authorId, prefix) {
       headers
     }
   );
-  const { data: users } = await request.get(
-    `${config.ttiUrl}/project/${id}/users`,
-    {
-      headers
-    }
-  );
+  const users = await getJiraProjectUsers(headers, id);
 
   let project = await Project.create({
     name: jiraProject.name,
@@ -285,3 +273,31 @@ exports.getJiraProjects = async function (headers) {
     throw e;
   }
 };
+
+exports.getActiveSimtrackProjects = async function () {
+  try {
+    return Project.findAll({
+      where: {
+        statusId: 1,
+        externalId: {
+          $ne: null
+        }
+      }
+    });
+  } catch (e) {
+    throw e;
+  }
+};
+
+/**
+ * @param projectId - id проекта в джире
+ */
+async function getJiraProjectUsers (headers, projectId) {
+  const { data: users } = await request.get(
+    `${config.ttiUrl}/project/${projectId}/users`,
+    {
+      headers
+    }
+  );
+  return users;
+}
