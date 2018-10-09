@@ -12,7 +12,10 @@ exports.findDraftSheet = async function (userId, id) {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
         paranoid: false,
         include: [
           {
@@ -49,6 +52,37 @@ exports.findDraftSheet = async function (userId, id) {
   });
 };
 
+exports.getDraftToDestroy = async function (options) {
+  const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
+
+  const where = {
+    onDate,
+    userId,
+    typeId
+  };
+
+  if (taskId) {
+    where.taskId = taskId;
+  } else if (projectId) {
+    where.projectId = projectId;
+  } else {
+    where.projectId = { $eq: null }; // IS NULL
+  }
+
+  if (taskStatusId) {
+    where.taskStatusId = taskStatusId;
+  }
+
+  const draft = await models.TimesheetDraft
+    .findOne({
+      where: where,
+      attributes: ['id']
+    });
+
+
+  return draft;
+};
+
 exports.all = async function (conditions) {
   return await models.TimesheetDraft.findAll({
     where: conditions,
@@ -61,7 +95,10 @@ exports.all = async function (conditions) {
         as: 'task',
         model: models.Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
         paranoid: false,
         include: [
           {
@@ -77,6 +114,12 @@ exports.all = async function (conditions) {
             required: false,
             attributes: ['id', 'name'],
             paranoid: false
+          },
+          {
+            as: 'sprint',
+            model: models.Sprint,
+            required: false,
+            attributes: ['name']
           }
         ]
       },
@@ -104,7 +147,10 @@ function appendInclude (entities) {
       as: 'task',
       model: models.Task,
       required: false,
-      attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+      attributes: ['id', 'name', 'plannedExecutionTime', [
+        models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+        FROM timesheets AS tsh
+        WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
       paranoid: false,
       include: [
         {

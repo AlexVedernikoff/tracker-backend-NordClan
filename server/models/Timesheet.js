@@ -1,5 +1,5 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
-const beforeValidate = require('../components/sequelizeHooks/TemesheetBeforeValidate');
+const beforeValidate = require('../components/sequelizeHooks/TimesheetBeforeValidate');
 
 module.exports = function (sequelize, DataTypes) {
   const Timesheet = sequelize.define('Timesheet', {

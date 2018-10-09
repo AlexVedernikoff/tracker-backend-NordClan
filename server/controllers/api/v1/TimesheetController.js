@@ -2,12 +2,15 @@ const createError = require('http-errors');
 const TimesheetService = require('../../../services/timesheets');
 const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
+const TaskChannel = require('../../../channels/Tasks');
 const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
+  const userId = req.body.userId || req.user.id; // Todo: validate user rights
+
   const timesheetParams = {
     ...req.body,
-    userId: req.user.id,
+    userId,
     taskStatusId: req.body.taskStatusId || 2
   };
 
@@ -18,7 +21,7 @@ exports.create = async (req, res, next) => {
   TimesheetService
     .create(timesheetParams)
     .then(createdTimesheet => {
-      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+      TimesheetsChannel.sendAction('create', createdTimesheet, res.io, userId);
       res.json(createdTimesheet);
     })
     .catch(e => {
@@ -87,20 +90,63 @@ exports.list = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
+exports.listProject = async function (req, res, next) {
+  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const dateBegin = req.query.dateBegin;
+  const dateEnd = req.query.dateEnd;
+  const projectId = req.params.projectId;
+
+  TimesheetService
+    .listProject(dateBegin, dateEnd, projectId, req.isSystemUser)
+    .then(timesheets => res.json(timesheets))
+    .catch(error => next(createError(error)));
+};
+
+const updateTimesheet = async (req, res) => {
+  const {taskId} = req.body;//eslint-disable-line
+  await TimesheetService
+    .update(req)
+    .then(sheet => Promise.all([
+      taskId && TasksService
+        .read(taskId, req.user),
+      sheet,
+      taskId && TasksService
+        .read(sheet.taskId, req.user)
+    ]))
+    .then(([task, sheet, taskSheet]) => {
+      TimesheetsChannel.sendAction('update', !task ? sheet : {...sheet, task }, res.io, sheet.userId);
+      if (task) {
+        TaskChannel.sendAction('update', taskSheet, res.io, taskSheet.projectId);
+      }
+    });
+};
+
 exports.update = async (req, res, next) => {
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
   }
-
-  TimesheetService
-    .update(req)
-    .then(updatedTimesheets => {
-      updatedTimesheets.map(sheet => {
-        TimesheetsChannel.sendAction('update', sheet, res.io, req.isSystemUser ? sheet.userId : req.user.id);
-      });
-      res.end();
-    })
-    .catch(e => next(createError(e)));
+  if (Array.isArray(req.body.sheetId)) {
+    const requests = req.body.sheetId.map(id => {
+      const singleReq = {
+        ...req,
+        body: {
+          ...req.body,
+          sheetId: id
+        }
+      };
+      return updateTimesheet(singleReq, res);
+    });
+    Promise.all(requests).then(res.end()).catch(e => next(createError(e)));
+  } else {
+    updateTimesheet(req, res).then(res.end()).catch(e => next(createError(e)));
+  }
 };
 
 exports.delete = async (req, res, next) => {
@@ -129,16 +175,20 @@ exports.updateDraft = async function (req, res, next) {
   }
 
   const draftId = req.params.sheetId || req.body.sheetId || req.query.sheetId;
+  const { sheetId, taskId, ...body} = req.body;//eslint-disable-line
 
   TimesheetService
-    .updateDraft(req.body, draftId, req.user.id)
-    .then(({updatedDraft, createdTimesheet}) => {
+    .updateDraft(body, draftId, req.user.id)
+    .then(sheet => Promise.all([
+      taskId && TasksService
+        .read(taskId, req.user),
+      sheet
+    ]))
+    .then(([task, {updatedDraft, createdTimesheet}]) => {
       if (updatedDraft) {
-        TimesheetsChannel.sendAction('update', updatedDraft, res.io, req.user.id);
-      }
-
-      if (createdTimesheet) {
-        TimesheetsChannel.sendAction('create', createdTimesheet, res.io, req.user.id);
+        TimesheetsChannel.sendAction('update', !task ? updatedDraft : {...updatedDraft, task}, res.io, req.user.id);
+      } else if (createdTimesheet) {
+        TimesheetsChannel.sendAction('create', !task ? createdTimesheet : {...createdTimesheet, task}, res.io, req.user.id);
       }
 
       res.end();

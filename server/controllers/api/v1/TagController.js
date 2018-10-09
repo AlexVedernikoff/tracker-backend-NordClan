@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const StringHelper = require('../../../components/StringHelper');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 exports.list = async function (req, res, next){
   req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
@@ -24,6 +25,29 @@ exports.list = async function (req, res, next){
     .then((tags) => {
       res.json(tags);
     });
+};
+
+exports.listByProject = async function (req, res, next) {
+  if (!req.params.projectId || !parseInt(req.params.projectId)) {
+    res.sendStatus(400);
+    return next(createError(400, 'Validation failed'));
+  }
+  let tasks;
+  const query = createQuery(req.params);
+  try {
+    tasks = await models.Task.findAll(query);
+  } catch (error) {
+    res.sendStatus(500);
+    return next(createError(error));
+  }
+
+  const tags = [];
+  tasks.forEach(task => task.tags.forEach(tag => {
+    if (!tags.find(el => el.id === tag.dataValues.id)) {
+      tags.push({id: tag.dataValues.id, name: tag.dataValues.name});
+    }
+  }));
+  res.json(tags);
 };
 
 exports.create = async function (req, res, next){
@@ -126,7 +150,7 @@ exports.autocompliter = function (req, res, next){
         group: ['Tag.id', 'Tag.name'],
         where: {
           name: {
-            $iLike: '%' + req.query.tagName + '%'
+            $iLike: layoutAgnostic(req.query.tagName.trim())
           }
         },
         include: [
@@ -151,3 +175,19 @@ exports.autocompliter = function (req, res, next){
     })
     .catch((err) => next(createError(err)));
 };
+
+function createQuery (params) {
+  return {
+    where: {
+      projectId: {
+        $eq: params.projectId
+      }
+    },
+    include: {
+      as: 'tags',
+      model: models.Tag,
+      attribute: ['name'],
+      required: true
+    }
+  };
+}

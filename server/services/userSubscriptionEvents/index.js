@@ -1,12 +1,11 @@
 const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
+const { getMentions, replaceMention } = require('../../services/comment');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment;
-
-  console.log('event', eventId);
+  let receivers, task, comment, projectRolesValues, mentionedUsers;
 
   switch (eventId){
 
@@ -16,6 +15,14 @@ module.exports = async function (eventId, input, user){
     // input = { taskId }
 
     task = await getTask(input.taskId);
+    projectRolesValues = await ProjectRolesDictionary.findAll({
+      attributes: ['id'],
+      where: {
+        nameEn: {
+          $or: ['PM', 'QA']
+        }
+      }});
+    projectRolesValues = projectRolesValues.map(el => el.id);
     receivers = await ProjectUsers.findAll({
       include: [
         {
@@ -31,7 +38,7 @@ module.exports = async function (eventId, input, user){
           model: ProjectUsersRoles,
           where: {
             projectRoleId: {
-              '$in': [ProjectRolesDictionary.values[1].id, ProjectRolesDictionary.values[8].id]// PM QA
+              '$in': projectRolesValues// PM QA
             }
           }
         }
@@ -62,7 +69,7 @@ module.exports = async function (eventId, input, user){
     task = await getTask(input.taskId);
     receivers = task.performer ? [task.performer] : [];
 
-    receivers.forEach(function (performer){
+    receivers.forEach(function (performer) {
       if (!isUserSubscribed(eventId, performer.usersProjects[0])) return;
       if (user.id === performer.dataValues.id) return;
       const emailTemplate = email.template('newTaskForPerformer', { task });
@@ -75,17 +82,58 @@ module.exports = async function (eventId, input, user){
 
     break;
 
-  case (3):
+  case (3): {
     // event description : new comment to task
-    // receivers : task author, task performer
+    // receivers : task author, task performer, comment mentions
     // input = { taskId, commentId }
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    receivers = (!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer];
+    const mentions = getMentions(comment.text);
+    let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
+      .map(receiver => receiver.dataValues.id);
+    if (mentions.includes('all')) {
+      const projectUsers = await ProjectUsers.findAll({
+        attributes: ['user_id'],
+        where: {
+          projectId: task.project.id
+        }
+      });
+      receiverIds = [
+        ...projectUsers.map(projectUser => projectUser.dataValues.user_id),
+        task.project.authorId
+      ];
+    } else if (mentions.length) {
+      receiverIds = [
+        ...receiverIds,
+        ...mentions
+      ];
+    }
+
+
+    receivers = await User.findAll({
+      where: {
+        id: _.unique(receiverIds)
+      },
+      include: [
+        {
+          as: 'usersProjects',
+          model: ProjectUsers,
+          where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
+          include: [
+            {
+              as: 'subscriptions',
+              model: ProjectUsersSubscriptions
+            }
+          ]
+        }
+      ]
+    });
+
+    comment.text = mentions.length ? await replaceMention(comment.text, receivers) : comment.text;
 
     receivers.forEach(function (receiver){
-      if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return;
+      if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
       const emailTemplate = email.template('newTaskComment', { task, comment });
       emails.push({
@@ -96,13 +144,18 @@ module.exports = async function (eventId, input, user){
     });
 
     break;
-
+  }
   case (4):
     // event description : task status changed to done
     // receivers : PM
     // input = { taskId }
 
     task = await getTask(input.taskId);
+    projectRolesValues = await ProjectRolesDictionary.find({
+      attributes: ['id'],
+      where: {
+        nameEn: 'PM'
+      }});
     receivers = await ProjectUsers.findAll({
       include: [
         {
@@ -118,7 +171,7 @@ module.exports = async function (eventId, input, user){
           model: ProjectUsersRoles,
           where: {
             projectRoleId: {
-              '$in': [ProjectRolesDictionary.values[1].id]// PM
+              '$in': [projectRolesValues.id]// PM
             }
           }
         }
@@ -140,11 +193,83 @@ module.exports = async function (eventId, input, user){
 
     break;
 
-  case (5): // need to implement that on backend
+  case (5): {
     // event description : task comment has mention
-    // receivers : mentioned user (which has subscription)
-    break;
+    // receivers : mentioned users (which has subscription)
+    // input : { taskId, commentId }
+    task = await getTask(input.taskId);
+    comment = _.find(task.comments, { id: input.commentId });
+    const mentions = getMentions(comment.text);
+    let receiverIds;
+    if (user[0] === 'all') {
+      const projectUsers = await ProjectUsers.findAll({
+        attributes: ['user_id'],
+        where: {
+          projectId: task.project.id
+        }
+      });
+      receiverIds = [
+        ...projectUsers.map(projectUser => projectUser.dataValues.user_id)
+      ];
+    } else {
+      receiverIds = user;
+    }
+    receivers = await User.findAll({
+      where: {
+        id: _.unique(receiverIds)
+      },
+      include: [
+        {
+          as: 'usersProjects',
+          model: ProjectUsers,
+          where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
+          include: [
+            {
+              as: 'subscriptions',
+              model: ProjectUsersSubscriptions
+            }
+          ]
+        }
+      ]
+    });
 
+    if (mentions[0] !== 'all') {
+      mentionedUsers = await User.findAll({
+        where: {
+          id: _.unique(mentions)
+        },
+        include: [
+          {
+            as: 'usersProjects',
+            model: ProjectUsers,
+            where: Sequelize.literal(`"usersProjects"."project_id"=${task.projectId}`),
+            include: [
+              {
+                as: 'subscriptions',
+                model: ProjectUsersSubscriptions
+              }
+            ]
+          }
+        ]
+      });
+    } else {
+      mentionedUsers = receivers;
+    }
+
+    comment.text = mentions.length ? await replaceMention(comment.text, mentionedUsers) : comment.text;
+
+    receivers.forEach(receiver => {
+      if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return; // if user subscribed to this event
+      if (user.id === comment.author.dataValues.id) return; // if user mentioned himself
+      const emailTemplate = email.template('newTaskCommentMention', { task, comment });
+      emails.push({
+        'receiver': receiver.emailPrimary,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
+      });
+    });
+    break;
+  }
   default:
     break;
 

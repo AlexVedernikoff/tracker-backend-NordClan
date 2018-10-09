@@ -1,4 +1,4 @@
-const { update, getActiveTasks, getLastActiveTask } = require('./update');
+const { update, getActiveTasks, getLastActiveTask, updateAllByAttribute } = require('./update');
 const { read } = require('./read');
 const { create } = require('./create');
 const { list } = require('./list');
@@ -6,6 +6,7 @@ const { destroy } = require('./destroy');
 
 module.exports = {
   update,
+  updateAllByAttribute,
   read,
   getActiveTasks,
   getLastActiveTask,

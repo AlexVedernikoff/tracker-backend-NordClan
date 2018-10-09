@@ -25,6 +25,7 @@ const {
 
 router.post('/milestones', MilestonesController.create);
 router.put('/milestones/:id', MilestonesController.update);
+router.delete('/milestones/:id', MilestonesController.delete);
 
 // Auth
 router.post('/auth/login', AuthController.login);
@@ -47,6 +48,11 @@ router.get(
   UserController.autocompleteExternal
 );
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
+router.put(
+  '/user/external/:id/refresh',
+  GlobalAccess.can('user', 'refreshTokenExternal'),
+  UserController.refreshTokenExternal
+);
 router.get(
   '/user/roles',
   GlobalAccess.can('user', 'usersRoles'),
@@ -71,6 +77,11 @@ router.put('/user/password/:token', UserController.setPassword);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 
 // Tags
+router.get(
+  '/project/:projectId/tags',
+  GlobalAccess.can('project', 'read'),
+  TagController.listByProject
+);
 router.get(
   '/:taggable(project|task)/tag',
   GlobalAccess.can('tag', 'autocompliter'),
@@ -118,6 +129,16 @@ router.get(
   GlobalAccess.can('project', 'read'),
   ProjectController.list
 );
+router.post(
+  '/project/addGitlabProject',
+  GlobalAccess.can('project', 'addGitlabProject'),
+  ProjectController.addGitlabProject
+);
+router.get(
+  '/project/:id/getGitlabProjects',
+  GlobalAccess.can('project', 'getGitlabProjects'),
+  ProjectController.getProjects
+);
 
 router.post(
   '/project/:projectId/users',
@@ -135,11 +156,29 @@ router.delete(
   ProjectUsersController.delete
 );
 
+router.get(
+  '/project/gitLab/getGitlabNamespaces',
+  GlobalAccess.can('project', 'getGitlabNamespaces'),
+  ProjectController.getGitlabNamespaces
+);
+router.post(
+  '/project/:id/createGitlabProject',
+  GlobalAccess.can('project', 'createGitlabProject'),
+  ProjectController.createGitlabProject
+);
+
 // Project reports
 router.get(
   '/project/:projectId/reports/period',
   GlobalAccess.can('project', 'read'),
   ReportsController.byPeriod
+);
+
+// Project time sheets
+router.get(
+  '/project/:projectId/timesheet',
+  GlobalAccess.can('project', 'read'),
+  TimesheetController.listProject
 );
 
 // Portfolios
@@ -198,6 +237,11 @@ router.put(
   GlobalAccess.can('task', 'update'),
   TaskController.update
 );
+router.put(
+  '/tasks',
+  GlobalAccess.can('task', 'update'),
+  TaskController.updateAllByAttribute
+);
 router.delete(
   '/task/:id',
   GlobalAccess.can('task', 'delete'),
@@ -218,6 +262,15 @@ router.get(
   '/task/:id/spent/',
   GlobalAccess.can('task', 'read'),
   TaskController.getSpentTime
+);
+router.post('/task/:id/createGitlabBranch/', TaskController.createGitlabBranch);
+router.get(
+  '/task/:id/getGitlabBranchesById/',
+  TaskController.getGitlabBranchesById
+);
+router.get(
+  '/task/:id/getGitlabBranchesByRepoId/',
+  TaskController.getGitlabBranchesByRepoId
 );
 
 // Timesheets
@@ -280,6 +333,7 @@ router.get(
   DictionaryController.status
 );
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
+router.get('/dictionary/project/types', DictionaryController.projectTypes);
 router.get('/dictionary/task/types', DictionaryController.taskTypes);
 router.get('/dictionary/timesheet/types', DictionaryController.timesheetTypes);
 router.get(
@@ -292,6 +346,7 @@ router.get(
   '/task/timesheet/types/dictionary',
   DictionaryController.timesheetTypes
 ); // Deprecated. но еще используется
+router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
 
 // Attachments
 router.post(

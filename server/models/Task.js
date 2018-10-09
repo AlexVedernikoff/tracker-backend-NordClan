@@ -1,92 +1,107 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
 module.exports = function (sequelize, DataTypes) {
-  const Task = sequelize.define('Task', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false,
-      validate: {
-        isInt: true
-      }
+  const Task = sequelize.define(
+    'Task',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false,
+        validate: {
+          isInt: true
+        }
+      },
+      name: {
+        type: DataTypes.STRING,
+        trim: true,
+        allowNull: false,
+        validate: {
+          len: [1, 255]
+        }
+      },
+      typeId: {
+        field: 'type_id',
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+        allowNull: false,
+        validate: {
+          isInt: true
+        }
+      },
+      isTaskByClient: {
+        field: 'is_task_by_client',
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+      },
+      statusId: {
+        field: 'status_id',
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+        allowNull: false
+      },
+      description: {
+        trim: true,
+        type: DataTypes.TEXT,
+        defaultValue: null
+      },
+      plannedExecutionTime: {
+        field: 'planned_execution_time',
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
+      },
+      factExecutionTime: {
+        field: 'fact_execution_time',
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
+      },
+      prioritiesId: {
+        field: 'priorities_id',
+        type: DataTypes.INTEGER,
+        defaultValue: 3,
+        validate: {
+          isInt: true
+        }
+      },
+      performerId: {
+        field: 'performer_id',
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      authorId: {
+        field: 'author_id',
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      externalId: {
+        field: 'external_id',
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true
+      },
+      gitlabBranchIds: {
+        field: 'gitlab_branch_ids',
+        type: DataTypes.JSON,
+        allowNull: true
+      },
+      createdAt: { type: DataTypes.DATE, field: 'created_at' },
+      updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
     },
-    name: {
-      type: DataTypes.STRING,
-      trim: true,
-      allowNull: false,
-      validate: {
-        len: [1, 255]
-      }
-    },
-    typeId: {
-      field: 'type_id',
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
-      allowNull: false,
-      validate: {
-        isInt: true
-      }
-    },
-    statusId: {
-      field: 'status_id',
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
-      allowNull: false
-    },
-    description: {
-      trim: true,
-      type: DataTypes.TEXT,
-      defaultValue: null
-    },
-    plannedExecutionTime: {
-      field: 'planned_execution_time',
-      type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0
-    },
-    factExecutionTime: {
-      field: 'fact_execution_time',
-      type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0
-    },
-    prioritiesId: {
-      field: 'priorities_id',
-      type: DataTypes.INTEGER,
-      defaultValue: 3,
-      validate: {
-        isInt: true
-      }
-    },
-    performerId: {
-      field: 'performer_id',
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    authorId: {
-      field: 'author_id',
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    externalId: {
-      field: 'external_id',
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true
-    },
-    createdAt: { type: DataTypes.DATE, field: 'created_at' },
-    updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-    deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
-  }, {
-    timestamps: true,
-    paranoid: true,
-    underscored: true,
-    tableName: 'tasks',
-    hooks: {
-      afterFind: function (model) {
-        ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+    {
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      tableName: 'tasks',
+      hooks: {
+        afterFind: function (model) {
+          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
+        }
       }
     }
-  });
+  );
 
   Task.associate = function (models) {
     Task.belongsTo(models.Project, {
@@ -219,12 +234,9 @@ module.exports = function (sequelize, DataTypes) {
         field: 'task_id'
       }
     });
-
   };
 
   Task.addHistoryForTask();
 
   return Task;
 };
-
-

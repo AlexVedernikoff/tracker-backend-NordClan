@@ -13,6 +13,15 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
+    },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(20),
+      trim: true,
+      allowNull: false,
+      validate: {
+        len: [1, 20]
+      }
     }
   }, {
     underscored: true,
@@ -29,12 +38,6 @@ module.exports = function (sequelize, DataTypes) {
         field: 'status_id'
       }});
   };
-
-  ProjectStatuses.values = [
-    {id: 1, name: 'В процессе'},
-    {id: 2, name: 'Приостановлен'},
-    {id: 3, name: 'Завершен'}
-  ];
 
   ProjectStatuses.IN_PROGRESS = 1;
   ProjectStatuses.STOPPED = 2;

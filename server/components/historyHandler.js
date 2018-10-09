@@ -30,7 +30,9 @@ exports.historyHandler = function (sequelize, historyModel) {
         valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
         prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
         valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
-        prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null
+        prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null,
+        valueBoolean: (type === 'BOOLEAN') ? diffObj[key].newVal : null,
+        prevValueBoolean: (type === 'BOOLEAN') ? diffObj[key].oldVal : null
       };
     });
   }
@@ -91,6 +93,21 @@ exports.historyHandler = function (sequelize, historyModel) {
         .catch((err) => {
           if (err) throw createError(err);
         });
+
+      // Сведения об удаленной подзадаче в родительской задаче
+      if (entity === 'Task' && model.parentId > 0) {
+        const modelIdProperty = `${historyModel.toLowerCase()}Id`;
+
+        sequelize.models[modelName].bulkCreate({
+          entity: entity,
+          entityId: modelId,
+          userId: userId,
+          [modelIdProperty]: model.parentId,
+          action: 'update'
+        }).catch((err) => {
+          if (err) throw createError(err);
+        });
+      }
     }
   };
 };

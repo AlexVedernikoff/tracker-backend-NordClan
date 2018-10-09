@@ -4,86 +4,143 @@ const constants = require('./../constants');
 const ACTIONS = constants.actions;
 
 const entityWord = {
-  create: 'задачу',
-  update: 'задачи'
+  ru: {
+    create: 'задачу',
+    update: 'задачи',
+    delete: 'задачу'
+  },
+  en: {
+    create: 'task',
+    update: 'task',
+    delete: 'task'
+  }
 };
 
-module.exports = function (model) {
+module.exports = async function (model) {
   const changedProperty = getChangedProperty(model);
   const messageHandlers = declarativeHandlers();
-  const messageHandler = messageHandlers.filter(handler => {
+  const messageHandler = await messageHandlers.filter(handler => {
     return handler.statement(model, changedProperty);
   })[0];
 
-  const answer = messageHandler ?
-    messageHandler.answer(model) :
-    generativeAnswer(model, changedProperty);
+  const answer = messageHandler
+    ? messageHandler.answer(model)
+    : await generativeAnswer(model, changedProperty);
 
   return {
     message: answer.message,
+    messageEn: answer.messageEn,
     entities: answer.entities
   };
 };
 
 
 //TODO refactoring
-function generativeAnswer(model, values) {
-  let result = {
+async function generativeAnswer (model, values) {
+  const result = {
     message: '',
+    messageEn: '',
     entities: {}
   };
 
-  if(model.sprint) result.entities.sprint = model.sprint;
-  if(model.prevSprint) result.entities.prevSprint = model.prevSprint;
-  if(model.parentTask) result.entities.parentTask = model.parentTask;
-  if(model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
+  if (model.sprint) result.entities.sprint = model.sprint;
+  if (model.prevSprint) result.entities.prevSprint = model.prevSprint;
+  if (model.parentTask) result.entities.parentTask = model.parentTask;
+  if (model.prevParentTask) result.entities.prevParentTask = model.prevParentTask;
 
-  if(model.action === 'update') {
-    if(values.value  === null && values.prevValue) { // убрал
+  if (model.action === 'update') {
+    if ((values.value === null && values.prevValue) || (values.value === true && values.prevValue === false)) { // убрал
       result.message = 'убрал(-а)';
-    } else if (values.value  && values.prevValue === null) { // установил
+      result.messageEn = 'removed';
+    } else if ((values.value && values.prevValue === null) || (values.value === false && values.prevValue === true)) { // установил
       result.message = 'установил(-а)';
-    }else { // изменил
+      result.messageEn = 'setted';
+    } else { // изменил
       result.message = 'изменил(-а)';
+      result.messageEn = 'changed';
     }
   }
 
-  switch(model.field) {
-  case 'statusId': result.message += ' статус'; break;
-  case 'name': result.message += ' название'; break;
-  case 'typeId': result.message += ' тип'; break;
-  case 'sprintId': result.message += ' спринт'; break;
-  case 'description': result.message += ' описание'; break;
-  case 'prioritiesId': result.message += ' приоритет'; break;
-  case 'plannedExecutionTime': result.message += ' планируемое время исполнения'; break;
-  case 'factExecutionTime': result.message += ' фактическое время исполнения'; break;
-  case 'parentId': result.message += ' родителя'; break;
+  switch (model.field) {
+  case 'statusId':
+    result.message += ' статус';
+    result.messageEn += ' status';
+    break;
+  case 'name':
+    result.message += ' название';
+    result.messageEn += ' name';
+    break;
+  case 'typeId':
+    result.message += ' тип';
+    result.messageEn += ' type';
+    break;
+  case 'sprintId':
+    result.message += ' спринт';
+    result.messageEn += ' sprint';
+    break;
+  case 'description':
+    result.message += ' описание';
+    result.messageEn += ' description';
+    break;
+  case 'prioritiesId':
+    result.message += ' приоритет';
+    result.messageEn += ' приоритет';
+    break;
+  case 'plannedExecutionTime':
+    result.message += ' планируемое время исполнения';
+    result.messageEn += ' planned time';
+    break;
+  case 'factExecutionTime':
+    result.message += ' фактическое время исполнения';
+    result.messageEn += ' fact execution time';
+    break;
+  case 'parentId':
+    result.message += ' родителя';
+    result.messageEn += ' parent';
+    break;
+  case 'isTaskByClient':
+    result.message += ' признак "От клиента"';
+    result.messageEn += ' "From client"';
+    break;
+  default:
+    break;
   }
 
-  result.message += ' ' + entityWord.update;
+  if (model.field !== 'isTaskByClient') {
+    result.message += ' ' + entityWord.ru.update;
+    result.messageEn += ' ' + entityWord.en.update;
+  } else {
+    return result;
+  }
 
-  if(values.value  === null && values.prevValue) { // убрал
-    result.message += ` '${transformValue(model, values, 'prev')}'`;
-  } else if (values.value  && values.prevValue === null) { // установил
-    result.message += ` '${transformValue(model, values)}'`;
-  }else { // изменил
-    if(values.prevValue !== null)
-      result.message += ` с '${transformValue(model, values, 'prev')}'`;
-    if(values.value !== null)
-      result.message += ` на '${transformValue(model, values)}'`;
+  if (values.value === null && values.prevValue) { // убрал
+    result.message += ` '${await transformValue(model, values, 'prev')}'`;
+    result.messageEn += ` '${await transformValue(model, values, 'prev', 'en')}'`;
+  } else if (values.value && values.prevValue === null) { // установил
+    result.message += ` '${await transformValue(model, values)}'`;
+    result.messageEn += ` '${await transformValue(model, values, false, 'en')}'`;
+  } else { // изменил
+    if (values.prevValue !== null) {
+      result.message += ` с '${await transformValue(model, values, 'prev')}'`;
+      result.messageEn += ` from '${await transformValue(model, values, 'prev', 'en')}'`;
+    }
+    if (values.value !== null) {
+      result.message += ` на '${await transformValue(model, values)}'`;
+      result.messageEn += ` to '${await transformValue(model, values, false, 'en')}'`;
+    }
   }
 
   return result;
 }
 
-function transformValue(model, changedProperty, hasPrevChangedProperty = false) {
-  const currentValue = hasPrevChangedProperty ?
-    changedProperty.prevValue :
-    changedProperty.value;
+async function transformValue (model, changedProperty, hasPrevChangedProperty = false, locale = 'ru') {
+  const currentValue = hasPrevChangedProperty
+    ? changedProperty.prevValue
+    : changedProperty.value;
 
   const changedValue = {
-    statusId: queries.dictionary.getName('TaskStatusesDictionary', currentValue),
-    typeId: queries.dictionary.getName('TaskTypesDictionary', currentValue),
+    statusId: await queries.dictionary.getName('TaskStatusesDictionary', currentValue, locale),
+    typeId: await queries.dictionary.getName('TaskTypesDictionary', currentValue, locale),
     sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
     parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
   };
@@ -91,7 +148,7 @@ function transformValue(model, changedProperty, hasPrevChangedProperty = false) 
   return changedValue[model.field] || currentValue;
 }
 
-function declarativeHandlers() {
+function declarativeHandlers () {
   return [
     {
       name: 'create Task',
@@ -100,7 +157,8 @@ function declarativeHandlers() {
       },
       answer: (model) => {
         return {
-          message: `создал(-а) ${entityWord.create} '${model.task.name}'`,
+          message: `создал(-а) ${entityWord.ru.create} '${model.task.name}'`,
+          messageEn: `created ${entityWord.en.create} '${model.task.name}'`,
           entities: {}
         };
       }
@@ -112,7 +170,23 @@ function declarativeHandlers() {
       },
       answer: (model) => {
         return {
-          message: `создал(-а) под${entityWord.create} {subTask}`,
+          message: `создал(-а) под${entityWord.ru.create} {subTask}`,
+          messageEn: `created sub${entityWord.en.create} {subTask}`,
+          entities: {
+            subTask: model.subTask
+          }
+        };
+      }
+    },
+    {
+      name: 'remove Subtask',
+      statement: (model) => {
+        return model.action === 'update' && model.entity === 'Task' && model.entityId !== model.taskId;
+      },
+      answer: (model) => {
+        return {
+          message: `отменил(-а) под${entityWord.ru.delete} {subTask}`,
+          messageEn: `removed sub${entityWord.en.delete} {subTask}`,
           entities: {
             subTask: model.subTask
           }
@@ -127,6 +201,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'установил(-а) исполнителя {performer}',
+          messageEn: 'setted performer {performer}',
           entities: {
             performer: model.performer
           }
@@ -141,9 +216,10 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'убрал(-а) исполнителя {prevPerformer}',
+          messageEn: 'removed performer {prevPerformer}',
           entities: {
             prevPerformer: model.prevPerformer
-          },
+          }
         };
       }
     },
@@ -155,10 +231,11 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'изменил(-а) исполнителя {prevPerformer} на {performer}',
+          messageEn: 'changed performer from {prevPerformer} to {performer}',
           entities: {
             performer: model.performer,
             prevPerformer: model.prevPerformer
-          },
+          }
         };
       }
     },
@@ -170,9 +247,10 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'создал(-а) связь с задачей {linkedTask}',
+          messageEn: 'created a connection with task {linkedTask}',
           entities: {
             linkedTask: model.taskTasks
-          },
+          }
         };
       }
     },
@@ -184,9 +262,10 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'удалил(-а) связь с задачей {linkedTask}',
+          messageEn: 'removed connection with task {linkedTask}',
           entities: {
             linkedTask: model.taskTasks
-          },
+          }
         };
       }
     },
@@ -198,6 +277,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: `создал(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`,
+          messageEn: `created tag '${model.itemTag ? model.itemTag.tag.name : ''}'`
         };
       }
     },
@@ -208,7 +288,8 @@ function declarativeHandlers() {
       },
       answer: (model) => {
         return {
-          message: `удалил(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`
+          message: `удалил(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`,
+          messageEn: `deleted tag '${model.itemTag ? model.itemTag.tag.name : ''}'`
         };
       }
     },
@@ -220,6 +301,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'прикрепил(-а) файл {file}',
+          messageEn: 'attached file {file}',
           entities: {
             file: model.taskAttachments
           }
@@ -234,6 +316,7 @@ function declarativeHandlers() {
       answer: (model) => {
         return {
           message: 'удалил(-а) файл {file}',
+          messageEn: 'removed file {file}',
           entities: {
             file: model.taskAttachments
           }

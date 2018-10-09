@@ -1,4 +1,5 @@
 const { list } = require('./list');
+const { listProject } = require('./listProject');
 const { create } = require('./create');
 const { createDraft } = require('./createDraft');
 const { getDraft } = require('./createDraft');
@@ -16,6 +17,7 @@ module.exports = {
   getTaskSpent,
   getTracksAll,
   list,
+  listProject,
   update,
   updateDraft,
   isNeedCreateDraft,

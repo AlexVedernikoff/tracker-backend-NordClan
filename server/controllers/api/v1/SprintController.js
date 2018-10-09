@@ -4,6 +4,7 @@ const models = require('../../../models');
 const { Sprint } = models;
 const queries = require('../../../models/queries');
 const Sequelize = require('sequelize');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 exports.create = function (req, res, next){
   if (!req.user.canUpdateProject(req.body.projectId)) {
@@ -31,8 +32,8 @@ exports.read = function (req, res, next){
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Sprint.findByPrimary(req.params.id, {
-    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'createdAt', 'deletedAt',
-      'projectId', 'authorId', 'budget', 'riskBudget',
+    attributes: ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime' DEPRECATED,*/ 'createdAt', 'deletedAt',
+      'projectId', 'authorId', 'budget', 'riskBudget', 'qaPercent',
       [Sequelize.literal(`(SELECT count(*)
                                 FROM tasks as t
                                 WHERE t.project_id = "Sprint"."project_id"
@@ -153,7 +154,7 @@ exports.list = function (req, res, next){
 
   if (req.query.name) {
     where.name = {
-      $iLike: '%' + req.query.name + '%'
+      $iLike: layoutAgnostic(req.query.name.trim())
     };
   }
 

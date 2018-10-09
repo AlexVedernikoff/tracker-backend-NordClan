@@ -53,6 +53,12 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       }
     },
+    qaPercent: {
+      field: 'qa_percent',
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
+    },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
@@ -137,7 +143,7 @@ module.exports = function (sequelize, DataTypes) {
 
   };
 
-  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime', 'budget', 'riskBudget'];
+  Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'budget', 'riskBudget'];
 
   Sprint.addHistoryForProject();
 

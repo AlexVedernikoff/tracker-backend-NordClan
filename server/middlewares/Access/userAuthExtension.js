@@ -27,7 +27,7 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
   extensibleUser.isGlobalAdmin = extensibleUser.globalRole === statuses.ADMIN;
 
   extensibleUser.isAdminOfProject = function (projectId) {
-    return this.dataValues.projectsRoles.admin.indexOf(+projectId) !== -1;
+    return this.dataValues.projectsRoles.admin.indexOf(+projectId) !== -1 || extensibleUser.isGlobalAdmin;
   };
   extensibleUser.isUserOfProject = function (projectId) {
     return this.isAdminOfProject(projectId) || this.dataValues.projectsRoles.user.indexOf(+projectId) !== -1;

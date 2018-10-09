@@ -45,6 +45,12 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'typeId',
+            description: 'можно разделять через ","',
+            type: 'integer',
+            in: 'query'
+          },
+          {
             name: 'portfolioId',
             type: 'integer',
             in: 'query'
@@ -200,6 +206,14 @@ module.exports = {
                   type: 'integer',
                   example: 1
                 },
+                statusId: {
+                  type: 'integer',
+                  example: 1
+                },
+                typeId: {
+                  type: 'integer',
+                  example: 1
+                },
                 budget: {
                   type: 'number',
                   example: 1
@@ -212,6 +226,11 @@ module.exports = {
                   description: '0 чтобы сбросить портфель у проекта',
                   type: 'integer',
                   example: 1
+                },
+                gitlabProjectIds: {
+                  description: 'Массив айдишников проектов GitLab',
+                  type: 'array',
+                  example: [1, 2]
                 }
               }
             }
@@ -601,8 +620,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -662,8 +680,7 @@ module.exports = {
                   example: 'yyyy-mm-dd'
                 },
                 allottedTime: {
-                  type: 'number',
-                  example: 1.55
+                  example: 'DEPRECATED'
                 },
                 budget: {
                   type: 'number',
@@ -743,6 +760,7 @@ module.exports = {
           {
             name: 'sprintId',
             type: 'integer',
+            description: 'можно разделять через ","',
             in: 'query'
           },
           {
@@ -755,6 +773,11 @@ module.exports = {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ","',
+            in: 'query'
+          },
+          {
+            name: 'noTag',
+            type: 'boolean',
             in: 'query'
           },
           {
@@ -1516,6 +1539,46 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/user/external/refresh': {
+      put: {
+        tags: ['User'],
+        summary: 'Обновление ссылки регистрации для внешнего пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {
+                login: {
+                  type: 'string',
+                  example: 'string'
+                },
+                firstNameRu: {
+                  type: 'string',
+                  example: 'string'
+                },
+                expiredDate: {
+                  type: 'string',
+                  example: 'yyyy-mm-dd'
+                },
+                active: {
+                  type: 'integer',
+                  example: 1
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
 
     '/timesheetDraft/{timesheetDraftId}/': {
       put: {
@@ -1784,6 +1847,13 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/dictionary/project/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов проектов',
+        responses: responsesCodes
+      }
+    },
     '/dictionary/sprint/status': {
       get: {
         tags: ['Dictionary'],
@@ -1823,6 +1893,29 @@ module.exports = {
       get: {
         tags: ['Dictionary'],
         summary: 'Справочник типов активности в таймшитах',
+        responses: responsesCodes
+      }
+    },
+    '/dictionary/milestone/types': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник типов майлстоунов',
+        responses: responsesCodes
+      }
+    },
+    '/milestones/{id}': {
+      delete: {
+        tags: ['Milestone'],
+        summary: 'Вех проекта',
+        parameters: [
+          {
+            name: 'id',
+            description: 'id вех',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
         responses: responsesCodes
       }
     }

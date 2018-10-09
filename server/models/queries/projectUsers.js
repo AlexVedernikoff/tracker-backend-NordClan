@@ -4,8 +4,6 @@ exports.name = 'projectUsers';
 
 exports.getTransRolesToObject = getTransRolesToObject;
 exports.getUsersByProject = function (projectId, isExternal, attributes = ['userId', 'rolesIds'], t = null) {
-  let response = [];
-
   return models.ProjectUsers
     .findAll({
       where: {
@@ -21,7 +19,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
           where: {
             globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE }
           },
-          attributes: ['id', 'firstNameRu', 'lastNameRu'],
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login']
         },
         {
           as: 'roles',
@@ -34,16 +32,20 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
         // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
       ]
     })
-    .then((projectUsers) => {
-      projectUsers.forEach((projectUser) => {
-        response.push({
-          id: projectUser.user.id,
+    .then(async (projectUsers) => {
+      const projectRoles = await models.ProjectRolesDictionary.findAll();
+      return projectUsers.map((projectUser) => {
+        return {
+          ...projectUser.user.get(),
           fullNameRu: projectUser.user.fullNameRu,
-          roles: getTransRolesToObject(projectUser.roles),
-        });
+          fullNameEn: projectUser.user.fullNameEn,
+          roles: getTransRolesToObject(projectUser.roles, projectRoles)
+        };
       });
 
-      return response;
+    })
+    .catch(error => {
+      throw error;
     });
 
 };
@@ -76,16 +78,11 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 };
 
 
+function getTransRolesToObject (rolesIds, projectRoles) {
+  const projectRoleIds = rolesIds ? rolesIds.map((role) => role.projectRoleId) : [];
 
-function getTransRolesToObject(rolesIds) {
-  const result = {};
-  if (rolesIds) rolesIds = rolesIds.map((role) => role.projectRoleId);
-
-  models.ProjectRolesDictionary.values.forEach(el => {
-    result[el.code] = (rolesIds) ?
-      (rolesIds.indexOf(el.id) > -1)
-      : false;
-  });
-
-  return result;
+  return projectRoles.reduce((acc, el) => ({
+    ...acc,
+    [el.code]: projectRoleIds.indexOf(el.id) > -1
+  }), {});
 }

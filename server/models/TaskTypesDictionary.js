@@ -13,6 +13,11 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
+    },
+    nameEn: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'name_en'
     }
   }, {
     underscored: true,
@@ -31,15 +36,7 @@ module.exports = function (sequelize, DataTypes) {
       }});
   };
 
-  TaskTypes.values = [
-    {id: 1, name: 'Фича'},
-    {id: 3, name: 'Доп. Фича'},
-    {id: 2, name: 'Баг'},
-    {id: 4, name: 'Регрес. Баг'},
-    {id: 5, name: 'Баг от клиента'}
-  ];
-
-  TaskTypes.defaultSelect = ['id', 'name'];
+  TaskTypes.defaultSelect = ['id', 'name', 'nameEn'];
 
   return TaskTypes;
 };

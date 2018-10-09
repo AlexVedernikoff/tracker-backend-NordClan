@@ -98,37 +98,37 @@ module.exports = function (templateName, input){
       ${createBlock(`
         В проект
         ${createLink(
-          i.task.project.name,
-          `${config.templateBaseUrl}/projects/${i.task.project.id}`
-        )}
+    i.task.project.name,
+    `${config.templateBaseUrl}/projects/${i.task.project.id}`
+  )}
         добавлена новая задача:
       `)}
 
       ${createBlock(
-          createLink(
-          `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
-          `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
-        )
-      )}
+    createLink(
+      `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
+      `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
+    )
+  )}
 
       ${
-        i.task.description
-        ? createBlock(i.task.description)
-        : ''
-      }
+  i.task.description
+    ? createBlock(i.task.description)
+    : ''
+}
       
       ${
-        createBlock(`
+  createBlock(`
           <span style="font-weight: bold;">Приоритет:</span> ${ getTaskPriorityName(i.task.prioritiesId) }
           <br>
           <span style="font-weight: bold;">Автор:</span> ${i.task.author.fullNameRu}
           ${
-            i.task.performer
-            ? `<br><span style="font-weight: bold;">Исполнитель:</span> ${i.task.performer.fullNameRu}`
-            : ''
-          }
+  i.task.performer
+    ? `<br><span style="font-weight: bold;">Исполнитель:</span> ${i.task.performer.fullNameRu}`
+    : ''
+}
         `)
-      }
+}
 
     ${mailFooter}`;
 
@@ -184,17 +184,17 @@ module.exports = function (templateName, input){
       `)}
 
       ${createBlock(
-        createLink(
-          `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
-          `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
-        )
-      )}
+    createLink(
+      `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
+      `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
+    )
+  )}
 
       ${
-        i.task.description
-        ? createBlock(i.task.description)
-        : ''
-      }
+  i.task.description
+    ? createBlock(i.task.description)
+    : ''
+}
 
       ${createBlock(`
           <span style="font-weight: bold">Приоритет задачи:</span>
@@ -205,17 +205,17 @@ module.exports = function (templateName, input){
       `)}
 
       ${
-        i.task.comments && i.task.comments.length > 0
-        ? createBlock(`
+  i.task.comments && i.task.comments.length > 0
+    ? createBlock(`
             <span style="font-weight: bold;">${getTaskLastComment(i.task).author.fullNameRu}:</span>
             <br>
             ${createLink(
-              getTaskLastComment(i.task).text,
-              `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
-            )}
+    getTaskLastComment(i.task).text,
+    `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
+  )}
           `)
-        : ''
-      }
+    : ''
+}
 
       ${mailFooter}
     `;
@@ -235,8 +235,8 @@ module.exports = function (templateName, input){
       `)}
 
       ${createBlock(
-        createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
-      )}
+    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+  )}
 
       ${createBlock(`
         <span style="font-weight: bold">${i.comment.author.fullNameRu}:</span>
@@ -260,13 +260,13 @@ module.exports = function (templateName, input){
         готова задача:
       `)}
       ${createBlock(
-        createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
-      )}
+    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+  )}
       ${
-        i.task.description
-        ? createBlock(i.task.description)
-        : ''
-      }
+  i.task.description
+    ? createBlock(i.task.description)
+    : ''
+}
       ${createBlock(`
         <span style="font-weight: bold">Приоритет задачи:</span>
         ${ getTaskPriorityName(i.task.prioritiesId) }
@@ -276,17 +276,17 @@ module.exports = function (templateName, input){
       `)}
 
       ${
-        i.task.comments && i.task.comments.length > 0
-        ? createBlock(`
+  i.task.comments && i.task.comments.length > 0
+    ? createBlock(`
             <span style="font-weight: bold;">${getTaskLastComment(i.task).author.fullNameRu}:</span>
             <br>
             ${createLink(
-              getTaskLastComment(i.task).text,
-              `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
-            )}
+    getTaskLastComment(i.task).text,
+    `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
+  )}
           `)
-        : ''
-      }
+    : ''
+}
       ${mailFooter}
     `;
 
@@ -306,6 +306,28 @@ module.exports = function (templateName, input){
     break;
 
   case ('newTaskCommentMention'):
+    subject = `${i.task.project.name}. Вас упомянули в комментарии к задаче ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
+    body = `
+      ${mailHeader}
+
+      ${createBlock(`
+        В проекте 
+        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        вас упомянули в комментарии к задаче:
+      `)}
+
+      ${createBlock(
+    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+  )}
+
+      ${createBlock(`
+        <span style="font-weight: bold">${i.comment.author.fullNameRu}:</span>
+        <br>
+        ${createLink(i.comment.text, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}`)}
+      `)}
+
+      ${mailFooter}
+    `;
     break;
 
   default:

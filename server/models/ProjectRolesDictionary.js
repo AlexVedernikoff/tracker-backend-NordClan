@@ -15,6 +15,12 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(30),
       trim: true,
       allowNull: false
+    },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(30),
+      trim: true,
+      allowNull: false
     }
   }, {
     indexes: [
@@ -29,23 +35,11 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'project_roles'
   });
 
-  ProjectRoles.values = [
-    {id: 1, code: 'account', name: 'Account'},
-    {id: 2, code: 'pm', name: 'PM'},
-    {id: 3, code: 'ux', name: 'UX'},
-    {id: 4, code: 'analyst', name: 'Аналитик'},
-    {id: 5, code: 'back', name: 'Back'},
-    {id: 6, code: 'front', name: 'Front'},
-    {id: 7, code: 'mobile', name: 'Mobile'},
-    {id: 8, code: 'teamLead', name: 'TeamLead(Code review)'},
-    {id: 9, code: 'qa', name: 'QA'},
-    {id: 10, code: 'unbillable', name: 'Unbillable'},
-    {id: 11, code: 'customer', name: 'Customer'}
-  ];
-
   ProjectRoles.ADMIN_IDS = [1, 2];
   ProjectRoles.UNBILLABLE_ID = 2;
   ProjectRoles.UNBILLABLE_ID = 10;
   ProjectRoles.CUSTOMER_ID = 11;
+
   return ProjectRoles;
+
 };

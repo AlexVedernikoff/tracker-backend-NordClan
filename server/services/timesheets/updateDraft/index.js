@@ -1,42 +1,54 @@
 const models = require('../../../models');
-const { Task, Timesheet, TimesheetDraft } = models;
+const { Timesheet, TimesheetDraft } = models;
 const queries = require('../../../models/queries');
+const createError = require('http-errors');
+
 
 exports.updateDraft = async (params, draftId, userId) => {
-  const updatedDraft = !params.spentTime
-    ? await updateDraft(params, draftId)
-    : null;
+  try {
+    const updatedDraft = !params.spentTime
+      ? await updateDraft(params, draftId)
+      : null;
 
-  const createdTimesheet = params.spentTime
-    ? await createTimesheet(params, draftId, userId)
-    : {};
+    const createdTimesheet = params.spentTime
+      ? await createTimesheet(params, draftId, userId)
+      : null;
 
-  return { updatedDraft, createdTimesheet };
+    return { updatedDraft, createdTimesheet };
+  } catch (e) {
+    throw e;
+  }
 };
 
 async function updateDraft (params, draftId) {
-  const updatedDraft = await TimesheetDraft.update(params, {
+  const [, [updatedDraft]] = await TimesheetDraft.update(params, {
     where: { id: draftId },
     returning: true
   });
 
   return {
-    ...updatedDraft[1][0].dataValues,
+    ...updatedDraft.get(),
     isDraft: true
   };
 }
 
 async function createTimesheet (params, draftId, userId) {
-  const timesheetParams = await getTimesheetParams(params, draftId, userId);
+  try {
+    if (isDraftForMagicActivity(draftId) || await TimesheetDraft.findByPrimary(draftId)) {
+      const timesheetParams = await getTimesheetParams(params, draftId, userId);
 
-  const timesheet = await Timesheet.create(timesheetParams, { returning: true });
-  const createdTimesheet = await queries.timesheet.getTimesheet(timesheet.id);
+      const timesheet = await Timesheet.create(timesheetParams, { returning: true });
+      const createdTimesheet = await queries.timesheet.getTimesheet(timesheet.id);
 
-  if (!isDraftForMagicActivity(draftId)) {
-    await TimesheetDraft.destroy({ where: { id: draftId } });
+      if (!isDraftForMagicActivity(draftId)) {
+        await TimesheetDraft.destroy({ where: { id: draftId } });
+      }
+      return transformTimesheet(createdTimesheet);
+    }
+    throw createError(422, 'Timesheet already exist');
+  } catch (e) {
+    throw e;
   }
-
-  return transformTimesheet(createdTimesheet);
 }
 
 function transformTimesheet (timesheet) {
@@ -47,6 +59,7 @@ function transformTimesheet (timesheet) {
 
   timesheet.dataValues.onDate = timesheet.onDate;
   timesheet.dataValues.isDraft = false;
+  timesheet.dataValues.task = timesheet.dataValues.task.dataValues;
   return timesheet.dataValues;
 }
 

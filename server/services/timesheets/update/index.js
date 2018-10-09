@@ -7,14 +7,15 @@ exports.update = async (req) => {
   const updatedTimesheet = await models.Timesheet.update(req.body, {
     where: getWhere(req),
     include: getInclude(),
-    returning: true
+    returning: true,
+    userId: req.user.id
   });
 
   if (!updatedTimesheet[1][0]) {
     throw createError(404);
   }
 
-  return updatedTimesheet[1];
+  return updatedTimesheet[1][0].dataValues;
 };
 
 function getWhere (req) {
@@ -22,8 +23,10 @@ function getWhere (req) {
     id: req.body.sheetId
   };
 
+  const userId = req.body.userId || req.user.id; // Todo: validate user rights
+
   if (!req.isSystemUser) {
-    where.userId = req.user.id;
+    where.userId = userId;
   }
 
   return where;
@@ -35,7 +38,10 @@ function getInclude () {
       as: 'task',
       model: models.Task,
       required: false,
-      attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime'],
+      attributes: ['id', 'name', 'plannedExecutionTime', [
+        models.sequelize.literal(`(SELECT sum(tsh.spent_time)
+        FROM timesheets AS tsh
+        WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']],
       paranoid: false,
       include: [
         {

@@ -6,7 +6,7 @@ const models = require('../../../models');
 const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
-
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 const gitLabService = require('../../../services/gitLab');
 
 exports.create = function (req, res, next){
@@ -111,7 +111,7 @@ exports.read = function (req, res, next){
               where: {
                 globalRole: { $not: models.User.EXTERNAL_USER_ROLE }
               },
-              attributes: ['id', 'firstNameRu', 'lastNameRu', 'photo', 'skype', 'emailPrimary', 'mobile']
+              attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'photo', 'skype', 'emailPrimary', 'mobile']
             },
             {
               as: 'roles',
@@ -120,8 +120,29 @@ exports.read = function (req, res, next){
           ],
           order: [
             ['id', 'DESC']
-            // [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
-            // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
+          ]
+        },
+        {
+          as: 'externalUsers',
+          model: models.ProjectUsers,
+          attributes: models.ProjectUsers.defaultSelect,
+          separate: true,
+          include: [
+            {
+              as: 'user',
+              model: models.User,
+              where: {
+                globalRole: models.User.EXTERNAL_USER_ROLE
+              },
+              attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'photo', 'skype', 'emailPrimary', 'mobile', 'description']
+            },
+            {
+              as: 'roles',
+              model: models.ProjectUsersRoles
+            }
+          ],
+          order: [
+            ['id', 'DESC']
           ]
         },
         {
@@ -142,11 +163,13 @@ exports.read = function (req, res, next){
       if (!model) return next(createError(404));
       const usersData = [];
       if (model.projectUsers) {
+        const projectRoles = await models.ProjectRolesDictionary.findAll();
         model.projectUsers.forEach((projectUser) => {
           usersData.push({
             id: projectUser.user.id,
             fullNameRu: projectUser.user.fullNameRu,
-            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles)
+            fullNameEn: projectUser.user.fullNameEn,
+            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
           });
         });
       }
@@ -258,11 +281,9 @@ exports.update = function (req, res, next){
                 const updatedParams = { ...req.body, id: model.id };
                 ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
 
-                if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+                if (req.body.gitlabProjectIds) {
                   gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
                   model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
-                } else {
-                  model.dataValues.gitlabProjects = [];
                 }
 
                 res.json(model);
@@ -317,7 +338,7 @@ exports.list = function (req, res, next){
   // }
 
   const include = [];
-  const where = {};
+  let where = {};
 
   if (!req.user.isGlobalAdmin && !req.user.isVisor) {
     where.id = req.user.dataValues.projects;
@@ -328,7 +349,7 @@ exports.list = function (req, res, next){
   }
 
   if (req.query.name) {
-    where.name = { $iLike: '%' + req.query.name + '%' };
+    where.name = { $iLike: layoutAgnostic(req.query.name.trim()) };
   }
 
   if (req.query.statusId) {
@@ -337,8 +358,52 @@ exports.list = function (req, res, next){
     };
   }
 
+  if (req.query.typeId) {
+    where.typeId = {
+      in: req.query.typeId.toString().split(',').map((el)=>el.trim())
+    };
+  }
+
   if (req.query.tags) {
     req.query.tags = req.query.tags.split(',').map((el) => el.toString().trim().toLowerCase());
+  }
+
+  if (req.query.dateSprintBegin) {
+    const dateSprintBegin = moment(req.query.dateSprintBegin).format('YYYY-MM-DD');
+    where = Sequelize.and(where, Sequelize.literal(
+      `(
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}' 
+          AND fact_start_date = (SELECT MIN(fact_start_date)
+            FROM sprints
+            WHERE project_id = "Project"."id"
+            AND deleted_at IS NULL
+          )
+        ))
+        OR (
+          "Project"."id" NOT IN (SELECT project_id FROM sprints WHERE project_id IS NOT NULL AND deleted_at IS NULL)
+          AND "Project"."created_at" >= '${dateSprintBegin}'
+        )
+      )`
+    ));
+  }
+
+  if (req.query.dateSprintEnd) {
+    const dateSprintEnd = moment(req.query.dateSprintEnd).format('YYYY-MM-DD');
+    where = Sequelize.and(where, Sequelize.literal(
+      `(
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_finish_date <= '${dateSprintEnd}'
+          AND fact_finish_date = (SELECT MAX(fact_finish_date)
+            FROM sprints 
+            WHERE project_id = "Project"."id"
+            AND deleted_at IS NULL
+          )
+        ))
+        OR (
+          "Project"."id" NOT IN (SELECT project_id FROM sprints WHERE project_id IS NOT NULL AND deleted_at IS NULL)
+          AND ("Project"."completed_at" IS NULL OR "Project"."completed_at" <= '${dateSprintEnd}')
+        )
+      )`
+    ));
   }
 
   const userRole = req.user.dataValues.globalRole;
@@ -411,6 +476,7 @@ exports.list = function (req, res, next){
       as: 'sprintForQuery',
       model: Sprint,
       attributes: [],
+      required: false,
       where: {
         $or: [
           {
@@ -450,6 +516,7 @@ exports.list = function (req, res, next){
       'description',
       'prefix',
       'statusId',
+      'typeId',
       'notbillable',
       'portfolioId',
       'authorId',
@@ -510,7 +577,6 @@ exports.list = function (req, res, next){
           ]
         })
         .then(projects => {
-
           return Project
             .count({
               where: where,
@@ -551,3 +617,45 @@ exports.list = function (req, res, next){
     })
     .catch(err => next(err));
 };
+
+exports.addGitlabProject = async function (req, res, next) {
+  const { projectId, path } = req.body;
+  try {
+    const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
+    res.json(gitlabProject);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.getGitlabNamespaces = async function (req, res, next) {
+  try {
+    const namespaces = await gitLabService.projects.getNamespacesList();
+    res.json(namespaces);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.createGitlabProject = async function (req, res, next) {
+  const {name, namespace_id} = req.body;
+  const projectId = req.params.id;
+  try {
+    const project = await gitLabService.projects.createProject(name, namespace_id, projectId);
+    res.json(project);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.getProjects = async function (req, res, next) {
+  const { id } = req.params;
+  const project = await Project.find({where: {id}});
+  try {
+    const gitlabProjects = await gitLabService.projects.getProjects(project.gitlabProjectIds);
+    res.json(gitlabProjects);
+  } catch (e) {
+    next(e);
+  }
+};
+

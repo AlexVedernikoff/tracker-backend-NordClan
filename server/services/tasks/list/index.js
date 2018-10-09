@@ -1,10 +1,11 @@
 const models = require('../../../models');
 const queries = require('../../../models/queries');
-const _ = require('underscore');
+const moment = require('moment');
 const { Task, Tag, ItemTag } = models;
-
+const layoutAgnostic = require('../../layoutAgnostic');
 exports.list = async function (req) {
   let prefixNeed = false;
+  const selectWithoutTags = req.query.noTag === 'true';
 
   if (req.query.fields) {
     req.query.fields = req.query.fields.split(',').map((el) => el.trim());
@@ -26,8 +27,8 @@ exports.list = async function (req) {
     ? req.query.tags.split(',')
     : req.query.tags;
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole);
-  const queryWhere = createWhereForRequest(req);
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole, selectWithoutTags);
+  const queryWhere = createWhereForRequest(req, selectWithoutTags);
 
   if (!req.query.pageSize && !queryWhere.projectId && !queryWhere.sprintId && !queryWhere.performerId) {
     req.query.pageSize = 100;
@@ -49,17 +50,18 @@ exports.list = async function (req) {
     offset: queryOffset,
     include: includeForSelect,
     where: queryWhere,
-    subQuery: true,
+    subQuery: false,
     order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
       + ', "sprint"."fact_start_date" ASC'
-      + ', "Task"."statusId" ASC'
-      + ', "Task"."prioritiesId" ASC'
-      + ', "Task"."name" ASC')
+      + ', "statusId" ASC'
+      + ', "prioritiesId" ASC'
+      + ', "name" ASC')
   });
 
   const count = await Task.count({
     where: queryWhere,
     include: includeForCount,
+    subQuery: false,
     group: ['Task.id']
   });
 
@@ -84,7 +86,7 @@ exports.list = async function (req) {
   return responseObject;
 };
 
-function createWhereForRequest (req) {
+function createWhereForRequest (req, selectWithoutTags) {
   const where = {
     deletedAt: { $eq: null } // IS NULL
   };
@@ -104,7 +106,7 @@ function createWhereForRequest (req) {
       where.id = req.query.name;
     } else {
       where.name = {
-        $iLike: '%' + req.query.name + '%'
+        $iLike: layoutAgnostic(req.query.name)
       };
     }
   }
@@ -160,10 +162,24 @@ function createWhereForRequest (req) {
     }
   }
 
+  if (req.query.dateFrom) {
+    where.created_at = {...where.created_at, $gte: moment(req.query.dateFrom, 'DD.MM.YYYY').startOf('day').toDate()};
+  }
+
+  if (req.query.dateTo) {
+    where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
+  }
+
+  if (selectWithoutTags) {
+    where['$"tags.ItemTag"."tag_id"$'] = {
+      $is: null
+    };
+  }
+
   return where;
 }
 
-async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role) {
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
   const parsedTags = tagsParams
     ? tagsParams.map((el) => el.toString().trim().toLowerCase())
     : null;
@@ -180,11 +196,39 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: models.User.defaultSelect
   };
 
+  const includeParentTask = {
+    as: 'parentTask',
+    model: models.Task,
+    attributes: ['id', 'name']
+  };
+
+  const includeSubTasks = {
+    as: 'subTasks',
+    model: models.Task,
+    attributes: ['id', 'name'],
+    where: {
+      statusId: {
+        $notIn: [9] // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
+      }
+    },
+    required: false
+  };
+
+  const includeLLnkedTasks = {
+    as: 'linkedTasks',
+    model: models.Task,
+    attributes: ['id', 'name'],
+    through: {
+      model: models.TaskTasks,
+      attributes: []
+    }
+  };
+
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
     attributes: role !== 'EXTERNAL_USER'
-      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'allottedTime']
+      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate'/*, allottedTime' DEPRECATED*/, 'budget']
       : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
   };
 
@@ -223,10 +267,21 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: ['prefix']
   };
 
-  const includeForSelect = [ includeAuthor, includePerformer, includeSprint, includeTagSelect ];
+  const includeForSelect = [
+    includeAuthor,
+    includeParentTask,
+    includeSubTasks,
+    includeLLnkedTasks,
+    includePerformer,
+    includeSprint,
+    includeTagSelect
+  ];
   if (prefixNeed) includeForSelect.push(includeProject);
 
   const includeForCount = [];
+  if (selectWithoutTags) {
+    includeForCount.push(includeTagSelect);
+  }
   if (parsedTags) {
     includeForCount.push(includeTagConst);
 

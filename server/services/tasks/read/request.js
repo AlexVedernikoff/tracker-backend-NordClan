@@ -21,7 +21,7 @@ exports.findByPrimary = (id, role) => {
       {
         as: 'project',
         model: models.Project,
-        attributes: ['id', 'name', 'prefix']
+        attributes: ['id', 'name', 'prefix', 'qaPercent']
       },
       {
         as: 'parentTask',
@@ -68,12 +68,12 @@ exports.findByPrimary = (id, role) => {
       {
         as: 'sprint',
         model: models.Sprint,
-        attributes: ['id', 'name']
+        attributes: ['id', 'name', 'qaPercent']
       },
       {
         as: 'performer',
         model: models.User,
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo']
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameEn', 'fullNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo']
       },
       {
         as: 'attachments',

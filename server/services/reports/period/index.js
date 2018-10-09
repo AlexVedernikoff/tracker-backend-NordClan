@@ -1,5 +1,5 @@
 const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, ProjectUsersRoles,
-  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint} = require('../../../models');
+  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint, sequelize} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
@@ -55,7 +55,10 @@ exports.getReport = async function (projectId, criteria) {
         as: 'task',
         model: Task,
         required: false,
-        attributes: ['id', 'name', 'plannedExecutionTime', 'factExecutionTime', 'projectId', 'typeId', 'sprintId'],
+        attributes: ['id', 'name', 'plannedExecutionTime', [
+          sequelize.literal(`(SELECT sum(tsh.spent_time)
+          FROM timesheets AS tsh
+          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime'], 'projectId', 'typeId', 'sprintId'],
         paranoid: false
       },
       {
@@ -70,6 +73,7 @@ exports.getReport = async function (projectId, criteria) {
             model: ProjectUsers,
             where: { projectId: queryParams.projectId },
             attributes: ['id', 'rolesIds'],
+            paranoid: false,
             include: [
               {
                 as: 'roles',
@@ -85,6 +89,11 @@ exports.getReport = async function (projectId, criteria) {
       [ 'onDate', 'ASC' ]
     ]
   });
+
+  // Подгрузка словарей из БД
+  const projectRolesValues = await ProjectRolesDictionary.findAll();
+  const taskTypesValues = await TaskTypesDictionary.findAll();
+
   const timeSheets = timeSheetsDbData.map(timeSheet => {
     const data = timeSheet.dataValues;
     Object.assign(data, {user: data.user.dataValues});
@@ -107,11 +116,11 @@ exports.getReport = async function (projectId, criteria) {
       .map(role => role.projectRoleId)
       .sort((role1, role2) => role1 - role2);
     const userRolesNames = rolesIds.map(roleId =>
-      ProjectRolesDictionary.values.find(item => item.id === roleId).name).join(', ');
+      projectRolesValues.find(item => item.id === roleId).name).join(', ');
     delete data.user.usersProjects;
     data.user.userRolesNames = userRolesNames;
 
-    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId) : null;
+    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues) : null;
     return data;
   });
 
@@ -280,8 +289,8 @@ function generateMessage (errors) {
   return `Incorrect params - ${incorrectParams}`;
 }
 
-function getTaskTypeName (typeId) {
-  return TaskTypesDictionary.values.find(item => item.id === typeId).name;
+function getTaskTypeName (typeId, taskTypesValues) {
+  return taskTypesValues.find(item => item.id === typeId).name;
 }
 
 function formatDate (date) {

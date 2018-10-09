@@ -12,7 +12,7 @@ const tokenSecret = 'token_s';
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
 
-  if (/\/auth\/login$/ui.test(req.url) || /\/user\/password/ui.test(req.url)){//potential defect /blabla/auth/login - is not validated
+  if (/\/auth\/login$/ui.test(req.url) || (/\/user\/password/ui).test(req.url)){//potential defect /blabla/auth/login - is not validated
     return next();
   }
 
@@ -100,6 +100,48 @@ exports.checkToken = function (req, res, next) {
     .catch((err) => next(err));
 };
 
+exports.getUserByToken = function (header) {
+  if (!doesAuthorizationSocket(header)) {
+    return Promise.resolve(null);
+  }
+
+  try {
+    const headerObj = header.cookie.split(';').reduce((acc, cur) => {
+      const arr = (cur.trim()).split('=');
+      acc[arr[0]] = arr[1];
+      return acc;
+    }, {});
+
+    const token = headerObj.authorization.split('%20')[1];
+    const decoded = jwt.decode(token, tokenSecret);
+
+
+    return User.findOne({
+      where: {
+        login: decoded.user.login,
+        active: 1
+      },
+      attributes: User.defaultSelect,
+      include: [
+        {
+          as: 'token',
+          model: UserTokens,
+          attributes: ['expires'],
+          required: true,
+          where: {
+            token: token,
+            expires: {
+              $gt: moment().format() // expires > now
+            }
+          }
+        }
+      ]
+    });
+  } catch (err) {
+    return Promise.reject(err);
+  }
+};
+
 exports.createJwtToken = function (user) {
   const payload = {
     user: user,
@@ -111,6 +153,10 @@ exports.createJwtToken = function (user) {
 function doesAuthorizationExist (req) {
   return ((req.headers['system-authorization'] || req.cookies['system-authorization'])
     || (req.headers.authorization || req.cookies.authorization));
+}
+
+function doesAuthorizationSocket (header) {
+  return header.cookie || header.authorization;
 }
 
 function isSystemUser (req) {

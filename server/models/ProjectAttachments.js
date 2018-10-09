@@ -1,6 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const ProjectAttachments = sequelize.define('ProjectAttachments', {
     id: {
       type: DataTypes.INTEGER,
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
     projectId: {
       field: 'project_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     fileName: {
       field: 'file_name',
@@ -32,15 +32,15 @@ module.exports = function(sequelize, DataTypes) {
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     size: {
       field: 'size',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     type: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(80),
       trim: true,
       allowNull: false
     },
@@ -53,7 +53,7 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: true,
     tableName: 'project_attachments',
     hooks: {
-      afterFind: function(model) {
+      afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
     }
