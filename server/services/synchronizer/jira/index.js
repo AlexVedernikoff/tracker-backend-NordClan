@@ -107,7 +107,7 @@ exports.jiraSync = async function (headers, data) {
       {
         externalId: task.id.toString(),
         name: task.summary,
-        factExecutionTime: task.timeSpent,
+        factExecutionTime: task.timeSpent / 100,
         sprintId: sInd >= 0 ? resSprints[sInd].id : null,
         typeId: typeAssociation.internalTaskTypeId,
         statusId: statusAssociation.internalStatusId,
@@ -160,8 +160,8 @@ exports.jiraSync = async function (headers, data) {
             taskId: tsk.id,
             sprintId: sprint ? sprint.id : null,
             userId: user.id,
-            onDate: moment(parseFloat(worklog.onDate)).format('YYYY-MM-DD'),
-            spentTime: worklog.timeSpent,
+            onDate: moment(new Date(worklog.onDate)).format('YYYY-MM-DD'), // поправить
+            spentTime: worklog.timeSpent / 100,
             externalId: worklog.id,
             comment: worklog.comment,
             typeId: 1,
