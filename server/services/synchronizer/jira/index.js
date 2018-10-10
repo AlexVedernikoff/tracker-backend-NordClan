@@ -31,10 +31,13 @@ exports.jiraSync = async function (headers, data) {
     UserEmailAssociation.findAll({})
   ]);
 
+  // подгрузка хостнейма джиры по токену
+  const jiraHostname = await getJiraHostname(headers);
+
   // Подготовка проекта
   const [{ projectId }] = data;
   const project = await Project.findOne({
-    where: { externalId: projectId }
+    where: { externalId: projectId, jiraHostname }
   });
 
   // Подготовка пользователей
@@ -309,4 +312,11 @@ async function getJiraProjectUsers (headers, projectId) {
     }
   );
   return users;
+}
+
+async function getJiraHostname (headers) {
+  const { data: hostname } = await request.get(`${config.ttiUrl}/trololo`, {
+    headers
+  });
+  return hostname;
 }

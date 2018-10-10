@@ -8,6 +8,7 @@ const { Timesheet } = models;
 exports.synchronizeTimesheets = async function (timesheets) {
   const extIds = timesheets.map(s => s.externalId);
   let createdTimesheets = await Timesheet.findAll({
+    // в поиске использовать ид проекта
     where: { externalId: { $in: extIds } }
   });
   let newTimesheets = timesheets.filter(t => {

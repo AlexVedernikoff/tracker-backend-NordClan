@@ -8,6 +8,7 @@ const { Sprint } = models;
 exports.synchronizeSprints = async function (sprints) {
   const extIds = sprints.map(s => s.externalId);
   let createdSprints = await Sprint.findAll({
+    // в поиске использовать ид проекта
     where: { externalId: { $in: extIds } }
   });
   const newSprints = sprints.filter(spr => {

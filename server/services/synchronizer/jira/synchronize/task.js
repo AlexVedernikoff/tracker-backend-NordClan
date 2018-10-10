@@ -8,6 +8,7 @@ const { Task } = models;
 exports.synchronizeTasks = async function (tasks) {
   const extIds = tasks.map(s => s.externalId);
   let createdTasks = await Task.findAll({
+    // в поиске использовать ид проекта
     where: { externalId: { $in: extIds } }
   });
   let newTasks = tasks.filter(t => {
