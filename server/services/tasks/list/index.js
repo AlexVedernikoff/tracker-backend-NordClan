@@ -190,7 +190,7 @@ function createWhereForRequest (req, selectWithoutTags) {
           { sprintId: { $eq: null } },
           {
             sprintId: {
-              in: req.query.sprintId
+              in: sprints
                 .toString()
                 .split(',')
                 .map(el => el.trim())
