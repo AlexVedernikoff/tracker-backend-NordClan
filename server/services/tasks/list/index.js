@@ -9,7 +9,7 @@ exports.list = async function (req) {
   let prefixNeed = false;
 
   if (req.query.fields) {
-    req.query.fields = req.query.fields.split(',').map((el) => el.trim());
+    req.query.fields = req.query.fields.split(',').map(el => el.trim());
 
     if (req.query.fields.indexOf('prefix') !== -1) {
       prefixNeed = true;
@@ -24,19 +24,21 @@ exports.list = async function (req) {
 
   const userRole = req.user.dataValues.globalRole;
 
-  let tags = typeof req.query.tags === 'string'
-    ? req.query.tags.split(',')
-    : req.query.tags;
+  let tags = typeof req.query.tags === 'string' ? req.query.tags.split(',') : req.query.tags;
 
   // Поиск тасок без тега
-  const selectWithoutTags = Array.isArray(tags)
-    && tags.length === 1
-    && NOTAG.indexOf(tags[0].toLowerCase()) !== -1;
+  const selectWithoutTags = Array.isArray(tags) && tags.length === 1 && NOTAG.indexOf(tags[0].toLowerCase()) !== -1;
   if (selectWithoutTags) {
     tags = [];
   }
 
-  const { includeForCount, includeForSelect } = await createIncludeForRequest(tags, prefixNeed, req.query.performerId, userRole, selectWithoutTags);
+  const { includeForCount, includeForSelect } = await createIncludeForRequest(
+    tags,
+    prefixNeed,
+    req.query.performerId,
+    userRole,
+    selectWithoutTags
+  );
   const queryWhere = createWhereForRequest(req, selectWithoutTags);
 
   if (!req.query.pageSize && !queryWhere.projectId && !queryWhere.sprintId && !queryWhere.performerId) {
@@ -49,9 +51,7 @@ exports.list = async function (req) {
     req.query.currentPage = 1;
   }
 
-  const queryOffset = req.query.currentPage > 0
-    ? req.query.pageSize * (req.query.currentPage - 1)
-    : 0;
+  const queryOffset = req.query.currentPage > 0 ? req.query.pageSize * (req.query.currentPage - 1) : 0;
 
   const tasks = await Task.findAll({
     attributes: queries.task.defaultAttributes(userRole),
@@ -60,11 +60,13 @@ exports.list = async function (req) {
     include: includeForSelect,
     where: queryWhere,
     subQuery: false,
-    order: models.sequelize.literal('CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
-      + ', "sprint"."fact_start_date" ASC'
-      + ', "statusId" ASC'
-      + ', "prioritiesId" ASC'
-      + ', "name" ASC')
+    order: models.sequelize.literal(
+      'CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
+        + ', "sprint"."fact_start_date" ASC'
+        + ', "statusId" ASC'
+        + ', "prioritiesId" ASC'
+        + ', "name" ASC'
+    )
   });
 
   const count = await Task.count({
@@ -77,7 +79,7 @@ exports.list = async function (req) {
   const projectCount = count.length;
 
   if (prefixNeed) {
-    tasks.forEach((task) => {
+    tasks.forEach(task => {
       task.dataValues.prefix = task.project.prefix;
       delete task.dataValues.project;
     });
@@ -85,8 +87,8 @@ exports.list = async function (req) {
 
   const responseObject = {
     currentPage: req.query.currentPage,
-    pagesCount: (req.query.pageSize) ? Math.ceil(projectCount / req.query.pageSize) : 1,
-    pageSize: (req.query.pageSize) ? req.query.pageSize : projectCount,
+    pagesCount: req.query.pageSize ? Math.ceil(projectCount / req.query.pageSize) : 1,
+    pageSize: req.query.pageSize ? req.query.pageSize : projectCount,
     rowsCountAll: projectCount,
     rowsCountOnCurrentPage: tasks.length,
     data: tasks
@@ -123,19 +125,28 @@ function createWhereForRequest (req, selectWithoutTags) {
   // Если +req.query.statusId === 0 или указан спринт вывожу все статусы, если указаны конкретные вывожу их.
   if (req.query.statusId && +req.query.statusId !== 0) {
     where.statusId = {
-      in: req.query.statusId.toString().split(',').map((el) => el.trim())
+      in: req.query.statusId
+        .toString()
+        .split(',')
+        .map(el => el.trim())
     };
   }
 
   if (req.query.authorId && +req.query.authorId !== 0) {
     where.authorId = {
-      in: req.query.authorId.toString().split(',').map((el) => el.trim())
+      in: req.query.authorId
+        .toString()
+        .split(',')
+        .map(el => el.trim())
     };
   }
 
   if (req.query.prioritiesId) {
     where.prioritiesId = {
-      in: req.query.prioritiesId.toString().split(',').map((el) => el.trim())
+      in: req.query.prioritiesId
+        .toString()
+        .split(',')
+        .map(el => el.trim())
     };
   }
 
@@ -147,13 +158,19 @@ function createWhereForRequest (req, selectWithoutTags) {
 
   if (req.query.typeId) {
     where.typeId = {
-      in: req.query.typeId.toString().split(',').map((el) => el.trim())
+      in: req.query.typeId
+        .toString()
+        .split(',')
+        .map(el => el.trim())
     };
   }
 
   if (req.query.projectId) {
     where.projectId = {
-      in: req.query.projectId.toString().split(',').map((el) => el.trim())
+      in: req.query.projectId
+        .toString()
+        .split(',')
+        .map(el => el.trim())
     };
   } else if (!req.user.isGlobalAdmin && !req.user.isVisor) {
     where.projectId = req.user.dataValues.projects;
@@ -165,18 +182,48 @@ function createWhereForRequest (req, selectWithoutTags) {
         $eq: null
       };
     } else {
-      where.sprintId = {
-        in: req.query.sprintId.toString().split(',').map((el) => el.trim())
-      };
+      const ind = req.query.sprintId.findIndex(e => e === '0');
+      if (~ind) {
+        const sprints = [...req.query.sprintId];
+        sprints.splice(ind, 1);
+        where.$or = [
+          { sprintId: { $eq: null } },
+          {
+            sprintId: {
+              in: sprints
+                .toString()
+                .split(',')
+                .map(el => el.trim())
+            }
+          }
+        ];
+      } else {
+        where.sprintId = {
+          in: req.query.sprintId
+            .toString()
+            .split(',')
+            .map(el => el.trim())
+        };
+      }
     }
   }
 
   if (req.query.dateFrom) {
-    where.created_at = {...where.created_at, $gte: moment(req.query.dateFrom, 'DD.MM.YYYY').startOf('day').toDate()};
+    where.created_at = {
+      ...where.created_at,
+      $gte: moment(req.query.dateFrom, 'DD.MM.YYYY')
+        .startOf('day')
+        .toDate()
+    };
   }
 
   if (req.query.dateTo) {
-    where.created_at = {...where.created_at, $lte: moment(req.query.dateTo, 'DD.MM.YYYY').endOf('day').toDate()};
+    where.created_at = {
+      ...where.created_at,
+      $lte: moment(req.query.dateTo, 'DD.MM.YYYY')
+        .endOf('day')
+        .toDate()
+    };
   }
 
   if (selectWithoutTags) {
@@ -190,7 +237,12 @@ function createWhereForRequest (req, selectWithoutTags) {
 
 async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
   const parsedTags = tagsParams
-    ? tagsParams.map((el) => el.toString().trim().toLowerCase())
+    ? tagsParams.map(el =>
+      el
+        .toString()
+        .trim()
+        .toLowerCase()
+    )
     : null;
 
   const includeAuthor = {
@@ -236,9 +288,10 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeSprint = {
     as: 'sprint',
     model: models.Sprint,
-    attributes: role !== 'EXTERNAL_USER'
-      ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate'/*, allottedTime' DEPRECATED*/, 'budget']
-      : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
+    attributes:
+      role !== 'EXTERNAL_USER'
+        ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate' /*, allottedTime' DEPRECATED*/, 'budget']
+        : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
   };
 
   const includeTagSelect = {
@@ -249,9 +302,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
       model: ItemTag,
       attributes: []
     },
-    order: [
-      ['name', 'ASC']
-    ]
+    order: [['name', 'ASC']]
   };
 
   const includeTagConst = {
