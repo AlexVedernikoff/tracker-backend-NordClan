@@ -182,9 +182,14 @@ function createWhereForRequest (req, selectWithoutTags) {
         $eq: null
       };
     } else {
-      const ind = req.query.sprintId.findIndex(e => e === '0');
+      let sprints;
+      if (Array.isArray(req.query.sprintId)) {
+        sprints = [...req.query.sprintId];
+      } else {
+        sprints = [req.query.sprintId];
+      }
+      const ind = sprints.findIndex(e => e === '0');
       if (~ind) {
-        const sprints = [...req.query.sprintId];
         sprints.splice(ind, 1);
         where.$or = [
           { sprintId: { $eq: null } },
