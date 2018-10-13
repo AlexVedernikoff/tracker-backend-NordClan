@@ -32,8 +32,8 @@ exports.jiraSync = async function (headers, data) {
   ]);
 
   // подгрузка хостнейма джиры по токену
-  const jiraHostname = await getJiraHostname(headers);
-
+  //const jiraHostname = await getJiraHostname(headers);
+  const jiraHostname = 'http://jirademo.teamlead.ru';
   // Подготовка проекта
   const [{ projectId }] = data;
   const project = await Project.findOne({
@@ -74,7 +74,7 @@ exports.jiraSync = async function (headers, data) {
   }
 
   try {
-    resSprints = await SprintService.synchronizeSprints(sprints);
+    resSprints = await SprintService.synchronizeSprints(sprints, project.id);
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
@@ -122,7 +122,7 @@ exports.jiraSync = async function (headers, data) {
   });
 
   try {
-    resTasks = await TasksService.synchronizeTasks(tasks);
+    resTasks = await TasksService.synchronizeTasks(tasks, project.id);
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
@@ -179,7 +179,10 @@ exports.jiraSync = async function (headers, data) {
   });
 
   try {
-    resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets);
+    resTimesheets = await TimesheetService.synchronizeTimesheets(
+      timesheets,
+      project.id
+    );
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
@@ -198,6 +201,7 @@ exports.createProject = async function (headers, id, authorId, prefix) {
       headers
     }
   );
+  const jiraHostname = await getJiraHostname(headers);
   const users = await getJiraProjectUsers(headers, id);
 
   let project = await Project.create({
@@ -205,7 +209,8 @@ exports.createProject = async function (headers, id, authorId, prefix) {
     createdBySystemUser: true,
     externalId: jiraProject.id,
     authorId,
-    prefix
+    prefix,
+    jiraHostname
   });
   project = {
     ...project.dataValues,
@@ -269,12 +274,16 @@ exports.setProjectAssociation = async function (
 
   return { taskTypes, taskStatuses, userEmail };
 };
-
-exports.jiraAuth = async function (username, password, server) {
+/**
+ *  @param {string} server - адрес сервера джиры
+ *  @param {string} email - адрес сервера джиры
+ */
+exports.jiraAuth = async function (username, password, server, email) {
   return request.post(`${config.ttiUrl}/auth`, {
     username,
     password,
-    server
+    server,
+    email
   });
 };
 
@@ -315,8 +324,8 @@ async function getJiraProjectUsers (headers, projectId) {
 }
 
 async function getJiraHostname (headers) {
-  const { data: hostname } = await request.get(`${config.ttiUrl}/trololo`, {
+  const { data: server } = await request.get(`${config.ttiUrl}/jira-client`, {
     headers
   });
-  return hostname;
+  return server;
 }

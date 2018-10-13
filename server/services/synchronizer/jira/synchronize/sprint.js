@@ -5,11 +5,10 @@ const { Sprint } = models;
  * Синхронизация спринтов
  * @param {Array} data - массив из спринтов, подготовленный для записи.
  */
-exports.synchronizeSprints = async function (sprints) {
+exports.synchronizeSprints = async function (sprints, projectId) {
   const extIds = sprints.map(s => s.externalId);
   let createdSprints = await Sprint.findAll({
-    // в поиске использовать ид проекта
-    where: { externalId: { $in: extIds } }
+    where: { externalId: { $in: extIds }, projectId }
   });
   const newSprints = sprints.filter(spr => {
     const ind = createdSprints.findIndex(cspr => {

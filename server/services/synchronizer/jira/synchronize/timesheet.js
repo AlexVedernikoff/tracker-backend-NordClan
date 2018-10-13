@@ -5,11 +5,10 @@ const { Timesheet } = models;
  * Синхронизация таймшитов
  * @param {Array} timesheets - массив из задач
  */
-exports.synchronizeTimesheets = async function (timesheets) {
+exports.synchronizeTimesheets = async function (timesheets, projectId) {
   const extIds = timesheets.map(s => s.externalId);
   let createdTimesheets = await Timesheet.findAll({
-    // в поиске использовать ид проекта
-    where: { externalId: { $in: extIds } }
+    where: { externalId: { $in: extIds }, projectId }
   });
   let newTimesheets = timesheets.filter(t => {
     const ind = createdTimesheets.findIndex(ct => {

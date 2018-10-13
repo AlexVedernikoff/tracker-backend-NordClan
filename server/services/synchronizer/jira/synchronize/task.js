@@ -5,11 +5,10 @@ const { Task } = models;
  * Синхронизация задач
  * @param {Array} tasks - массив из задач
  */
-exports.synchronizeTasks = async function (tasks) {
+exports.synchronizeTasks = async function (tasks, projectId) {
   const extIds = tasks.map(s => s.externalId);
   let createdTasks = await Task.findAll({
-    // в поиске использовать ид проекта
-    where: { externalId: { $in: extIds } }
+    where: { externalId: { $in: extIds }, projectId }
   });
   let newTasks = tasks.filter(t => {
     const ind = createdTasks.findIndex(ct => {
