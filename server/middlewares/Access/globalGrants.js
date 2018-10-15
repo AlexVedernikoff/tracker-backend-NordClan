@@ -14,7 +14,11 @@ const USER = {
   project: {
     'create': true,
     'read': true,
-    'update': true
+    'update': true,
+    'getGitlabNamespaces': true,
+    'createGitlabProject': true,
+    'addGitlabProject': true,
+    'getGitlabProjects': true
   },
   projectUsers: {
     'create': true,
@@ -93,7 +97,8 @@ module.exports = {
       'updateRole': true,
       'createExternal': true,
       'getExternalUsers': true,
-      'updateExternal': true
+      'updateExternal': true,
+      'refreshTokenExternal': true
     }
   },
   SYSTEM_USER: {
@@ -117,13 +122,13 @@ module.exports = {
     },
     tag: {
       'autocompliter': true,
-      'list': true,
+      'list': true
     },
     project: {
-      'read': true,
+      'read': true
     },
     projectUsers: {
-      'list': true,
+      'list': true
     },
     portfolio: {
       'list': true,
@@ -131,7 +136,7 @@ module.exports = {
     },
     sprint: {
       'read': true,
-      'list': true,
+      'list': true
     },
     task: {
       'create': true,

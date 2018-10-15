@@ -7,7 +7,8 @@ exports.update = async (req) => {
   const updatedTimesheet = await models.Timesheet.update(req.body, {
     where: getWhere(req),
     include: getInclude(),
-    returning: true
+    returning: true,
+    userId: req.user.id
   });
 
   if (!updatedTimesheet[1][0]) {

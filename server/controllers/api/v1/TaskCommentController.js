@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const emailSubprocess = require('../../../services/email/subprocess');
+const { getMentionDiff } = require('./../../../services/comment');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -32,6 +33,14 @@ exports.create = async function (req, res, next){
       input: { taskId: task.id, commentId: comment.id },
       user: { ...req.user.get() }
     });
+    if (req.body.parentId) {
+      const mention = await queries.comment.getOne(req.body.parentId);
+      emailSubprocess({
+        eventId: models.ProjectEventsDictionary.values[4].id,
+        input: { taskId: task.id, commentId: comment.id },
+        user: [mention.author.dataValues.id]
+      });
+    }
     res.json(getOne);
   } catch (e) {
     return next(createError(e));
@@ -51,7 +60,7 @@ exports.update = function (req, res, next){
           attributes: ['id', 'projectId']
         }), models.Comment
         .findByPrimary(req.params.commentId, {
-          attributes: ['id', 'deletedAt', 'authorId', 'createdAt']
+          attributes: ['id', 'deletedAt', 'authorId', 'createdAt', 'text']
         })]);
     })
     .then(([task, comment])=>{
@@ -72,11 +81,18 @@ exports.update = function (req, res, next){
       if (isTooLateForEdit) {
         return next(createError(400, 'Too late for changes'));
       }
-
-      const { text } = req.body;
+      const { text, attachmentIds } = req.body;
+      const newMentions = getMentionDiff(text, comment.text);
+      if (newMentions.length) {
+        emailSubprocess({
+          eventId: models.ProjectEventsDictionary.values[4].id,
+          input: { taskId: task.id, commentId: comment.id },
+          user: newMentions
+        });
+      }
 
       return comment
-        .updateAttributes({ text })
+        .updateAttributes({ text, attachmentIds })
         .then((model)=>{
           res.json(model);
         });

@@ -1,5 +1,5 @@
 const models = require('../../../models');
-const { Task, Timesheet, TimesheetDraft } = models;
+const { Timesheet, TimesheetDraft } = models;
 const queries = require('../../../models/queries');
 const createError = require('http-errors');
 
@@ -72,11 +72,11 @@ async function getTimesheetParams (params, draftId, userId) {
 
   const draft = await TimesheetDraft.findById(draftId);
 
-  const { onDate, typeId, taskStatusId, taskId, projectId, isVisible } = draft.dataValues;
+  const { typeId, taskStatusId, taskId, projectId, isVisible } = draft.dataValues;
 
   const timesheetParams = {
     sprintId: params.sprintId,
-    onDate,
+    onDate: params.onDate,
     isVisible,
     typeId,
     taskStatusId,

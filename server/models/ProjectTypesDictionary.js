@@ -20,6 +20,14 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 25]
       }
+    },
+    nameEn: {
+      field: 'name_en',
+      type: DataTypes.STRING(25),
+      allowNull: false,
+      validate: {
+        len: [1, 25]
+      }
     }
   }, {
     underscored: true,

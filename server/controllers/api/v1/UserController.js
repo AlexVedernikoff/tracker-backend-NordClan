@@ -5,8 +5,9 @@ const { User } = models;
 const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
-exports.me = function (req, res, next){
+exports.me = function (req, res, next) {
   try {
     res.json(req.user);
   } catch (e) {
@@ -14,34 +15,36 @@ exports.me = function (req, res, next){
   }
 };
 
-exports.read = async function (req, res, next){
+exports.read = async function (req, res, next) {
   try {
     req.sanitize('id').trim();
-    req.checkParams('id', 'id must be int').notEmpty().isInt();
+    req
+      .checkParams('id', 'id must be int')
+      .notEmpty()
+      .isInt();
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+    if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
 
-    const user = await models.User
-      .findOne({
-        where: {
-          id: req.params.id,
-          active: 1
-        },
-        attributes: models.User.defaultSelect,
-        include: [
-          {
-            model: models.Department,
-            as: 'department',
-            required: false,
-            attributes: ['name'],
-            through: {
-              model: models.UserDepartments,
-              attributes: []
-            }
+    const user = await models.User.findOne({
+      where: {
+        id: req.params.id,
+        active: 1
+      },
+      attributes: models.User.defaultSelect,
+      include: [
+        {
+          model: models.Department,
+          as: 'department',
+          required: false,
+          attributes: ['name'],
+          through: {
+            model: models.UserDepartments,
+            attributes: []
           }
-        ]
-      });
+        }
+      ]
+    });
 
     if (!user) return next(createError(404, 'User not found'));
 
@@ -50,7 +53,6 @@ exports.read = async function (req, res, next){
     }
 
     res.json(user);
-
   } catch (e) {
     return next(createError(e));
   }
@@ -59,38 +61,48 @@ exports.read = async function (req, res, next){
 exports.autocomplete = function (req, res, next) {
   req.sanitize('userName').trim();
   req.checkQuery('userName', 'userName must be not empty').notEmpty();
-  req.getValidationResult()
-    .then((validationResult) => {
-      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+  req
+    .getValidationResult()
+    .then(validationResult => {
+      if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
 
       const result = [];
+      const userName = req.query.userName.trim();
+      let $iLike = layoutAgnostic(userName);
+      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла
+      let $or = [
+        {
+          fullNameRu: {
+            $iLike
+          }
+        },
+        {
+          fullNameEn: {
+            $iLike
+          }
+        }
+      ];
+      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
+        $iLike = layoutAgnostic(reverseUserName);
+        $or = $or.concat([
+          {
+            fullNameRu: {
+              $iLike
+            }
+          },
+          {
+            fullNameEn: {
+              $iLike
+            }
+          }
+        ]);
+      }
 
       return models.User
         .findAll({
           where: {
             active: 1,
-            $or: [
-              {
-                fullNameRu: {
-                  $iLike: '%' + req.query.userName.trim() + '%'
-                }
-              },
-              {
-                fullNameRu: {
-                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
-                }
-              },
-              {
-                fullNameEn: {
-                  $iLike: '%' + req.query.userName.trim() + '%'
-                }
-              },
-              {
-                fullNameEn: {
-                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
-                }
-              }
-            ]
+            $or
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
           attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn']
@@ -101,30 +113,40 @@ exports.autocomplete = function (req, res, next) {
           });
           res.end(JSON.stringify(result));
         })
-        .catch((err) => {
+        .catch(err => {
           next(err);
         });
     })
-    .catch((err) => next(createError(err)));
+    .catch(err => next(createError(err)));
 };
 
 exports.getUsersRoles = async function (req, res, next) {
   try {
-
-    const users = await models.User
-      .findAll({
-        where: {
-          active: 1,
-          globalRole: { $not: 'EXTERNAL_USER' }
-        },
-        order: [
-          ['last_name_ru']
-        ],
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'globalRole']
-      });
+    const users = await models.User.findAll({
+      where: {
+        active: 1,
+        globalRole: { $not: 'EXTERNAL_USER' }
+      },
+      order: [['last_name_ru']],
+      attributes: [
+        'id',
+        'firstNameRu',
+        'lastNameRu',
+        'firstNameEn',
+        'lastNameEn',
+        'globalRole'
+      ]
+    });
 
     const usersWithFilteredData = users.map(user => {
-      const {id, firstNameRu, lastNameRu, globalRole, firstNameEn, lastNameEn} = user;
+      const {
+        id,
+        firstNameRu,
+        lastNameRu,
+        globalRole,
+        firstNameEn,
+        lastNameEn
+      } = user;
       return {
         id,
         firstNameRu,
@@ -136,44 +158,44 @@ exports.getUsersRoles = async function (req, res, next) {
     });
 
     res.json(usersWithFilteredData);
-
   } catch (err) {
     next(err);
   }
-
 };
 
 exports.updateUserRole = async function (req, res, next) {
-
   const { id, globalRole } = req.body;
 
-  return models.sequelize.transaction(function (t) {
-    return User.findByPrimary(id, { transaction: t, lock: 'UPDATE' })
-      .then((model) => {
-        if (!model) {
-          return next(createError(404));
-        }
+  return models.sequelize
+    .transaction(function (t) {
+      return User.findByPrimary(id, { transaction: t, lock: 'UPDATE' }).then(
+        model => {
+          if (!model) {
+            return next(createError(404));
+          }
 
-        return model.updateAttributes({ globalRole }, { transaction: t })
-          .then((updatedModel) => {
-            const updatedUser = {
-              id: updatedModel.id,
-              globalRole: updatedModel.globalRole,
-              firstNameRu: updatedModel.firstNameRu,
-              lastNameRu: updatedModel.lastNameRu,
-              firstNameEn: updatedModel.firstNameEn,
-              lastNameEn: updatedModel.lastNameEn
-            };
-            res.json(updatedUser);
-          });
-      });
-  })
-    .catch((err) => {
+          return model
+            .updateAttributes({ globalRole }, { transaction: t })
+            .then(updatedModel => {
+              const updatedUser = {
+                id: updatedModel.id,
+                globalRole: updatedModel.globalRole,
+                firstNameRu: updatedModel.firstNameRu,
+                lastNameRu: updatedModel.lastNameRu,
+                firstNameEn: updatedModel.firstNameEn,
+                lastNameEn: updatedModel.lastNameEn
+              };
+              res.json(updatedUser);
+            });
+        }
+      );
+    })
+    .catch(err => {
       next(err);
     });
 };
 
-exports.createExternal = async function (req, res, next){
+exports.createExternal = async function (req, res, next) {
   req.checkBody('login', 'login must be email').isEmail();
 
   const validationResult = await req.getValidationResult();
@@ -183,8 +205,8 @@ exports.createExternal = async function (req, res, next){
 
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
-  const setPasswordExpired = moment().add(1, 'days');
-
+  const setPasswordExpired = new Date(moment().add(1, 'days'));
+  const expiredDate = new Date(moment(req.body.expiredDate).millisecond(999).second(59).minute(59).hour(23));
   const params = {
     active: 1,
     isActive: 0,
@@ -194,12 +216,15 @@ exports.createExternal = async function (req, res, next){
     updatedAt: new Date(),
     setPasswordToken,
     setPasswordExpired,
-    ...req.body
+    ...req.body,
+    expiredDate
   };
 
   User.create(params)
-    .then((model) => {
-      const template = emailService.template('activateExternalUser', { token: setPasswordToken });
+    .then(model => {
+      const template = emailService.template('activateExternalUser', {
+        token: setPasswordToken
+      });
       emailService.send({
         receiver: req.body.login,
         subject: template.subject,
@@ -207,9 +232,49 @@ exports.createExternal = async function (req, res, next){
       });
       res.json(model);
     })
-    .catch((err) => {
+    .catch(err => {
       next(err);
     });
+};
+
+exports.refreshTokenExternal = async function (req, res, next) {
+  try {
+    req.checkBody('login', 'login must be email').isEmail();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
+    const buf = crypto.randomBytes(20);
+    const setPasswordToken = buf.toString('hex');
+    const setPasswordExpired = new Date(moment().add(1, 'days'));
+    const params = {
+      active: 1,
+      isActive: 0,
+      updatedAt: new Date(),
+      setPasswordExpired,
+      password: null,
+      ...req.body,
+      setPasswordToken
+    };
+    const updatedModel = await User.update(params, {
+      where: { id: req.params.id }
+    });
+    const template = emailService.template('activateExternalUser', {
+      token: setPasswordToken
+    });
+    emailService.send({
+      receiver: req.body.login,
+      subject: template.subject,
+      html: template.body
+    });
+    res.json(updatedModel);
+  } catch (err) {
+    next(
+      createError(500, `Error when refresh token. ${err.message} `)
+    );
+  }
+
 };
 
 exports.updateExternal = async function (req, res, next) {
@@ -222,42 +287,51 @@ exports.updateExternal = async function (req, res, next) {
     return next(createError(400, validationResult));
   }
 
-  return models.sequelize.transaction(function (t) {
-    return User.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
-      .then((model) => {
+  return models.sequelize
+    .transaction(function (t) {
+      return User.findByPrimary(req.params.id, {
+        transaction: t,
+        lock: 'UPDATE'
+      }).then(model => {
         if (!model) {
           return next(createError(404));
         }
 
-        return model.updateAttributes(req.body, { transaction: t })
-          .then((updatedModel) => {
+        return model
+          .updateAttributes(req.body, { transaction: t })
+          .then(updatedModel => {
             res.json(updatedModel);
           });
       });
-  })
-    .catch((err) => {
+    })
+    .catch(err => {
       next(err);
     });
 };
 
-exports.setPassword = async function (req, res, next){
+exports.setPassword = async function (req, res, next) {
   try {
-    req.checkBody('password', 'password must be more then 8 chars').isLength({ min: 8 });
+    req
+      .checkBody('password', 'password must be more then 8 chars')
+      .isLength({ min: 8 });
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+    if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
 
-    const user = await models.User
-      .findOne({
-        where: {
-          setPasswordToken: req.params.token,
-          setPasswordExpired: { $gt: Date.now() },
-          globalRole: 'EXTERNAL_USER'
-        },
-        attributes: models.User.defaultSelect
-      });
+    const user = await models.User.findOne({
+      where: {
+        setPasswordToken: req.params.token,
+        setPasswordExpired: { $gt: Date.now() },
+        globalRole: 'EXTERNAL_USER'
+      },
+      attributes: models.User.defaultSelect
+    });
 
-    if (!user) return next(createError(404, 'Password set token is invalid or has expired'));
+    if (!user) {
+      return next(
+        createError(404, 'Password set token is invalid or has expired')
+      );
+    }
 
     const params = {
       isActive: 1,
@@ -266,9 +340,7 @@ exports.setPassword = async function (req, res, next){
       setPasswordExpires: null
     };
 
-    user.updateAttributes(params)
-      .then(updatedModel => res.json(updatedModel));
-
+    user.updateAttributes(params).then(updatedModel => res.json(updatedModel));
   } catch (e) {
     return next(createError(e));
   }
@@ -276,21 +348,25 @@ exports.setPassword = async function (req, res, next){
 
 exports.getExternalUsers = async function (req, res, next) {
   try {
-
-    const users = await models.User
-      .findAll({
-        where: {
-          globalRole: 'EXTERNAL_USER',
-          active: 1
-        },
-        order: [
-          ['first_name_ru']
-        ],
-        attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive']
-      });
+    const users = await models.User.findAll({
+      where: {
+        globalRole: 'EXTERNAL_USER',
+        active: 1
+      },
+      order: [['first_name_ru']],
+      attributes: [
+        'id',
+        'firstNameRu',
+        'globalRole',
+        'expiredDate',
+        'active',
+        'login',
+        'isActive',
+        'description'
+      ]
+    });
 
     res.json(users);
-
   } catch (err) {
     next(err);
   }
@@ -299,34 +375,38 @@ exports.getExternalUsers = async function (req, res, next) {
 exports.autocompleteExternal = function (req, res, next) {
   req.sanitize('userName').trim();
   req.checkQuery('userName', 'userName must be not empty').notEmpty();
-  req.getValidationResult()
-    .then((validationResult) => {
-      if (!validationResult.isEmpty()) return next(createError(400, validationResult));
+  req
+    .getValidationResult()
+    .then(validationResult => {
+      if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
 
       const result = [];
-
+      const userName = req.query.userName.trim();
+      let $iLike = layoutAgnostic(userName);
+      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла (хоть и пишем только в firstNameRu)
+      let $or = [
+        {
+          firstNameRu: {
+            $iLike
+          }
+        }
+      ];
+      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
+        $iLike = layoutAgnostic(reverseUserName);
+        $or = $or.concat([
+          {
+            firstNameRu: {
+              $iLike
+            }
+          }
+        ]);
+      }
       return models.User
         .findAll({
           where: {
             globalRole: 'EXTERNAL_USER',
             active: 1,
-            $or: [
-              {
-                firstNameRu: {
-                  $iLike: '%' + req.query.userName.trim() + '%'
-                }
-              },
-              {
-                firstNameRu: {
-                  $iLike: '%' + req.query.userName.split(' ').reverse().join(' ').trim() + '%'
-                }
-              },
-              {
-                firstNameEn: {
-                  $iLike: '%' + req.query.userName.trim() + '%'
-                }
-              }
-            ]
+            $or
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
           attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
@@ -337,9 +417,9 @@ exports.autocompleteExternal = function (req, res, next) {
           });
           res.end(JSON.stringify(result));
         })
-        .catch((err) => {
+        .catch(err => {
           next(err);
         });
     })
-    .catch((err) => next(createError(err)));
+    .catch(err => next(createError(err)));
 };

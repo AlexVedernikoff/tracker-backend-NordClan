@@ -93,6 +93,21 @@ exports.historyHandler = function (sequelize, historyModel) {
         .catch((err) => {
           if (err) throw createError(err);
         });
+
+      // Сведения об удаленной подзадаче в родительской задаче
+      if (entity === 'Task' && model.parentId > 0) {
+        const modelIdProperty = `${historyModel.toLowerCase()}Id`;
+
+        sequelize.models[modelName].bulkCreate({
+          entity: entity,
+          entityId: modelId,
+          userId: userId,
+          [modelIdProperty]: model.parentId,
+          action: 'update'
+        }).catch((err) => {
+          if (err) throw createError(err);
+        });
+      }
     }
   };
 };

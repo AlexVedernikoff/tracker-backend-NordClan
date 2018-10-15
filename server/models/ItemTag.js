@@ -28,8 +28,8 @@ module.exports = function (sequelize, DataTypes) {
       }
     ],
     underscored: true,
-    timestamps: true,
-    paranoid: true,
+    timestamps: false,
+    paranoid: false,
     updatedAt: false,
     createdAt: false,
     tableName: 'item_tags'
@@ -42,8 +42,8 @@ module.exports = function (sequelize, DataTypes) {
         name: 'tagId',
         field: 'tag_id'
       }
-    });
-
+    },
+    { onDelete: 'cascade' });
   };
 
   ItemTag.addHistoryForTask();

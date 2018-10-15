@@ -1,14 +1,9 @@
-// const axios = require('axios');
-// const http = axios.create();
-
-// module.exports = http;
-
-
+const querystring = require('qs');
 const http = require('http');
 
-function httpRequest (params, data) {
+function httpRequest (params, data, stringify = querystring.stringify) {
   return new Promise(function (resolve, reject) {
-    const req = http.request(params, res => {
+    const req = http.request(params, (res) => {
       if (res.statusCode < 200 || res.statusCode >= 300) {
         return reject(new Error('statusCode=' + res.statusCode));
       }
@@ -31,7 +26,8 @@ function httpRequest (params, data) {
     });
 
     if (data) {
-      req.write(data);
+      const post_data = stringify(data);
+      req.write(post_data);
     }
 
     req.end();
@@ -47,4 +43,14 @@ exports.get = (requestOptions) => {
   };
 
   return httpRequest(options);
+};
+
+exports.post = (requestOptions, postData, stringify) => {
+
+  const options = {
+    method: 'POST',
+    ...requestOptions
+  };
+
+  return httpRequest(options, postData, stringify);
 };
