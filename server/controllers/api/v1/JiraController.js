@@ -69,10 +69,10 @@ exports.setJiraProjectAssociation = async function (req, res, next) {
 
 exports.jiraAuth = async function (req, res, next) {
   try {
-    const { username, password, server } = req.body;
+    const { username, password, server, email } = req.body;
     const {
       data: { token }
-    } = await jiraAuth(username, password, server);
+    } = await jiraAuth(username, password, server, email);
     res.json({ token });
   } catch (e) {
     next(createError(e));
