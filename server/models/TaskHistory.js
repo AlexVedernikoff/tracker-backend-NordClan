@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const TaskHistory = sequelize.define('TaskHistory', {
     id: {
       type: DataTypes.INTEGER,
@@ -88,7 +88,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(6),
       allowNull: false
     },
-    createdAt: {type: DataTypes.DATE, field: 'created_at'},
+    createdAt: {type: DataTypes.DATE, field: 'created_at'}
   }, {
     underscored: true,
     timestamps: true,
@@ -97,14 +97,14 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'task_histories'
   });
 
-  TaskHistory.associate = function(models) {
+  TaskHistory.associate = function (models) {
     TaskHistory.belongsTo(models.Task, {
       as: 'parentTask',
       foreignKey: {
         name: 'valueInt',
         field: 'value_int'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.Task, {
@@ -113,7 +113,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'prevValueInt',
         field: 'prev_value_int'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.Sprint, {
@@ -122,7 +122,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'valueInt',
         field: 'value_int'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.Sprint, {
@@ -131,7 +131,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'prevValueInt',
         field: 'prev_value_int'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.User, {
@@ -140,7 +140,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'userId',
         field: 'user_id'
       },
-      constraints: true,
+      constraints: true
     });
 
     TaskHistory.belongsTo(models.Task, {
@@ -149,7 +149,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'taskId',
         field: 'task_id'
       },
-      constraints: true,
+      constraints: true
     });
 
 
@@ -159,7 +159,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'valueInt',
         field: 'value_int'
       },
-      constraints: true,
+      constraints: true
     });
 
     TaskHistory.belongsTo(models.User, {
@@ -168,7 +168,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'prevValueInt',
         field: 'prev_value_int'
       },
-      constraints: true,
+      constraints: true
     });
 
 
@@ -178,7 +178,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'entityId',
         field: 'entity_id'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.ItemTag, {
@@ -187,7 +187,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'entityId',
         field: 'entity_id'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.TaskAttachments, {
@@ -196,7 +196,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'entityId',
         field: 'entity_id'
       },
-      constraints: false,
+      constraints: false
     });
 
     TaskHistory.belongsTo(models.Task, {
