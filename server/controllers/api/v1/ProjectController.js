@@ -691,8 +691,12 @@ exports.getProjects = async function (req, res, next) {
   try {
     const { id } = req.params;
     const project = await Project.find({ where: { id } });
-    const gitlabProjects = await gitLabService.projects.getProjects(project.gitlabProjectIds);
-    res.json(gitlabProjects);
+    if (project.gitlabProjectIds) {
+      const gitlabProjects = await gitLabService.projects.getProjects(project.gitlabProjectIds);
+      res.json(gitlabProjects);
+    } else {
+      res.json([]);
+    }
   } catch (e) {
     next(e);
   }
