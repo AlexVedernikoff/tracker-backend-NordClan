@@ -1,6 +1,6 @@
 const ACTIONS = require('./constants').actions;
 
-exports.getChangedProperty = function(model) {
+exports.getChangedProperty = function (model) {
   const types = ['Int', 'Str', 'Date', 'Float', 'Text', 'Boolean'];
   const currentType = types.filter(type => {
     return model[`value${type}`] || model[`prevValue${type}`];
@@ -12,7 +12,7 @@ exports.getChangedProperty = function(model) {
   };
 };
 
-exports.detectAction = function(changedProperty) {
+exports.detectAction = function (changedProperty) {
   if (!changedProperty.value && changedProperty.prevValue) {
     return ACTIONS.DELETE;
   } else if (changedProperty.value && !changedProperty.prevValue) {

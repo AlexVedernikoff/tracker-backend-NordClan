@@ -135,7 +135,7 @@ module.exports = async function (eventId, input, user){
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
-      const emailTemplate = email.template('newTaskComment', { task, comment });
+      const emailTemplate = mentions.includes(receiver.id) ? email.template('newTaskCommentMention', { task, comment }) : email.template('newTaskComment', { task, comment });
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
