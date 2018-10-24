@@ -237,6 +237,10 @@ function createWhereForRequest (req, selectWithoutTags) {
     };
   }
 
+  if (req.user.isDevOps) {
+    where.isDevOps = true;
+  }
+
   return where;
 }
 

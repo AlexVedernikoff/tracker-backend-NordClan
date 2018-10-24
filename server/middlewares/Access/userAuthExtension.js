@@ -1,5 +1,6 @@
 const models = require('../../models');
 const _ = require('underscore');
+const { Task } = models;
 
 const statuses = {
   VISOR: 'VISOR',
@@ -12,6 +13,7 @@ const statuses = {
 exports.statuses = statuses;
 
 exports.userAuthExtension = function (user, isSystemUser = false) {
+  console.log('user', user);
   if (isSystemUser) {
     return getSystemUser();
   }
@@ -33,7 +35,9 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
     return this.isAdminOfProject(projectId) || this.dataValues.projectsRoles.user.indexOf(+projectId) !== -1;
   };
   extensibleUser.canReadProject = function (projectId) {
-    return this.isGlobalAdmin || this.isVisor || this.isUserOfProject(projectId);
+    return this.isDevOps
+      ? this.isUserOfProject(projectId) || this.devOpsProjects.indexOf(+projectId) !== -1
+      : this.isGlobalAdmin || this.isVisor || this.isUserOfProject(projectId);
   };
   extensibleUser.canUpdateProject = function (projectId) {
     return this.isGlobalAdmin || this.isAdminOfProject(projectId);
@@ -79,4 +83,17 @@ function getSystemUser () {
     },
     globalRole: statuses.SYSTEM_USER
   };
+}
+
+function accessProjectForDevOps (projectId) {
+  Task.findAll({
+    attributes: ['projectId'],
+    where: {
+      projectId: projectId,
+      isDevOps: true
+    }
+  }).then((tasks) => {
+    console.log('tasks', tasks);
+    return tasks.length !== 0;
+  });
 }
