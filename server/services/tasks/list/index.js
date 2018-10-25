@@ -237,8 +237,19 @@ function createWhereForRequest (req, selectWithoutTags) {
     };
   }
 
-  if (req.user.isDevOps) {
-    where.isDevOps = true;
+  if (req.user.isDevOps && !req.user.isUserOfProject(+req.query.projectId)) {
+    return {
+      $or: [
+        {
+          ...where,
+          isDevOps: true
+        },
+        {
+          ...where,
+          performerId: req.user.id
+        }
+      ]
+    };
   }
 
   return where;

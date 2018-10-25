@@ -21,6 +21,10 @@ exports.create = async function (req, res, next) {
     return next(createError(403, 'Access denied'));
   }
 
+  if (req.user.isDevOpsProject(req.body.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
+
   if (req.body.tags) {
     req.body.tags
       .split(',')

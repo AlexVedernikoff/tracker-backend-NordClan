@@ -89,7 +89,7 @@ exports.checkToken = function (req, res, next) {
     .then(user => {
       if (user) {
         if (user.dataValues.globalRole === 'DEV_OPS') {
-          Task.findAll({
+          return Task.findAll({
             attributes: ['projectId'],
             where: {
               isDevOps: true

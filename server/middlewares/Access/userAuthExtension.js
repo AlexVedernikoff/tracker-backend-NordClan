@@ -13,7 +13,6 @@ const statuses = {
 exports.statuses = statuses;
 
 exports.userAuthExtension = function (user, isSystemUser = false) {
-  console.log('user', user);
   if (isSystemUser) {
     return getSystemUser();
   }
@@ -38,6 +37,11 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
     return this.isDevOps
       ? this.isUserOfProject(projectId) || this.devOpsProjects.indexOf(+projectId) !== -1
       : this.isGlobalAdmin || this.isVisor || this.isUserOfProject(projectId);
+  };
+  extensibleUser.isDevOpsProject = function (projectId) {
+    return this.devOpsProjects
+      ? !this.isUserOfProject(projectId) && (this.devOpsProjects.indexOf(+projectId) !== -1)
+      : false;
   };
   extensibleUser.canUpdateProject = function (projectId) {
     return this.isGlobalAdmin || this.isAdminOfProject(projectId);
@@ -83,17 +87,4 @@ function getSystemUser () {
     },
     globalRole: statuses.SYSTEM_USER
   };
-}
-
-function accessProjectForDevOps (projectId) {
-  Task.findAll({
-    attributes: ['projectId'],
-    where: {
-      projectId: projectId,
-      isDevOps: true
-    }
-  }).then((tasks) => {
-    console.log('tasks', tasks);
-    return tasks.length !== 0;
-  });
 }
