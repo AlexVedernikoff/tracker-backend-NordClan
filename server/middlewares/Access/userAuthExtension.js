@@ -7,7 +7,8 @@ const statuses = {
   ADMIN: 'ADMIN',
   SYSTEM_USER: 'SYSTEM_USER',
   USER: 'SYSTEM_USER',
-  EXTERNAL_USER: 'EXTERNAL_USER'
+  EXTERNAL_USER: 'EXTERNAL_USER',
+  DEV_OPS: 'DEV_OPS'
 };
 
 exports.statuses = statuses;
@@ -26,6 +27,7 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
 
   extensibleUser.isVisor = extensibleUser.globalRole === statuses.VISOR;
   extensibleUser.isGlobalAdmin = extensibleUser.globalRole === statuses.ADMIN;
+  extensibleUser.isDevOps = extensibleUser.globalRole === statuses.DEV_OPS;
 
   extensibleUser.isAdminOfProject = function (projectId) {
     return this.dataValues.projectsRoles.admin.indexOf(+projectId) !== -1 || extensibleUser.isGlobalAdmin;

@@ -76,6 +76,9 @@ module.exports = {
   USER: {
     ...USER
   },
+  DEV_OPS: {
+    ...USER
+  },
   ADMIN: {
     ...USER,
     project: {
