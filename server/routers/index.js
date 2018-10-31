@@ -47,6 +47,7 @@ router.get(
   GlobalAccess.can('user', 'autocompleteExternal'),
   UserController.autocompleteExternal
 );
+router.get('/users/devops', GlobalAccess.can('projectUsers', 'list'), UserController.devOpsUsers);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.put(
   '/user/external/:id/refresh',
