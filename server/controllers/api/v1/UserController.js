@@ -65,38 +65,47 @@ exports.autocomplete = function (req, res, next) {
     .getValidationResult()
     .then(validationResult => {
       if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
-
       const result = [];
-      const userName = req.query.userName.trim();
-      let $iLike = layoutAgnostic(userName);
-      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла
-      let $or = [
+      const userName = req.query.userName;
+      const userNameArray = userName.trim().split(/\s+/);
+      const iLikeFirstName = layoutAgnostic(userNameArray[0] ? userNameArray[0] : '');
+      const iLikeLastName = layoutAgnostic(userNameArray[1] ? userNameArray[1] : '');
+
+
+      const $or = [
         {
-          fullNameRu: {
-            $iLike
+          firstNameEn: {
+            $iLike: iLikeFirstName
+          },
+          lastNameEn: {
+            $iLike: iLikeLastName
           }
         },
         {
-          fullNameEn: {
-            $iLike
+          firstNameRu: {
+            $iLike: iLikeFirstName
+          },
+          lastNameRu: {
+            $iLike: iLikeLastName
+          }
+        },
+        {
+          firstNameEn: {
+            $iLike: iLikeLastName
+          },
+          lastNameEn: {
+            $iLike: iLikeFirstName
+          }
+        },
+        {
+          firstNameRu: {
+            $iLike: iLikeLastName
+          },
+          lastNameRu: {
+            $iLike: iLikeFirstName
           }
         }
       ];
-      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
-        $iLike = layoutAgnostic(reverseUserName);
-        $or = $or.concat([
-          {
-            fullNameRu: {
-              $iLike
-            }
-          },
-          {
-            fullNameEn: {
-              $iLike
-            }
-          }
-        ]);
-      }
 
       return models.User
         .findAll({
