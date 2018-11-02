@@ -91,7 +91,8 @@ exports.list = async function (req) {
     pageSize: req.query.pageSize ? req.query.pageSize : projectCount,
     rowsCountAll: projectCount,
     rowsCountOnCurrentPage: tasks.length,
-    data: tasks
+    data: tasks,
+    queryId: req.query.queryId
   };
 
   return responseObject;
