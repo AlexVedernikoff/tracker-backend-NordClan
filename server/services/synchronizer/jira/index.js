@@ -32,12 +32,12 @@ exports.jiraSync = async function (headers, data) {
   ]);
 
   // подгрузка хостнейма джиры по токену
-  //const jiraHostname = await getJiraHostname(headers);
-  const jiraHostname = 'http://jirademo.teamlead.ru';
+  const jiraHostname = await getJiraHostname(headers);
+
   // Подготовка проекта
   const [{ projectId }] = data;
   const project = await Project.findOne({
-    where: { externalId: projectId, jiraHostname }
+    where: { externalId: projectId, jiraHostname: jiraHostname.server }
   });
 
   // Подготовка пользователей
@@ -47,9 +47,9 @@ exports.jiraSync = async function (headers, data) {
   let usersAssociation = await UserEmailAssociation.findAll({
     where: { externalUserEmail: { $in: users } }
   });
-  usersAssociation = usersAssociation.map(ua => ua.internalUserEmail);
+  usersAssociation = usersAssociation.map(ua => ua.internalUserId);
   users = await User.findAll({
-    where: { emailPrimary: { $in: usersAssociation } }
+    where: { id: { $in: usersAssociation } }
   });
 
   /**
@@ -69,7 +69,8 @@ exports.jiraSync = async function (headers, data) {
     sprints.push({
       externalId: key,
       name: sprintsObj[key].name,
-      authorId: sprintsObj[key].authorId
+      authorId: sprintsObj[key].authorId,
+      projectId: project.id
     });
   }
 
@@ -141,7 +142,7 @@ exports.jiraSync = async function (headers, data) {
           return ua.externalUserEmail === worklog.assignee;
         });
         const user = users.find(u => {
-          return u.emailPrimary === ueassociation.internalUserEmail;
+          return u.id === ueassociation.internalUserId;
         });
         // ------------------
         // Поиск спринта
@@ -210,7 +211,7 @@ exports.createProject = async function (headers, id, authorId, prefix) {
     externalId: jiraProject.id,
     authorId,
     prefix,
-    jiraHostname
+    jiraHostname: jiraHostname.server
   });
   project = {
     ...project.dataValues,
@@ -329,3 +330,14 @@ async function getJiraHostname (headers) {
   });
   return server;
 }
+
+exports.createBatch = async function (headers, pid) {
+  const res = await request.post(
+    `${config.ttiUrl}/batch`,
+    {
+      pid
+    },
+    { headers }
+  );
+  return res;
+};

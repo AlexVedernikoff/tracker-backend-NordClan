@@ -4,7 +4,8 @@ const {
   getJiraProjects,
   setProjectAssociation,
   jiraAuth,
-  getActiveSimtrackProjects
+  getActiveSimtrackProjects,
+  createBatch
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -92,6 +93,16 @@ exports.getActiveSimtrackProjects = async function (req, res, next) {
   try {
     const projects = await getActiveSimtrackProjects();
     res.json(projects);
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.createBatch = async function (req, res, next) {
+  try {
+    const { pid } = req.body;
+    const response = await createBatch(req.headers, pid);
+    res.json(response.data);
   } catch (e) {
     next(createError(e));
   }

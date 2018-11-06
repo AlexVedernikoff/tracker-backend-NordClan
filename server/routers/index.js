@@ -389,15 +389,20 @@ router.post(
   replaceAuthHeader(),
   JiraController.createJiraProject
 );
+
 router.get(
   '/jira/projects',
   replaceAuthHeader(),
   JiraController.getJiraProjects
 );
+
 router.post(
   '/jira/setProjectAssociation',
   JiraController.setJiraProjectAssociation
 );
+
 router.post('/jira/auth', JiraController.jiraAuth);
+
+router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch);
 
 module.exports = router;
