@@ -401,6 +401,8 @@ router.post(
   JiraController.setJiraProjectAssociation
 );
 
+router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation);
+
 router.post('/jira/auth', JiraController.jiraAuth);
 
 router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch);

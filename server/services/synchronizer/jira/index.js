@@ -204,21 +204,33 @@ exports.createProject = async function (headers, id, authorId, prefix) {
   );
   const jiraHostname = await getJiraHostname(headers);
   const users = await getJiraProjectUsers(headers, id);
+  let project;
 
-  let project = await Project.create({
-    name: jiraProject.name,
-    createdBySystemUser: true,
-    externalId: jiraProject.id,
-    authorId,
-    prefix,
-    jiraHostname: jiraHostname.server
-  });
-  project = {
-    ...project.dataValues,
-    ...{ issue_types: jiraProject.issue_types },
-    ...{ status_types: jiraProject.status_type },
-    ...{ users }
-  };
+  project = await Project.find({ where: { externalId: jiraProject.id } });
+  if (project) {
+    project = {
+      ...project.dataValues,
+      ...{ issue_types: jiraProject.issue_types },
+      ...{ status_types: jiraProject.status_type },
+      ...{ users }
+    };
+  } else {
+    project = await Project.create({
+      name: jiraProject.name,
+      createdBySystemUser: true,
+      externalId: jiraProject.id,
+      authorId,
+      prefix,
+      jiraHostname: jiraHostname.server
+    });
+    project = {
+      ...project.dataValues,
+      ...{ issue_types: jiraProject.issue_types },
+      ...{ status_types: jiraProject.status_type },
+      ...{ users }
+    };
+  }
+
   return project;
 };
 
@@ -235,31 +247,44 @@ exports.setProjectAssociation = async function (
 ) {
   const ita = issueTypesAssociation.map(it => {
     it.projectId = projectId;
+    delete it.id;
     return it;
   });
 
   const sa = statusesAssociation.map(s => {
     s.projectId = projectId;
+    delete s.id;
     return s;
   });
 
   const ua = userEmailAssociation.map(u => {
     u.projectId = projectId;
+    delete u.id;
     return u;
   });
 
-  const beforeCreateRes = await Promise.all([
+  // ------
+  const [
+    createdTaskTypes,
+    createdTaskStatuses,
+    createdUserEmail
+  ] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
     TaskStatusesAssociation.findAll({ where: { projectId } }),
     UserEmailAssociation.findAll({ where: { projectId } })
   ]);
-  if (
-    beforeCreateRes[0].length !== 0
-    || beforeCreateRes[1].length !== 0
-    || beforeCreateRes[2].length !== 0
-  ) {
-    throw new Error(400, 'Project already has associations');
+
+  if (createdTaskTypes.length !== 0) {
+    await TaskTypesAssociation.destroy({ where: { projectId } });
   }
+  if (createdTaskStatuses.length !== 0) {
+    await TaskStatusesAssociation.destroy({ where: { projectId } });
+  }
+  if (createdUserEmail.length !== 0) {
+    await UserEmailAssociation.destroy({ where: { projectId } });
+  }
+
+  // ------
 
   await Promise.all([
     TaskTypesAssociation.bulkCreate(ita),
@@ -340,4 +365,25 @@ exports.createBatch = async function (headers, pid) {
     { headers }
   );
   return res;
+};
+
+exports.getProjectAssociations = async function (projectId) {
+  try {
+    const [
+      issueTypesAssociation,
+      statusesAssociation,
+      userEmailAssociation
+    ] = await Promise.all([
+      TaskTypesAssociation.findAll({ where: { projectId } }),
+      TaskStatusesAssociation.findAll({ where: { projectId } }),
+      UserEmailAssociation.findAll({ where: { projectId } })
+    ]);
+    return {
+      issueTypesAssociation,
+      statusesAssociation,
+      userEmailAssociation
+    };
+  } catch (e) {
+    throw e;
+  }
 };
