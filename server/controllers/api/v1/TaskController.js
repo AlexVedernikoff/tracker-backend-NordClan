@@ -8,6 +8,7 @@ const emailSubprocess = require('../../../services/email/subprocess');
 const TimesheetService = require('../../../services/timesheets');
 const moment = require('moment');
 const { branches } = require('../../../services/gitLab/index');
+const { host: GITLAB_HOSTNAME } = require('../../../configs').gitLab;
 
 const taskIsDone = tasks => tasks[0].statusId === models.TaskStatusesDictionary.DONE_STATUS;
 
@@ -21,10 +22,15 @@ exports.create = async function (req, res, next) {
   }
 
   if (req.body.tags) {
-    req.body.tags.split(',').map(el => el.trim()).forEach(el => {
-      if (el.length < 2) return next(createError(400, 'tag must be more then 2 chars'));
-    });
+    req.body.tags
+      .split(',')
+      .map(el => el.trim())
+      .forEach(el => {
+        if (el.length < 2) return next(createError(400, 'tag must be more then 2 chars'));
+      });
   }
+
+  if (req.body.plannedExecutionTime > 99) return next(createError(400, 'Planned Execution Time must be lower than 99 hours'));
 
   try {
     if (req.body.hasOwnProperty('sprintId')) {
@@ -32,12 +38,15 @@ exports.create = async function (req, res, next) {
         attributes: ['projectId']
       });
 
-      if (!!req.body.sprintId !== false && (!projectBySprint || (projectBySprint && projectBySprint.projectId !== req.body.projectId))) {
+      if (
+        !!req.body.sprintId !== false
+        && (!projectBySprint || (projectBySprint && projectBySprint.projectId !== req.body.projectId))
+      ) {
         return next(createError(400, 'projectId wrong'));
       }
     }
 
-    Task.beforeValidate((model) => {
+    Task.beforeValidate(model => {
       model.authorId = req.user.id;
     });
 
@@ -70,28 +79,39 @@ exports.create = async function (req, res, next) {
   }
 };
 
-exports.read = function (req, res, next) {
-  if (!req.params.id.match(/^[0-9]+$/)) {
-    return next(createError(400, 'id must be int'));
+exports.read = async function (req, res, next) {
+  try {
+    if (!req.params.id.match(/^[0-9]+$/)) {
+      return next(createError(400, 'id must be int'));
+    }
+    const task = await TasksService.read(req.params.id, req.user);
+    Object.assign(task.dataValues, { GITLAB_HOSTNAME });
+    res.json(task);
+  } catch (err) {
+    return next(createError(err));
   }
-
-  TasksService
-    .read(req.params.id, req.user)
-    .then(task => res.json(task))
-    .catch((err) => next(createError(err)));
 };
 
 exports.update = async function (req, res, next) {
   req.checkParams('id', 'id must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
-  if (req.body.plannedExecutionTime > 99) return next(createError(400, 'Planned Execution Time must be lower than 99 hours'));
+  if (req.body.plannedExecutionTime > 99) {
+    return next(createError(400, 'Planned Execution Time must be lower than 99 hours'));
+  }
 
   const taskId = req.params.id;
 
   try {
     let updatedTasks, activeTask, createdDraft, projectId, changedTaskData, updatedTask;
-    const result = { updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
+    const result = ({
+      updatedTasks,
+      updatedTask,
+      activeTask,
+      createdDraft,
+      projectId,
+      changedTaskData
+    } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser));
     sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData);
     console.log(JSON.stringify(changedTaskData));
     if (changedTaskData.performerId && !taskIsDone(updatedTasks)) {
@@ -119,7 +139,7 @@ exports.updateAllByAttribute = async function (req, res, next) {
   if (isErrorReqUpdateAll(req)) return next(createError(400));
 
   try {
-    await TasksService.updateAllByAttribute({sprintId: req.body.sprintId}, req.body.taskIds, req.user);
+    await TasksService.updateAllByAttribute({ sprintId: req.body.sprintId }, req.body.taskIds, req.user);
     res.sendStatus(200);
   } catch (err) {
     next(createError(err));
@@ -127,12 +147,10 @@ exports.updateAllByAttribute = async function (req, res, next) {
 };
 
 function isErrorReqUpdateAll (req) {
-  return !req.body.taskIds || !req.body.taskIds.length || !req.body.sprintId
-    || req.body.taskIds.some(id => isNaN(id));
+  return !req.body.taskIds || !req.body.taskIds.length || !req.body.sprintId || req.body.taskIds.some(id => isNaN(id));
 }
 
 function sendUpdates (io, userId, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData) {
-
   if (changedTaskData.statusId || changedTaskData.performerId) {
     TimesheetsChannel.sendAction('setActiveTask', updatedTask, io, updatedTask.dataValues.performerId);
   }
@@ -154,12 +172,11 @@ function sendUpdates (io, userId, updatedTasks, updatedTask, activeTask, created
 exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
-  TasksService
-    .destroy(req.params.id, res.user.id)
+  TasksService.destroy(req.params.id, res.user.id)
     .then(() => {
       res.end();
     })
-    .catch((e) => {
+    .catch(e => {
       next(createError(e));
     });
 };
@@ -175,7 +192,9 @@ exports.list = function (req, res, next) {
 
   if (req.query.performerId) {
     if (Array.isArray(req.query.performerId)) {
-      if (req.query.performerId.some(performerId => !performerId.match(/^\d+$/))) return next(createError(400, 'performerId must be array of int'));
+      if (req.query.performerId.some(performerId => !performerId.match(/^\d+$/))) {
+        return next(createError(400, 'performerId must be array of int'));
+      }
     } else if (!req.query.performerId.match(/^\d+$/)) {
       return next(createError(400, 'performerId must be int'));
     }
@@ -199,29 +218,26 @@ exports.list = function (req, res, next) {
     }
   }
 
-  TasksService
-    .list(req)
+  TasksService.list(req)
     .then(tasks => res.json(tasks))
-    .catch((e) => next(createError(e)));
+    .catch(e => next(createError(e)));
 };
 
 exports.getSpentTime = async function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   TasksService.read(req.params.id, req.user)
     .then(() => {
-      return TimesheetService
-        .getTaskSpent(req.params.id)
-        .then((model) => {
-          res.json(model);
-        });
+      return TimesheetService.getTaskSpent(req.params.id).then(model => {
+        res.json(model);
+      });
     })
-    .catch((err) => next(createError(err)));
+    .catch(err => next(createError(err)));
 };
 
 exports.createGitlabBranch = async function (req, res, next) {
-  const taskId = req.params.id;
-  const { repoId, branchSource, branchName } = req.body;
   try {
+    const taskId = req.params.id;
+    const { repoId, branchSource, branchName } = req.body;
     const createdBranch = await branches.createBranch(taskId, repoId, branchSource, branchName);
     res.json(createdBranch);
   } catch (e) {
@@ -230,8 +246,8 @@ exports.createGitlabBranch = async function (req, res, next) {
 };
 
 exports.getGitlabBranchesById = async function (req, res, next) {
-  const taskId = req.params.id;
   try {
+    const taskId = req.params.id;
     const loadBranches = await branches.getBranchesByTaskId(taskId);
     res.json(loadBranches);
   } catch (e) {
@@ -240,8 +256,8 @@ exports.getGitlabBranchesById = async function (req, res, next) {
 };
 
 exports.getGitlabBranchesByRepoId = async function (req, res, next) {
-  const { repoId } = req.query;
   try {
+    const { repoId } = req.query;
     const loadBranches = await branches.getBranchesByRepoId(repoId);
     res.json(loadBranches);
   } catch (e) {

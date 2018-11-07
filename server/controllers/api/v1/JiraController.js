@@ -51,12 +51,7 @@ exports.createJiraProject = async function (req, res, next) {
  */
 exports.setJiraProjectAssociation = async function (req, res, next) {
   try {
-    const {
-      projectId,
-      issueTypesAssociation,
-      statusesAssociation,
-      userEmailAssociation
-    } = req.body;
+    const { projectId, issueTypesAssociation, statusesAssociation, userEmailAssociation } = req.body;
     const projectAssociations = await setProjectAssociation(
       projectId,
       issueTypesAssociation,

@@ -4,13 +4,7 @@ const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
 const moment = require('moment');
 const createError = require('http-errors');
-const {
-  Project,
-  TaskStatusesAssociation,
-  TaskTypesAssociation,
-  UserEmailAssociation,
-  User
-} = models;
+const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User } = models;
 const request = require('./../request');
 const config = require('../../../configs');
 
@@ -21,11 +15,7 @@ exports.jiraSync = async function (headers, data) {
   let resTimesheets, resSprints, resTasks;
 
   // Подгрузка ассоциаций
-  const [
-    taskStatusesAssociation,
-    taskTypesAssociation,
-    userEmailAssociation
-  ] = await Promise.all([
+  const [taskStatusesAssociation, taskTypesAssociation, userEmailAssociation] = await Promise.all([
     TaskStatusesAssociation.findAll({}),
     TaskTypesAssociation.findAll({}),
     UserEmailAssociation.findAll({})
@@ -87,23 +77,15 @@ exports.jiraSync = async function (headers, data) {
   const tasks = data.map(task => {
     let sInd;
     if (task.sprint) {
-      sInd = resSprints.findIndex(
-        sp => sp.externalId.toString() === task.sprint.id.toString()
-      );
+      sInd = resSprints.findIndex(sp => sp.externalId.toString() === task.sprint.id.toString());
     }
 
     const statusAssociation = taskStatusesAssociation.find(tsa => {
-      return (
-        tsa.projectId === project.id
-        && tsa.externalStatusId.toString() === task.status
-      );
+      return tsa.projectId === project.id && tsa.externalStatusId.toString() === task.status;
     });
 
     const typeAssociation = taskTypesAssociation.find(tsa => {
-      return (
-        tsa.projectId === project.id
-        && tsa.externalTaskTypeId.toString() === task.type
-      );
+      return tsa.projectId === project.id && tsa.externalTaskTypeId.toString() === task.type;
     });
 
     const t = Object.assign(
@@ -180,10 +162,7 @@ exports.jiraSync = async function (headers, data) {
   });
 
   try {
-    resTimesheets = await TimesheetService.synchronizeTimesheets(
-      timesheets,
-      project.id
-    );
+    resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets, project.id);
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
@@ -196,12 +175,9 @@ exports.jiraSync = async function (headers, data) {
  * @param {string} authorId
  */
 exports.createProject = async function (headers, id, authorId, prefix) {
-  const { data: jiraProject } = await request.get(
-    `${config.ttiUrl}/project/${id}`,
-    {
-      headers
-    }
-  );
+  const { data: jiraProject } = await request.get(`${config.ttiUrl}/project/${id}`, {
+    headers
+  });
   const jiraHostname = await getJiraHostname(headers);
   const users = await getJiraProjectUsers(headers, id);
   let project;
@@ -264,11 +240,7 @@ exports.setProjectAssociation = async function (
   });
 
   // ------
-  const [
-    createdTaskTypes,
-    createdTaskStatuses,
-    createdUserEmail
-  ] = await Promise.all([
+  const [createdTaskTypes, createdTaskStatuses, createdUserEmail] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
     TaskStatusesAssociation.findAll({ where: { projectId } }),
     UserEmailAssociation.findAll({ where: { projectId } })
@@ -340,12 +312,9 @@ exports.getActiveSimtrackProjects = async function () {
  * @param projectId - id проекта в джире
  */
 async function getJiraProjectUsers (headers, projectId) {
-  const { data: users } = await request.get(
-    `${config.ttiUrl}/project/${projectId}/users`,
-    {
-      headers
-    }
-  );
+  const { data: users } = await request.get(`${config.ttiUrl}/project/${projectId}/users`, {
+    headers
+  });
   return users;
 }
 
@@ -369,11 +338,7 @@ exports.createBatch = async function (headers, pid) {
 
 exports.getProjectAssociations = async function (projectId) {
   try {
-    const [
-      issueTypesAssociation,
-      statusesAssociation,
-      userAssociation
-    ] = await Promise.all([
+    const [issueTypesAssociation, statusesAssociation, userAssociation] = await Promise.all([
       TaskTypesAssociation.findAll({ where: { projectId } }),
       TaskStatusesAssociation.findAll({ where: { projectId } }),
       UserEmailAssociation.findAll({ where: { projectId } })

@@ -51,40 +51,48 @@ exports.listByProject = async function (req, res, next) {
 };
 
 exports.create = async function (req, res, next){
-  req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
-  req.checkParams('taggableId', 'taggableId must be int').isInt();
-  req.checkBody('tag', 'tag must be more then 2 chars').isLength({min: 2});
-  const validationResult = await req.getValidationResult();
-  if (!validationResult.isEmpty()) {
-    return next(createError(400, validationResult));
-  }
+  let transaction;
 
-  if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
-    return next(createError(403, 'Access denied'));
-  }
+  try {
 
-  if (req.params.taggable === 'task') {
-    const task = await models.Task.findByPrimary(req.params.taggableId, { attributes: ['id', 'projectId']});
-    if (!req.user.canReadProject(task.projectId)) {
+    req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
+    req.checkParams('taggableId', 'taggableId must be int').isInt();
+    req.checkBody('tag', 'tag must be more then 2 chars').isLength({min: 2});
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
+
+    if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
       return next(createError(403, 'Access denied'));
     }
+
+    if (req.params.taggable === 'task') {
+      const task = await models.Task.findByPrimary(req.params.taggableId, { attributes: ['id', 'projectId']});
+      if (!req.user.canReadProject(task.projectId)) {
+        return next(createError(403, 'Access denied'));
+      }
+    }
+
+    const tag = req.body.tag;
+
+    transaction = await models.sequelize.transaction();
+    const model = await models[StringHelper.firstLetterUp(req.params.taggable)].findByPrimary(req.params.taggableId, { attributes: ['id'], transaction: transaction });
+    if (!model) {
+      return next(createError(404, 'taggable model not found'));
+    }
+
+    await queries.tag.saveTagsForModel(model, tag, req.params.taggable, req.user.id);
+    const tags = await queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id, transaction);
+    res.json(tags);
+
+  } catch (e) {
+    if (transaction) {
+      transaction.rollback();
+    }
+    return next(e);
   }
 
-  await models.sequelize.transaction(function (t) {
-    return models[StringHelper.firstLetterUp(req.params.taggable)]
-      .findByPrimary(req.params.taggableId, { attributes: ['id'], transaction: t })
-      .then((model) => {
-        if (!model) return next(createError(404, 'taggable model not found'));
-
-        return queries.tag.saveTagsForModel(model, req.body.tag, req.params.taggable, req.user.id)
-          .then(() => {
-            return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id, t)
-              .then((tags) => {
-                res.json(tags);
-              });
-          });
-      });
-  });
 };
 
 exports.delete = async function (req, res, next){

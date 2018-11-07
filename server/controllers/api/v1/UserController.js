@@ -206,6 +206,7 @@ exports.createExternal = async function (req, res, next) {
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
   const setPasswordExpired = new Date(moment().add(1, 'days'));
+  const expiredDate = new Date(moment(req.body.expiredDate).millisecond(999).second(59).minute(59).hour(23));
   const params = {
     active: 1,
     isActive: 0,
@@ -215,7 +216,8 @@ exports.createExternal = async function (req, res, next) {
     updatedAt: new Date(),
     setPasswordToken,
     setPasswordExpired,
-    ...req.body
+    ...req.body,
+    expiredDate
   };
 
   User.create(params)
