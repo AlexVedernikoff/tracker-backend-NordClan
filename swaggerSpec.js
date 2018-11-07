@@ -772,12 +772,7 @@ module.exports = {
           {
             name: 'tags',
             type: 'string',
-            description: 'можно разделять через ","',
-            in: 'query'
-          },
-          {
-            name: 'noTag',
-            type: 'boolean',
+            description: 'можно разделять через ",". Можно исползовать "No tag", "Без тега" для поиска тасок без тегов.',
             in: 'query'
           },
           {

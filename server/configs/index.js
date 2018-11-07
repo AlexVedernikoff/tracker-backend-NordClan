@@ -38,5 +38,7 @@ module.exports = {
     title: 'SimTrack',
     templateBaseUrl: 'http://sim-track.simbirsoft1.com'
   },
-  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
+  ldapUrl:
+    process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
+  ttiUrl: process.env.TTI_HOST || 'http://docker-web.simbirsoft:5000'
 };

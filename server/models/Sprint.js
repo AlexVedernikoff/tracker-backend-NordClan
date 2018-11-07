@@ -79,6 +79,12 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       }
     },
+    externalId: {
+      field: 'external_id',
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
