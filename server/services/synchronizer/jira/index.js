@@ -372,12 +372,22 @@ exports.getProjectAssociations = async function (projectId) {
     const [
       issueTypesAssociation,
       statusesAssociation,
-      userEmailAssociation
+      userAssociation
     ] = await Promise.all([
       TaskTypesAssociation.findAll({ where: { projectId } }),
       TaskStatusesAssociation.findAll({ where: { projectId } }),
       UserEmailAssociation.findAll({ where: { projectId } })
     ]);
+
+    const userIds = userAssociation.map(e => e.internalUserId);
+    const users = await User.findAll({ where: { id: { $in: userIds } } });
+    const userEmailAssociation = userAssociation.map(ua => {
+      const user = users.find(u => ua.internalUserId === u.id);
+      return {
+        ...ua.dataValues,
+        ...{ fullNameRu: user.fullNameRu }
+      };
+    });
     return {
       issueTypesAssociation,
       statusesAssociation,
