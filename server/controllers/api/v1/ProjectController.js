@@ -353,7 +353,7 @@ exports.list = function (req, res, next) {
   const include = [];
   let where = {};
 
-  if (!req.user.isGlobalAdmin && !req.user.isVisor) {
+  if (req.query.userIsParticipant || (!req.user.isGlobalAdmin && !req.user.isVisor)) {
     where.id = req.user.dataValues.projects;
   }
 
