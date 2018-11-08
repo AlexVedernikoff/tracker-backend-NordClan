@@ -1,4 +1,4 @@
-const { Metrics, User } = require('../../../models');
+const { Metrics, User, Sprint } = require('../../../models');
 const _ = require('lodash');
 
 exports.list = async (params) => {
@@ -22,9 +22,7 @@ exports.list = async (params) => {
     }
   });
 
-  const result = await addUsersObjetsToMetrics(metrics);
-
-  return result;
+  return await handleCommandMetric(metrics);
 };
 
 exports.validate = (params) => {
@@ -93,45 +91,113 @@ function generateMessage (errors) {
   return `Incorrect params - ${incorrectParams}`;
 }
 
-async function addUsersObjetsToMetrics (metrics) {
-  const indexes = [];
-  const usersIds = metrics
-    .reduce((acc, cur, index) => {
-      if (cur.typeId === 61 && cur.value.length > 3) {
-        indexes.push(index);
-        const value = JSON.parse(cur.value);
-        metrics[index].value = value;
-        value.forEach((item) => {
-          acc.push(item.userId);
+async function handleCommandMetric (metrics) {
+  // Определяю самый свижий результат подстчета метрики 61
+  const newerMetric = findNewerMetricByType(metrics, 61);
+
+  if (!newerMetric) {
+    return metrics;
+  }
+
+  // Получаю данные из метрики, они нужны для сортировки по алфовиту
+  const { value, sprintMap, usersMap } = await extractCommandData(metrics[newerMetric.index]);
+
+  // Формирую зультат для фронта
+  const result = [];
+  for (const [sprintId, sprint] of sprintMap) {
+    const item = {
+      sprint,
+      data: []
+    };
+
+
+    for (const [userId, user] of usersMap) {
+      if (value[sprintId][userId]) {
+        item.data.push({
+          user,
+          ...value[sprintId][userId]
         });
       }
-      return acc;
-    }, []);
+    }
 
-  const users = await User.findAll({
+    result.push(item);
+  }
+
+  // Подменяю данные
+  metrics[newerMetric.index].dataValues = {
+    ...metrics[newerMetric.index].dataValues,
+    value: JSON.stringify(result)
+  };
+
+  // Удаляю остальные метрики с типом 61
+  return metrics.filter((metric) => {
+    return metric.typeId !== 61 || metric.id === newerMetric.id;
+  });
+}
+
+function findNewerMetricByType (metrics, typeId) {
+  let newerMetric;
+
+  metrics.forEach((metric, index) => {
+    if (metric.typeId === typeId) {
+      if (!newerMetric || metric.createdAt > newerMetric.createdAt) {
+        newerMetric = {
+          index,
+          id: metric.id,
+          createdAt: metric.createdAt
+        };
+      }
+    }
+  });
+
+  return newerMetric;
+}
+
+async function extractCommandData (metric) {
+  const value = JSON.parse(metric.value);
+  const sprintIds = [];
+  const usersIds = [];
+
+  for (const sprintId in value) {
+    sprintIds.push(sprintId);
+    for (const userId in value[sprintId]) {
+      usersIds.push(userId);
+    }
+  }
+
+  const usersArr = await User.findAll({
     attributes: User.defaultSelect,
     where: {
       id: {
         $in: _.uniq(usersIds)
       }
-    }
-  })
-    .then((items) => {
-      const map = new Map();
-      items.forEach((user) => {
-        map.set(user.id, user.dataValues);
-      });
-      return map;
-    });
-
-
-  indexes.forEach((index) => {
-    metrics[index].value = metrics[index].value.map((item) => {
-      item.user = users.get(item.userId);
-      delete item.userId;
-      return item;
-    });
+    },
+    order: [['firstNameRu', 'ASC'], ['lastNameRu', 'ASC']]
   });
 
-  return metrics;
+  const usersMap = usersArr.reduce((map, user) => {
+    map.set(user.id, user.dataValues);
+    return map;
+  }, new Map());
+
+  const sprintArr = await Sprint.findAll({
+    attributes: Sprint.defaultSelect,
+    where: {
+      id: {
+        $in: _.uniq(sprintIds)
+      }
+    },
+    order: [['factStartDate', 'ASC']]
+  });
+
+  const sprintMap = sprintArr.reduce((map, sprint) => {
+    map.set(sprint.id, sprint.dataValues);
+    return map;
+  }, new Map());
+
+  return {
+    value,
+    usersMap,
+    sprintMap
+  };
 }

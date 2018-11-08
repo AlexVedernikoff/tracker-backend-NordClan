@@ -1,44 +1,31 @@
-const { TaskStatusesDictionary } = require('../../../models');
+const { TaskStatusesDictionary, TaskTypesDictionary } = require('../../../models');
 
 module.exports = function (sprint) {
-  const sprintHistory = {};
+  const result = {};
 
   sprint.tasks.forEach((task) => {
 
-    // Для отладки
-    if (task.id !== 2013) {
-      return;
-    }
-    const taskTimesheets = task.timesheets.sort((a, b) => a.onDate - b.onDate);
     /** Объеденяю таймшиты по дням */
-    const timesheetGroupByDay = getTimesheetGroupByDay(taskTimesheets);
-    /** Из истории таски создаю историю статусов и исполнителей в рамках задачи */
+    const timesheetGroupByDay = getTimesheetGroupByDay(task);
+    /** Из истории таски (task_history) создаю историю статусов и исполнителей в рамках задачи */
     const statusHistory = getHistoryOfStatuses(task);
-    /** Сортирую тайшиты, в т.ч. по истории если нужно */
-    const soretedSheets = getSortSheets(timesheetGroupByDay, statusHistory);
+    /** Сортирую тайшиты, в т.ч. подключаю историю статусов если нужно */
+    const sortedSheets = sortSheets(timesheetGroupByDay, statusHistory);
     /** Делаю подсчет выполненных тасок, возвратов */
-    const taskUserHistory = getTaskUsersHistory(soretedSheets);
-    /** Добавляю данные по таски в стоирю по спринту */
-    taskHistoryToSprintHistory(taskUserHistory, sprintHistory, task);
-
-    // console.log('statusHistory', statusHistory);
-    // console.log('soretedSheets', soretedSheets);
-    // console.log('taskUserHistory', taskUserHistory);
-    // console.log('history', sprintHistory);
+    const taskUserHistory = getTaskUsersHistory(sortedSheets);
+    /** Добавляю данные по таске в результирующий объект */
+    taskHistoryToSprintHistory(taskUserHistory, task, result);
 
   });
-
-  /** Финальное преобразование данных, агрегирую данные в сводный объект */
-  const result = finalCalc(sprintHistory);
-  console.log('result', result);
 
   return result;
 };
 
 
-function getTimesheetGroupByDay (timesheets) {
+function getTimesheetGroupByDay (task) {
+  const timesheets = task.timesheets.sort((a, b) => a.onDate - b.onDate);
   const map = new Map();
-  // Заношу в мапу шиты с группировкой по дате, что бы потом осортировать то что в группе в другой функции
+  // Заношу в мапу шиты с группировкой по дате, для дальнейшенй обработке
   timesheets.forEach((cur) => {
     // Пропускаю пустые шиты
     if (+cur.spentTime === 0) {
@@ -160,7 +147,7 @@ function filterHistoryByDay (history, date) {
   return result;
 }
 
-function getSortSheets (timesheetGroupByDay, statusHistory) {
+function sortSheets (timesheetGroupByDay, statusHistory) {
   const returnMap = new Map();
 
   timesheetGroupByDay.forEach((day, index) => {
@@ -186,7 +173,7 @@ function getSortSheets (timesheetGroupByDay, statusHistory) {
       // Если в один день была и qa и dev, то нужно идти в историю и смотреть последовательность стадий dev или qa.
       // Нужно остортировать все тш по истории статусов и исполнителей
       const dayHistory = filterHistoryByDay(statusHistory, index);
-      console.log('dayHistory', dayHistory);
+
       dayHistory.forEach((item) => {
         day.forEach((sheet, dayIndex) => {
           if (
@@ -207,30 +194,6 @@ function getSortSheets (timesheetGroupByDay, statusHistory) {
 
 }
 
-// Финальное преобразование данных
-function finalCalc (history) {
-  const result = [];
-  for (const userId in history) {
-    const userMetric = {
-      userId: +userId,
-      done: 0,
-      return: 0,
-      bugs: 0
-    };
-
-    for (const taskId in history[userId]) {
-      history[userId][taskId].doneCount && userMetric.done++;
-      history[userId][taskId].returnCount && userMetric.return++;
-      if (history[userId][taskId].linkedBugsCount) {
-        userMetric.bugs += history[userId][taskId].linkedBugsCount;
-      }
-    }
-
-    result.push(userMetric);
-  }
-  return result;
-}
-
 function getTaskUsersHistory (soretedSheets) {
   const taskUserHistory = new Map(); // История по выполнениям и возвратоам у исполнителей задачи
   let activePerformerId = null; // Текущий исполнитель
@@ -238,7 +201,6 @@ function getTaskUsersHistory (soretedSheets) {
   let isQaPrevious = false; // Для того что бы не посчитать возврат по несколько раз
 
   for (const sheetItem of soretedSheets.values()) {
-    console.log('userId', sheetItem.userId, 'taskStatusId', sheetItem.taskStatusId, 'onDate', sheetItem.onDate, 'time', sheetItem.spentTime);
 
     // Разработка
     if (TaskStatusesDictionary.DEVELOP_STATUSES.indexOf(sheetItem.taskStatusId) !== -1) {
@@ -278,29 +240,44 @@ function getTaskUsersHistory (soretedSheets) {
   return taskUserHistory;
 }
 
-function taskHistoryToSprintHistory (taskUserHistory, history, task) {
+function taskHistoryToSprintHistory (taskUserHistory, task, history) {
   // Подвожу итоги задачи dev и qa через другую переменную что бы легче было отлаживать
   for (const userId of taskUserHistory.keys()) {
     if (taskUserHistory.get(userId).qa) {
-      if (!history[userId]) {
-        history[userId] = {};
+      if (!history[task.sprintId]) {
+        history[task.sprintId] = {};
       }
 
-      if (!history[userId][task.id]) {
-        history[userId][task.id] = {
+      if (!history[task.sprintId][userId]) {
+        history[task.sprintId][userId] = {
           userId: userId,
-          doneCount: 1,
-          returnCount: taskUserHistory.get(userId).return,
-          linkedBugsCount: task.linkedTasks.length
+          taskDoneCount: 0,
+          taskReturnCount: 0,
+          bugDoneCount: 0,
+          bugReturnCount: 0,
+          linkedBugsCount: 0
         };
-      } else {
-        history[userId][task.id].doneCount++;
-        history[userId][task.id].doneCount += task.linkedTasks.length;
-        if (taskUserHistory.get(userId).return) {
-          history[userId][task.id].return++;
-        }
       }
 
+      if (task.linkedTasks.length) {
+        history[task.sprintId][userId].linkedBugsCount += task.linkedTasks.length;
+      }
+
+      // Фича
+      if (TaskTypesDictionary.FEATURES_TYPES.indexOf(task.typeId) !== -1) {
+        history[task.sprintId][userId].taskDoneCount++;
+        if (taskUserHistory.get(userId).return) {
+          history[task.sprintId][userId].taskReturnCount++;
+        }
+
+      // Баг
+      } else if (TaskTypesDictionary.BUGS_TYPES.indexOf(task.typeId) !== -1) {
+        history[task.sprintId][userId].bugDoneCount++;
+        if (taskUserHistory.get(userId).return) {
+          history[task.sprintId][userId].bugReturnCount++;
+        }
+
+      }
     }
   }
 }
