@@ -58,6 +58,32 @@ exports.isPerformerOfTask = function (userId, taskId) {
 
 };
 
+exports.getTaskWithUsers = function (id) {
+  return models.Task
+    .findOne({
+      where: {
+        deletedAt: null,
+        id
+      },
+      attributes: ['id'],
+      include: [
+        {
+          as: 'project',
+          model: models.Project,
+          attributes: ['id'],
+          required: false,
+          include: [
+            {
+              as: 'projectUsers',
+              model: models.ProjectUsers,
+              attributes: ['userId']
+            }
+          ]
+        }
+      ]
+    });
+};
+
 exports.defaultAttributes = function (role) {
   if (role === models.User.EXTERNAL_USER_ROLE) {
     return {

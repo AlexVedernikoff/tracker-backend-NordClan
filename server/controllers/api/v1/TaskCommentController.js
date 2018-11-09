@@ -3,6 +3,7 @@ const models = require('../../../models');
 const queries = require('../../../models/queries');
 const emailSubprocess = require('../../../services/email/subprocess');
 const { getMentionDiff } = require('./../../../services/comment');
+const CommentsChannel = require('../../../channels/Comments');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -28,6 +29,15 @@ exports.create = async function (req, res, next){
 
     const comment = await models.Comment.create(req.body);
     const getOne = await queries.comment.getOne(comment.id);
+    const currentTask = await queries.task.getTaskWithUsers(getOne.dataValues.taskId);
+    if (getOne) {
+      CommentsChannel.updateTaskComments(
+        res.io,
+        req.user.dataValues.id,
+        getOne.dataValues.taskId,
+        currentTask.project.projectUsers
+      );
+    }
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[2].id,
       input: { taskId: task.id, commentId: comment.id },
