@@ -1,0 +1,8 @@
+{
+  "realm": "simbirsoft-dev",
+  "auth-server-url": "http://sso.simbirsoft:8080/auth",
+  "ssl-required": "external",
+  "resource": "local-simtrack",
+  "public-client": true,
+  "confidential-port": 0
+}
