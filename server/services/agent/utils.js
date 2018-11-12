@@ -1,5 +1,85 @@
-const { ProjectUsers, ProjectUsersRoles, Task, Timesheet, TaskStatusesDictionary,
-  User, MetricTypesDictionary, TaskTypesDictionary } = require('../../models');
+const { ProjectUsers, ProjectUsersRoles, Task, Timesheet, TaskStatusesDictionary, ProjectStatusesDictionary,
+  User, MetricTypesDictionary, TaskTypesDictionary, Project, Sprint, TaskTasks, TaskHistory } = require('../../models');
+
+exports.getProjectIds = async function (projectId) {
+  if (projectId) {
+    return [projectId];
+  }
+
+  return await Project.findAll({
+    attributes: ['id'],
+    where: {
+      statusId: ProjectStatusesDictionary.IN_PROGRESS
+    }
+  }).then((projects) => projects.map(project => project.id));
+};
+
+exports.getProject = async function (projectId) {
+  return await Project.findOne({
+    where: {
+      id: projectId
+    },
+    attributes: Project.defaultSelect,
+    include: [
+      {
+        as: 'sprints',
+        model: Sprint,
+        attributes: Sprint.defaultSelect,
+        include: [
+          {
+            as: 'tasks',
+            model: Task,
+            attributes: Task.defaultSelect,
+            where: {
+              deletedAt: {
+                $eq: null
+              }
+            },
+            include: [
+              {
+                as: 'linkedTasks', // Связанные с задачей баги
+                model: Task,
+                attributes: ['id', 'createdAt'],
+                through: {
+                  model: TaskTasks,
+                  attributes: []
+                },
+                where: {
+                  statusId: {
+                    $notIn: [ TaskStatusesDictionary.CANCELED_STATUS ]
+                  },
+                  typeId: {
+                    $in: [TaskTypesDictionary.BUG, TaskTypesDictionary.REGRES_BUG]
+                  }
+                },
+                required: false
+              },
+              {
+                as: 'history',
+                model: TaskHistory,
+                where: {
+                  field: {
+                    $or: ['sprintId', 'statusId', 'performerId', null]
+                  }
+                },
+                required: false
+              },
+              {
+                as: 'timesheets',
+                model: Timesheet,
+                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable', 'userId', 'onDate', 'taskStatusId', 'taskId'],
+                required: false
+              }
+            ],
+            required: false
+          }
+        ]
+      }
+    ],
+    logging: false
+  })
+    .then((project) => project.get({ 'plain': true }));
+};
 
 exports.getDictionaries = async function () {
   const bugNameEn = 'Bug';
