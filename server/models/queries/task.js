@@ -58,6 +58,24 @@ exports.isPerformerOfTask = function (userId, taskId) {
 
 };
 
+const projectWithUsers = [
+  {
+    as: 'project',
+    model: models.Project,
+    attributes: ['id'],
+    required: false,
+    include: [
+      {
+        as: 'projectUsers',
+        model: models.ProjectUsers,
+        attributes: ['userId']
+      }
+    ]
+  }
+];
+
+exports.includeProjectWithUsers = projectWithUsers;
+
 exports.getTaskWithUsers = function (id) {
   return models.Task
     .findOne({
@@ -66,21 +84,7 @@ exports.getTaskWithUsers = function (id) {
         id
       },
       attributes: ['id'],
-      include: [
-        {
-          as: 'project',
-          model: models.Project,
-          attributes: ['id'],
-          required: false,
-          include: [
-            {
-              as: 'projectUsers',
-              model: models.ProjectUsers,
-              attributes: ['userId']
-            }
-          ]
-        }
-      ]
+      include: projectWithUsers
     });
 };
 
