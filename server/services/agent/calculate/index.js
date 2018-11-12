@@ -1,6 +1,6 @@
 const moment = require('moment');
 const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, Timesheet, TaskHistory, TaskStatusesDictionary,
-  User, Metrics, MetricTypesDictionary, Sequelize, sequelize, TaskTypesDictionary } = require('../../../models');
+  User, Metrics, MetricTypesDictionary, sequelize, TaskTypesDictionary, TaskTasks } = require('../../../models');
 const metricsLib = require('./metricsLib');
 
 const executeDate = moment().toISOString();
@@ -8,30 +8,15 @@ const executeDate = moment().toISOString();
 module.exports.calculate = async function (projectId) {
   try {
     await init();
-  } catch (err) {
-    console.error('Unable to connect to the database:', err);
-    process.exit(-1);
-  }
-
-  console.log('Database connection has been established successfully.');
-
-  let metricsData;
-
-  try {
-    metricsData = await getMetrics(projectId);
-  } catch (err) {
-    console.error('getMetrics err', err);
-    process.exit(-1);
-  }
-
-  try {
+    const metricsData = await getMetrics(projectId);
     await saveMetrics(metricsData);
+    process.exit(0);
+
   } catch (err) {
-    console.error('saveMetrics err', err);
+    console.error('Error. Can not calculate metrics. Reason: ', err);
+    // TODO: send email about error, task ST-6631
     process.exit(-1);
   }
-
-  process.exit(0);
 };
 
 async function init () {
@@ -63,17 +48,37 @@ async function getMetrics (projectId) {
             },
             include: [
               {
+                as: 'linkedTasks', // Связанные с задачей баги
+                model: Task,
+                attributes: ['id', 'createdAt'],
+                through: {
+                  model: TaskTasks,
+                  attributes: []
+                },
+                where: {
+                  statusId: {
+                    $notIn: [ TaskStatusesDictionary.CANCELED_STATUS ]
+                  },
+                  typeId: {
+                    $in: [TaskTypesDictionary.BUG, TaskTypesDictionary.REGRES_BUG]
+                  }
+                },
+                required: false
+              },
+              {
                 as: 'history',
                 model: TaskHistory,
                 where: {
-                  field: 'sprintId'
+                  field: {
+                    $or: ['sprintId', 'statusId', 'performerId', null]
+                  }
                 },
                 required: false
               },
               {
                 as: 'timesheets',
                 model: Timesheet,
-                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable'],
+                attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable', 'userId', 'onDate', 'taskStatusId', 'taskId'],
                 required: false
               }
             ],

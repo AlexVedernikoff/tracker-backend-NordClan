@@ -2,6 +2,7 @@ const { TaskStatusesDictionary } = require('../../../models');
 const moment = require('moment');
 const _ = require('underscore');
 const exactMath = require('exact-math');
+const commandMetrics = require('./commandMetrics');
 
 
 module.exports = async function (metricsTypeId, input) {
@@ -11,7 +12,7 @@ module.exports = async function (metricsTypeId, input) {
   let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
-    spentTimeBySprint, spentTimeByTask, isFromClient, isTaskFromClient;
+    spentTimeBySprint, spentTimeByTask, isTaskFromClient;
   let timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
@@ -406,14 +407,16 @@ module.exports = async function (metricsTypeId, input) {
     unsceduledOpenedFeatures = 0;
     if (input.sprint.tasks.length > 0) {
       input.sprint.tasks.forEach(function (task) {
+        const changeSprint = task.history.filter((item) => item.field === 'sprintId');
+
         if (
           task.typeId === 1
             && (
               moment(task.createdAt).isAfter(input.sprint.factStartDate)
               || (
-                task.history
-                && task.history.length > 0
-                && moment(task.history[task.history.length - 1].createdAt).isAfter(input.sprint.factStartDate)
+                changeSprint
+                && changeSprint.length > 0
+                && moment(changeSprint[changeSprint.length - 1].createdAt).isAfter(input.sprint.factStartDate)
               )
             )
         ) {
@@ -479,6 +482,17 @@ module.exports = async function (metricsTypeId, input) {
       'userId': null
     };
 
+  case (61): {
+
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': JSON.stringify(commandMetrics(input.sprint)),
+      'projectId': input.project.id,
+      'sprintId': input.sprint ? input.sprint.id : null,
+      'userId': null
+    };
+  }
   default:
     break;
   }
