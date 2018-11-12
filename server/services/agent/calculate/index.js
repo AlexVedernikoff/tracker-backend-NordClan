@@ -1,7 +1,7 @@
 const moment = require('moment');
-const { Project, ProjectUsers, ProjectUsersRoles, Sprint, Task, Timesheet, TaskHistory, TaskStatusesDictionary,
-  User, Metrics, MetricTypesDictionary, sequelize, TaskTypesDictionary, TaskTasks } = require('../../../models');
+const { Project, Sprint, Task, Timesheet, TaskHistory, TaskStatusesDictionary, Metrics, sequelize, TaskTypesDictionary, TaskTasks } = require('../../../models');
 const metricsLib = require('./metricsLib');
+const utils = require('../utils');
 
 const executeDate = moment().toISOString();
 
@@ -26,9 +26,7 @@ async function init () {
 async function getMetrics (projectId) {
   const projectsQuery = {
     where: {
-      ...(projectId ? {
-        id: { $eq: projectId }
-      } : null)
+      id: projectId
     },
     attributes: Project.defaultSelect,
     include: [
@@ -85,74 +83,25 @@ async function getMetrics (projectId) {
             required: false
           }
         ]
-      },
-      {
-        as: 'projectUsers',
-        model: ProjectUsers,
-        attributes: ProjectUsers.defaultSelect,
-        include: [
-          {
-            as: 'user',
-            model: User
-          },
-          {
-            as: 'roles',
-            model: ProjectUsersRoles
-          }
-        ]
       }
     ],
-    subQuery: true
+    logging: false
   };
 
   const projects = await Project.findAll(projectsQuery);
-
-  const bugNameEn = 'Bug';
-  const taskStatusDoneEn = 'Done';
-  const [taskTypeBug, taskStatusDone, metricTypes] = await Promise.all([
-    TaskTypesDictionary.findAll({ where: { name_en: bugNameEn } }),
-    TaskStatusesDictionary.findAll({ where: { name: taskStatusDoneEn } }),
-    MetricTypesDictionary.findAll()
-  ]);
-
-  const bugs = await Task.findAll({
-    where: {
-      typeId: taskTypeBug[0].id,
-      statusId: taskStatusDone[0].id
-    },
-    attributes: ['id', 'sprintId', 'projectId', 'factExecutionTime']
-  });
-
-  const tasksInBacklog = await Task.findAll({
-    where: {
-      sprintId: null
-    },
-    attributes: ['id', 'sprintId', 'projectId', 'typeId', 'statusId', 'isTaskByClient'],
-    include: [
-      {
-        as: 'timesheets',
-        model: Timesheet,
-        attributes: ['id', 'sprintId', 'spentTime', 'projectId', 'userRoleId', 'isBillable'],
-        required: false
-      }
-    ]
-  }).then(tasks => tasks
-    .map(task => task.get({ 'plain': true })));
-
-  const otherTimeSheets = await Timesheet.findAll({
-    where: {
-      taskId: null
-    },
-    attributes: ['id', 'projectId', 'spentTime']
-  }).then(timesheets => timesheets
-    .map(timesheet => timesheet.get({ 'plain': true })));
+  const [taskTypeBug, taskStatusDone, metricTypes] = await utils.getDictionaries();
+  const bugs = await utils.getBugs(projectId, taskTypeBug, taskStatusDone);
+  const tasksInBacklog = await utils.getTasksInBacklog(projectId);
+  const otherTimeSheets = await utils.getOtherTimeSheets(projectId);
+  const projectUsers = await utils.getProjectUsers(projectId);
 
   const projectMetricsTasks = [];
   projects.forEach(function (project) {
     const plainProject = project.get({ 'plain': true });
-    plainProject.tasksInBacklog = tasksInBacklog.filter(task => task.projectId === plainProject.id);
-    plainProject.bugs = bugs.filter(bug => bug.projectId === plainProject.id);
-    plainProject.otherTimeSheets = otherTimeSheets.filter(timesheet => timesheet.projectId === plainProject.id);
+    plainProject.tasksInBacklog = tasksInBacklog;
+    plainProject.bugs = bugs;
+    plainProject.otherTimeSheets = otherTimeSheets;
+    plainProject.projectUsers = projectUsers;
     if (plainProject.sprints.length > 0) {
       plainProject.sprints.forEach(function (sprint, sprintKey) {
         plainProject.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
@@ -187,6 +136,9 @@ async function getMetrics (projectId) {
 
 async function saveMetrics (metricsData) {
   return await sequelize.transaction(function (t) {
-    return Metrics.bulkCreate(metricsData.filter(md => md), { transaction: t });
+    return Metrics.bulkCreate(metricsData.filter(md => md), {
+      transaction: t,
+      logging: false
+    });
   });
 }
