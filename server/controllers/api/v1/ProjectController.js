@@ -3,7 +3,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
 const models = require('../../../models');
-const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
+const { Project, Tag, ItemTag, Portfolio, Sprint, Task } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
@@ -603,6 +603,11 @@ exports.list = function (req, res, next) {
           }
         });
       });
+    })
+    .then(() => {
+      if (req.user.isDevOps) {
+        where.id = [...where.id, ...req.user.devOpsProjects];
+      }
     })
     .then(() => {
       return Project.findAll({
