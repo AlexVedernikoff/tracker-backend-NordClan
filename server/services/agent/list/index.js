@@ -92,75 +92,44 @@ function generateMessage (errors) {
 }
 
 async function handleCommandMetric (metrics) {
-  // Определяю самый свижий результат подстчета метрики 61
-  const newerMetric = findNewerMetricByType(metrics, 61);
+  const teamMetricsObj = metrics.reduce((acc, cur) => {
+    if (cur.typeId === 61) {
+      acc[cur.id] = cur;
+      acc[cur.id].dataValues.value = JSON.parse(cur.dataValues.value);
+    }
+    return acc;
+  }, {});
 
-  if (!newerMetric) {
-    return metrics;
-  }
+  const usersMap = await findUsersFromTeamMetric(teamMetricsObj);
 
-  // Получаю данные из метрики, они нужны для сортировки по алфовиту
-  const { value, sprintMap, usersMap } = await extractCommandData(metrics[newerMetric.index]);
-
-  // Формирую зультат для фронта
-  const result = [];
-  for (const [sprintId, sprint] of sprintMap) {
-    const item = {
-      sprint,
-      data: []
-    };
-
-
+  for (const metricId in teamMetricsObj) {
+    const data = [];
     for (const [userId, user] of usersMap) {
-      if (value[sprintId][userId]) {
-        item.data.push({
-          user,
-          ...value[sprintId][userId]
+      if (teamMetricsObj[metricId] && teamMetricsObj[metricId].dataValues.value[userId]) {
+        data.push({
+          user: user,
+          ...teamMetricsObj[metricId].dataValues.value[userId]
         });
       }
     }
 
-    result.push(item);
+    teamMetricsObj[metricId].dataValues.value = data;
   }
 
-  // Подменяю данные
-  metrics[newerMetric.index].dataValues = {
-    ...metrics[newerMetric.index].dataValues,
-    value: JSON.stringify(result)
-  };
-
-  // Удаляю остальные метрики с типом 61
-  return metrics.filter((metric) => {
-    return metric.typeId !== 61 || metric.id === newerMetric.id;
-  });
-}
-
-function findNewerMetricByType (metrics, typeId) {
-  let newerMetric;
-
   metrics.forEach((metric, index) => {
-    if (metric.typeId === typeId) {
-      if (!newerMetric || metric.createdAt > newerMetric.createdAt) {
-        newerMetric = {
-          index,
-          id: metric.id,
-          createdAt: metric.createdAt
-        };
-      }
+    if (metric.typeId === 61) {
+      metrics[index] = teamMetricsObj[metric.id];
     }
   });
 
-  return newerMetric;
+  return metrics;
 }
 
-async function extractCommandData (metric) {
-  const value = JSON.parse(metric.value);
-  const sprintIds = [];
-  const usersIds = [];
+async function findUsersFromTeamMetric (teamMetricsObj) {
 
-  for (const sprintId in value) {
-    sprintIds.push(sprintId);
-    for (const userId in value[sprintId]) {
+  const usersIds = [];
+  for (const metricId in teamMetricsObj) {
+    for (const userId in teamMetricsObj[metricId].dataValues.value) {
       usersIds.push(userId);
     }
   }
@@ -175,29 +144,10 @@ async function extractCommandData (metric) {
     order: [['firstNameRu', 'ASC'], ['lastNameRu', 'ASC']]
   });
 
-  const usersMap = usersArr.reduce((map, user) => {
+  // console.log(usersArr);
+
+  return usersArr.reduce((map, user) => {
     map.set(user.id, user.dataValues);
     return map;
   }, new Map());
-
-  const sprintArr = await Sprint.findAll({
-    attributes: Sprint.defaultSelect,
-    where: {
-      id: {
-        $in: _.uniq(sprintIds)
-      }
-    },
-    order: [['factStartDate', 'ASC']]
-  });
-
-  const sprintMap = sprintArr.reduce((map, sprint) => {
-    map.set(sprint.id, sprint.dataValues);
-    return map;
-  }, new Map());
-
-  return {
-    value,
-    usersMap,
-    sprintMap
-  };
 }
