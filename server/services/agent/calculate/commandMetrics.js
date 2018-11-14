@@ -244,13 +244,10 @@ function taskHistoryToSprintHistory (taskUserHistory, task, history) {
   // Подвожу итоги задачи dev и qa через другую переменную что бы легче было отлаживать
   for (const userId of taskUserHistory.keys()) {
     if (taskUserHistory.get(userId).qa) {
-      if (!history[task.sprintId]) {
-        history[task.sprintId] = {};
-      }
 
-      if (!history[task.sprintId][userId]) {
-        history[task.sprintId][userId] = {
-          userId: userId,
+
+      if (!history[userId]) {
+        history[userId] = {
           taskDoneCount: 0,
           taskReturnCount: 0,
           bugDoneCount: 0,
@@ -260,21 +257,21 @@ function taskHistoryToSprintHistory (taskUserHistory, task, history) {
       }
 
       if (task.linkedTasks.length) {
-        history[task.sprintId][userId].linkedBugsCount += task.linkedTasks.length;
+        history[userId].linkedBugsCount += task.linkedTasks.length;
       }
 
       // Фича
       if (TaskTypesDictionary.FEATURES_TYPES.indexOf(task.typeId) !== -1) {
-        history[task.sprintId][userId].taskDoneCount++;
+        history[userId].taskDoneCount++;
         if (taskUserHistory.get(userId).return) {
-          history[task.sprintId][userId].taskReturnCount++;
+          history[userId].taskReturnCount++;
         }
 
       // Баг
       } else if (TaskTypesDictionary.BUGS_TYPES.indexOf(task.typeId) !== -1) {
-        history[task.sprintId][userId].bugDoneCount++;
+        history[userId].bugDoneCount++;
         if (taskUserHistory.get(userId).return) {
-          history[task.sprintId][userId].bugReturnCount++;
+          history[userId].bugReturnCount++;
         }
 
       }
