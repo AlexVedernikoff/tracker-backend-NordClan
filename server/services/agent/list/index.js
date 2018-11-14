@@ -19,7 +19,8 @@ exports.list = async (params) => {
         $between: [startDate, endDate]
       },
       ...params
-    }
+    },
+    order: [['createdAt', 'ASC']]
   });
 
   return await handleCommandMetric(metrics);
