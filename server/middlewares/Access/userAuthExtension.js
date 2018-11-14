@@ -1,12 +1,14 @@
 const models = require('../../models');
 const _ = require('underscore');
+const { Task } = models;
 
 const statuses = {
   VISOR: 'VISOR',
   ADMIN: 'ADMIN',
   SYSTEM_USER: 'SYSTEM_USER',
   USER: 'SYSTEM_USER',
-  EXTERNAL_USER: 'EXTERNAL_USER'
+  EXTERNAL_USER: 'EXTERNAL_USER',
+  DEV_OPS: 'DEV_OPS'
 };
 
 exports.statuses = statuses;
@@ -25,6 +27,7 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
 
   extensibleUser.isVisor = extensibleUser.globalRole === statuses.VISOR;
   extensibleUser.isGlobalAdmin = extensibleUser.globalRole === statuses.ADMIN;
+  extensibleUser.isDevOps = extensibleUser.globalRole === statuses.DEV_OPS;
 
   extensibleUser.isAdminOfProject = function (projectId) {
     return this.dataValues.projectsRoles.admin.indexOf(+projectId) !== -1 || extensibleUser.isGlobalAdmin;
@@ -33,7 +36,14 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
     return this.isAdminOfProject(projectId) || this.dataValues.projectsRoles.user.indexOf(+projectId) !== -1;
   };
   extensibleUser.canReadProject = function (projectId) {
-    return this.isGlobalAdmin || this.isVisor || this.isUserOfProject(projectId);
+    return this.isDevOps
+      ? this.isUserOfProject(projectId) || this.devOpsProjects.indexOf(+projectId) !== -1
+      : this.isGlobalAdmin || this.isVisor || this.isUserOfProject(projectId);
+  };
+  extensibleUser.isDevOpsProject = function (projectId) {
+    return this.devOpsProjects
+      ? !this.isUserOfProject(projectId) && (this.devOpsProjects.indexOf(+projectId) !== -1)
+      : false;
   };
   extensibleUser.canUpdateProject = function (projectId) {
     return this.isGlobalAdmin || this.isAdminOfProject(projectId);

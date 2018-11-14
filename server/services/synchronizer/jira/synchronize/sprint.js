@@ -37,7 +37,7 @@ exports.synchronizeSprints = async function (sprints, projectId) {
 
   // создание новых спринтов
   if (newSprints.length > 0) await Sprint.bulkCreate(newSprints);
-  return newSprints.concat(createdSprints);
+  return Sprint.findAll({
+    where: { externalId: { $in: extIds }, projectId }
+  });
 };
-
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ СРАВНЕНИЯ И ОБНОВЛЕНИЯ

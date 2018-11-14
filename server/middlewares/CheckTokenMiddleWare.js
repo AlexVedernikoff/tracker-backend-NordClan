@@ -4,6 +4,7 @@ const jwt = require('jwt-simple');
 const models = require('../models/index');
 const User = models.User;
 const ProjectUsers = models.ProjectUsers;
+const { Task } = models;
 const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
@@ -41,7 +42,7 @@ exports.checkToken = function (req, res, next) {
         login: decoded.user.login,
         active: 1
       },
-      attributes: User.defaultSelect,
+      attributes: ['globalRole', ...User.defaultSelect],
       include: [
         {
           as: 'token',
@@ -84,6 +85,27 @@ exports.checkToken = function (req, res, next) {
           }
         }
       ]
+    })
+    .then(user => {
+      if (user) {
+        if (user.dataValues.globalRole === 'DEV_OPS') {
+          return Task.findAll({
+            attributes: ['projectId'],
+            where: {
+              isDevOps: true
+            }
+          }).then((tasks) => {
+            if (tasks !== 0) {
+              user.devOpsProjects = tasks.map(task => task.projectId);
+            }
+            return user;
+          });
+        } else {
+          return user;
+        }
+      } else {
+        return user;
+      }
     })
     .then((user) => {
       if (!user) {

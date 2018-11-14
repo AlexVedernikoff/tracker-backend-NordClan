@@ -14,11 +14,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER
     },
     value: {
-      type: DataTypes.STRING,
-      trim: true,
-      validate: {
-        len: [1, 255]
-      }
+      type: DataTypes.TEXT
     },
     createdAt: {
       field: 'created_at',

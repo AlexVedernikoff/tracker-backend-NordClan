@@ -10,7 +10,7 @@ exports.synchronizeTimesheets = async function (timesheets, projectId) {
   let createdTimesheets = await Timesheet.findAll({
     where: { externalId: { $in: extIds }, projectId }
   });
-  let newTimesheets = timesheets.filter(t => {
+  const newTimesheets = timesheets.filter(t => {
     const ind = createdTimesheets.findIndex(ct => {
       if (ct.externalId === t.externalId) return true;
     });
@@ -36,10 +36,9 @@ exports.synchronizeTimesheets = async function (timesheets, projectId) {
   }
 
   // создание новых таймшитов
-  if (newTimesheets.length > 0) {
-    newTimesheets = await Timesheet.bulkCreate(newTimesheets);
-  }
-  return newTimesheets.concat(createdTimesheets);
-};
+  if (newTimesheets.length > 0) await Timesheet.bulkCreate(newTimesheets);
 
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ СРАВНЕНИЯ И ОБНОВЛЕНИЯ
+  return Timesheet.findAll({
+    where: { externalId: { $in: extIds }, projectId }
+  });
+};
