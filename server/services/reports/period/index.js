@@ -17,17 +17,23 @@ exports.getReport = async function (projectId, criteria) {
   }
   const queryParams = {
     projectId: {$eq: projectId},
-    ...(sprintId ? (
-      {
-        sprintId: {$eq: sprintId}
-      }
-    ) : null),
     ...(criteria ? (
       {
         onDate: {$between: [startDate, endDate]}
       }
     ) : null)
   };
+
+  if (+sprintId === 0) {
+    queryParams.sprintId = {
+      $or: [0, null]
+    };
+  } else if (sprintId) {
+    queryParams.sprintId = {
+      $eq: sprintId
+    };
+  }
+
   const project = await Project.findOne({
     where: {id: {$eq: projectId}},
     attributes: ['id', 'name', 'prefix', 'createdAt', 'completedAt'],
