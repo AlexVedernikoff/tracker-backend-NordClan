@@ -3,6 +3,9 @@
   "auth-server-url": "http://sso.simbirsoft:8080/auth",
   "ssl-required": "external",
   "resource": "local-simtrack",
-  "public-client": true,
+  "credentials": {
+    "secret": "d806e1b2-0cc4-4e92-9498-bf265675b83b"
+  },
+  "use-resource-role-mappings": true,
   "confidential-port": 0
 }

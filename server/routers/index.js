@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Keycloak = require('keycloak-connect');
 const ProjectController = require('../controllers/api/v1/ProjectController');
 const PortfolioController = require('../controllers/api/v1/PortfolioController');
 const SprintController = require('../controllers/api/v1/SprintController');
@@ -22,6 +21,7 @@ const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare
 const JiraController = require('../controllers/api/v1/JiraController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
+const Keycloak = require('keycloak-connect');
 const keycloak = new Keycloak({ cookies: true });
 
 router.post('/milestones', MilestonesController.create);
@@ -30,6 +30,7 @@ router.delete('/milestones/:id', MilestonesController.delete);
 
 // Auth
 router.post('/auth/login', AuthController.login);
+router.get('/auth/sso', keycloak.protect(), AuthController.login);
 router.delete('/auth/logout', AuthController.logout);
 
 // User
