@@ -1,5 +1,5 @@
 const { ProjectUsers, ProjectUsersRoles, Task, Timesheet, TaskStatusesDictionary, ProjectStatusesDictionary,
-  User, MetricTypesDictionary, TaskTypesDictionary, Project, Sprint, TaskTasks, TaskHistory } = require('../../models');
+  User, MetricTypesDictionary, TaskTypesDictionary, Project, Sprint, TaskTasks, TaskHistory, sequelize } = require('../../models');
 
 exports.getProjectIds = async function (projectId) {
   if (projectId) {
@@ -92,15 +92,16 @@ exports.getDictionaries = async function () {
 };
 
 exports.getBugs = async function (projectId, taskTypeBug, taskStatusDone) {
-  return await Task.findAll({
-    where: {
-      typeId: taskTypeBug[0].id,
-      statusId: taskStatusDone[0].id,
-      projectId: projectId
-    },
-    attributes: ['id', 'sprintId', 'projectId', 'factExecutionTime'],
-    logging: false
-  });
+  return await sequelize.query('select ROUND(sum(fact_execution_time)/count(*), 2) as time_by_bugs from tasks where type_id = :type_id and project_id = :project_id and status_id = :status_id', {
+    replacements: {
+      type_id: taskTypeBug[0].id,
+      project_id: +projectId,
+      status_id: +taskStatusDone[0].id
+    }
+  })
+    .spread((results) => {
+      return results[0] && results[0].time_by_bugs || '0';
+    });
 };
 
 exports.getTasksInBacklog = async function (projectId) {

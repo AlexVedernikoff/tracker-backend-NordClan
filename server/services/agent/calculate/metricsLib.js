@@ -13,7 +13,7 @@ module.exports = async function (metricsTypeId, input) {
     totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
     spentTimeBySprint, spentTimeByTask, isTaskFromClient;
-  let timeSpentForBugs = 0;
+  const timeSpentForBugs = 0;
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
       return 0;
@@ -434,13 +434,10 @@ module.exports = async function (metricsTypeId, input) {
     };
 
   case (57):
-    input.project.bugs.map(b => {
-      timeSpentForBugs += parseFloat(b.factExecutionTime);
-    });
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': input.project.bugs.length ? timeSpentForBugs / input.project.bugs.length : 0,
+      'value': input.project.timeByBugs,
       'projectId': input.project.id,
       'sprintId': input.sprint ? input.sprint.id : null,
       'userId': null
