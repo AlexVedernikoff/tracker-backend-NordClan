@@ -30,7 +30,9 @@ router.delete('/milestones/:id', MilestonesController.delete);
 
 // Auth
 router.post('/auth/login', AuthController.login);
-router.get('/auth/sso', keycloak.protect(), AuthController.login);
+router.get('/auth/sso', keycloak.protect(), function (req, res, next) {
+  res.json('Привет мир!');
+});
 router.delete('/auth/logout', AuthController.logout);
 
 // User
