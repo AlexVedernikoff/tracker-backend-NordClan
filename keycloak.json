@@ -4,7 +4,7 @@
   "ssl-required": "external",
   "resource": "local-simtrack",
   "credentials": {
-    "secret": "d806e1b2-0cc4-4e92-9498-bf265675b83b"
+    "secret": "188ae36c-238b-4793-a6bf-cab7a2ce403a"
   },
   "use-resource-role-mappings": true,
   "confidential-port": 0

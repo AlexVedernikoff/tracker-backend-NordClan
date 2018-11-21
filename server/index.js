@@ -7,7 +7,7 @@ const expressValidator = require('express-validator');
 const path = require('path');
 const bodyParser = require('body-parser');
 const sequelize = require('./orm');
-const { routes, keycloak } = require('./routers/index');
+const { routes, keycloak, session } = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
 const getUserByToken = require('./middlewares/CheckTokenMiddleWare').getUserByToken;
 const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
@@ -35,6 +35,7 @@ exports.run = function () {
   app.use(bodyParser.json());
   app.use(expressValidator());
   app.use(cookieParser());
+  app.use(session({ secret: 'keycloak' }));
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(keycloak.middleware());
 
