@@ -328,6 +328,52 @@ module.exports = function (templateName, input){
 
       ${mailFooter}
     `;
+
+    break;
+
+  case ('metricsProcessFailed'):
+    subject = `Произошла ошибка при пересчёте метрик в проекте ${i.project.dataValues.name}`;
+    body = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+        <body>
+          <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0;table-layout: fixed;width: 600px;color: #2d4154;font-size: 14px;">
+            <tr>
+              <td>
+                <span style="font-size: 13px;">
+                  В проекте 
+                  <a href="${config.templateBaseUrl}/projects/${i.project.dataValues.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
+                  ${i.project.dataValues.name}</a> произошла ошибка в процессе пересчёта метрик. Процесс пересчёта метрик был инициирован пользователем: ${i.user}
+                  </span>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px;">
+                <span style="font-weight: bold; font-style: italic;"></span>
+                <br>
+              </td>
+            </tr>
+            <tr><td style="padding: 10px; border-bottom:1px solid #DDDDDD;"></td></tr>
+            <tr><td style="padding: 10px;"></td></tr>
+            <tr>
+              <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
+                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
+                <br>
+                Это письмо отправлено из
+                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
+                  SimTrack
+                </a>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>`;
     break;
 
   default:

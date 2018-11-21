@@ -5,7 +5,7 @@ const { getMentions, replaceMention } = require('../../services/comment');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds;
+  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds, project;
 
   switch (eventId){
 
@@ -279,6 +279,21 @@ module.exports = async function (eventId, input, user){
     });
     break;
   }
+
+  case (6):
+    // event description : error when calculating metrics
+    project = await Project.findById(input.projectId);
+    if (input.recipients) {
+      const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user });
+      input.recipients.forEach(emailRecipient => {
+        emails.push({
+          'receiver': emailRecipient,
+          'subject': emailTemplate.subject,
+          'html': emailTemplate.body
+        });
+      });
+    }
+    break;
   default:
     break;
 
