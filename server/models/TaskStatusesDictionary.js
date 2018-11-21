@@ -1,4 +1,3 @@
-const _ = require('underscore');
 
 const TASK_STATUS_NEW = 1;
 const TASK_STATUS_DEVELOP_PLAY = 2;
@@ -43,6 +42,7 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'task_statuses'
   });
 
+  TaskStatuses.STATUS_NEW = TASK_STATUS_NEW;
   TaskStatuses.DEVELOP_STATUSES = [TASK_STATUS_DEVELOP_PLAY, TASK_STATUS_DEVELOP_STOP];
   TaskStatuses.CODE_REVIEW_STATUSES = [TASK_STATUS_CODE_REVIEW_PLAY, TASK_STATUS_CODE_REVIEW_STOP];
   TaskStatuses.QA_STATUSES = [TASK_STATUS_QA_PLAY, TASK_STATUS_QA_STOP];

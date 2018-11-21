@@ -10,7 +10,7 @@ exports.synchronizeTasks = async function (tasks, projectId) {
   let createdTasks = await Task.findAll({
     where: { externalId: { $in: extIds }, projectId }
   });
-  let newTasks = tasks.filter(t => {
+  const newTasks = tasks.filter(t => {
     const ind = createdTasks.findIndex(ct => {
       if (ct.externalId === t.externalId) return true;
     });
@@ -36,8 +36,8 @@ exports.synchronizeTasks = async function (tasks, projectId) {
   }
 
   // создание новых задач
-  if (newTasks.length > 0) newTasks = await Task.bulkCreate(newTasks);
-  return newTasks.concat(createdTasks);
+  if (newTasks.length > 0) await Task.bulkCreate(newTasks);
+  return Task.findAll({
+    where: { externalId: { $in: extIds }, projectId }
+  });
 };
-
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ СРАВНЕНИЯ И ОБНОВЛЕНИЯ

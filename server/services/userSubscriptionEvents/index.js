@@ -5,7 +5,7 @@ const { getMentions, replaceMention } = require('../../services/comment');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment, projectRolesValues, mentionedUsers;
+  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds;
 
   switch (eventId){
 
@@ -67,6 +67,15 @@ module.exports = async function (eventId, input, user){
     // input = { taskId }
 
     task = await getTask(input.taskId);
+    taskComment = task.comments[0];
+    mentions = getMentions(taskComment.text);
+    userIds = await User.findAll({
+      where: {
+        id: _.unique(mentions)
+      },
+      attributes: User.defaultSelect
+    });
+    taskComment.text = mentions.length ? await replaceMention(taskComment.text, userIds) : taskComment.text;
     receivers = task.performer ? [task.performer] : [];
 
     receivers.forEach(function (performer) {

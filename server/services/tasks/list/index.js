@@ -91,7 +91,8 @@ exports.list = async function (req) {
     pageSize: req.query.pageSize ? req.query.pageSize : projectCount,
     rowsCountAll: projectCount,
     rowsCountOnCurrentPage: tasks.length,
-    data: tasks
+    data: tasks,
+    queryId: req.query.queryId
   };
 
   return responseObject;
@@ -234,6 +235,21 @@ function createWhereForRequest (req, selectWithoutTags) {
   if (selectWithoutTags) {
     where['$"tags.ItemTag"."tag_id"$'] = {
       $is: null
+    };
+  }
+
+  if (req.user.isDevOps && !req.user.isUserOfProject(+req.query.projectId)) {
+    return {
+      $or: [
+        {
+          ...where,
+          isDevOps: true
+        },
+        {
+          ...where,
+          performerId: req.user.id
+        }
+      ]
     };
   }
 
