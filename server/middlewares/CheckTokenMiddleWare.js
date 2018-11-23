@@ -9,6 +9,7 @@ const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const { statuses } = require('../middlewares/Access/userAuthExtension');
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -88,7 +89,7 @@ exports.checkToken = function (req, res, next) {
     })
     .then(user => {
       if (user) {
-        if (user.dataValues.globalRole === 'DEV_OPS') {
+        if (user.dataValues.globalRole === statuses.DEV_OPS) {
           return Task.findAll({
             attributes: ['projectId'],
             where: {
