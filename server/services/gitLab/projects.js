@@ -1,4 +1,5 @@
 const http = require('../http');
+const createError = require('http-errors');
 const config = require('../../configs').gitLab;
 const token = config.token;
 const host = config.host;
@@ -29,7 +30,7 @@ const addProjectByPath = async function (projectId, path) {
   const project = await Project.find({ where: { id: projectId } });
 
   if (project.gitlabProjectIds.includes(gitlabProject.id)) {
-    throw new Error(400, 'Gitlab identifier is invalid');
+    throw createError(400, 'Gitlab identifier is invalid');
   }
 
   if (project.gitlabProjectIds instanceof Array) {
@@ -57,7 +58,7 @@ const createProject = async function (name, namespace_id, projectId) {
     );
     await createMasterCommit(gitlabProject.id);
   } catch (e) {
-    throw new Error(404, 'Gitlab error');
+    throw createError(404, 'Gitlab error: maybe the project already exists');
   }
 
   const project = await Project.find({ where: { id: projectId } });

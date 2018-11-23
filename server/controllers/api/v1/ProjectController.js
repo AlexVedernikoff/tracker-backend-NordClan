@@ -398,7 +398,7 @@ exports.list = function (req, res, next) {
       where,
       Sequelize.literal(
         `(
-        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}' 
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}'
           AND fact_start_date = (SELECT MIN(fact_start_date)
             FROM sprints
             WHERE project_id = "Project"."id"
@@ -422,7 +422,7 @@ exports.list = function (req, res, next) {
         `(
         ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_finish_date <= '${dateSprintEnd}'
           AND fact_finish_date = (SELECT MAX(fact_finish_date)
-            FROM sprints 
+            FROM sprints
             WHERE project_id = "Project"."id"
             AND deleted_at IS NULL
           )
