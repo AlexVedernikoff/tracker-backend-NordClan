@@ -320,6 +320,14 @@ exports.delete = function (req, res, next) {
     });
 };
 
+function getTagByProjectList (projects) {
+  const allTags = [];
+  projects.forEach(project => {
+    project.itemTagSelect.forEach(tagSelect => allTags.push({ name: tagSelect.dataValues.tag.dataValues.name }));
+  });
+  return allTags;
+}
+
 exports.list = function (req, res, next) {
   if (req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return next(createError(400, 'date must be in YYYY-MM-DD format'));
@@ -612,8 +620,6 @@ exports.list = function (req, res, next) {
     .then(() => {
       return Project.findAll({
         attributes: req.query.fields ? _.union(attributes.concat(req.query.fields)) : attributes,
-        limit: req.query.pageSize,
-        offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
         include: include,
         where: where,
         subQuery: true,
@@ -647,13 +653,15 @@ exports.list = function (req, res, next) {
             }
           }
 
+          const offset = req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0;
           const responseObject = {
             currentPage: +req.query.currentPage,
             pagesCount: Math.ceil(projectCount / req.query.pageSize),
             pageSize: req.query.pageSize,
             rowsCountAll: projectCount,
             rowsCountOnCurrentPage: projects.length,
-            data: projects
+            data: projects.slice(offset, offset + (+req.query.pageSize)),
+            allTags: getTagByProjectList(projects)
           };
           res.json(responseObject);
         });
