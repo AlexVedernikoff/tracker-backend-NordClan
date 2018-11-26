@@ -654,13 +654,14 @@ exports.list = function (req, res, next) {
           }
 
           const offset = req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0;
+          const pageSize = req.query.pageSize ? +req.query.pageSize : +projects.length;
           const responseObject = {
             currentPage: +req.query.currentPage,
             pagesCount: Math.ceil(projectCount / req.query.pageSize),
             pageSize: req.query.pageSize,
             rowsCountAll: projectCount,
             rowsCountOnCurrentPage: projects.length,
-            data: projects.slice(offset, offset + (+req.query.pageSize)),
+            data: projects.slice(offset, offset + pageSize),
             allTags: getTagByProjectList(projects)
           };
           res.json(responseObject);
