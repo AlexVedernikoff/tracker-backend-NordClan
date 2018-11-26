@@ -2,6 +2,7 @@ const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 const { getMentions, replaceMention } = require('../../services/comment');
+const { emailForDevOpsNotify } = require('../../configs');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
@@ -58,6 +59,15 @@ module.exports = async function (eventId, input, user){
         'html': emailTemplate.body
       });
     });
+
+    if (task.dataValues.isDevOps) {
+      const emailTemplate = email.template('newTaskForQAPM', { task });
+      emails.push({
+        'receiver': emailForDevOpsNotify,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
+      });
+    }
 
     break;
 
