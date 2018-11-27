@@ -240,9 +240,9 @@ exports.update = function (req, res, next) {
               else gitlabProjectIdsNew.push(id);
             });
 
-            gitlabProjectsNew = await gitLabService.projects.getProjects(gitlabProjectIdsNew);
-            const isError = !!gitlabProjectsNew.filter(p => p.error).length;
-            if (isError) return next(createError(500, 'Can not add repositories'));
+            gitlabProjectsNew = await gitLabService.projects.getProjectsOrErrors(gitlabProjectIdsNew);
+            const firstError = gitlabProjectsNew.find(p => p.error);
+            if (firstError) return next(createError(firstError.status || 500, firstError.error));
           }
 
           // сброс портфеля
@@ -406,7 +406,7 @@ exports.list = function (req, res, next) {
       where,
       Sequelize.literal(
         `(
-        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}' 
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}'
           AND fact_start_date = (SELECT MIN(fact_start_date)
             FROM sprints
             WHERE project_id = "Project"."id"
@@ -430,7 +430,7 @@ exports.list = function (req, res, next) {
         `(
         ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_finish_date <= '${dateSprintEnd}'
           AND fact_finish_date = (SELECT MAX(fact_finish_date)
-            FROM sprints 
+            FROM sprints
             WHERE project_id = "Project"."id"
             AND deleted_at IS NULL
           )
