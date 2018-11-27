@@ -180,6 +180,10 @@ exports.read = function (req, res, next) {
             id: projectUser.user.id,
             fullNameRu: projectUser.user.fullNameRu,
             fullNameEn: projectUser.user.fullNameEn,
+            firstNameRu: projectUser.user.firstNameRu,
+            firstNameEn: projectUser.user.firstNameEn,
+            lastNameRu: projectUser.user.lastNameRu,
+            lastNameEn: projectUser.user.lastNameEn,
             roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
           });
         });
