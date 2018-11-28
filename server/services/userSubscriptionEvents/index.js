@@ -2,10 +2,11 @@ const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 const { getMentions, replaceMention } = require('../../services/comment');
+const { emailForDevOpsNotify } = require('../../configs');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds;
+  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds, project;
 
   switch (eventId){
 
@@ -58,6 +59,15 @@ module.exports = async function (eventId, input, user){
         'html': emailTemplate.body
       });
     });
+
+    if (task.dataValues.isDevOps) {
+      const emailTemplate = email.template('newTaskForQAPM', { task });
+      emails.push({
+        'receiver': emailForDevOpsNotify,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
+      });
+    }
 
     break;
 
@@ -279,6 +289,21 @@ module.exports = async function (eventId, input, user){
     });
     break;
   }
+
+  case (6):
+    // event description : error when calculating metrics
+    project = await Project.findById(input.projectId);
+    if (input.recipients) {
+      const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user });
+      input.recipients.forEach(emailRecipient => {
+        emails.push({
+          'receiver': emailRecipient,
+          'subject': emailTemplate.subject,
+          'html': emailTemplate.body
+        });
+      });
+    }
+    break;
   default:
     break;
 

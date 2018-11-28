@@ -24,3 +24,12 @@ exports.findAllGlobalAdmin = function () {
     attributes: ['id']
   });
 };
+
+exports.findAllDevOps = function () {
+  return models.User.findAll({
+    where: {
+      globalRole: 'DEV_OPS'
+    },
+    attributes: ['id']
+  });
+};

@@ -5,6 +5,7 @@ const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { Project } = require('../../models');
 const { createMasterCommit } = require('./commits');
+const axios = require('axios');
 
 const getProject = id =>
   http.get({ host, path: `/api/v4/projects/${id}`, headers });
@@ -19,6 +20,18 @@ const getProjects = async function (ids) {
   );
   return projects;
 };
+
+const prettyUrl = (url) => (/https?:\/\//).test(url) ? url : 'http://' + url;
+const getProjectsOrErrors = ids =>
+  Promise.all(ids.map(id =>
+    axios.get(prettyUrl(`${host}/api/v4/projects/${id}`), {headers})
+      .then(reply => reply.data)
+      .catch(err => ({
+        id,
+        status: err.response && err.response.status,
+        error: err.response ? err.response.data.message : err.message
+      }))
+  ));
 
 const addProjectByPath = async function (projectId, path) {
   const gitlabProject = await http.get({
@@ -79,6 +92,7 @@ module.exports = {
   getProject,
   addProjectByPath,
   getProjects,
+  getProjectsOrErrors,
   createProject,
   getNamespacesList
 };
