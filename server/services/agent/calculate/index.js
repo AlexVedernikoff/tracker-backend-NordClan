@@ -38,8 +38,7 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
 
   console.time('query metric');
   const projectMetricsTasks = [];
-  const project = {};
-  // const project = await utils.getProject(projectId);
+  const project = await utils.getProject(projectId);
   console.time('query getBugs metric');
   project.timeByBugs = await utils.getBugs(projectId, taskTypeBug, taskStatusDone);
   console.timeEnd('query getBugs metric');

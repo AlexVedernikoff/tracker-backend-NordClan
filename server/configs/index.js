@@ -44,6 +44,7 @@ module.exports = {
     'anastasiya.karaseva@simbirsoft.com',
     'maxim.baranov@simbirsoft.com'
   ],
+  emailForDevOpsNotify: 'devops@simbirsoft.com',
   ldapUrl:
     process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
   ttiUrl: process.env.TTI_HOST || 'http://docker-web.simbirsoft:5000'
