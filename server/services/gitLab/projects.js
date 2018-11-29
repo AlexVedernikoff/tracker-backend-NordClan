@@ -58,7 +58,7 @@ const createProject = async function (name, namespace_id, projectId) {
     );
     await createMasterCommit(gitlabProject.id);
   } catch (e) {
-    throw createError(404, 'Gitlab error: maybe the project already exists');
+    throw createError(400, 'Gitlab error: maybe the project already exists');
   }
 
   const project = await Project.find({ where: { id: projectId } });
