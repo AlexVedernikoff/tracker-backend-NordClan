@@ -8,7 +8,7 @@ const executeDate = moment().toISOString();
 module.exports.calculate = async function (projectId) {
   try {
     await init();
-    console.time('calculate metric');
+    console.time('calculate all metric');
     const [taskTypeBug, taskStatusDone, metricTypes] = await utils.getDictionaries();
     const projectsIs = await utils.getProjectIds(projectId);
 
@@ -20,7 +20,7 @@ module.exports.calculate = async function (projectId) {
       console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
     }
 
-    console.timeEnd('calculate metric');
+    console.timeEnd('calculate all metric');
     process.exit(0);
 
   } catch (err) {
@@ -38,16 +38,17 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
 
   console.time('query metric');
   const projectMetricsTasks = [];
+  console.time('main query');
   const project = await utils.getProject(projectId);
-  console.time('query getBugs metric');
+  console.timeEnd('main query');
   project.timeByBugs = await utils.getBugs(projectId, taskTypeBug, taskStatusDone);
-  console.timeEnd('query getBugs metric');
   project.tasksInBacklog = await utils.getTasksInBacklog(projectId);
   project.otherTimeSheets = await utils.getOtherTimeSheets(projectId);
   project.projectUsers = await utils.getProjectUsers(projectId);
   console.timeEnd('query metric');
 
-  console.time('forEach metric');
+
+  console.time('metricsLib metric');
   if (project.sprints.length > 0) {
     project.sprints.forEach(function (sprint, sprintKey) {
       project.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
@@ -55,9 +56,7 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
       project.sprints[sprintKey].regressionBugsAmount = parseInt(sprint.regressionBugsAmount, 10);
     });
   }
-  console.timeEnd('forEach metric');
 
-  console.time('metricsLib metric');
   metricTypes.forEach(function (value) {
     if (value.id > 29 && value.id !== 57) { return; }
     projectMetricsTasks.push(metricsLib(value.id, {
@@ -78,9 +77,11 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
       });
     });
   }
+
+  const result = await Promise.all(projectMetricsTasks);
   console.timeEnd('metricsLib metric');
 
-  return await Promise.all(projectMetricsTasks);
+  return result;
 }
 
 

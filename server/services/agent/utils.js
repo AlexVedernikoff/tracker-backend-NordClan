@@ -25,6 +25,9 @@ exports.getProject = async function (projectId) {
         as: 'sprints',
         model: Sprint,
         attributes: Sprint.defaultSelect,
+        where: {
+          statusId: 2
+        },
         include: [
           {
             as: 'tasks',
@@ -76,7 +79,7 @@ exports.getProject = async function (projectId) {
         ]
       }
     ],
-    logging: false
+    logging: console.log
   })
     .then((project) => project.get({ 'plain': true }));
 };
