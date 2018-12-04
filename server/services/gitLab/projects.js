@@ -35,15 +35,15 @@ const getProjectsOrErrors = ids =>
   ));
 
 const addProjectByPath = async function (projectId, path) {
-  const gitlabProject = await http.get({
-    host,
-    path: `/api/v4/projects/${encodeURIComponent(path)}`,
-    headers
-  });
+  const gitlabProject = await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(path)}`), {headers})
+    .then(reply => reply.data)
+    .catch(e => {
+      throw createError(e.response.status || 500, e.response.data.message);
+    });
   const project = await Project.find({ where: { id: projectId } });
 
   if (project.gitlabProjectIds.includes(gitlabProject.id)) {
-    throw createError(400, 'Gitlab identifier is invalid');
+    throw createError(400, 'This GitLab project is already linked');
   }
 
   if (project.gitlabProjectIds instanceof Array) {
