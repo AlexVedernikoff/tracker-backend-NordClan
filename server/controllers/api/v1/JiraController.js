@@ -6,7 +6,8 @@ const {
   jiraAuth,
   getActiveSimtrackProjects,
   createBatch,
-  getProjectAssociations
+  getProjectAssociations,
+  setAssociateWithJiraProject
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -80,6 +81,30 @@ exports.getJiraProjects = async function (req, res, next) {
   try {
     const { data: projects } = await getJiraProjects(req.headers);
     res.json({ projects });
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.associateWithJiraProject = async function (req, res, next) {
+  try {
+    const { data: projects } = await getJiraProjects(req.headers);
+    const { jiraProjectId, simTrackProjectId, jiraHostName } = req.body;
+    const jiraProject = projects.find((p) => p.id === jiraProjectId);
+    if (!jiraProject) {
+      throw createError(404, 'Not found jira project');
+    }
+    await setAssociateWithJiraProject(simTrackProjectId, jiraProjectId, jiraHostName);
+    res.end();
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.clearAssociationWithJiraProject = async function (req, res, next) {
+  try {
+    const { simTrackProjectId } = req.body;
+
   } catch (e) {
     next(createError(e));
   }

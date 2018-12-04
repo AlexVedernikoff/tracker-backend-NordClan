@@ -170,9 +170,30 @@ exports.jiraSync = async function (headers, data) {
   return { resSprints, resTasks, resTimesheets };
 };
 
+exports.clearProjectAssociate = async function (simTrackProjectId) {
+  try {
+    const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+    if (simTrackProjectId) {
+      throw createError(404, 'Project not found');
+    }
+    await simTrackProject.update({ externalId: null, jira_hostname: null });
+  } catch (e) {
+    throw createError(500, 'Internal error');
+  }
+};
+
+exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraProjectId, jiraHostName) {
+  const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+  if (!simTrackProject) {
+    throw createError(404, 'Project not found');
+  }
+  await simTrackProject.update({ externalId: jiraProjectId, jira_hostname: jiraHostName });
+};
+
 /**
  * @param {string} id
- * @param {string} authorId
+ * @param {string} authorI
+ * @deprecated
  */
 exports.createProject = async function (headers, id, authorId, prefix) {
   const { data: jiraProject } = await request.get(`${config.ttiUrl}/project/${id}`, {
