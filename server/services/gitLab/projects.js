@@ -1,4 +1,5 @@
 const http = require('../http');
+const createError = require('http-errors');
 const config = require('../../configs').gitLab;
 const token = config.token;
 const host = config.host;
@@ -34,15 +35,15 @@ const getProjectsOrErrors = ids =>
   ));
 
 const addProjectByPath = async function (projectId, path) {
-  const gitlabProject = await http.get({
-    host,
-    path: `/api/v4/projects/${encodeURIComponent(path)}`,
-    headers
-  });
+  const gitlabProject = await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(path)}`), {headers})
+    .then(reply => reply.data)
+    .catch(e => {
+      throw createError(e.response.status || 500, e.response.data.message);
+    });
   const project = await Project.find({ where: { id: projectId } });
 
   if (project.gitlabProjectIds.includes(gitlabProject.id)) {
-    throw new Error(400, 'Gitlab identifier is invalid');
+    throw createError(400, 'This GitLab project is already linked');
   }
 
   if (project.gitlabProjectIds instanceof Array) {
