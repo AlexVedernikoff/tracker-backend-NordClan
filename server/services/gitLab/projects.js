@@ -22,7 +22,7 @@ const getProjects = async function (ids) {
   return projects;
 };
 
-const prettyUrl = (url) => (/https?:\/\//).test(url) ? url : 'http://' + url;
+const prettyUrl = (url) => (/^https?:\/\//).test(url) ? url : 'http://' + url;
 const getProjectsOrErrors = ids =>
   Promise.all(ids.map(id =>
     axios.get(prettyUrl(`${host}/api/v4/projects/${id}`), {headers})
@@ -65,13 +65,13 @@ const createProject = async function (name, namespace_id, projectId) {
   };
   let gitlabProject;
   try {
-    gitlabProject = await http.post(
-      { host, path: '/api/v4/projects', headers },
-      postData
-    );
+    gitlabProject = await axios.post(prettyUrl(`${host}/api/v4/projects`), postData, {headers})
+      .then(reply => reply.data);
     await createMasterCommit(gitlabProject.id);
   } catch (e) {
-    throw new Error(404, 'Gitlab error');
+    throw e.response
+      ? createError(e.response.status || 500, 'Gitlab error: maybe the project already exists')
+      : e;
   }
 
   const project = await Project.find({ where: { id: projectId } });
