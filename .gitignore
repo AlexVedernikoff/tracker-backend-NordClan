@@ -11,3 +11,5 @@ package-lock.json
 /pg_db/*.sql
 /pg_db/dumps/*.sql
 /pg_db/*.old
+
+.local
