@@ -1,5 +1,4 @@
-const request = require('request');
-const config = require('./server/configs');
+const agent = require('./server/services/agent/index');
 
-const port = config.metricManagerPort;
-request.post(`http://localhost:${port}/startMetric`);
+agent.calculate();
+
