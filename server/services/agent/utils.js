@@ -79,9 +79,9 @@ exports.getProject = async function (projectId) {
         ]
       }
     ],
-    logging: console.log
+    logging: false
   })
-    .then((project) => project.get({ 'plain': true }));
+    .then((project) => project && project.get({ 'plain': true }));
 };
 
 exports.getDictionaries = async function () {
@@ -100,7 +100,8 @@ exports.getBugs = async function (projectId, taskTypeBug, taskStatusDone) {
       type_id: taskTypeBug[0].id,
       project_id: +projectId,
       status_id: +taskStatusDone[0].id
-    }
+    },
+    logging: false
   })
     .spread((results) => {
       return results[0] && results[0].time_by_bugs || '0';

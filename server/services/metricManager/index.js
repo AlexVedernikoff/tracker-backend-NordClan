@@ -1,5 +1,7 @@
 const MetricManager = require('./MetricManager');
+const MetricManagerTransport = require('./MetricManagerTransport');
 
-const metricManager = new MetricManager();
-metricManager.startServer();
-
+const manager = new MetricManager();
+const transport = new MetricManagerTransport();
+transport.subscribe(manager.lisner);
+transport.startServer();

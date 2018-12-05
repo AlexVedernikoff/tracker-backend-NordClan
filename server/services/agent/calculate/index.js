@@ -14,9 +14,9 @@ module.exports.calculate = async function (projectId) {
 
     for (let index = 0; index < projectsIs.length; index++) {
       const metricsData = await getMetrics(projectsIs[index], taskTypeBug, taskStatusDone, metricTypes);
-      console.time('save metric');
-      await saveMetrics(metricsData);
-      console.timeEnd('save metric');
+      //console.time('save metric');
+      metricsData && await saveMetrics(metricsData);
+      //console.timeEnd('save metric');
       console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
     }
 
@@ -36,19 +36,24 @@ async function init () {
 
 async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) {
 
-  console.time('query metric');
+  //console.time('query metric');
   const projectMetricsTasks = [];
-  console.time('main query');
+  //console.time('main query');
   const project = await utils.getProject(projectId);
-  console.timeEnd('main query');
+  //console.timeEnd('main query');
+
+  if (!project) {
+    return;
+  }
+
   project.timeByBugs = await utils.getBugs(projectId, taskTypeBug, taskStatusDone);
   project.tasksInBacklog = await utils.getTasksInBacklog(projectId);
   project.otherTimeSheets = await utils.getOtherTimeSheets(projectId);
   project.projectUsers = await utils.getProjectUsers(projectId);
-  console.timeEnd('query metric');
+  //console.timeEnd('query metric');
 
 
-  console.time('metricsLib metric');
+  //console.time('metricsLib metric');
   if (project.sprints.length > 0) {
     project.sprints.forEach(function (sprint, sprintKey) {
       project.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
@@ -79,7 +84,7 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
   }
 
   const result = await Promise.all(projectMetricsTasks);
-  console.timeEnd('metricsLib metric');
+  //console.timeEnd('metricsLib metric');
 
   return result;
 }
@@ -91,5 +96,7 @@ async function saveMetrics (metricsData) {
       transaction: t,
       logging: false
     });
+  }, {
+    logging: false
   });
 }
