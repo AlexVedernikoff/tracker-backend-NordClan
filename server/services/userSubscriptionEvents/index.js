@@ -104,11 +104,14 @@ module.exports = async function (eventId, input, user){
   case (3): {
     // event description : new comment to task
     // receivers : task author, task performer, comment mentions
-    // input = { taskId, commentId }
+    // input = { taskId, commentId, authorId }
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
     const mentions = getMentions(comment.text);
+    if (input.authorId && !~mentions.indexOf(input.authorId)) {
+      mentions.push(input.authorId);
+    }
     let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
       .map(receiver => receiver.dataValues.id);
     if (mentions.includes('all')) {
