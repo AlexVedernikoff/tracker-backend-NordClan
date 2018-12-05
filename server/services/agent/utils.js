@@ -26,7 +26,7 @@ exports.getProject = async function (projectId) {
         model: Sprint,
         attributes: Sprint.defaultSelect,
         where: {
-          statusId: 2
+          // statusId: 2
         },
         include: [
           {
