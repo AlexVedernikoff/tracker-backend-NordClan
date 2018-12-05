@@ -88,9 +88,9 @@ exports.getDictionaries = async function () {
   const bugNameEn = 'Bug';
   const taskStatusDoneEn = 'Done';
   return await Promise.all([
-    TaskTypesDictionary.findAll({ where: { name_en: bugNameEn } }),
-    TaskStatusesDictionary.findAll({ where: { name: taskStatusDoneEn } }),
-    MetricTypesDictionary.findAll()
+    TaskTypesDictionary.findAll({ where: { name_en: bugNameEn }, logging: false }),
+    TaskStatusesDictionary.findAll({ where: { name: taskStatusDoneEn }, logging: false }),
+    MetricTypesDictionary.findAll({ logging: false })
   ]);
 };
 

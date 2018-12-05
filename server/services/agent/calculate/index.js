@@ -17,7 +17,7 @@ module.exports.calculate = async function (projectId) {
       //console.time('save metric');
       metricsData && await saveMetrics(metricsData);
       //console.timeEnd('save metric');
-      console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
+      // console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
     }
 
     console.timeEnd('calculate all metric');
@@ -91,12 +91,12 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
 
 
 async function saveMetrics (metricsData) {
-  return await sequelize.transaction(function (t) {
+  return await sequelize.transaction({
+    logging: false
+  }, function (t) {
     return Metrics.bulkCreate(metricsData.filter(md => md), {
       transaction: t,
       logging: false
     });
-  }, {
-    logging: false
   });
 }
