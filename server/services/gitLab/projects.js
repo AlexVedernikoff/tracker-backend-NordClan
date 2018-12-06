@@ -38,12 +38,17 @@ const addProjectByPath = async function (projectId, path) {
   const gitlabProject = await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(path)}`), {headers})
     .then(reply => reply.data)
     .catch(e => {
-      throw createError(e.response.status || 500, e.response.data.message);
+      throw createError(
+        e.response.status || 500,
+        e.response.data.message === '404 Project Not Found'
+          ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
+          : e.response.data.message
+      );
     });
   const project = await Project.find({ where: { id: projectId } });
 
   if (project.gitlabProjectIds.includes(gitlabProject.id)) {
-    throw createError(400, 'This GitLab project is already linked');
+    throw createError(400, 'GITLAB_PROJECT_ALREADY_LINKED');
   }
 
   if (project.gitlabProjectIds instanceof Array) {
@@ -70,7 +75,7 @@ const createProject = async function (name, namespace_id, projectId) {
     await createMasterCommit(gitlabProject.id);
   } catch (e) {
     throw e.response
-      ? createError(e.response.status || 500, 'Gitlab error: maybe the project already exists')
+      ? createError(e.response.status || 500, 'GITLAB_ERROR')
       : e;
   }
 
