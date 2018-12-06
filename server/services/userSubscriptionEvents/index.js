@@ -108,8 +108,8 @@ module.exports = async function (eventId, input, user){
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    const mentions = getMentions(comment.text);
-    if (input.authorId && !~mentions.indexOf(input.authorId)) {
+    mentions = getMentions(comment.text);
+    if (input.authorId && mentions.indexOf(input.authorId) === -1) {
       mentions.push(input.authorId);
     }
     let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
@@ -221,7 +221,7 @@ module.exports = async function (eventId, input, user){
     // input : { taskId, commentId }
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    const mentions = getMentions(comment.text);
+    mentions = getMentions(comment.text);
     let receiverIds;
     if (user[0] === 'all') {
       const projectUsers = await ProjectUsers.findAll({
