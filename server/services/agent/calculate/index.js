@@ -17,7 +17,7 @@ module.exports.calculate = async function (projectId) {
       //console.time('save metric');
       metricsData && await saveMetrics(metricsData);
       //console.timeEnd('save metric');
-      // console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
+      console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
     }
 
     console.timeEnd('calculate all metric');
@@ -25,6 +25,7 @@ module.exports.calculate = async function (projectId) {
 
   } catch (err) {
     console.error('Error. Can not calculate metrics. Reason: ', err);
+    console.error(err);
     // TODO: send email about error, task ST-6631
     process.exit(-1);
   }
@@ -36,22 +37,37 @@ async function init () {
 
 async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) {
 
-  //console.time('query metric');
+
   const projectMetricsTasks = [];
-  //console.time('main query');
+  console.time('main query');
   const project = await utils.getProject(projectId);
-  //console.timeEnd('main query');
+  console.timeEnd('main query');
 
   if (!project) {
     return;
   }
-
-  project.timeByBugs = await utils.getBugs(projectId, taskTypeBug, taskStatusDone);
-  project.tasksInBacklog = await utils.getTasksInBacklog(projectId);
-  project.otherTimeSheets = await utils.getOtherTimeSheets(projectId);
-  project.projectUsers = await utils.getProjectUsers(projectId);
-  //console.timeEnd('query metric');
-
+  console.time('subquery metric');
+  await Promise.all([
+    utils.getBugs(projectId, taskTypeBug, taskStatusDone)
+      .then(data => {project.timeByBugs = data;}),
+    utils.getTasksInBacklog(projectId)
+      .then(data => {project.tasksInBacklog = data;}),
+    utils.getOtherTimeSheets(projectId)
+      .then(data => {project.otherTimeSheets = data;}),
+    utils.getProjectUsers(projectId)
+      .then(data => {project.projectUsers = data;}),
+    utils.spentTimeAllProject(projectId)
+      .then(data => {project.spentTimeAllProject = data;}),
+    utils.bugsCount(projectId)
+      .then(data => {project.bugsCount = data;}),
+    utils.bugsCountFromClient(projectId)
+      .then(data => {project.bugsCountFromClient = data;}),
+    utils.bugsCountRegression(projectId)
+      .then(data => {project.bugsCountRegression = data;}),
+    utils.spentTimeByRoles(projectId)
+      .then(data => {project.spentTimeByRoles = data;})
+  ]);
+  console.timeEnd('subquery metric');
 
   //console.time('metricsLib metric');
   if (project.sprints.length > 0) {
@@ -63,22 +79,26 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
   }
 
   metricTypes.forEach(function (value) {
-    if (value.id > 29 && value.id !== 57) { return; }
-    projectMetricsTasks.push(metricsLib(value.id, {
-      project: project,
-      executeDate
-    }));
+    if (!value.calcEverySprint) {
+      //console.log('I value.id = ', value.id);
+      projectMetricsTasks.push(metricsLib(value.id, {
+        project: project,
+        executeDate
+      }));
+    }
   });
 
   if (project.sprints.length > 0) {
     project.sprints.forEach(function (sprint) {
       metricTypes.forEach(function (value) {
-        if (((value.id < 30 || value.id > 41) && value.id !== 57) && (value.id < 57 && value.id > 61)) { return; }
-        projectMetricsTasks.push(metricsLib(value.id, {
-          project: project,
-          sprint,
-          executeDate
-        }));
+        if (value.calcEverySprint) {
+          //console.log('II value.id = ', value.id);
+          projectMetricsTasks.push(metricsLib(value.id, {
+            project: project,
+            sprint,
+            executeDate
+          }));
+        }
       });
     });
   }
