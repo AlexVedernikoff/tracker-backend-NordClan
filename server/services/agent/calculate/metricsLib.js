@@ -149,7 +149,10 @@ module.exports = async function (metricsTypeId, input) {
   case (16):
   case (17):
   case (18):
-  case (19): {
+  case (19):
+  case (51):
+  case (52):
+  case (55): {
     const rolesIdsConf = {
       '10': 1,
       '11': 2,
@@ -160,7 +163,10 @@ module.exports = async function (metricsTypeId, input) {
       '16': 7,
       '17': 8,
       '18': 9,
-      '19': 10
+      '19': 10,
+      '51': 11,
+      '52': 12,
+      '55': 13
     };
 
     const value = parseFloat(
@@ -186,7 +192,10 @@ module.exports = async function (metricsTypeId, input) {
   case (26):
   case (27):
   case (28):
-  case (29): {
+  case (29):
+  case (53):
+  case (54):
+  case (56): {
     const rolesIdsConf = {
       '20': 1,
       '21': 2,
@@ -197,7 +206,10 @@ module.exports = async function (metricsTypeId, input) {
       '26': 7,
       '27': 8,
       '28': 9,
-      '29': 10
+      '29': 10,
+      '53': 11,
+      '54': 12,
+      '56': 13
     };
     const value = input.project.spentTimeByRoles[rolesIdsConf[metricsTypeId.toString()]];
 

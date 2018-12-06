@@ -194,7 +194,7 @@ exports.bugsCountRegression = async function (projectId) {
 };
 
 exports.spentTimeByRoles = async function (projectId) {
-  const roles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const roles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   const spentTimeByRoles = {};
 
   await Promise.all(roles.map((roleId) => {
