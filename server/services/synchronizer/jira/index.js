@@ -187,7 +187,8 @@ exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraPro
   if (!simTrackProject) {
     throw createError(404, 'Project not found');
   }
-  await simTrackProject.update({ externalId: jiraProjectId, jira_hostname: jiraHostName });
+  await simTrackProject.update({ externalId: jiraProjectId, jiraHostname: jiraHostName });
+  return jiraProjectId;
 };
 
 /**
