@@ -30,19 +30,18 @@ exports.create = async function (req, res, next){
 
     const comment = await models.Comment.create(req.body);
     const getOne = await queries.comment.getOne(comment.id);
+    let parentCommentAuthorId;
+
+    if (req.body.parentId) {
+      const parentComment = await queries.comment.getOne(req.body.parentId);
+      parentCommentAuthorId = parentComment.author.dataValues.id;
+    }
+
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[2].id,
-      input: { taskId: task.id, commentId: comment.id },
+      input: { taskId: task.id, commentId: comment.id, authorId: parentCommentAuthorId },
       user: { ...req.user.get() }
     });
-    if (req.body.parentId) {
-      const mention = await queries.comment.getOne(req.body.parentId);
-      emailSubprocess({
-        eventId: models.ProjectEventsDictionary.values[4].id,
-        input: { taskId: task.id, commentId: comment.id },
-        user: [mention.author.dataValues.id]
-      });
-    }
     res.json(getOne);
     const currentTask = await queries.task.getTaskWithUsers(getOne.dataValues.taskId);
     if (getOne) {
