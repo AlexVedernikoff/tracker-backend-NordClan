@@ -186,6 +186,7 @@ module.exports = function (sequelize, DataTypes) {
 
   /* При создании тайм шита вставляем в запись недостающие данные */
   Timesheet.addHook('beforeValidate', 'beforeValidate', beforeValidate.index);
+  Timesheet.addMeticNeedUpdateHook();
 
   return Timesheet;
 };

@@ -85,6 +85,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       unique: true
     },
+    entitiesLastUpdate: {
+      field: 'entities_last_update',
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
@@ -146,6 +151,7 @@ module.exports = function (sequelize, DataTypes) {
   Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'budget', 'riskBudget'];
 
   Sprint.addHistoryForProject();
+  Sprint.addMeticNeedUpdateHook();
 
   return Sprint;
 };
