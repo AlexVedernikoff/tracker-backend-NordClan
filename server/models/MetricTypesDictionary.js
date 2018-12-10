@@ -13,6 +13,11 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         len: [1, 20]
       }
+    },
+    calcEverySprint: {
+      field: 'calc_every_sprint',
+      type: DataTypes.BOOLEAN,
+      allowNull: false
     }
   }, {
     underscored: true,

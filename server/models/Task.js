@@ -242,6 +242,7 @@ module.exports = function (sequelize, DataTypes) {
   };
 
   Task.addHistoryForTask();
+  Task.addMeticNeedUpdateHook();
 
   return Task;
 };
