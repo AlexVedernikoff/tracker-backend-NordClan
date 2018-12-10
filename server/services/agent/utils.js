@@ -81,7 +81,7 @@ exports.getProject = async function (projectId) {
         ]
       }
     ],
-    logging: console.log
+    logging: false
   })
     .then((project) => project && project.get({ 'plain': true }));
 };
