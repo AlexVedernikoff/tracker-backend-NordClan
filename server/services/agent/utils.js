@@ -24,9 +24,11 @@ exports.getProject = async function (projectId) {
       {
         as: 'sprints',
         model: Sprint,
-        attributes: Sprint.defaultSelect,
+        attributes: Sprint.defaultSelect.concat(['entitiesLastUpdate', 'metricLastUpdate']),
         where: {
-          // statusId: 2
+          $or: [
+            sequelize.literal('"sprints"."entities_last_update" > "sprints"."metric_last_update" OR "sprints"."metric_last_update" IS NULL')
+          ]
         },
         include: [
           {
@@ -162,4 +164,62 @@ exports.getProjectUsers = async function (projectId) {
   );
 };
 
+exports.spentTimeAllProject = async function (projectId) {
+  return sequelize.query(`select sum (spent_time) as spent_time from timesheets where project_id = ${projectId}`, { logging: false })
+    .spread((results) => Array.isArray(results) && results.length > 0 && results[0] && parseFloat(results[0].spent_time || 0));
+};
 
+exports.bugsCount = async function (projectId) {
+  return sequelize.query(`
+    SELECT COUNT(*) as bugs_count FROM tasks WHERE project_id = ${projectId} 
+    AND tasks.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.join(',')}) 
+    AND tasks.type_id = 2`, { logging: false })
+    .spread((results) => Array.isArray(results) && results.length > 0 && results[0] && parseFloat(results[0].bugs_count || 0));
+};
+
+exports.bugsCountFromClient = async function (projectId) {
+  return sequelize.query(`
+    SELECT COUNT(*) as bugs_count FROM tasks WHERE project_id = ${projectId} 
+    AND tasks.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.join(',')}) 
+    AND tasks.type_id = 2
+    AND is_task_by_client = true`, { logging: false })
+    .spread((results) => Array.isArray(results) && results.length > 0 && results[0] && parseFloat(results[0].bugs_count || 0));
+};
+
+
+exports.bugsCountRegression = async function (projectId) {
+  return sequelize.query(`
+    SELECT COUNT(*) as bugs_count FROM tasks WHERE project_id = ${projectId} 
+    AND tasks.status_id NOT IN (${TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.join(',')}) 
+    AND tasks.type_id = 4`, { logging: false })
+    .spread((results) => Array.isArray(results) && results.length > 0 && results[0] && parseFloat(results[0].bugs_count || 0));
+};
+
+exports.spentTimeByRoles = async function (projectId) {
+  const roles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+  const spentTimeByRoles = {};
+
+  await Promise.all(roles.map((roleId) => {
+    return sequelize.query(`select sum(spent_time) as spent_time from timesheets WHERE project_id = ${projectId} 
+    AND (
+      user_role_id like '%,${roleId},%' 
+      OR user_role_id like '%[${roleId},%' 
+      OR user_role_id like '%,${roleId}]%'
+      OR user_role_id like '%[${roleId}]%'
+    )
+    `, {
+      logging: false
+    })
+      .spread((results) => {
+        spentTimeByRoles['' + roleId] = +results[0].spent_time;
+      });
+  }));
+
+  return spentTimeByRoles;
+};
+
+exports.updateSprintMetricLastUpdate = async function (sprintIds, calculatedDate) {
+  return Sprint.update({ metricLastUpdate: calculatedDate }, {
+    where: { id: sprintIds }
+  });
+};
