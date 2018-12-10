@@ -1,4 +1,4 @@
-
+// TODO: move to database
 const TASK_STATUS_NEW = 1;
 const TASK_STATUS_DEVELOP_PLAY = 2;
 const TASK_STATUS_DEVELOP_STOP = 3;
@@ -42,6 +42,7 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'task_statuses'
   });
 
+  // TODO: move to database
   TaskStatuses.STATUS_NEW = TASK_STATUS_NEW;
   TaskStatuses.DEVELOP_STATUSES = [TASK_STATUS_DEVELOP_PLAY, TASK_STATUS_DEVELOP_STOP];
   TaskStatuses.CODE_REVIEW_STATUSES = [TASK_STATUS_CODE_REVIEW_PLAY, TASK_STATUS_CODE_REVIEW_STOP];
