@@ -183,6 +183,7 @@ router.post('/jira/project', replaceAuthHeader(), JiraController.createJiraProje
 router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
 router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation);
 router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject);
+router.get('/jira/cleanProjectAssociation/:id', replaceAuthHeader(), JiraController.clearAssociationWithJiraProject);
 
 router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation);
 

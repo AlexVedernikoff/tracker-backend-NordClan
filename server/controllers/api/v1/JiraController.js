@@ -95,17 +95,17 @@ exports.associateWithJiraProject = async function (req, res, next) {
     if (!jiraProject) {
       throw createError(404, 'Not found jira project');
     }
-    const jiraExternalId = await setAssociateWithJiraProject(simtrackProjectId, jiraProjectId, jiraHostName);
-    res.json(jiraExternalId);
+    const jiraExternalId = await setAssociateWithJiraProject(simtrackProjectId, jiraProjectId, jiraHostName, jiraProject.name);
+    res.json({jiraExternalId, jiraProjectName: jiraProject.name});
   } catch (e) {
+    console.error(e);
     next(createError(e));
   }
 };
 
 exports.clearAssociationWithJiraProject = async function (req, res, next) {
   try {
-    const { simTrackProjectId } = req.body;
-    clearProjectAssociate(simTrackProjectId);
+    await clearProjectAssociate(req.params.id);
   } catch (e) {
     next(createError(e));
   }
