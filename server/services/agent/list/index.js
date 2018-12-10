@@ -1,4 +1,5 @@
 const { Metrics, User, Sprint } = require('../../../models');
+const { getUsersByProject } = require('../../../models/queries/projectUsers');
 const _ = require('lodash');
 
 exports.list = async (params) => {
@@ -23,7 +24,7 @@ exports.list = async (params) => {
     order: [['createdAt', 'ASC']]
   });
 
-  return await handleCommandMetric(metrics);
+  return await handleCommandMetric(metrics, params);
 };
 
 exports.validate = (params) => {
@@ -92,7 +93,12 @@ function generateMessage (errors) {
   return `Incorrect params - ${incorrectParams}`;
 }
 
-async function handleCommandMetric (metrics) {
+// В базе храниться только id пользователя, преобразуем id объект польователя
+async function handleCommandMetric (metrics, params) {
+  if (!params.projectId) {
+    return metrics;
+  }
+
   const teamMetricsObj = metrics.reduce((acc, cur) => {
     if (cur.typeId === 61) {
       acc[cur.id] = cur;
@@ -101,15 +107,27 @@ async function handleCommandMetric (metrics) {
     return acc;
   }, {});
 
-  const usersMap = await findUsersFromTeamMetric(teamMetricsObj);
+  // get all users
+  const projectUsersMap = await getProjectUsers(params.projectId);
+  const metricUsersMap = await findUsersFromTeamMetric(teamMetricsObj);
+  const usersMerget = new Map([...projectUsersMap, ...metricUsersMap]);
 
   for (const metricId in teamMetricsObj) {
     const data = [];
-    for (const [userId, user] of usersMap) {
+    for (const [userId, user] of usersMerget) {
       if (teamMetricsObj[metricId] && teamMetricsObj[metricId].dataValues.value[userId]) {
         data.push({
           user: user,
           ...teamMetricsObj[metricId].dataValues.value[userId]
+        });
+      } else {
+        data.push({
+          user: user,
+          taskDoneCount: 0,
+          taskReturnCount: 0,
+          bugDoneCount: 0,
+          bugReturnCount: 0,
+          linkedBugsCount: 0
         });
       }
     }
@@ -126,7 +144,7 @@ async function handleCommandMetric (metrics) {
   return metrics;
 }
 
-async function findUsersFromTeamMetric (teamMetricsObj) {
+async function findUsersFromTeamMetric (teamMetricsObj, projectId) {
 
   const usersIds = [];
   for (const metricId in teamMetricsObj) {
@@ -145,10 +163,17 @@ async function findUsersFromTeamMetric (teamMetricsObj) {
     order: [['firstNameRu', 'ASC'], ['lastNameRu', 'ASC']]
   });
 
-  // console.log(usersArr);
-
   return usersArr.reduce((map, user) => {
     map.set(user.id, user.dataValues);
+    return map;
+  }, new Map());
+}
+
+async function getProjectUsers (projectId) {
+  const usersArr = await getUsersByProject(projectId, false);
+
+  return usersArr.reduce((map, user) => {
+    map.set(user.id, user);
     return map;
   }, new Map());
 }
