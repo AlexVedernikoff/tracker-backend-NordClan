@@ -4,12 +4,13 @@ const moment = require('moment');
 const _ = require('underscore');
 const Department = require('../../server/models').Department;
 const User = require('../../server/models').User;
+const config = require('../../server/configs');
 const gm = require('gm');
 
 const baseUrl = 'http://ps.simbirsoft/default/rest/';
 const auth = {
-  user: 'serviceman',
-  pass: 'FdKg&$b*)FeA{',
+  user: config.ps.username,
+  pass: config.ps.password,
   sendImmediately: true
 };
 const departmentIDs = [
