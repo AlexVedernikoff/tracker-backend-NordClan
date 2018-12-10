@@ -296,7 +296,7 @@ module.exports = async function (eventId, input, user){
   case (6):
     // event description : error when calculating metrics
     project = await Project.findById(input.projectId);
-    if (input.recipients) {
+    if (input.recipients && project) {
       const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user });
       input.recipients.forEach(emailRecipient => {
         emails.push({
