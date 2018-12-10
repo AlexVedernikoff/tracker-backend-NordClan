@@ -13,10 +13,18 @@ module.exports.calculate = async function (projectId) {
     const projectsIs = await utils.getProjectIds(projectId);
 
     for (let index = 0; index < projectsIs.length; index++) {
-      const metricsData = await getMetrics(projectsIs[index], taskTypeBug, taskStatusDone, metricTypes);
-      //console.time('save metric');
-      metricsData && await saveMetrics(metricsData);
-      //console.timeEnd('save metric');
+      const calculatedDate = moment();
+
+      console.time('main query');
+      const project = await utils.getProject(projectsIs[index]);
+      console.timeEnd('main query');
+
+      if (project) {
+        const metricsData = await getMetrics(project, taskTypeBug, taskStatusDone, metricTypes);
+        metricsData && await saveMetrics(metricsData);
+        await utils.updateSprintMetricLastUpdate(project.sprints.map(sprint => sprint.id), calculatedDate);
+      }
+
       console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
     }
 
@@ -35,36 +43,28 @@ async function init () {
   return await sequelize.authenticate();
 }
 
-async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) {
-
-
+async function getMetrics (project, taskTypeBug, taskStatusDone, metricTypes) {
   const projectMetricsTasks = [];
-  console.time('main query');
-  const project = await utils.getProject(projectId);
-  console.timeEnd('main query');
 
-  if (!project) {
-    return;
-  }
   console.time('subquery metric');
   await Promise.all([
-    utils.getBugs(projectId, taskTypeBug, taskStatusDone)
+    utils.getBugs(project.id, taskTypeBug, taskStatusDone)
       .then(data => {project.timeByBugs = data;}),
-    utils.getTasksInBacklog(projectId)
+    utils.getTasksInBacklog(project.id)
       .then(data => {project.tasksInBacklog = data;}),
-    utils.getOtherTimeSheets(projectId)
+    utils.getOtherTimeSheets(project.id)
       .then(data => {project.otherTimeSheets = data;}),
-    utils.getProjectUsers(projectId)
+    utils.getProjectUsers(project.id)
       .then(data => {project.projectUsers = data;}),
-    utils.spentTimeAllProject(projectId)
+    utils.spentTimeAllProject(project.id)
       .then(data => {project.spentTimeAllProject = data;}),
-    utils.bugsCount(projectId)
+    utils.bugsCount(project.id)
       .then(data => {project.bugsCount = data;}),
-    utils.bugsCountFromClient(projectId)
+    utils.bugsCountFromClient(project.id)
       .then(data => {project.bugsCountFromClient = data;}),
-    utils.bugsCountRegression(projectId)
+    utils.bugsCountRegression(project.id)
       .then(data => {project.bugsCountRegression = data;}),
-    utils.spentTimeByRoles(projectId)
+    utils.spentTimeByRoles(project.id)
       .then(data => {project.spentTimeByRoles = data;})
   ]);
   console.timeEnd('subquery metric');
@@ -100,6 +100,7 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
           }));
         }
       });
+
     });
   }
 

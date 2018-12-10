@@ -24,9 +24,11 @@ exports.getProject = async function (projectId) {
       {
         as: 'sprints',
         model: Sprint,
-        attributes: Sprint.defaultSelect,
+        attributes: Sprint.defaultSelect.concat(['entitiesLastUpdate', 'metricLastUpdate']),
         where: {
-          statusId: 2
+          $or: [
+            sequelize.literal('"sprints"."entities_last_update" > "sprints"."metric_last_update" OR "sprints"."metric_last_update" IS NULL')
+          ]
         },
         include: [
           {
@@ -79,7 +81,7 @@ exports.getProject = async function (projectId) {
         ]
       }
     ],
-    logging: false
+    logging: console.log
   })
     .then((project) => project && project.get({ 'plain': true }));
 };
@@ -216,4 +218,8 @@ exports.spentTimeByRoles = async function (projectId) {
   return spentTimeByRoles;
 };
 
-
+exports.updateSprintMetricLastUpdate = async function (sprintIds, calculatedDate) {
+  return Sprint.update({ metricLastUpdate: calculatedDate }, {
+    where: { id: sprintIds }
+  });
+};

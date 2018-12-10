@@ -85,8 +85,13 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       unique: true
     },
-    entitiesLastUpdate: {
+    entitiesLastUpdate: { // see hook server/components/metricNeedUpdateHook.js
       field: 'entities_last_update',
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    metricLastUpdate: { // need for optimize calc metric
+      field: 'metric_last_update',
       type: DataTypes.DATE,
       allowNull: true
     },
