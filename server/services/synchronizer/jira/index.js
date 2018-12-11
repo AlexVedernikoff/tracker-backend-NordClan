@@ -171,15 +171,11 @@ exports.jiraSync = async function (headers, data) {
 };
 
 exports.clearProjectAssociate = async function (simTrackProjectId) {
-  try {
-    const simTrackProject = await Project.findByPrimary(simTrackProjectId);
-    if (simTrackProjectId) {
-      throw createError(404, 'Project not found');
-    }
-    await simTrackProject.update({ externalId: null, jira_hostname: null, jiraProjectName: null });
-  } catch (e) {
-    throw createError(500, 'Internal error');
+  const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+  if (!simTrackProjectId) {
+    throw createError(404, 'Project not found');
   }
+  await simTrackProject.update({ externalId: null, jira_hostname: null, jiraProjectName: null });
 };
 
 exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraProjectId, jiraHostName, jiraProjectName) {
