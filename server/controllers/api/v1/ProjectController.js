@@ -361,18 +361,21 @@ exports.list = function (req, res, next) {
     Project.checkAttributes(req.query.fields);
   }
 
-  // if (!req.query.pageSize) {
-  //   req.query.pageSize = 25;
-  // }
-
-  // if (!req.query.currentPage) {
-  //   req.query.currentPage = 1;
-  // }
-
   const include = [];
   let where = {};
 
-  if (req.query.userIsParticipant || (!req.user.isGlobalAdmin && !req.user.isVisor)) {
+  if (req.query.onlyUserInProject) {
+    //  Get projects where users only createor without any role
+    const onlyAuthorIds = req.user.authorsProjects.filter((authorsProject) =>
+      !req.user.usersProjects.find((usersProject) =>
+        usersProject.dataValues.projectId === authorsProject.dataValues.id))
+      .map((el) => el.dataValues.id);
+
+    where.id = req.user.dataValues.projects.filter((projectId) => {
+      return onlyAuthorIds.indexOf(projectId) === -1;
+    });
+
+  } else if (req.query.userIsParticipant || (!req.user.isGlobalAdmin && !req.user.isVisor)) {
     where.id = req.user.dataValues.projects;
   }
 

@@ -39,7 +39,7 @@ exports.create = async function (req, res, next){
 
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[2].id,
-      input: { taskId: task.id, commentId: comment.id, authorId: parentCommentAuthorId },
+      input: { taskId: task.id, commentId: comment.id, parentCommentAuthorId },
       user: { ...req.user.get() }
     });
     res.json(getOne);

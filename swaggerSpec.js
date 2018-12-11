@@ -80,6 +80,19 @@ module.exports = {
             type: 'integer',
             in: 'query'
           },
+          // TODO: подобрать более подходящие названия для флагов onlyUserInProject и userIsParticipant
+          {
+            name: 'onlyUserInProject',
+            description: 'Получить проекты где текущий пользователь находится в участниках (исключает проекты где пользователь только создатель)',
+            type: 'boolean',
+            in: 'query'
+          },
+          {
+            name: 'userIsParticipant',
+            description: 'Получить проекты где текущий пользователь находися как участник и как создатель',
+            type: 'boolean',
+            in: 'query'
+          },
           {
             name: 'pageSize',
             type: 'integer',
