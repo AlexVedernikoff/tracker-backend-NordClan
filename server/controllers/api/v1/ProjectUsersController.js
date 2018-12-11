@@ -97,7 +97,10 @@ exports.create = async function (req, res, next){
         }
 
         if (created) {
-          const projectUsersSubscriptionsData = models.ProjectEventsDictionary.values.map((projectEvent) => {
+          const projectEvents = await models.ProjectEventsDictionary.findAll({
+            attributes: ['id']
+          });
+          const projectUsersSubscriptionsData = projectEvents.map((projectEvent) => {
             return {
               projectUserId: user.id,
               projectEventId: projectEvent.id

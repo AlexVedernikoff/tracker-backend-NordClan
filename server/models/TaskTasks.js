@@ -1,6 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const TaskTasks = sequelize.define('TaskTasks', {
     id: {
       type: DataTypes.INTEGER,
@@ -9,13 +9,13 @@ module.exports = function(sequelize, DataTypes) {
     },
     linkedTaskId: {
       field: 'linked_task_id',
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER
     },
     taskId: {
       field: 'task_id',
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER
     },
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
   }, {
     underscored: true,
     timestamps: true,
@@ -24,25 +24,26 @@ module.exports = function(sequelize, DataTypes) {
     createdAt: false,
     tableName: 'task_tasks',
     hooks: {
-      afterFind: function(model) {
+      afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      },
+      }
     }
   });
 
 
-  TaskTasks.associate = function(models) {
-    TaskTasks.belongsTo(models.Task,{
+  TaskTasks.associate = function (models) {
+    TaskTasks.belongsTo(models.Task, {
       as: 'task',
       foreignKey: {
         name: 'linkedTaskId',
         field: 'linked_task_id'
-      },
+      }
     });
 
   };
 
   TaskTasks.addHistoryForTask();
+  TaskTasks.addMeticNeedUpdateHook();
 
   return TaskTasks;
 };

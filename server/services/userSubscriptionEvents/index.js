@@ -104,11 +104,14 @@ module.exports = async function (eventId, input, user){
   case (3): {
     // event description : new comment to task
     // receivers : task author, task performer, comment mentions
-    // input = { taskId, commentId }
+    // input = { taskId, commentId, authorId }
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    const mentions = getMentions(comment.text);
+    mentions = getMentions(comment.text);
+    if (input.authorId && mentions.indexOf(input.authorId) === -1) {
+      mentions.push(input.authorId);
+    }
     let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
       .map(receiver => receiver.dataValues.id);
     if (mentions.includes('all')) {
@@ -218,7 +221,7 @@ module.exports = async function (eventId, input, user){
     // input : { taskId, commentId }
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    const mentions = getMentions(comment.text);
+    mentions = getMentions(comment.text);
     let receiverIds;
     if (user[0] === 'all') {
       const projectUsers = await ProjectUsers.findAll({
@@ -293,7 +296,7 @@ module.exports = async function (eventId, input, user){
   case (6):
     // event description : error when calculating metrics
     project = await Project.findById(input.projectId);
-    if (input.recipients) {
+    if (input.recipients && project) {
       const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user });
       input.recipients.forEach(emailRecipient => {
         emails.push({

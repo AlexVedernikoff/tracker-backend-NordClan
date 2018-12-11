@@ -8,23 +8,32 @@ const executeDate = moment().toISOString();
 module.exports.calculate = async function (projectId) {
   try {
     await init();
-    console.time('calculate metric');
+    console.time('calculate all metric');
     const [taskTypeBug, taskStatusDone, metricTypes] = await utils.getDictionaries();
     const projectsIs = await utils.getProjectIds(projectId);
 
     for (let index = 0; index < projectsIs.length; index++) {
-      const metricsData = await getMetrics(projectsIs[index], taskTypeBug, taskStatusDone, metricTypes);
-      console.time('save metric');
-      await saveMetrics(metricsData);
-      console.timeEnd('save metric');
+      const calculatedDate = moment();
+
+      console.time('main query');
+      const project = await utils.getProject(projectsIs[index]);
+      console.timeEnd('main query');
+
+      if (project) {
+        const metricsData = await getMetrics(project, taskTypeBug, taskStatusDone, metricTypes);
+        metricsData && await saveMetrics(metricsData);
+        await utils.updateSprintMetricLastUpdate(project.sprints.map(sprint => sprint.id), calculatedDate);
+      }
+
       console.log(`done projectId: ${projectsIs[index]} (${index + 1}/${projectsIs.length})`);
     }
 
-    console.timeEnd('calculate metric');
+    console.timeEnd('calculate all metric');
     process.exit(0);
 
   } catch (err) {
     console.error('Error. Can not calculate metrics. Reason: ', err);
+    console.error(err);
     // TODO: send email about error, task ST-6631
     process.exit(-1);
   }
@@ -34,20 +43,33 @@ async function init () {
   return await sequelize.authenticate();
 }
 
-async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) {
-
-  console.time('query metric');
+async function getMetrics (project, taskTypeBug, taskStatusDone, metricTypes) {
   const projectMetricsTasks = [];
-  const project = await utils.getProject(projectId);
-  console.time('query getBugs metric');
-  project.timeByBugs = await utils.getBugs(projectId, taskTypeBug, taskStatusDone);
-  console.timeEnd('query getBugs metric');
-  project.tasksInBacklog = await utils.getTasksInBacklog(projectId);
-  project.otherTimeSheets = await utils.getOtherTimeSheets(projectId);
-  project.projectUsers = await utils.getProjectUsers(projectId);
-  console.timeEnd('query metric');
 
-  console.time('forEach metric');
+  console.time('subquery metric');
+  await Promise.all([
+    utils.getBugs(project.id, taskTypeBug, taskStatusDone)
+      .then(data => {project.timeByBugs = data;}),
+    utils.getTasksInBacklog(project.id)
+      .then(data => {project.tasksInBacklog = data;}),
+    utils.getOtherTimeSheets(project.id)
+      .then(data => {project.otherTimeSheets = data;}),
+    utils.getProjectUsers(project.id)
+      .then(data => {project.projectUsers = data;}),
+    utils.spentTimeAllProject(project.id)
+      .then(data => {project.spentTimeAllProject = data;}),
+    utils.bugsCount(project.id)
+      .then(data => {project.bugsCount = data;}),
+    utils.bugsCountFromClient(project.id)
+      .then(data => {project.bugsCountFromClient = data;}),
+    utils.bugsCountRegression(project.id)
+      .then(data => {project.bugsCountRegression = data;}),
+    utils.spentTimeByRoles(project.id)
+      .then(data => {project.spentTimeByRoles = data;})
+  ]);
+  console.timeEnd('subquery metric');
+
+  //console.time('metricsLib metric');
   if (project.sprints.length > 0) {
     project.sprints.forEach(function (sprint, sprintKey) {
       project.sprints[sprintKey].activeBugsAmount = parseInt(sprint.activeBugsAmount, 10);
@@ -55,37 +77,44 @@ async function getMetrics (projectId, taskTypeBug, taskStatusDone, metricTypes) 
       project.sprints[sprintKey].regressionBugsAmount = parseInt(sprint.regressionBugsAmount, 10);
     });
   }
-  console.timeEnd('forEach metric');
 
-  console.time('metricsLib metric');
   metricTypes.forEach(function (value) {
-    if (value.id > 29 && value.id !== 57) { return; }
-    projectMetricsTasks.push(metricsLib(value.id, {
-      project: project,
-      executeDate
-    }));
+    if (!value.calcEverySprint) {
+      //console.log('I value.id = ', value.id);
+      projectMetricsTasks.push(metricsLib(value.id, {
+        project: project,
+        executeDate
+      }));
+    }
   });
 
   if (project.sprints.length > 0) {
     project.sprints.forEach(function (sprint) {
       metricTypes.forEach(function (value) {
-        if (((value.id < 30 || value.id > 41) && value.id !== 57) && (value.id < 57 && value.id > 61)) { return; }
-        projectMetricsTasks.push(metricsLib(value.id, {
-          project: project,
-          sprint,
-          executeDate
-        }));
+        if (value.calcEverySprint) {
+          //console.log('II value.id = ', value.id);
+          projectMetricsTasks.push(metricsLib(value.id, {
+            project: project,
+            sprint,
+            executeDate
+          }));
+        }
       });
+
     });
   }
-  console.timeEnd('metricsLib metric');
 
-  return await Promise.all(projectMetricsTasks);
+  const result = await Promise.all(projectMetricsTasks);
+  //console.timeEnd('metricsLib metric');
+
+  return result;
 }
 
 
 async function saveMetrics (metricsData) {
-  return await sequelize.transaction(function (t) {
+  return await sequelize.transaction({
+    logging: false
+  }, function (t) {
     return Metrics.bulkCreate(metricsData.filter(md => md), {
       transaction: t,
       logging: false

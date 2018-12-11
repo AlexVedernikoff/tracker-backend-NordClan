@@ -246,7 +246,14 @@ exports.update = function (req, res, next) {
 
             gitlabProjectsNew = await gitLabService.projects.getProjectsOrErrors(gitlabProjectIdsNew);
             const firstError = gitlabProjectsNew.find(p => p.error);
-            if (firstError) return next(createError(firstError.status || 500, firstError.error));
+            if (firstError) {
+              return next(createError(
+                firstError.status || 500,
+                firstError.error === '404 Project Not Found'
+                  ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
+                  : firstError.error
+              ));
+            }
           }
 
           // сброс портфеля

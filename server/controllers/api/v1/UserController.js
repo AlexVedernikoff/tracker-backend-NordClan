@@ -129,6 +129,32 @@ exports.autocomplete = function (req, res, next) {
     .catch(err => next(createError(err)));
 };
 
+exports.devOpsUsers = async function (req, res, next) {
+  try {
+    const devOpsList = await models.User.findAll({
+      where: {
+        globalRole: {
+          $eq: 'DEV_OPS'
+        }
+      },
+      attributes: [
+        'id',
+        'firstNameRu',
+        'lastNameRu',
+        'firstNameEn',
+        'lastNameEn',
+        'photo',
+        'skype',
+        'emailPrimary',
+        'mobile'
+      ]
+    });
+    res.json(devOpsList);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getUsersRoles = async function (req, res, next) {
   try {
     const users = await models.User.findAll({
