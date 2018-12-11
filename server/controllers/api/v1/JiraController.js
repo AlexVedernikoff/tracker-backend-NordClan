@@ -106,6 +106,7 @@ exports.associateWithJiraProject = async function (req, res, next) {
 exports.clearAssociationWithJiraProject = async function (req, res, next) {
   try {
     await clearProjectAssociate(req.params.id);
+    res.end();
   } catch (e) {
     next(createError(e));
   }
