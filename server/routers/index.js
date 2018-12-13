@@ -19,6 +19,7 @@ const MetricsController = require('../controllers/api/v1/MetricsController');
 const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 const JiraController = require('../controllers/api/v1/JiraController');
+const HealthcheckController = require('../controllers/api/v1/HealthcheckController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
@@ -175,19 +176,17 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
 // JiraSynchronize
-
 router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
-
 router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
-
 router.post('/jira/project', replaceAuthHeader(), JiraController.createJiraProject);
 router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
 router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation);
-
 router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation);
-
 router.post('/jira/auth', JiraController.jiraAuth);
-
 router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch);
+
+// Healthcheck
+router.get('/healthcheck', HealthcheckController.healthcheck);
+
 
 module.exports = router;
