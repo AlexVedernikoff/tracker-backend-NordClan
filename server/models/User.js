@@ -197,13 +197,13 @@ module.exports = function (sequelize, DataTypes) {
           const fullNameRuArr = [this.firstNameRu, this.lastNameRu].filter(
             i => i
           );
-          return fullNameRuArr.join(' ');
+          return fullNameRuArr.join(' ') || this.getDataValue('fullNameRu');
         },
         fullNameEn: function () {
           const fullNameEnArr = [this.firstNameEn, this.lastNameEn].filter(
             i => i
           );
-          return fullNameEnArr.join(' ');
+          return fullNameEnArr.join(' ') || this.getDataValue('fullNameEn');
         }
       }
     }
