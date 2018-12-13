@@ -1926,6 +1926,13 @@ module.exports = {
         ],
         responses: responsesCodes
       }
+    },
+    '/healthcheck': {
+      get: {
+        tags: ['Healthcheck'],
+        summary: 'Проверка жив ли бек, реализует простой запрос в бд',
+        responses: responsesCodes
+      }
     }
 
 
