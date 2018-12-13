@@ -19,7 +19,6 @@ const MetricsController = require('../controllers/api/v1/MetricsController');
 const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 const JiraController = require('../controllers/api/v1/JiraController');
-const HealthcheckController = require('../controllers/api/v1/HealthcheckController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
@@ -184,9 +183,6 @@ router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociat
 router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation);
 router.post('/jira/auth', JiraController.jiraAuth);
 router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch);
-
-// Healthcheck
-router.get('/healthcheck', HealthcheckController.healthcheck);
 
 
 module.exports = router;
