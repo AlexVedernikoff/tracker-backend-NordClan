@@ -116,8 +116,9 @@ exports.update = async function (req, res, next) {
       projectId,
       changedTaskData
     } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser));
+    res.json(updatedTasks.map(task => task.dataValues));
+
     sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData);
-    console.log(JSON.stringify(changedTaskData));
     if (changedTaskData.performerId && !taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
@@ -132,8 +133,6 @@ exports.update = async function (req, res, next) {
         user: { ...req.user.get() }
       });
     }
-
-    res.sendStatus(200);
   } catch (err) {
     next(createError(err));
   }
