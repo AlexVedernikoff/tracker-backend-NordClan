@@ -136,6 +136,8 @@ exports.read = function (req, res, next) {
             as: 'user',
             model: models.User,
             where: {
+              active: 1,
+              isActive: 1,
               globalRole: models.User.EXTERNAL_USER_ROLE
             },
             attributes: [
