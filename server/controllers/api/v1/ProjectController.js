@@ -305,7 +305,7 @@ exports.update = async function (req, res, next) {
               gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
               model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
             }
-            transaction.commit();
+            await transaction.commit();
             res.json(model);
           });
         });

@@ -88,6 +88,7 @@ exports.update = async function (req, res, next){
 
     const updatedModel = await model.updateAttributes(req.body, { transaction, historyAuthorId: req.user.id });
     const sprints = await queries.sprint.allSprintsByProject(updatedModel.projectId, queries.sprint.queryAttributes('Sprint'), transaction);
+    await transaction.commit();
     res.json(sprints);
 
   } catch (err) {
