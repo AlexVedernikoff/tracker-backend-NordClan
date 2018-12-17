@@ -47,9 +47,6 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
         };
       });
 
-    })
-    .catch(error => {
-      throw error;
     });
 
 };

@@ -35,11 +35,6 @@ exports.create = async function (req, res, next){
           as: 'roles',
           model: models.ProjectUsersRoles
         }
-        // {
-        //   as: 'user',
-        //   model: models.User,
-        //   attributes: ['globalRole']
-        // }
       ],
       defaults: { projectId, userId }
     };
@@ -47,15 +42,6 @@ exports.create = async function (req, res, next){
     models.ProjectUsers
       .findOrCreate(options)
       .spread(async (user, created) => {
-
-        // if (user && user.dataValues.user &&
-        //   (user.dataValues.user.dataValues.globalRole !== models.User.EXTERNAL_USER_ROLE && rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) !== -1)
-        //   || (user.dataValues.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE
-        //     && (rolesIds.length > 1 || rolesIds.indexOf(models.ProjectRolesDictionary.CUSTOMER_ID) === -1)
-        //   )
-        // ) {
-        //   return next(createError(403, 'roleId is invalid for this userId'));
-        // }
 
         if (rolesIds.length > 0) {
           const deleteRoles = [];
@@ -76,23 +62,18 @@ exports.create = async function (req, res, next){
           });
 
           if (deleteRoles.length > 0) {
-            await models.sequelize.transaction(function (t){
-              return models.ProjectUsersRoles.destroy({
-                where: {
-                  projectUserId: user.id,
-                  projectRoleId: {
-                    '$in': deleteRoles
-                  }
-                },
-                transaction: t
-              });
+            await models.ProjectUsersRoles.destroy({
+              where: {
+                projectUserId: user.id,
+                projectRoleId: {
+                  '$in': deleteRoles
+                }
+              }
             });
           }
 
           if (createRoles.length > 0) {
-            await models.sequelize.transaction(function (t){
-              return models.ProjectUsersRoles.bulkCreate(createRoles, {transaction: t});
-            });
+            await models.ProjectUsersRoles.bulkCreate(createRoles);
           }
         }
 
@@ -106,9 +87,7 @@ exports.create = async function (req, res, next){
               projectEventId: projectEvent.id
             };
           });
-          await models.sequelize.transaction(function (t){
-            return models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData, {transaction: t});
-          });
+          await models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData);
         }
 
         const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
@@ -141,7 +120,7 @@ async function parseRolesIds (rolesIds) {
   }
 }
 
-exports.delete = function (req, res, next){
+exports.delete = async function (req, res, next){
   if (!req.params.projectId) return next(createError(400, 'projectId need'));
   if (!Number.isInteger(+req.params.projectId)) return next(createError(400, 'projectId must be int'));
   if (+req.params.projectId <= 0) return next(createError(400, 'projectId must be > 0'));
@@ -154,7 +133,9 @@ exports.delete = function (req, res, next){
     return next(createError(403, 'Access denied'));
   }
 
-  return models.sequelize.transaction(async function (t) {
+  let transaction;
+  try {
+    transaction = await models.sequelize.transaction();
     const projectUser = await models.ProjectUsers
       .findOne({
         where: {
@@ -162,11 +143,12 @@ exports.delete = function (req, res, next){
           userId: req.params.userId,
           deletedAt: null
         },
-        transaction: t,
+        transaction,
         lock: 'UPDATE'
       });
 
     if (!projectUser) {
+      await transaction.rollback();
       return next(createError(404));
     }
 
@@ -174,26 +156,29 @@ exports.delete = function (req, res, next){
       where: {
         projectUserId: projectUser.id
       },
-      transaction: t
+      transaction
     });
 
     await models.ProjectUsersRoles.destroy({
       where: {
         projectUserId: projectUser.id
       },
-      transaction: t
+      transaction
     });
 
-    await projectUser.destroy({ transaction: t, historyAuthorId: req.user.id });
+    await projectUser.destroy({ transaction, historyAuthorId: req.user.id });
 
     const isExternal = +req.query.isExternal === 1;
 
-    const users = await queries.projectUsers.getUsersByProject(req.params.projectId, isExternal, ['userId', 'rolesIds'], t);
+    const users = await queries.projectUsers.getUsersByProject(req.params.projectId, isExternal, ['userId', 'rolesIds'], transaction);
+    await transaction.commit();
     res.json(users);
-  })
-    .catch((err) => {
-      next(err);
-    });
+  } catch (err) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 

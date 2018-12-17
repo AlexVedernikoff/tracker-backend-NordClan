@@ -9,7 +9,10 @@ exports.createDraftMagicActivity = (instance, options) => {
   return Promise.all(draftsObjects.map((el) => {
     return draftModel.create(el, { transaction: options.transaction});
   }))
-    .catch((e)=>{
+    .catch((e) => {
+      if (options.transaction) {
+        options.transaction.rollback();
+      }
       throw e;
     });
 

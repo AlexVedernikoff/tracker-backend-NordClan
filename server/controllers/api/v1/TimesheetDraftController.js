@@ -5,19 +5,20 @@ const moment = require('moment');
 /**
  * Функция создания драфтшита
  */
-exports.createDraft = function (req, res, next, t = null, isContinue) {
-  console.log('Функция создания драфтшита');
+exports.createDraft = async function (req, res, next, transaction = null, isContinue) {
   if (req.body.id) delete req.body.id;
   if (req.params.taskId) req.body.taskId = req.params.taskId;
-  if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) return next(createError(400, 'sprintId must be int'));
+  if (!req.body.sprintId && !isContinue && req.body.sprintId.match(/^[0-9]+$/)) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    return next(createError(400, 'sprintId must be int'));
+  }
 
-  return models.TimesheetDraft.create(req.body, { returning: false, transaction: t })
+  return models.TimesheetDraft.create(req.body, { returning: false, transaction })
     .then((draftsheetModel) => {
       if (isContinue) return draftsheetModel;
       res.json(draftsheetModel);
-    })
-    .catch((err) => {
-      return next(createError(err));
     });
 };
 

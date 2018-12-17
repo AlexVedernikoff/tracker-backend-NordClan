@@ -112,12 +112,18 @@ async function getMetrics (project, taskTypeBug, taskStatusDone, metricTypes) {
 
 
 async function saveMetrics (metricsData) {
-  return await sequelize.transaction({
-    logging: false
-  }, function (t) {
-    return Metrics.bulkCreate(metricsData.filter(md => md), {
-      transaction: t,
+  let transaction;
+  try {
+    transaction = await sequelize.transaction();
+    await Metrics.bulkCreate(metricsData.filter(md => md), {
+      transaction,
       logging: false
     });
-  });
+    await transaction.commit();
+  } catch (e) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw e;
+  }
 }
