@@ -2,17 +2,15 @@ const { TaskStatusesDictionary } = require('../../../models');
 const moment = require('moment');
 const _ = require('underscore');
 const exactMath = require('exact-math');
+const commandMetrics = require('./commandMetrics');
 
 
 module.exports = async function (metricsTypeId, input) {
 
-  let calculateClientBugs;
-
-  let projectBurndown, projectRiskBurndown, totalBugsAmount, totalClientBugsAmount, totalRegressionBugsAmount, rolesIdsConf, roleId,
-    totalTimeSpent, totalTimeSpentWithRole, totalTimeSpentInPercent, sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
+  let sprintBurndown, closedTasksDynamics, laborCostsTotal, laborCostsClosedTasks,
     laborCostsWithoutRating, taskTypeIdsConf, taskTypeId, openedTasksAmount, unratedFeaturesTotal, unsceduledOpenedFeatures,
-    spentTimeBySprint, spentTimeByTask, isFromClient, isTaskFromClient;
-  let timeSpentForBugs = 0;
+    spentTimeBySprint, spentTimeByTask, isTaskFromClient;
+
   const countSpentTimeByTask = (task) => {
     if (!task.timesheets) {
       return 0;
@@ -27,55 +25,6 @@ module.exports = async function (metricsTypeId, input) {
     tasks.reduce((tasksSum, task) => {
       return (exactMath.add(tasksSum, countSpentTimeByTask(task)));
     }, 0);
-
-  const countSpentTimeOnOtherTimesheets = (timesheets) =>
-    timesheets.reduce((timesheetsSum, timesheet) => (exactMath.add(timesheetsSum, timesheet.spentTime)), 0);
-
-  const countSpentTimeByProject = (project) => {
-    const curSpentTimeByBacklog = project.tasksInBacklog
-      ? countSpentTimeByTasks(project.tasksInBacklog)
-      : 0;
-    const curSpentTimeOnOtherTimesheets = project.otherTimeSheets
-      ? countSpentTimeOnOtherTimesheets(project.otherTimeSheets)
-      : 0;
-    const curSpentTimeBySprints = project.sprints
-      ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasks(sprint.tasks))), 0)
-      : 0;
-    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
-  };
-
-  const checkSprintsHaveTask = (sprints) => sprints.find(sprint => sprint.tasks.length > 0);
-
-  const countSpentTimeByTaskWithRole = (task, curRoleId) => {
-
-    const checRole = (timesheet, curCaseRoleId) =>
-      (timesheet.userRoleId && JSON.parse(timesheet.userRoleId).includes(curCaseRoleId))
-      || (curCaseRoleId === 10 && !timesheet.isBillable);
-
-    return task.timesheets.reduce((sum, timesheet) => {
-      if (checRole(timesheet, curRoleId)) {
-        return exactMath.add(sum, timesheet.spentTime);
-      } else {
-        return sum;
-      }
-    }, 0);
-  };
-
-  const countSpentTimeByTasksWithRole = (tasks, curRoleId) =>
-    tasks.reduce((tasksSum, task) => (exactMath.add(tasksSum, countSpentTimeByTaskWithRole(task, curRoleId))), 0);
-
-  const countSpentTimeByRole = (project, curRoleId) => {
-    const curSpentTimeByBacklog = project.tasksInBacklog
-      ? countSpentTimeByTasksWithRole(project.tasksInBacklog, curRoleId)
-      : 0;
-    const curSpentTimeOnOtherTimesheets = project.otherTimeSheets
-      ? countSpentTimeOnOtherTimesheets(project.otherTimeSheets)
-      : 0;
-    const curSpentTimeBySprints = project.sprints
-      ? project.sprints.reduce((sum, sprint) => (exactMath.add(sum, countSpentTimeByTasksWithRole(sprint.tasks, curRoleId))), 0)
-      : 0;
-    return exactMath.add(parseFloat(curSpentTimeByBacklog), parseFloat(curSpentTimeBySprints), parseFloat(curSpentTimeOnOtherTimesheets));
-  };
 
   switch (metricsTypeId) {
   case (1):
@@ -118,99 +67,78 @@ module.exports = async function (metricsTypeId, input) {
       'userId': null
     };
 
-  case (5):
-    projectBurndown = parseFloat(input.project.budget) || 0;
+  case (5): {
     if (input.project.sprints.length === 0
         && input.project.tasksInBacklog.length === 0) return;
-    totalTimeSpent = countSpentTimeByProject(input.project);
-    projectBurndown = exactMath.sub(projectBurndown, parseFloat(totalTimeSpent));
+
+    const budget = parseFloat(input.project.budget) || 0;
+    const value = exactMath.sub(budget, input.project.spentTimeAllProject);
+
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': projectBurndown,
+      'value': value,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
     };
+  }
 
-  case (6):
-    projectRiskBurndown = parseFloat(input.project.riskBudget) || 0;
+  case (6): {
     if (input.project.sprints.length === 0
         && input.project.tasksInBacklog.length === 0) return;
-    totalTimeSpent = countSpentTimeByProject(input.project);
-    projectRiskBurndown = exactMath.sub(projectRiskBurndown, parseFloat(totalTimeSpent));
-    return {
-      'typeId': metricsTypeId,
-      'createdAt': input.executeDate,
-      'value': projectRiskBurndown,
-      'projectId': input.project.id,
-      'sprintId': null,
-      'userId': null
-    };
 
-  case (7):
-    totalBugsAmount = 0;
-    if (input.project.sprints.length > 0) {
-      input.project.sprints.forEach(function (sprint) {
-        const bugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) === -1 && task.typeId === 2);
-        });
-        totalBugsAmount += bugs.length;
-      });
-    }
-    return {
-      'typeId': metricsTypeId,
-      'createdAt': input.executeDate,
-      'value': totalBugsAmount,
-      'projectId': input.project.id,
-      'sprintId': null,
-      'userId': null
-    };
-
-  case (8):
-    totalClientBugsAmount = 0;
-    calculateClientBugs = (tasks) => {
-      const clientBugs = _.filter(tasks, (task) => {
-        return (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) === -1 && task.typeId === 2 && task.isTaskByClient);
-      });
-      totalClientBugsAmount += clientBugs.length;
-    };
-    if (Array.isArray(input.project.sprints)) {
-      input.project.sprints.forEach(sprint => calculateClientBugs(sprint.tasks));
-
-      if (Array.isArray(input.project.tasksInBacklog)) {
-        calculateClientBugs(input.project.tasksInBacklog);
-      }
-    }
+    const projectRiskBurndown = parseFloat(input.project.riskBudget) || 0;
+    const value = exactMath.sub(projectRiskBurndown, input.project.spentTimeAllProject);
 
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': totalClientBugsAmount,
+      'value': value,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
     };
+  }
 
+  case (7): {
+    const value = input.project.bugsCount;
 
-  case (9):
-    totalRegressionBugsAmount = 0;
-    if (input.project.sprints.length > 0) {
-      input.project.sprints.forEach(function (sprint) {
-        const regressionBugs = _.filter(sprint.tasks, (task) => {
-          return (TaskStatusesDictionary.DONE_STATUSES_WITH_CANCELLED.indexOf(task.statusId) === -1 && task.typeId === 4);
-        });
-        totalRegressionBugsAmount = exactMath.add(totalRegressionBugsAmount, regressionBugs.length);
-      });
-    }
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': totalRegressionBugsAmount,
+      'value': value,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
     };
+  }
+
+  case (8): {
+    const value = input.project.bugsCountFromClient;
+
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': value,
+      'projectId': input.project.id,
+      'sprintId': null,
+      'userId': null
+    };
+  }
+
+  case (9): {
+    const value = input.project.bugsCountRegression;
+
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': value,
+      'projectId': input.project.id,
+      'sprintId': null,
+      'userId': null
+    };
+  }
 
   case (10):
   case (11):
@@ -222,7 +150,10 @@ module.exports = async function (metricsTypeId, input) {
   case (17):
   case (18):
   case (19):
-    rolesIdsConf = {
+  case (51):
+  case (52):
+  case (55): {
+    const rolesIdsConf = {
       '10': 1,
       '11': 2,
       '12': 3,
@@ -232,26 +163,25 @@ module.exports = async function (metricsTypeId, input) {
       '16': 7,
       '17': 8,
       '18': 9,
-      '19': 10
+      '19': 10,
+      '51': 11,
+      '52': 12,
+      '55': 13
     };
-    roleId = rolesIdsConf[metricsTypeId.toString()];
-    if (input.project.sprints.length === 0
-        && !checkSprintsHaveTask(input.project.sprints)
-        && input.project.tasksInBacklog.length === 0
-        || input.project.projectUsers.length === 0
-    ) return;
-    totalTimeSpent = countSpentTimeByProject(input.project);
-    totalTimeSpentWithRole = countSpentTimeByRole(input.project, roleId);
-    totalTimeSpentInPercent = exactMath.div(totalTimeSpentWithRole, totalTimeSpent) * 100 || 0;
-    totalTimeSpentInPercent = parseFloat(totalTimeSpentInPercent.toFixed(2));
+
+    const value = parseFloat(
+      (exactMath.div(input.project.spentTimeAllProject, input.project.spentTimeByRoles[rolesIdsConf[metricsTypeId.toString()]]) * 100 || 0).toFixed(2)
+    );
+
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': totalTimeSpentInPercent,
+      'value': value,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
     };
+  }
 
   case (20):
   case (21):
@@ -263,7 +193,10 @@ module.exports = async function (metricsTypeId, input) {
   case (27):
   case (28):
   case (29):
-    rolesIdsConf = {
+  case (53):
+  case (54):
+  case (56): {
+    const rolesIdsConf = {
       '20': 1,
       '21': 2,
       '22': 3,
@@ -273,23 +206,22 @@ module.exports = async function (metricsTypeId, input) {
       '26': 7,
       '27': 8,
       '28': 9,
-      '29': 10
+      '29': 10,
+      '53': 11,
+      '54': 12,
+      '56': 13
     };
-    roleId = rolesIdsConf[metricsTypeId.toString()];
-    if (input.project.sprints.length === 0
-        && !checkSprintsHaveTask(input.project.sprints)
-        && input.project.tasksInBacklog.length === 0
-        || input.project.projectUsers.length === 0
-    ) return;
-    totalTimeSpentWithRole = countSpentTimeByRole(input.project, roleId);
+    const value = input.project.spentTimeByRoles[rolesIdsConf[metricsTypeId.toString()]];
+
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': totalTimeSpentWithRole,
+      'value': value,
       'projectId': input.project.id,
       'sprintId': null,
       'userId': null
     };
+  }
 
   case (30):
     sprintBurndown = input.sprint.budget || 0;
@@ -406,14 +338,16 @@ module.exports = async function (metricsTypeId, input) {
     unsceduledOpenedFeatures = 0;
     if (input.sprint.tasks.length > 0) {
       input.sprint.tasks.forEach(function (task) {
+        const changeSprint = task.history.filter((item) => item.field === 'sprintId');
+
         if (
           task.typeId === 1
             && (
               moment(task.createdAt).isAfter(input.sprint.factStartDate)
               || (
-                task.history
-                && task.history.length > 0
-                && moment(task.history[task.history.length - 1].createdAt).isAfter(input.sprint.factStartDate)
+                changeSprint
+                && changeSprint.length > 0
+                && moment(changeSprint[changeSprint.length - 1].createdAt).isAfter(input.sprint.factStartDate)
               )
             )
         ) {
@@ -431,13 +365,10 @@ module.exports = async function (metricsTypeId, input) {
     };
 
   case (57):
-    input.project.bugs.map(b => {
-      timeSpentForBugs += parseFloat(b.factExecutionTime);
-    });
     return {
       'typeId': metricsTypeId,
       'createdAt': input.executeDate,
-      'value': input.project.bugs.length ? timeSpentForBugs / input.project.bugs.length : 0,
+      'value': input.project.timeByBugs,
       'projectId': input.project.id,
       'sprintId': input.sprint ? input.sprint.id : null,
       'userId': null
@@ -479,6 +410,17 @@ module.exports = async function (metricsTypeId, input) {
       'userId': null
     };
 
+  case (61): {
+
+    return {
+      'typeId': metricsTypeId,
+      'createdAt': input.executeDate,
+      'value': JSON.stringify(commandMetrics(input.sprint)),
+      'projectId': input.project.id,
+      'sprintId': input.sprint ? input.sprint.id : null,
+      'userId': null
+    };
+  }
   default:
     break;
   }

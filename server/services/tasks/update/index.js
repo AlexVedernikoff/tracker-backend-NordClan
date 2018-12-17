@@ -239,6 +239,9 @@ async function validateTask (task, body, user) {
     if (!user.canReadProject(task.projectId)) {
       throw createError(403, 'Access denied');
     }
+    if (user.isDevOpsProject(task.projectId) && !task.dataValues.isDevOps) {
+      throw createError(403, 'Access denied');
+    }
     if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS
       && (!body.statusId || body.statusId === models.TaskStatusesDictionary.CLOSED_STATUS)) {
       throw createError(403, 'Task is closed');

@@ -8,7 +8,7 @@ exports.list = async (req, res, next) => {
     const {projectId, startDate, endDate, recalculate} = req.body;
 
     if (recalculate) {
-      await AgentService.calculateByProject(projectId);
+      await AgentService.calculateByProject(projectId, req.user.dataValues.fullNameRu);
     }
 
     const metrics = await AgentService.list({

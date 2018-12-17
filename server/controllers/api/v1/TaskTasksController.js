@@ -18,6 +18,11 @@ exports.create = async function (req, res, next) {
       return next(createError(403, 'Access denied'));
     }
 
+    if (req.user.isDevOpsProject(task.projectId)) {
+      await t.rollback();
+      return next(createError(403, 'Access denied'));
+    }
+
     await Promise.all([
       models.TaskTasks.findOrCreate({
         where: {
@@ -63,6 +68,11 @@ exports.delete = async function (req, res, next) {
     const task = await models.Task.findByPrimary(req.params.taskId, { attributes: ['id', 'projectId']});
 
     if (!req.user.canReadProject(task.projectId)) {
+      await t.rollback();
+      return next(createError(403, 'Access denied'));
+    }
+
+    if (req.user.isDevOpsProject(task.projectId)) {
       await t.rollback();
       return next(createError(403, 'Access denied'));
     }

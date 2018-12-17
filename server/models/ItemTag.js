@@ -28,8 +28,8 @@ module.exports = function (sequelize, DataTypes) {
       }
     ],
     underscored: true,
-    timestamps: false,
-    paranoid: false,
+    timestamps: true,
+    paranoid: true,
     updatedAt: false,
     createdAt: false,
     tableName: 'item_tags'

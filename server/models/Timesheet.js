@@ -76,6 +76,12 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: true
     },
+    externalId: {
+      field: 'external_id',
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
+    },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
     updatedAt: { type: DataTypes.DATE, field: 'updated_at' }
   }, {
@@ -180,6 +186,7 @@ module.exports = function (sequelize, DataTypes) {
 
   /* При создании тайм шита вставляем в запись недостающие данные */
   Timesheet.addHook('beforeValidate', 'beforeValidate', beforeValidate.index);
+  Timesheet.addMeticNeedUpdateHook();
 
   return Timesheet;
 };

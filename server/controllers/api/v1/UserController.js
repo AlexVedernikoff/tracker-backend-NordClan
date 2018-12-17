@@ -65,38 +65,47 @@ exports.autocomplete = function (req, res, next) {
     .getValidationResult()
     .then(validationResult => {
       if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
-
       const result = [];
-      const userName = req.query.userName.trim();
-      let $iLike = layoutAgnostic(userName);
-      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла
-      let $or = [
+      const userName = req.query.userName;
+      const userNameArray = userName.trim().split(/\s+/);
+      const iLikeFirstName = layoutAgnostic(userNameArray[0] ? userNameArray[0] : '');
+      const iLikeLastName = layoutAgnostic(userNameArray[1] ? userNameArray[1] : '');
+
+
+      const $or = [
         {
-          fullNameRu: {
-            $iLike
+          firstNameEn: {
+            $iLike: iLikeFirstName
+          },
+          lastNameEn: {
+            $iLike: iLikeLastName
           }
         },
         {
-          fullNameEn: {
-            $iLike
+          firstNameRu: {
+            $iLike: iLikeFirstName
+          },
+          lastNameRu: {
+            $iLike: iLikeLastName
+          }
+        },
+        {
+          firstNameEn: {
+            $iLike: iLikeLastName
+          },
+          lastNameEn: {
+            $iLike: iLikeFirstName
+          }
+        },
+        {
+          firstNameRu: {
+            $iLike: iLikeLastName
+          },
+          lastNameRu: {
+            $iLike: iLikeFirstName
           }
         }
       ];
-      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
-        $iLike = layoutAgnostic(reverseUserName);
-        $or = $or.concat([
-          {
-            fullNameRu: {
-              $iLike
-            }
-          },
-          {
-            fullNameEn: {
-              $iLike
-            }
-          }
-        ]);
-      }
 
       return models.User
         .findAll({
@@ -118,6 +127,32 @@ exports.autocomplete = function (req, res, next) {
         });
     })
     .catch(err => next(createError(err)));
+};
+
+exports.devOpsUsers = async function (req, res, next) {
+  try {
+    const devOpsList = await models.User.findAll({
+      where: {
+        globalRole: {
+          $eq: 'DEV_OPS'
+        }
+      },
+      attributes: [
+        'id',
+        'firstNameRu',
+        'lastNameRu',
+        'firstNameEn',
+        'lastNameEn',
+        'photo',
+        'skype',
+        'emailPrimary',
+        'mobile'
+      ]
+    });
+    res.json(devOpsList);
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.getUsersRoles = async function (req, res, next) {
@@ -406,10 +441,11 @@ exports.autocompleteExternal = function (req, res, next) {
           where: {
             globalRole: 'EXTERNAL_USER',
             active: 1,
+            isActive: 1,
             $or
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
+          attributes: ['id', 'active', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
         })
         .then((users) => {
           users.forEach((user) => {

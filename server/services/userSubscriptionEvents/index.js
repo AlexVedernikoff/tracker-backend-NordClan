@@ -2,10 +2,11 @@ const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 const { getMentions, replaceMention } = require('../../services/comment');
+const { emailForDevOpsNotify } = require('../../configs');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment, projectRolesValues, mentionedUsers;
+  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds, project;
 
   switch (eventId){
 
@@ -59,6 +60,15 @@ module.exports = async function (eventId, input, user){
       });
     });
 
+    if (task.dataValues.isDevOps) {
+      const emailTemplate = email.template('newTaskForQAPM', { task });
+      emails.push({
+        'receiver': emailForDevOpsNotify,
+        'subject': emailTemplate.subject,
+        'html': emailTemplate.body
+      });
+    }
+
     break;
 
   case (2):
@@ -67,6 +77,15 @@ module.exports = async function (eventId, input, user){
     // input = { taskId }
 
     task = await getTask(input.taskId);
+    taskComment = task.comments[0];
+    mentions = getMentions(taskComment.text);
+    userIds = await User.findAll({
+      where: {
+        id: _.unique(mentions)
+      },
+      attributes: User.defaultSelect
+    });
+    taskComment.text = mentions.length ? await replaceMention(taskComment.text, userIds) : taskComment.text;
     receivers = task.performer ? [task.performer] : [];
 
     receivers.forEach(function (performer) {
@@ -85,13 +104,16 @@ module.exports = async function (eventId, input, user){
   case (3): {
     // event description : new comment to task
     // receivers : task author, task performer, comment mentions
-    // input = { taskId, commentId }
+    // input = { taskId, commentId, parentCommentAuthorId }
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    const mentions = getMentions(comment.text);
+    mentions = getMentions(comment.text);
     let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
       .map(receiver => receiver.dataValues.id);
+    if (input.parentCommentAuthorId && receiverIds.indexOf(input.parentCommentAuthorId) === -1) {
+      receiverIds.push(input.parentCommentAuthorId);
+    }
     if (mentions.includes('all')) {
       const projectUsers = await ProjectUsers.findAll({
         attributes: ['user_id'],
@@ -135,7 +157,7 @@ module.exports = async function (eventId, input, user){
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
-      const emailTemplate = email.template('newTaskComment', { task, comment });
+      const emailTemplate = mentions.includes(receiver.id) ? email.template('newTaskCommentMention', { task, comment }) : email.template('newTaskComment', { task, comment });
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
@@ -199,7 +221,7 @@ module.exports = async function (eventId, input, user){
     // input : { taskId, commentId }
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
-    const mentions = getMentions(comment.text);
+    mentions = getMentions(comment.text);
     let receiverIds;
     if (user[0] === 'all') {
       const projectUsers = await ProjectUsers.findAll({
@@ -270,6 +292,21 @@ module.exports = async function (eventId, input, user){
     });
     break;
   }
+
+  case (6):
+    // event description : error when calculating metrics
+    project = await Project.findById(input.projectId);
+    if (input.recipients && project) {
+      const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user });
+      input.recipients.forEach(emailRecipient => {
+        emails.push({
+          'receiver': emailRecipient,
+          'subject': emailTemplate.subject,
+          'html': emailTemplate.body
+        });
+      });
+    }
+    break;
   default:
     break;
 

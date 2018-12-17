@@ -4,10 +4,12 @@ const jwt = require('jwt-simple');
 const models = require('../models/index');
 const User = models.User;
 const ProjectUsers = models.ProjectUsers;
+const { Task } = models;
 const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const { statuses } = require('../middlewares/Access/userAuthExtension');
 
 exports.checkToken = function (req, res, next) {
   let token, decoded, authorization;
@@ -41,7 +43,7 @@ exports.checkToken = function (req, res, next) {
         login: decoded.user.login,
         active: 1
       },
-      attributes: User.defaultSelect,
+      attributes: ['globalRole', ...User.defaultSelect],
       include: [
         {
           as: 'token',
@@ -84,6 +86,27 @@ exports.checkToken = function (req, res, next) {
           }
         }
       ]
+    })
+    .then(user => {
+      if (user) {
+        if (user.dataValues.globalRole === statuses.DEV_OPS) {
+          return Task.findAll({
+            attributes: ['projectId'],
+            where: {
+              isDevOps: true
+            }
+          }).then((tasks) => {
+            if (tasks !== 0) {
+              user.devOpsProjects = tasks.map(task => task.projectId);
+            }
+            return user;
+          });
+        } else {
+          return user;
+        }
+      } else {
+        return user;
+      }
     })
     .then((user) => {
       if (!user) {

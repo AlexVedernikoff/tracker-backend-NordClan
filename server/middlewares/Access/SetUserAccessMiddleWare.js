@@ -11,8 +11,6 @@ exports.middleware = function (req, res, next) {
 
   if (!req.isSystemUser) {
     delete req.user.dataValues.token;
-    delete req.user.dataValues.authorsProjects;
-    delete req.user.dataValues.usersProjects;
   }
 
   return next();

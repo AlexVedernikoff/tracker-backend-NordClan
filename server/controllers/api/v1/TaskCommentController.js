@@ -1,8 +1,10 @@
+const { includeProjectWithUsers } = require('../../../models/queries/task');
 const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const emailSubprocess = require('../../../services/email/subprocess');
 const { getMentionDiff } = require('./../../../services/comment');
+const CommentsChannel = require('../../../channels/Comments');
 const moment = require('moment');
 
 exports.create = async function (req, res, next){
@@ -28,20 +30,28 @@ exports.create = async function (req, res, next){
 
     const comment = await models.Comment.create(req.body);
     const getOne = await queries.comment.getOne(comment.id);
+    let parentCommentAuthorId;
+
+    if (req.body.parentId) {
+      const parentComment = await queries.comment.getOne(req.body.parentId);
+      parentCommentAuthorId = parentComment.author.dataValues.id;
+    }
+
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[2].id,
-      input: { taskId: task.id, commentId: comment.id },
+      input: { taskId: task.id, commentId: comment.id, parentCommentAuthorId },
       user: { ...req.user.get() }
     });
-    if (req.body.parentId) {
-      const mention = await queries.comment.getOne(req.body.parentId);
-      emailSubprocess({
-        eventId: models.ProjectEventsDictionary.values[4].id,
-        input: { taskId: task.id, commentId: comment.id },
-        user: [mention.author.dataValues.id]
-      });
-    }
     res.json(getOne);
+    const currentTask = await queries.task.getTaskWithUsers(getOne.dataValues.taskId);
+    if (getOne) {
+      CommentsChannel.updateTaskComments(
+        res.io,
+        req.user.dataValues.id,
+        getOne.dataValues.taskId,
+        currentTask.project.projectUsers
+      );
+    }
   } catch (e) {
     return next(createError(e));
   }
@@ -57,7 +67,8 @@ exports.update = function (req, res, next){
 
       return Promise.all([models.Task
         .findByPrimary(req.params.taskId, {
-          attributes: ['id', 'projectId']
+          attributes: ['id', 'projectId'],
+          include: includeProjectWithUsers
         }), models.Comment
         .findByPrimary(req.params.commentId, {
           attributes: ['id', 'deletedAt', 'authorId', 'createdAt', 'text']
@@ -95,6 +106,12 @@ exports.update = function (req, res, next){
         .updateAttributes({ text, attachmentIds })
         .then((model)=>{
           res.json(model);
+          CommentsChannel.updateTaskComments(
+            res.io,
+            req.user.dataValues.id,
+            task.dataValues.id,
+            task.project.projectUsers
+          );
         });
     })
     .catch((err) => next(err));
@@ -111,7 +128,8 @@ exports.delete = function (req, res, next){
 
       return Promise.all([models.Task
         .findByPrimary(req.params.taskId, {
-          attributes: ['id', 'projectId']
+          attributes: ['id', 'projectId'],
+          include: includeProjectWithUsers
         }), models.Comment
         .findByPrimary(req.params.commentId, {
           attributes: ['id', 'deletedAt', 'authorId']
@@ -130,8 +148,18 @@ exports.delete = function (req, res, next){
       if (comment.authorId !== req.user.id && !req.user.isGlobalAdmin){
         return next(createError(403, 'User is not an author of comment'));
       }
-
-      return comment.destroy();
+      return comment.destroy()
+        .then(() => res.end())
+        .then(() => {
+          if (task) {
+            CommentsChannel.updateTaskComments(
+              res.io,
+              req.user.dataValues.id,
+              task.dataValues.id,
+              task.project.projectUsers
+            );
+          }
+        });
     })
     .then(()=> res.end())
     .catch((err) => next(err));

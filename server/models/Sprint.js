@@ -79,6 +79,22 @@ module.exports = function (sequelize, DataTypes) {
         isFloat: true
       }
     },
+    externalId: {
+      field: 'external_id',
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
+    },
+    entitiesLastUpdate: { // see hook server/components/metricNeedUpdateHook.js
+      field: 'entities_last_update',
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    metricLastUpdate: { // need for optimize calc metric
+      field: 'metric_last_update',
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
     deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
@@ -140,6 +156,7 @@ module.exports = function (sequelize, DataTypes) {
   Sprint.defaultSelect = ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate', /*'allottedTime', DEPRECATED*/ 'budget', 'riskBudget'];
 
   Sprint.addHistoryForProject();
+  Sprint.addMeticNeedUpdateHook();
 
   return Sprint;
 };

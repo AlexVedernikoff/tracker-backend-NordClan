@@ -2,7 +2,6 @@ image: docker:stable
 
 stages:
   - docker
-  - release
   - deploy
 
 variables:
@@ -20,28 +19,13 @@ build_docker_be:
   script:
     - cp ci/Dockerfile.be ./
     - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.be .
-  only:
-    - master
-    - test
-    - develop
-  tags:
-    - docker
-
-release:
-  image: docker:stable
-  stage: release
-  script:
     - docker tag $DOCKER_PREFIX/be:$TAG $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
     - docker push $DOCKER_PREFIX/be:$TAG
     - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
     - docker rmi $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
-  only:
-    - develop
-    - test
-    - master
-    - feature/ci
   tags:
     - docker
+
 
 deploy_to_dev:
   image: dr.simbirsoft1.com/library/ansible:2.4
@@ -116,3 +100,50 @@ deploy_to_prod:
   environment:
     name: prod
     url: https://simtrack.simbirsoft/
+
+wipe_database_on_custom:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$DEV_DEPLOYMENT_KEY"
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/custom/inventory  clean_database.yaml 
+  tags:
+    - docker
+  when: manual
+  environment:
+    name: custom
+    url: http://simtrack-custom.simbirsoft/
+
+
+deploy_to_custom:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$DEV_DEPLOYMENT_KEY"
+    CURRENT_DEPLOYMENT_ENV: "custom"
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+  tags:
+    - docker
+  when: manual
+  environment:
+    name: custom
+    url: http://simtrack-custom.simbirsoft/
+

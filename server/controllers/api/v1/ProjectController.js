@@ -3,7 +3,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
 const models = require('../../../models');
-const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
+const { Project, Tag, ItemTag, Portfolio, Sprint, Task } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
@@ -180,6 +180,10 @@ exports.read = function (req, res, next) {
             id: projectUser.user.id,
             fullNameRu: projectUser.user.fullNameRu,
             fullNameEn: projectUser.user.fullNameEn,
+            firstNameRu: projectUser.user.firstNameRu,
+            firstNameEn: projectUser.user.firstNameEn,
+            lastNameRu: projectUser.user.lastNameRu,
+            lastNameEn: projectUser.user.lastNameEn,
             roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
           });
         });
@@ -240,9 +244,16 @@ exports.update = function (req, res, next) {
               else gitlabProjectIdsNew.push(id);
             });
 
-            gitlabProjectsNew = await gitLabService.projects.getProjects(gitlabProjectIdsNew);
-            const isError = !!gitlabProjectsNew.filter(p => p.error).length;
-            if (isError) return next(createError(500, 'Can not add repositories'));
+            gitlabProjectsNew = await gitLabService.projects.getProjectsOrErrors(gitlabProjectIdsNew);
+            const firstError = gitlabProjectsNew.find(p => p.error);
+            if (firstError) {
+              return next(createError(
+                firstError.status || 500,
+                firstError.error === '404 Project Not Found'
+                  ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
+                  : firstError.error
+              ));
+            }
           }
 
           // сброс портфеля
@@ -320,6 +331,14 @@ exports.delete = function (req, res, next) {
     });
 };
 
+function getTagByProjectList (projects) {
+  const allTags = [];
+  projects.forEach(project => {
+    project.itemTagSelect.forEach(tagSelect => allTags.push({ name: tagSelect.dataValues.tag.dataValues.name }));
+  });
+  return allTags;
+}
+
 exports.list = function (req, res, next) {
   if (req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return next(createError(400, 'date must be in YYYY-MM-DD format'));
@@ -342,18 +361,21 @@ exports.list = function (req, res, next) {
     Project.checkAttributes(req.query.fields);
   }
 
-  // if (!req.query.pageSize) {
-  //   req.query.pageSize = 25;
-  // }
-
-  // if (!req.query.currentPage) {
-  //   req.query.currentPage = 1;
-  // }
-
   const include = [];
   let where = {};
 
-  if (!req.user.isGlobalAdmin && !req.user.isVisor) {
+  if (req.query.onlyUserInProject) {
+    //  Get projects where users only createor without any role
+    const onlyAuthorIds = req.user.authorsProjects.filter((authorsProject) =>
+      !req.user.usersProjects.find((usersProject) =>
+        usersProject.dataValues.projectId === authorsProject.dataValues.id))
+      .map((el) => el.dataValues.id);
+
+    where.id = req.user.dataValues.projects.filter((projectId) => {
+      return onlyAuthorIds.indexOf(projectId) === -1;
+    });
+
+  } else if (req.query.userIsParticipant || (!req.user.isGlobalAdmin && !req.user.isVisor)) {
     where.id = req.user.dataValues.projects;
   }
 
@@ -398,7 +420,7 @@ exports.list = function (req, res, next) {
       where,
       Sequelize.literal(
         `(
-        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}' 
+        ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_start_date >= '${dateSprintBegin}'
           AND fact_start_date = (SELECT MIN(fact_start_date)
             FROM sprints
             WHERE project_id = "Project"."id"
@@ -422,7 +444,7 @@ exports.list = function (req, res, next) {
         `(
         ("Project"."id" IN (SELECT project_id FROM sprints WHERE fact_finish_date <= '${dateSprintEnd}'
           AND fact_finish_date = (SELECT MAX(fact_finish_date)
-            FROM sprints 
+            FROM sprints
             WHERE project_id = "Project"."id"
             AND deleted_at IS NULL
           )
@@ -605,10 +627,13 @@ exports.list = function (req, res, next) {
       });
     })
     .then(() => {
+      if (req.user.isDevOps) {
+        where.id = [...where.id, ...req.user.devOpsProjects];
+      }
+    })
+    .then(() => {
       return Project.findAll({
         attributes: req.query.fields ? _.union(attributes.concat(req.query.fields)) : attributes,
-        limit: req.query.pageSize,
-        offset: req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0,
         include: include,
         where: where,
         subQuery: true,
@@ -642,13 +667,16 @@ exports.list = function (req, res, next) {
             }
           }
 
+          const offset = req.query.currentPage > 0 ? +req.query.pageSize * (+req.query.currentPage - 1) : 0;
+          const pageSize = req.query.pageSize ? +req.query.pageSize : +projects.length;
           const responseObject = {
             currentPage: +req.query.currentPage,
             pagesCount: Math.ceil(projectCount / req.query.pageSize),
             pageSize: req.query.pageSize,
             rowsCountAll: projectCount,
             rowsCountOnCurrentPage: projects.length,
-            data: projects
+            data: projects.slice(offset, offset + pageSize),
+            allTags: getTagByProjectList(projects)
           };
           res.json(responseObject);
         });

@@ -38,5 +38,15 @@ module.exports = {
     title: 'SimTrack',
     templateBaseUrl: 'http://sim-track.simbirsoft1.com'
   },
-  ldapUrl: process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft'
+  emailsToSendErrorsByMetrics: [
+    'tatyana.babich@simbirsoft.com',
+    'victor.sychev@simbirsoft.com',
+    'anastasiya.karaseva@simbirsoft.com',
+    'maxim.baranov@simbirsoft.com'
+  ],
+  emailForDevOpsNotify: 'devops-support@simbirsoft.com',
+  ldapUrl:
+    process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
+  ttiUrl: process.env.TTI_HOST || 'http://docker-web.simbirsoft:5000',
+  metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881
 };
