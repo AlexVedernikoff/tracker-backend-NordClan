@@ -32,13 +32,14 @@ async function update (body, taskId, user) {
     };
 
     const updatedTask = await findByPrimary(taskId, user.globalRole);
+    const performerId = updatedTask.dataValues.performerId || user.id;
 
     const createdDraft = body.statusId && body.performerId !== 0
       ? await createDraftIfNeeded(originTask, body.statusId)
       : null;
 
     const {activeTask, stoppedTasks} = body.statusId
-      ? await updateTasksStatuses(updatedTask, originTask, user.id)
+      ? await updateTasksStatuses(updatedTask, originTask, performerId)
       : {stoppedTasks: []};
 
     const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(updatedTask);
