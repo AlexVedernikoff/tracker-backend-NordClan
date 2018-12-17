@@ -78,7 +78,15 @@ module.exports = async function (eventId, input, user){
 
     task = await getTask(input.taskId);
     taskComment = task.comments[0];
+    if (!taskComment) {
+      break;
+    }
+
     mentions = getMentions(taskComment.text);
+    if (_.isEmpty(mentions)) {
+      break;
+    }
+
     userIds = await User.findAll({
       where: {
         id: _.unique(mentions)
