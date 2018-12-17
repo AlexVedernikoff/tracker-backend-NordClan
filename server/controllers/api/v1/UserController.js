@@ -445,9 +445,7 @@ exports.autocompleteExternal = function (req, res, next) {
           where: {
             globalRole: 'EXTERNAL_USER',
             active: 1,
-            isActive: {
-              $ne: 0
-            },
+            isActive: 1,
             $or
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
