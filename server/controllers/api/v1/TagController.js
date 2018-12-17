@@ -88,6 +88,7 @@ exports.create = async function (req, res, next){
 
     await queries.tag.saveTagsForModel(model, tag, req.params.taggable, req.user.id);
     const tags = await queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id, transaction);
+    await transaction.commit();
     res.json(tags);
 
   } catch (err) {
@@ -144,7 +145,7 @@ exports.delete = async function (req, res, next){
     await item.destroy({transaction, historyAuthorId: req.user.id});
 
     const tags = await queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId, transaction);
-    transaction.commit();
+    await transaction.commit();
     res.json(tags);
 
   } catch (err) {
