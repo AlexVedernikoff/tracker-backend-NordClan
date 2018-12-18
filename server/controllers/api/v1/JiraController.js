@@ -9,7 +9,7 @@ const {
   getProjectAssociations,
   setAssociateWithJiraProject,
   clearProjectAssociate,
-  getJiraProjectById,
+  getJiraProjectById
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -75,7 +75,11 @@ exports.jiraAuth = async function (req, res, next) {
     } = await jiraAuth(username, password, server, email);
     res.json({ token });
   } catch (e) {
-    next(createError(e));
+    if ([401, 403].indexOf(e.response.status) !== -1) {
+      return next(createError(401, e.response.data));
+    }
+
+    next(createError(401, e));
   }
 };
 
