@@ -68,32 +68,35 @@ exports.read = function (req, res, next){
 };
 
 
-exports.update = function (req, res, next){
+exports.update = async function (req, res, next){
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
-  return models.sequelize.transaction(function (t) {
-    return Sprint.findByPrimary(req.params.id, { transaction: t, lock: 'UPDATE' })
-      .then((model) => {
-        if (!model) {
-          return next(createError(404));
-        }
-        if (!req.user.canUpdateProject(model.projectId)) {
-          return next(createError(403, 'Access denied'));
-        }
+  let transaction;
+  try {
+    transaction = await models.sequelize();
+    const model = await Sprint.findByPrimary(req.params.id, { transaction, lock: 'UPDATE' });
 
-        return model.updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id })
-          .then((updatedModel)=>{
-            return queries.sprint.allSprintsByProject(updatedModel.projectId, queries.sprint.queryAttributes('Sprint'), t)
-              .then((sprints) => {
-                res.end(JSON.stringify(sprints));
-              });
-          });
-      });
-  })
-    .catch((err) => {
-      next(err);
-    });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
 
+    if (!req.user.canUpdateProject(model.projectId)) {
+      await transaction.rollback();
+      return next(createError(403, 'Access denied'));
+    }
+
+    const updatedModel = await model.updateAttributes(req.body, { transaction, historyAuthorId: req.user.id });
+    const sprints = await queries.sprint.allSprintsByProject(updatedModel.projectId, queries.sprint.queryAttributes('Sprint'), transaction);
+    await transaction.commit();
+    res.json(sprints);
+
+  } catch (err) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 

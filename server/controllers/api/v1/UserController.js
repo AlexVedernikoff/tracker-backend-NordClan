@@ -200,34 +200,34 @@ exports.getUsersRoles = async function (req, res, next) {
 
 exports.updateUserRole = async function (req, res, next) {
   const { id, globalRole } = req.body;
+  let transaction;
 
-  return models.sequelize
-    .transaction(function (t) {
-      return User.findByPrimary(id, { transaction: t, lock: 'UPDATE' }).then(
-        model => {
-          if (!model) {
-            return next(createError(404));
-          }
+  try {
+    transaction = models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
 
-          return model
-            .updateAttributes({ globalRole }, { transaction: t })
-            .then(updatedModel => {
-              const updatedUser = {
-                id: updatedModel.id,
-                globalRole: updatedModel.globalRole,
-                firstNameRu: updatedModel.firstNameRu,
-                lastNameRu: updatedModel.lastNameRu,
-                firstNameEn: updatedModel.firstNameEn,
-                lastNameEn: updatedModel.lastNameEn
-              };
-              res.json(updatedUser);
-            });
-        }
-      );
-    })
-    .catch(err => {
-      next(err);
+    const updatedModel = await model.updateAttributes({ globalRole }, { transaction });
+    await transaction.commit();
+    res.json({
+      id: updatedModel.id,
+      globalRole: updatedModel.globalRole,
+      firstNameRu: updatedModel.firstNameRu,
+      lastNameRu: updatedModel.lastNameRu,
+      firstNameEn: updatedModel.firstNameEn,
+      lastNameEn: updatedModel.lastNameEn
     });
+
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 exports.createExternal = async function (req, res, next) {
@@ -322,26 +322,30 @@ exports.updateExternal = async function (req, res, next) {
     return next(createError(400, validationResult));
   }
 
-  return models.sequelize
-    .transaction(function (t) {
-      return User.findByPrimary(req.params.id, {
-        transaction: t,
-        lock: 'UPDATE'
-      }).then(model => {
-        if (!model) {
-          return next(createError(404));
-        }
+  let transaction;
 
-        return model
-          .updateAttributes(req.body, { transaction: t })
-          .then(updatedModel => {
-            res.json(updatedModel);
-          });
-      });
-    })
-    .catch(err => {
-      next(err);
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(req.params.id, {
+      transaction,
+      lock: 'UPDATE'
     });
+
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+
+    const updatedModel = await model.updateAttributes(req.body, { transaction });
+    await transaction.commit();
+    res.json(updatedModel);
+
+  } catch (err) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 exports.setPassword = async function (req, res, next) {

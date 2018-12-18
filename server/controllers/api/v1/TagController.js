@@ -55,42 +55,47 @@ exports.create = async function (req, res, next){
 
   try {
 
+    transaction = await models.sequelize.transaction();
     req.checkParams('taggable', 'taggable must be \'task\' or \'project\'').isIn(['task', 'project']);
     req.checkParams('taggableId', 'taggableId must be int').isInt();
     req.checkBody('tag', 'tag must be more then 2 chars').isLength({min: 2});
     const validationResult = await req.getValidationResult();
     if (!validationResult.isEmpty()) {
+      await transaction.rollback();
       return next(createError(400, validationResult));
     }
 
     if (req.params.taggable === 'project' && !req.user.canUpdateProject(req.params.taggableId)) {
+      await transaction.rollback();
       return next(createError(403, 'Access denied'));
     }
 
     if (req.params.taggable === 'task') {
       const task = await models.Task.findByPrimary(req.params.taggableId, { attributes: ['id', 'projectId']});
       if (!req.user.canReadProject(task.projectId)) {
+        await transaction.rollback();
         return next(createError(403, 'Access denied'));
       }
     }
 
     const tag = req.body.tag;
 
-    transaction = await models.sequelize.transaction();
     const model = await models[StringHelper.firstLetterUp(req.params.taggable)].findByPrimary(req.params.taggableId, { attributes: ['id'], transaction: transaction });
     if (!model) {
+      await transaction.rollback();
       return next(createError(404, 'taggable model not found'));
     }
 
     await queries.tag.saveTagsForModel(model, tag, req.params.taggable, req.user.id);
     const tags = await queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), model.id, transaction);
+    await transaction.commit();
     res.json(tags);
 
-  } catch (e) {
+  } catch (err) {
     if (transaction) {
-      transaction.rollback();
+      await transaction.rollback();
     }
-    return next(e);
+    return next(err);
   }
 
 };
@@ -115,32 +120,40 @@ exports.delete = async function (req, res, next){
     }
   }
 
-  await models.sequelize.transaction(function (t) {
-    return models.Tag
-      .find({where: {name: req.params.tag.trim()}, attributes: ['id'], transaction: t })
-      .then((tag) => {
-        if (!tag) return next(createError(404, 'tag not found'));
+  let transaction;
+  try {
+    transaction = await models.sequelize.transaction();
+    const tag = await models.Tag.find({where: {name: req.params.tag.trim()}, attributes: ['id'], transaction });
 
-        return models.ItemTag
-          .findOne({ where: {
-            tagId: tag.dataValues.id,
-            taggableId: req.params.taggableId,
-            taggable: req.params.taggable
-          }, transaction: t, lock: 'UPDATE' })
-          .then((item) => {
-            if (!item) return next(createError(404, 'ItemTag not found'));
-            return item
-              .destroy({transaction: t, historyAuthorId: req.user.id})
-              .then(() => {
-                return queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId, t)
-                  .then((tags) => {
-                    res.json(tags);
-                  });
+    if (!tag) {
+      await transaction.rollback();
+      return next(createError(404, 'tag not found'));
+    }
 
-              });
-          });
-      });
-  });
+    const item = await models.ItemTag
+      .findOne({ where: {
+        tagId: tag.dataValues.id,
+        taggableId: req.params.taggableId,
+        taggable: req.params.taggable
+      }, transaction, lock: 'UPDATE' });
+
+    if (!item) {
+      await transaction.rollback();
+      return next(createError(404, 'ItemTag not found'));
+    }
+
+    await item.destroy({transaction, historyAuthorId: req.user.id});
+
+    const tags = await queries.tag.getAllTagsByModel(StringHelper.firstLetterUp(req.params.taggable), req.params.taggableId, transaction);
+    await transaction.commit();
+    res.json(tags);
+
+  } catch (err) {
+    if (transaction) {
+      transaction.rollback();
+    }
+    return next(err);
+  }
 };
 
 exports.autocompliter = function (req, res, next){

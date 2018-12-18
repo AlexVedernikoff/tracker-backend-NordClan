@@ -214,7 +214,7 @@ exports.read = function (req, res, next) {
     });
 };
 
-exports.update = function (req, res, next) {
+exports.update = async function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canUpdateProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
@@ -231,88 +231,94 @@ exports.update = function (req, res, next) {
   let gitlabProjectsOld = [];
   let gitlabProjectsNew = [];
 
-  return models.sequelize
-    .transaction(function (t) {
-      return Project.findByPrimary(req.params.id, { attributes: attributes, transaction: t, lock: 'UPDATE' }).then(
-        async project => {
-          if (!project) {
-            return next(createError(404));
-          }
+  let transaction;
+  try {
+    transaction = await models.sequelize.transaction();
 
-          // проверка добавленных / измененных репозиториев GitLab
-          if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
-            req.body.gitlabProjectIds.forEach(id => {
-              if ((project.gitlabProjectIds || []).includes(id)) gitlabProjectIdsOld.push(id);
-              else gitlabProjectIdsNew.push(id);
-            });
-
-            gitlabProjectsNew = await gitLabService.projects.getProjectsOrErrors(gitlabProjectIdsNew);
-            const firstError = gitlabProjectsNew.find(p => p.error);
-            if (firstError) {
-              return next(createError(
-                firstError.status || 500,
-                firstError.error === '404 Project Not Found'
-                  ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
-                  : firstError.error
-              ));
-            }
-          }
-
-          // сброс портфеля
-          if (+req.body.portfolioId === 0) {
-            req.body.portfolioId = null;
-            portfolioIdOld = project.portfolioId;
-          }
-
-          const needCreateNewPortfolio = !req.body.portfolioId && req.body.portfolioName;
-          if (needCreateNewPortfolio) {
-            const portfolioParams = {
-              name: req.body.portfolioName,
-              authorId: req.user.id
-            };
-
-            const portfolio = await Portfolio.create(portfolioParams, { returning: true });
-
-            delete req.body.portfolioName;
-            req.body.portfolioId = portfolio.id;
-          }
-
-          return project.updateAttributes(req.body, { transaction: t, historyAuthorId: req.user.id }).then(async () => {
-            // Запускаю проверку портфеля на пустоту и его удаление
-            if (portfolioIdOld) {
-              queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
-            }
-
-            // Отсылаю ответ модель с проектом
-            return Project.findByPrimary(req.params.id, {
-              attributes: Project.defaultSelect,
-              include: [
-                {
-                  as: 'portfolio',
-                  model: Portfolio,
-                  attributes: ['id', 'name'],
-                  required: false
-                }
-              ],
-              transaction: t
-            }).then(async model => {
-              const updatedParams = { ...req.body, id: model.id };
-              ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
-
-              if (req.body.gitlabProjectIds) {
-                gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
-                model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
-              }
-
-              res.json(model);
-            });
-          });
+    return Project.findByPrimary(req.params.id, { attributes: attributes, transaction, lock: 'UPDATE' }).then(
+      async project => {
+        if (!project) {
+          await transaction.rollback();
+          return next(createError(404));
         }
-      );
-    })
-    .catch(err => {
-      next(err);
-    });
+
+        // проверка добавленных / измененных репозиториев GitLab
+        if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+          req.body.gitlabProjectIds.forEach(id => {
+            if ((project.gitlabProjectIds || []).includes(id)) gitlabProjectIdsOld.push(id);
+            else gitlabProjectIdsNew.push(id);
+          });
+
+          gitlabProjectsNew = await gitLabService.projects.getProjectsOrErrors(gitlabProjectIdsNew);
+          const firstError = gitlabProjectsNew.find(p => p.error);
+          if (firstError) {
+            await transaction.rollback();
+            return next(createError(
+              firstError.status || 500,
+              firstError.error === '404 Project Not Found'
+                ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
+                : firstError.error
+            ));
+          }
+        }
+
+        // сброс портфеля
+        if (+req.body.portfolioId === 0) {
+          req.body.portfolioId = null;
+          portfolioIdOld = project.portfolioId;
+        }
+
+        const needCreateNewPortfolio = !req.body.portfolioId && req.body.portfolioName;
+        if (needCreateNewPortfolio) {
+          const portfolioParams = {
+            name: req.body.portfolioName,
+            authorId: req.user.id
+          };
+
+          const portfolio = await Portfolio.create(portfolioParams, { returning: true });
+
+          delete req.body.portfolioName;
+          req.body.portfolioId = portfolio.id;
+        }
+
+        return project.updateAttributes(req.body, { transaction, historyAuthorId: req.user.id }).then(async () => {
+          // Запускаю проверку портфеля на пустоту и его удаление
+          if (portfolioIdOld) {
+            queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
+          }
+
+          // Отсылаю ответ модель с проектом
+          return Project.findByPrimary(req.params.id, {
+            attributes: Project.defaultSelect,
+            include: [
+              {
+                as: 'portfolio',
+                model: Portfolio,
+                attributes: ['id', 'name'],
+                required: false
+              }
+            ],
+            transaction
+          }).then(async model => {
+            const updatedParams = { ...req.body, id: model.id };
+            ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
+
+            if (req.body.gitlabProjectIds) {
+              gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
+              model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
+            }
+            await transaction.commit();
+            res.json(model);
+          });
+        });
+      }
+    );
+  } catch (err) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 exports.delete = function (req, res, next) {
