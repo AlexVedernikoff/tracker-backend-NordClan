@@ -24,11 +24,12 @@ exports.getReport = async function (projectId, criteria) {
     ) : null)
   };
 
-  if (+sprintId === 0) {
+  const parseSprintId = parseInt(sprintId);
+  if (!isNaN(parseSprintId) && parseSprintId === 0) { // backlog
     queryParams.sprintId = {
       $or: [0, null]
     };
-  } else if (sprintId) {
+  } else if (!isNaN(parseSprintId) && parseInt(sprintId) > 0) { // sprint
     queryParams.sprintId = {
       $eq: sprintId
     };
