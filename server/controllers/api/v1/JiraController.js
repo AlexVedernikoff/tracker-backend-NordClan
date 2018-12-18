@@ -8,7 +8,8 @@ const {
   createBatch,
   getProjectAssociations,
   setAssociateWithJiraProject,
-  clearProjectAssociate
+  clearProjectAssociate,
+  getJiraProjectById,
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -126,6 +127,18 @@ exports.getProjectAssociation = async function (req, res, next) {
     const { projectId } = req.query;
     const associations = await getProjectAssociations(projectId);
     res.json(associations);
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.getJiraProject = async function (req, res, next) {
+  try {
+    const { data } = await getJiraProjectById(req.params.jiraProjectId, req.headers);
+    res.json({
+      issue_type: data.issue_types,
+      status_type: data.status_type
+    });
   } catch (e) {
     next(createError(e));
   }

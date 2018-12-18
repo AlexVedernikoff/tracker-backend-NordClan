@@ -1,4 +1,5 @@
 const TasksService = require('./synchronize/task');
+const queries = require('./../../../models/queries');
 const TimesheetService = require('./synchronize/timesheet');
 const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
@@ -309,6 +310,12 @@ exports.getJiraProjects = async function (headers) {
   } catch (e) {
     throw e;
   }
+};
+
+exports.getJiraProjectById = async function (jiraProjectId, headers) {
+  return await request.get(`${config.ttiUrl}/project/${jiraProjectId}`, {
+    headers
+  });
 };
 
 exports.getActiveSimtrackProjects = async function () {

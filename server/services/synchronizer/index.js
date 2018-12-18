@@ -8,7 +8,8 @@ const {
   createBatch,
   getProjectAssociations,
   setAssociateWithJiraProject,
-  clearProjectAssociate
+  clearProjectAssociate,
+  getJiraProjectById,
 } = require('./jira');
 
 module.exports = {
@@ -21,5 +22,6 @@ module.exports = {
   createBatch,
   getProjectAssociations,
   setAssociateWithJiraProject,
-  clearProjectAssociate
+  clearProjectAssociate,
+  getJiraProjectById,
 };
