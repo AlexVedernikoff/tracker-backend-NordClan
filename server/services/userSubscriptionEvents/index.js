@@ -78,7 +78,15 @@ module.exports = async function (eventId, input, user){
 
     task = await getTask(input.taskId);
     taskComment = task.comments[0];
+    if (!taskComment) {
+      break;
+    }
+
     mentions = getMentions(taskComment.text);
+    if (_.isEmpty(mentions)) {
+      break;
+    }
+
     userIds = await User.findAll({
       where: {
         id: _.unique(mentions)
@@ -104,16 +112,16 @@ module.exports = async function (eventId, input, user){
   case (3): {
     // event description : new comment to task
     // receivers : task author, task performer, comment mentions
-    // input = { taskId, commentId, authorId }
+    // input = { taskId, commentId, parentCommentAuthorId }
 
     task = await getTask(input.taskId);
     comment = _.find(task.comments, { id: input.commentId });
     mentions = getMentions(comment.text);
-    if (input.authorId && mentions.indexOf(input.authorId) === -1) {
-      mentions.push(input.authorId);
-    }
     let receiverIds = ((!task.performer || task.author.id === task.performer.id) ? [task.author] : [task.author, task.performer])
       .map(receiver => receiver.dataValues.id);
+    if (input.parentCommentAuthorId && receiverIds.indexOf(input.parentCommentAuthorId) === -1) {
+      receiverIds.push(input.parentCommentAuthorId);
+    }
     if (mentions.includes('all')) {
       const projectUsers = await ProjectUsers.findAll({
         attributes: ['user_id'],

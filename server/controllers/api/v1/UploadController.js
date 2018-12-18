@@ -123,14 +123,15 @@ exports.upload = function (req, res, next) {
               if (error) return next(createError(error));
 
               const promises = files.map((file) => {
-                const hash = `${classicRandom(8)}-${classicRandom(8)}-${Date.now()}${file.name.slice(file.name.lastIndexOf('.'))}`;
-                const newPath = path.join(form.uploadDir, hash);
+                const dotIndex = file.name.lastIndexOf('.');
+                const nameWithTimestamp = `${file.name.slice(0, dotIndex)}-${Date.now()}${file.name.slice(dotIndex)}`;
+                const newPath = path.join(form.uploadDir, nameWithTimestamp);
                 // Переименование
                 return new Promise((resolve) => {
                   fs.rename(file.path, newPath, resolve);
                 }) //Подрезка если изображение
                   .then(() => {
-                    if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) return cropImage(file, uploadDir, newPath, hash);
+                    if (['image/jpeg', 'image/png', 'image/pjpeg'].indexOf(file.type) !== -1) return cropImage(file, uploadDir, newPath, nameWithTimestamp);
                   })
                   .then((previewPath) => {
                   // Сохранение в БД
@@ -143,7 +144,7 @@ exports.upload = function (req, res, next) {
                         fileName: file.name,
                         type: file.type,
                         size: file.size,
-                        path: uploadDir + '/' + hash,
+                        path: uploadDir + '/' + nameWithTimestamp,
                         previewPath: previewPath ? previewPath : null
                       });
                   });

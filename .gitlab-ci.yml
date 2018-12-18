@@ -23,7 +23,6 @@ build_docker_be:
     - docker push $DOCKER_PREFIX/be:$TAG
     - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
     - docker rmi $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
-
   tags:
     - docker
 

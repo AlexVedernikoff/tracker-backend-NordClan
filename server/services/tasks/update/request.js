@@ -73,7 +73,7 @@ exports.findByPrimary = (id, role) => {
       {
         as: 'performer',
         model: models.User,
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo']
+        attributes: models.User.defaultSelect
       },
       {
         as: 'attachments',

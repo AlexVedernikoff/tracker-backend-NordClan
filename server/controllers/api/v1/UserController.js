@@ -441,10 +441,11 @@ exports.autocompleteExternal = function (req, res, next) {
           where: {
             globalRole: 'EXTERNAL_USER',
             active: 1,
+            isActive: 1,
             $or
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
+          attributes: ['id', 'active', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
         })
         .then((users) => {
           users.forEach((user) => {

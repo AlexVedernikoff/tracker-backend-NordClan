@@ -175,11 +175,8 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
 // JiraSynchronize
-
 router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
-
 router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
-
 router.post('/jira/project', replaceAuthHeader(), JiraController.createJiraProject);
 router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
 router.get('/jira/project/:jiraProjectId', replaceAuthHeader(), JiraController.getJiraProject);
@@ -188,9 +185,8 @@ router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraControlle
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject);
 
 router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation);
-
 router.post('/jira/auth', JiraController.jiraAuth);
-
 router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch);
+
 
 module.exports = router;
