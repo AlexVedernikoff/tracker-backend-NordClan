@@ -179,7 +179,11 @@ router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
 router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
 router.post('/jira/project', replaceAuthHeader(), JiraController.createJiraProject);
 router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
+router.get('/jira/project/:jiraProjectId', replaceAuthHeader(), JiraController.getJiraProject);
 router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation);
+router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject);
+router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject);
+
 router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation);
 router.post('/jira/auth', JiraController.jiraAuth);
 router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch);
