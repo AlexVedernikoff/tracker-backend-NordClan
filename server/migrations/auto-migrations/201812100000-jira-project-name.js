@@ -1,19 +1,17 @@
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface.addColumn(
-      'tasks',
-      'is_dev_ops',
+      'projects',
+      'jira_project_name',
       {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.STRING
       }
-    ).then(() => queryInterface.sequelize.query(
-      'UPDATE tasks SET "is_dev_ops" = false;'
-    ));
+    );
   },
   down: function (queryInterface) {
     return queryInterface.removeColumn(
-      'tasks',
-      'is_dev_ops'
+      'projects',
+      'jira_project_name'
     );
   }
 };

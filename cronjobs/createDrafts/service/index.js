@@ -18,17 +18,17 @@ module.exports = () => {
     call: async (onDate) => {
       let transaction;
       try {
+        transaction = await models.sequelize.transaction();
         const timesheetTypeImplementation = await models.TimesheetTypesDictionary.findOne({
           codeName: 'IMPLEMENTATION'
         });
         const tasks = await models.Task.findAll(request(onDate, timesheetTypeImplementation));
         const entities = getEntities(onDate, tasks, timesheetTypeImplementation);
-        transaction = await models.sequelize.transaction();
         await models.TimesheetDraft.bulkCreate(entities, { transaction });
         await transaction.commit();
       } catch (e) {
         if (transaction) {
-          transaction.rollback();
+          await transaction.rollback();
         }
         throw createError(e);
       }

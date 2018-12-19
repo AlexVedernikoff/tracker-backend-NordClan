@@ -38,17 +38,17 @@ exports.read = function (req, res, next){
 exports.update = function (req, res, next){
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
-  return models.sequelize.transaction(function (t) {
-    return Portfolio
-      .findByPrimary(req.params.id, { attributes: ['id'], transaction: t, lock: 'UPDATE' })
-      .then((portfolio) => {
-        if (!portfolio) { return next(createError(404)); }
+  return Portfolio
+    .findByPrimary(req.params.id, { attributes: ['id'] })
+    .then((portfolio) => {
+      if (!portfolio) {
+        return next(createError(404));
+      }
 
-        return portfolio
-          .updateAttributes(req.body, { transaction: t })
-          .then((model)=> res.end(JSON.stringify({id: model.dataValues.id})));
-      });
-  })
+      return portfolio
+        .updateAttributes(req.body)
+        .then((model)=> res.json({id: model.dataValues.id}));
+    })
     .catch((err) => {
       next(err);
     });
