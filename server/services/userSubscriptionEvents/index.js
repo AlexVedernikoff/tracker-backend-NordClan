@@ -6,7 +6,7 @@ const { emailForDevOpsNotify } = require('../../configs');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
-  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, userIds, project;
+  let receivers, task, comment, projectRolesValues, mentionedUsers, taskComment, mentions, users, project;
 
   switch (eventId){
 
@@ -77,23 +77,23 @@ module.exports = async function (eventId, input, user){
     // input = { taskId }
 
     task = await getTask(input.taskId);
+
     taskComment = task.comments[0];
-    if (!taskComment) {
-      break;
+    if (taskComment) {
+      mentions = getMentions(taskComment.text);
+
+      users = _.isEmpty(mentions) || mentions.includes('all')
+        ? []
+        : await User.findAll({
+          where: {
+            id: _.unique(mentions)
+          },
+          attributes: User.defaultSelect
+        });
+
+      taskComment.text = mentions.length ? await replaceMention(taskComment.text, users) : taskComment.text;
     }
 
-    mentions = getMentions(taskComment.text);
-    if (_.isEmpty(mentions)) {
-      break;
-    }
-
-    userIds = await User.findAll({
-      where: {
-        id: _.unique(mentions)
-      },
-      attributes: User.defaultSelect
-    });
-    taskComment.text = mentions.length ? await replaceMention(taskComment.text, userIds) : taskComment.text;
     receivers = task.performer ? [task.performer] : [];
 
     receivers.forEach(function (performer) {
