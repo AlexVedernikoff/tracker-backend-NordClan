@@ -73,7 +73,7 @@ exports.update = async function (req, res, next){
 
   let transaction;
   try {
-    transaction = await models.sequelize();
+    transaction = await models.sequelize.transaction();
     const model = await Sprint.findByPrimary(req.params.id, { transaction, lock: 'UPDATE' });
 
     if (!model) {
