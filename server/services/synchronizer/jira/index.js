@@ -171,6 +171,7 @@ exports.jiraSync = async function (headers, data) {
   return { resSprints, resTasks, resTimesheets };
 };
 
+// Пока не используется
 exports.clearProjectAssociate = async function (simTrackProjectId) {
   const simTrackProject = await Project.findByPrimary(simTrackProjectId);
   if (!simTrackProjectId) {

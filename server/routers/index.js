@@ -174,21 +174,19 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 // Metrics
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
-// JiraSynchronize
+// JiraS
 router.post('/jira/auth', JiraController.jiraAuth);
 router.get('/jira/project', replaceAuthHeader(), JiraController.getJiraProjects);
 router.get('/jira/project/:jiraProjectId/association', replaceAuthHeader(), JiraController.getJiraProject);
 router.get('/project/:projectId/jira/association', JiraController.getProjectAssociation);
-
 router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
 
-// post association // Отдельный роут, который принимает все данные
+
+router.post('/jira/project/:jiraProjectId/handleSync', replaceAuthHeader(), JiraController.createBatch);
+
 // router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
 // router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
 
-
-// post handle start sync
-router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch); // только менеджер
 
 // cleanProject, destroy association
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // пока не делаем

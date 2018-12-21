@@ -103,11 +103,10 @@ exports.getJiraProject = async function (req, res, next) {
   }
 };
 
-// вручную запускат синхронизацию
+// вручную запускает синхронизацию
 exports.createBatch = async function (req, res, next) {
   try {
-    const { pid } = req.body;
-    const response = await createBatch(req.headers, pid);
+    const response = await createBatch(req.headers, req.params.jiraProjectId);
     res.json(response.data);
   } catch (e) {
     next(createError(e));

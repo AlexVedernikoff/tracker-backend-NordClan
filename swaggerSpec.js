@@ -2002,6 +2002,29 @@ module.exports = {
         ]
       }
     },
+    '/jira/project/{jiraProjectId}/handleSync': {
+      post: {
+        tags: ['Jira'],
+        summary: 'Вручную запустить команду на синхронизацию с JIRA, далее TTI пришлет данные по другому роуту',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            name: 'jiraProjectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
     '/project/{projectId}/jira/association/': {
       get: {
         tags: ['Jira'],
