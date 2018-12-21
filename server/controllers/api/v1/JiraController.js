@@ -113,56 +113,6 @@ exports.createBatch = async function (req, res, next) {
   }
 };
 
-
-// // Устарело
-// exports.associateWithJiraProject = async function (req, res, next) {
-//   try {
-//     const { data: projects } = await getJiraProjects(req.headers);
-//     const { jiraProjectId, simtrackProjectId, jiraHostName } = req.body;
-//     const jiraProject = projects.find((p) => p.id === jiraProjectId);
-//     if (!jiraProject) {
-//       throw createError(404, 'Not found jira project');
-//     }
-//     const jiraExternalId = await setAssociateWithJiraProject(simtrackProjectId, jiraProjectId, jiraHostName, jiraProject.name);
-//     res.json({jiraExternalId, jiraProjectName: jiraProject.name});
-//   } catch (e) {
-//     console.error(e);
-//     next(createError(e));
-//   }
-// };
-//
-// /**
-//  // TODO: добавить емейлы пользователей
-//  {
-//   "projectId": 2,
-//   "issueTypesAssociation":[
-//     {"internalTaskTypeId":"1", "externalTaskTypeId": 5}
-//   ],
-//   "statusesAssociation": [
-//     {"internalStatusId":"1", "externalStatusId": 5}
-//   ],
-//   "userEmailAssociation": [
-//     {"internalUserEmail":"abs@simbirsoft.com", "externalUserEmail": "anm@mail.ru"}
-//   ]
-// }
-//  */
-// // Устарело
-// exports.setJiraProjectAssociation = async function (req, res, next) {
-//   try {
-//     const { projectId, issueTypesAssociation, statusesAssociation, userEmailAssociation } = req.body;
-//     const projectAssociations = await setProjectAssociation(
-//       projectId,
-//       issueTypesAssociation,
-//       statusesAssociation,
-//       userEmailAssociation
-//     );
-//     res.json(projectAssociations);
-//   } catch (e) {
-//     next(createError(e));
-//   }
-// };
-
-
 exports.linkProject = async function (req, res, next) {
   try {
     // link Project
