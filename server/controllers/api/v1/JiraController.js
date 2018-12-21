@@ -14,6 +14,7 @@ const {
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
+// принимает данные для синхронизации и проводит синхронизацию
 exports.jiraSynchronize = async function (req, res, next) {
   try {
     const { payload } = req.body;
@@ -24,6 +25,7 @@ exports.jiraSynchronize = async function (req, res, next) {
   }
 };
 
+// авторизация
 exports.jiraAuth = async function (req, res, next) {
   try {
     const { username, password, server, email } = req.body;
@@ -40,6 +42,7 @@ exports.jiraAuth = async function (req, res, next) {
   }
 };
 
+// получить проекты из жиры
 exports.getJiraProjects = async function (req, res, next) {
   try {
     const { data: projects } = await getJiraProjects(req.headers);
@@ -49,7 +52,7 @@ exports.getJiraProjects = async function (req, res, next) {
   }
 };
 
-
+// пока не делаем
 exports.clearAssociationWithJiraProject = async function (req, res, next) {
   try {
     await clearProjectAssociate(req.params.id);
@@ -59,6 +62,7 @@ exports.clearAssociationWithJiraProject = async function (req, res, next) {
   }
 };
 
+// для питонистов
 exports.getActiveSimtrackProjects = async function (req, res, next) {
   try {
     const projects = await getActiveSimtrackProjects();
@@ -68,6 +72,7 @@ exports.getActiveSimtrackProjects = async function (req, res, next) {
   }
 };
 
+// отдает существующие ассоциации у проекта
 exports.getProjectAssociation = async function (req, res, next) {
   try {
     const associations = await getProjectAssociations(req.params.projectId);
@@ -77,6 +82,7 @@ exports.getProjectAssociation = async function (req, res, next) {
   }
 };
 
+// отдает всю инфу из жиры
 exports.getJiraProject = async function (req, res, next) {
   try {
     const [ { data }, users ] = await Promise.all([
@@ -97,6 +103,7 @@ exports.getJiraProject = async function (req, res, next) {
   }
 };
 
+// вручную запускат синхронизацию
 exports.createBatch = async function (req, res, next) {
   try {
     const { pid } = req.body;
