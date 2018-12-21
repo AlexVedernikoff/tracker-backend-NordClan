@@ -387,3 +387,5 @@ exports.getProjectAssociations = async function (projectId) {
     throw e;
   }
 };
+
+exports.getJiraProjectUsers = getJiraProjectUsers;
