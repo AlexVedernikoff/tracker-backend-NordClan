@@ -177,15 +177,10 @@ router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.l
 // JiraS
 router.post('/jira/auth', JiraController.jiraAuth);
 router.get('/jira/project', replaceAuthHeader(), JiraController.getJiraProjects);
-router.get('/jira/project/:jiraProjectId/association', replaceAuthHeader(), JiraController.getJiraProject);
+router.get('/jira/project/:jiraProjectId/info', replaceAuthHeader(), JiraController.getJiraProject);
 router.get('/project/:projectId/jira/association', JiraController.getProjectAssociation);
 router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
-
-
 router.post('/jira/project/:jiraProjectId/handleSync', replaceAuthHeader(), JiraController.createBatch);
-
-// router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
-// router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
 
 
 // cleanProject, destroy association
