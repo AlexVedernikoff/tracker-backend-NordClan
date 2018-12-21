@@ -1979,6 +1979,12 @@ module.exports = {
         ]
       }
     },
+    '/jira/getActiveProjects': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить все заинтегрированные проекты с Jira (нужно для TTI)'
+      }
+    },
     '/jira/project/{jiraProjectId}/info': {
       get: {
         tags: ['Jira'],
