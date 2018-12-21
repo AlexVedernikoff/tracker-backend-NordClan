@@ -21,20 +21,12 @@ const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare
 const JiraController = require('../controllers/api/v1/JiraController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
-const session = require('express-session');
-const Keycloak = require('keycloak-connect');
-const memoryStore = new session.MemoryStore();
-const keycloak = new Keycloak({ store: memoryStore });
-
 router.post('/milestones', MilestonesController.create);
 router.put('/milestones/:id', MilestonesController.update);
 router.delete('/milestones/:id', MilestonesController.delete);
 
 // Auth
 router.post('/auth/login', AuthController.login);
-router.get('/auth/sso', keycloak.protect(), function (req, res, next) {
-  res.json('Привет мир!');
-});
 router.delete('/auth/logout', AuthController.logout);
 
 // User
@@ -192,4 +184,4 @@ router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects
 router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation);
 router.post('/jira/auth', JiraController.jiraAuth);
 
-module.exports = { routes: router, keycloak, session };
+module.exports = { routes: router };
