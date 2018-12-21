@@ -2040,10 +2040,6 @@ module.exports = {
                   type: 'integer',
                   example: 1000
                 },
-                simtrackProjectId: {
-                  type: 'integer',
-                  example: 2
-                },
                 jiraHostName: {
                   type: 'string',
                   example: 'http://jira-test.simbirsoft:8080'

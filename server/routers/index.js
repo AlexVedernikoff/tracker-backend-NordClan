@@ -183,8 +183,8 @@ router.get('/project/:projectId/jira/association', JiraController.getProjectAsso
 router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
 
 // post association // Отдельный роут, который принимает все данные
-router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
-router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
+// router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
+// router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
 
 
 // post handle start sync
