@@ -1982,7 +1982,7 @@ module.exports = {
     '/jira/project/{jiraProjectId}/association': {
       get: {
         tags: ['Jira'],
-        summary: 'Получить статусы и типы (status_type и issue_type) из Jira',
+        summary: 'Получить информацию из Jira (status_type и issue_type, users)',
         parameters: [
           {
             in: 'header',
