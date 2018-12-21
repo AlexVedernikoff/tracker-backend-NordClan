@@ -176,8 +176,8 @@ router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.l
 
 // JiraSynchronize
 router.post('/jira/auth', JiraController.jiraAuth);
-router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
-router.get('/jira/association/:jiraProjectId', replaceAuthHeader(), JiraController.getJiraProject);
+router.get('/jira/project', replaceAuthHeader(), JiraController.getJiraProjects);
+router.get('/jira/project/:jiraProjectId/association', replaceAuthHeader(), JiraController.getJiraProject);
 router.get('/project/:projectId/jira/association', JiraController.getProjectAssociation);
 
 router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);

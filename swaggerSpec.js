@@ -1962,7 +1962,7 @@ module.exports = {
         ]
       }
     },
-    '/jira/projects': {
+    '/jira/project': {
       get: {
         tags: ['Jira'],
         summary: 'Получить проекты из Jira',
