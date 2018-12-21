@@ -175,19 +175,16 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
 // JiraSynchronize
-
-// ДЛЯ ФРОНТА:
-// post auth
 router.post('/jira/auth', JiraController.jiraAuth);
-// get projectsJira
 router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
-// get projectJiraStatusesForAssocciation
-router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation); // созданнные ассоциации
-router.get('/jira/project/:jiraProjectId', replaceAuthHeader(), JiraController.getJiraProject); // статусы и типы из жиры
+router.get('/jira/association/:jiraProjectId', replaceAuthHeader(), JiraController.getJiraProject);
+router.get('/project/:projectId/jira/association', JiraController.getProjectAssociation);
+
+router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
+
 // post association // Отдельный роут, который принимает все данные
-router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
-router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
-router.post('/jira/project', replaceAuthHeader(), JiraController.createJiraProject); // устарел
+// router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
+// router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
 
 
 // post handle start sync
