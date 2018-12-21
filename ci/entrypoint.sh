@@ -19,12 +19,19 @@ fi
 
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     echo "*** $(date +"%F %T (%Z)") [Entrypoint] start DB migrate";
-    node_modules/.bin/sequelize db:migrate;
+    node_modules/.bin/sequelize db:migrate; 
+
     ec=$?;
     if [ "$ec" -ne 0 ]; then
         echo "*** $(date +"%F %T (%Z)") [Entrypoint] DB migration failed (exit code != 0)";
         exit 1;
     fi
+fi
+if [ -f sync/users/index.js ]; then
+    echo "*** $(date +"%F %T (%Z)") [Entrypoint] start sync";
+    node sync/users/index.js;
+    else 
+      echo "*** $(date +"%F %T (%Z)") [Entrypoint]  sync skipped";
 fi
 
 echo "*** $(date +"%F %T (%Z)") [Entrypoint] starting $*";
