@@ -181,17 +181,11 @@ router.get('/jira/project/:jiraProjectId/info', replaceAuthHeader(), JiraControl
 router.get('/project/:projectId/jira/association', JiraController.getProjectAssociation);
 router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
 router.post('/jira/project/:jiraProjectId/handleSync', replaceAuthHeader(), JiraController.createBatch);
-
+router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects); // Нужно питонистам
+router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
 
 // cleanProject, destroy association
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // пока не делаем
-
-// ЧИСТО ДЛЯ JIRA:
-// Отдать данные
-router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
-
-// Нужно питонистам
-router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
 
 
 module.exports = router;

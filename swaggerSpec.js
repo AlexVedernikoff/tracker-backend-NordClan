@@ -1985,6 +1985,23 @@ module.exports = {
         summary: 'Получить все заинтегрированные проекты с Jira (нужно для TTI)'
       }
     },
+    '/jira/synchronize': {
+      post: {
+        tags: ['Jira'],
+        summary: 'На этот адрес TTI присылает данные с Jira',
+        parameters: [
+          {
+            in: 'body',
+            name: 'body',
+            description: 'неизвестность',
+            schema: {
+              type: 'object'
+            },
+            required: true
+          }
+        ]
+      }
+    },
     '/jira/project/{jiraProjectId}/info': {
       get: {
         tags: ['Jira'],
