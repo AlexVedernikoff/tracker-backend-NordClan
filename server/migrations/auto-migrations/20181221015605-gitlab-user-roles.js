@@ -1,22 +1,22 @@
 module.exports = {
   up (queryInterface, Sequelize) {
-    return queryInterface.createTable('gitlab_users', {
+    return queryInterface.createTable('gitlab_user_roles', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      project_user_id: {
+        type: Sequelize.INTEGER,
+        references: { model: 'project_users', key: 'id' }
+      },
       gitlab_project_id: {
         type: Sequelize.INTEGER
       },
-      project_id: {
+      gitlab_role_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'projects', key: 'id' }
-      },
-      user_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'users', key: 'id' }
+        references: { model: 'gitlab_roles', key: 'id' }
       },
       created_at: {
         allowNull: false,
@@ -33,7 +33,7 @@ module.exports = {
     });
   },
   down (queryInterface) {
-    return queryInterface.dropTable('gitlab_users');
+    return queryInterface.dropTable('gitlab_user_roles');
   }
 };
 

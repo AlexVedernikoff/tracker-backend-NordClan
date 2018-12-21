@@ -1,18 +1,10 @@
 module.exports = function (sequelize, DataTypes) {
-  const GitlabUsers = sequelize.define('GitlabUsers', {
+  const GitlabUserRoles = sequelize.define('GitlabUserRoles', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
-    },
-    projectId: {
-      field: 'project_id',
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        isInt: true
-      }
     },
     roleId: {
       field: 'role_id',
@@ -22,8 +14,8 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
-    userId: {
-      field: 'user_id',
+    projectUserId: {
+      field: 'project_user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
@@ -53,24 +45,16 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'gitlab_users'
   });
 
-  GitlabUsers.associate = function (models) {
-    GitlabUsers.belongsTo(models.User, {
-      as: 'user',
+  GitlabUserRoles.associate = function (models) {
+    GitlabUserRoles.belongsTo(models.ProjectUsers, {
+      as: 'projectUser',
       foreignKey: {
-        name: 'userId',
-        field: 'user_id'
+        name: 'projectUserId',
+        field: 'project_user_id'
       }
     });
 
-    GitlabUsers.belongsTo(models.Project, {
-      as: 'project',
-      foreignKey: {
-        name: 'projectId',
-        field: 'project_id'
-      }
-    });
-
-    GitlabUsers.belongsTo(models.GitlabRolesDictionary, {
+    GitlabUserRoles.belongsTo(models.GitlabRolesDictionary, {
       as: 'role',
       foreignKey: {
         name: 'roleId',
@@ -79,8 +63,5 @@ module.exports = function (sequelize, DataTypes) {
     });
   };
 
-  //todo: нужно ли это?
-  GitlabUsers.addHistoryForProject();
-
-  return GitlabUsers;
+  return GitlabUserRoles;
 };

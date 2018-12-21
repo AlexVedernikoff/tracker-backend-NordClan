@@ -4,6 +4,7 @@ const queries = require('../../../models/queries');
 const _ = require('underscore');
 
 exports.create = async function (req, res, next){
+  let transaction;
   try {
     if (!(Number.isInteger(+req.params.projectId) && +req.params.projectId > 0)) {
       return next(createError(400, 'projectId is wrong'));
@@ -17,8 +18,12 @@ exports.create = async function (req, res, next){
     }
 
     const rolesIds = await parseRolesIds(req.body.rolesIds);
+    const gitlabRolesIds = await parseGitlabRolesIds(req.body.rolesIds);
     if (!rolesIds) {
       return next(createError('roleId is invalid, see project roles dictionary'));
+    }
+    if (!gitlabRolesIds) {
+      return next(createError('gitlabRolesIds is invalid, see gitlab project roles dictionary'));
     }
 
     models.ProjectUsers.beforeValidate((model) => {
@@ -28,6 +33,7 @@ exports.create = async function (req, res, next){
     const projectId = req.params.projectId;
     const userId = req.body.userId;
 
+    transaction = await models.sequelize.transaction();
     const options = {
       where: { projectId, userId, deletedAt: null },
       include: [
@@ -36,7 +42,8 @@ exports.create = async function (req, res, next){
           model: models.ProjectUsersRoles
         }
       ],
-      defaults: { projectId, userId }
+      defaults: { projectId, userId },
+      transaction
     };
 
     models.ProjectUsers
@@ -48,7 +55,8 @@ exports.create = async function (req, res, next){
           const createRoles = [];
 
           const roles = await models.ProjectRolesDictionary.findAll({
-            attributes: ['id']
+            attributes: ['id'],
+            transaction
           });
           roles.forEach((projectRole) => {
             if (rolesIds.indexOf(projectRole.id) === -1) {
@@ -68,18 +76,20 @@ exports.create = async function (req, res, next){
                 projectRoleId: {
                   '$in': deleteRoles
                 }
-              }
+              },
+              transaction
             });
           }
 
           if (createRoles.length > 0) {
-            await models.ProjectUsersRoles.bulkCreate(createRoles);
+            await models.ProjectUsersRoles.bulkCreate(createRoles, { transaction });
           }
         }
 
         if (created) {
           const projectEvents = await models.ProjectEventsDictionary.findAll({
-            attributes: ['id']
+            attributes: ['id'],
+            transaction
           });
           const projectUsersSubscriptionsData = projectEvents.map((projectEvent) => {
             return {
@@ -87,14 +97,24 @@ exports.create = async function (req, res, next){
               projectEventId: projectEvent.id
             };
           });
-          await models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData);
+          await models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData, { transaction });
         }
 
+        await transaction.commit();
+        transaction = await models.sequelize.transaction();
         const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
         res.json(allProjectUsers);
       })
-      .catch(e => next(createError(e)));
+      .catch(async e => {
+        if (transaction) {
+          await transaction.rollback();
+        }
+        return next(createError(e));
+      });
   } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
     throw error;
   }
 };
@@ -104,6 +124,27 @@ async function parseRolesIds (rolesIds) {
     if (rolesIds && parseInt(rolesIds) !== 0) {
       const roles = rolesIds.split(',').map((el) => +el.trim());
       const allowedRoles = await models.ProjectRolesDictionary.findAll({
+        attributes: ['id']
+      });
+      const allowedRolesId = allowedRoles.map((el) => el.id);
+      roles.forEach((roleId) => {
+        if (!~allowedRolesId.indexOf(roleId)) {
+          return null;
+        }
+      });
+      return roles;
+    }
+    return [];
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function parseGitlabRolesIds (rolesIds) {
+  try {
+    if (rolesIds && parseInt(rolesIds) !== 0) {
+      const roles = rolesIds.split(',').map((el) => +el.trim());
+      const allowedRoles = await models.GitlabRolesDictionary.findAll({
         attributes: ['id']
       });
       const allowedRolesId = allowedRoles.map((el) => el.id);

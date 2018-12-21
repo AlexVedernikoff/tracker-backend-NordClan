@@ -42,3 +42,11 @@ exports.milestoneTypes = function (req, res){
     })
     .then(data => res.json(data));
 };
+
+exports.gitlabRoles = function (req, res) {
+  return models.GitlabRolesDictionary
+    .findAll({
+      order: [['id', 'ASC']]
+    })
+    .then(data => res.json(data));
+};

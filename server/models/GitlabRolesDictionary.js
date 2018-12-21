@@ -18,6 +18,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false,
       field: 'code_name'
+    },
+    accessLevel: {
+      type: DataTypes.INTEGER,
+      field: 'access_level'
     }
   }, {
     underscored: true,
@@ -28,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
 
 
   GitlabRoles.associate = function (models) {
-    GitlabRoles.hasMany(models.GitlabUsers, {
+    GitlabRoles.hasMany(models.GitlabUserRoles, {
       as: 'gitlabRoles',
       foreignKey: {
         name: 'roleId',
@@ -36,10 +40,11 @@ module.exports = function (sequelize, DataTypes) {
       }});
   };
 
-  GitlabRoles.GUEST = 1;
-  GitlabRoles.DEVELOPER = 2;
-  GitlabRoles.REPORTER = 3;
-  GitlabRoles.MAINTAINER = 4;
+  GitlabRoles.ACCESS_GUEST = 10;
+  GitlabRoles.ACCESS_DEVELOPER = 20;
+  GitlabRoles.ACCESS_REPORTER = 30;
+  GitlabRoles.ACCESS_MAINTAINER = 40;
+  GitlabRoles.ACCESS_OWNER = 50;
 
   return GitlabRoles;
 };
