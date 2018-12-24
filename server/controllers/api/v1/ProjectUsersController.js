@@ -104,6 +104,8 @@ exports.create = async function (req, res, next){
         transaction = await models.sequelize.transaction();
         const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
         res.json(allProjectUsers);
+
+        //todo: add to gitlab
       })
       .catch(async e => {
         if (transaction) {
@@ -117,6 +119,10 @@ exports.create = async function (req, res, next){
     }
     throw error;
   }
+};
+
+exports.update = async function (req, res, next) {
+  //todo: update gitlab
 };
 
 async function parseRolesIds (rolesIds) {
@@ -214,6 +220,8 @@ exports.delete = async function (req, res, next){
     const users = await queries.projectUsers.getUsersByProject(req.params.projectId, isExternal, ['userId', 'rolesIds'], transaction);
     await transaction.commit();
     res.json(users);
+
+    //todo: remove from gitlab
   } catch (err) {
     if (transaction) {
       await transaction.rollback();
