@@ -23,6 +23,7 @@ build_docker_be:
     - docker push $DOCKER_PREFIX/be:$TAG
     - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
     - docker rmi $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
+
   tags:
     - docker
 
@@ -147,3 +148,27 @@ deploy_to_custom:
     name: custom
     url: http://simtrack-custom.simbirsoft/
 
+deploy_to_demo:
+  image: dr.simbirsoft1.com/library/ansible:2.4
+  stage: deploy
+  variables:
+    CURRENT_DEPLOYMENT_KEY: "$DEMO_DEPLOYMENT_KEY"
+    CURRENT_DEPLOYMENT_ENV: "demo"
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -u deployer -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+  only:
+    - demo
+  tags:
+    - docker
+  when: manual
+  environment:
+    name: demo
+    url: http://simtrack-demo.simbirsoft/

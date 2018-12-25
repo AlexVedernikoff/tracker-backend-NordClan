@@ -1,4 +1,5 @@
 const TasksService = require('./synchronize/task');
+const queries = require('./../../../models/queries');
 const TimesheetService = require('./synchronize/timesheet');
 const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
@@ -170,9 +171,27 @@ exports.jiraSync = async function (headers, data) {
   return { resSprints, resTasks, resTimesheets };
 };
 
+exports.clearProjectAssociate = async function (simTrackProjectId) {
+  const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+  if (!simTrackProjectId) {
+    throw createError(404, 'Project not found');
+  }
+  await simTrackProject.update({ externalId: null, jira_hostname: null, jiraProjectName: null });
+};
+
+exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraProjectId, jiraHostName, jiraProjectName) {
+  const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+  if (!simTrackProject) {
+    throw createError(404, 'Project not found');
+  }
+  await simTrackProject.update({ externalId: jiraProjectId, jiraHostname: jiraHostName, jiraProjectName: jiraProjectName });
+  return jiraProjectId;
+};
+
 /**
  * @param {string} id
- * @param {string} authorId
+ * @param {string} authorI
+ * @deprecated
  */
 exports.createProject = async function (headers, id, authorId, prefix) {
   const { data: jiraProject } = await request.get(`${config.ttiUrl}/project/${id}`, {
@@ -291,6 +310,12 @@ exports.getJiraProjects = async function (headers) {
   } catch (e) {
     throw e;
   }
+};
+
+exports.getJiraProjectById = async function (jiraProjectId, headers) {
+  return await request.get(`${config.ttiUrl}/project/${jiraProjectId}`, {
+    headers
+  });
 };
 
 exports.getActiveSimtrackProjects = async function () {
