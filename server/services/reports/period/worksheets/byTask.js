@@ -1,9 +1,12 @@
 const WorkSheetTemplate = require('./workSheetTemplate');
 const _ = require('lodash');
+const i18n = require('./byTask.i18n.json');
+
+const getFullName = (user) => user.fullName || user.firstName + ' ' + user.lastName;
 
 class ByTaskWorkSheet extends WorkSheetTemplate {
-  constructor (workbook, data) {
-    super(workbook, data);
+  constructor (workbook, data, lang) {
+    super(workbook, data, lang);
   }
 
   init () {
@@ -50,12 +53,12 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
         _.transform(timeSheets, (result, ts) => {
           result.userRolesNames = ts.user.userRolesNames;
           result.typeName = ts.task.typeName;
-          result.fullNameRu = ts.user.fullNameRu;
+          result.fullName = getFullName(ts.user);
           if (ts.comment) {
             result.comment += '- ' + ts.comment + '\r\n';
           }
           result.spentTime += Number(ts.spentTime);
-        }, {userRolesNames: '', comment: '', spentTime: 0, fullNameRu: ''})
+        }, {userRolesNames: '', comment: '', spentTime: 0, fullName: ''})
       )
       .map(user => {
         this._lastIndexRow++;
@@ -85,11 +88,12 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
   }
 
   _writeTottalSummary () {
+    const locale = i18n[this.lang];
     this._lastIndexRow++;
     const index = this._tableColumns.findIndex(v => v.isSummary);
     if (~index) {
       this._worksheet.getCell(this._columns[index - 1] + this._lastIndexRow)
-        .value = 'Общая сумма:';
+        .value = locale.TOTAL_AMOUNT;
       const cell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
       cell
         .alignment = this._tableColumns[index].alignment || {};
@@ -99,13 +103,14 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
   }
 
   get _tableColumns () {
+    const locale = i18n[this.lang];
     return [
       {calculate: () => '', text: '', width: 3},
-      {calculate: d => d.fullNameRu, text: 'Исполнитель', width: 25},
-      {calculate: d => d.userRolesNames, text: 'Роль', width: 13},
-      {calculate: d => d.typeName, text: 'Тип', width: 13, alignment: {wrapText: true}},
-      {calculate: d => d.comment, text: 'Описание', width: 40, alignment: {wrapText: true}},
-      {calculate: () => '', text: 'Hours Plan', width: 13, numFmt: '0.00', alignment: {wrapText: true}, ref: 'hoursPlan'},
+      {calculate: d => d.fullName, text: locale.PERFORMER, width: 25},
+      {calculate: d => d.userRolesNames, text: locale.ROLE, width: 13},
+      {calculate: d => d.typeName, text: locale.TYPE, width: 13, alignment: {wrapText: true}},
+      {calculate: d => d.comment, text: locale.DESCRIPTION, width: 40, alignment: {wrapText: true}},
+      {calculate: () => '', text: locale.HOURS_PLANNED, width: 13, numFmt: '0.00', alignment: {wrapText: true}, ref: 'hoursPlan'},
       {
         calculate: d => {
           const value = Number(d.spentTime);
@@ -113,16 +118,17 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
           return value;
         },
         numFmt: '0.00',
-        text: 'Hours all',
+        text: locale.HOURS_SPENT,
         width: 13,
         alignment: {horizontal: 'right'}
       },
-      {calculate: () => '', text: 'Total', width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}}
+      {calculate: () => '', text: locale.HOURS_TOTAL, width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}}
     ];
   }
 
   get _name () {
-    return 'По задаче';
+    const locale = i18n[this.lang];
+    return locale.SHEET_TITLE;
   }
 }
 
