@@ -46,7 +46,7 @@ async function getSprintIds (model, instance, sequelize) {
       }
     })
       .then((row) => {
-        return [row.sprintId];
+        return row && [row.sprintId] || [];
       });
   }
 

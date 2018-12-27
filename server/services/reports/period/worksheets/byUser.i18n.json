@@ -1,0 +1,29 @@
+{
+  "ru": {
+    "OTHER_TASKS": "Прочие задачи",
+    "TOTAL_AMOUNT": "Общая сумма:",
+    "TASK": "Задача",
+    "TYPE": "Тип",
+    "DESCRIPTION": "Описание",
+    "DATE": "Дата",
+    "HOURS_SPENT": "Hours all",
+    "HOURS_TOTAL": "Total fact",
+    "SHEET_TITLE": "По исполнителю",
+    "LASTS_SINCE": "с",
+    "LASTS_UPTO": "по"
+  },
+  "en": {
+    "OTHER_TASKS": "Other Tasks",
+    "TOTAL_AMOUNT": "Total Amount:",
+    "TASK": "Task",
+    "TYPE": "Type",
+    "DESCRIPTION": "Description",
+    "DATE": "Date",
+    "HOURS_SPENT": "Hours all",
+    "HOURS_TOTAL": "Total fact",
+    "SHEET_TITLE": "By Performer",
+    "LASTS_SINCE": "since",
+    "LASTS_UPTO": "up to"
+
+  }
+}
