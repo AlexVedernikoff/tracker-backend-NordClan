@@ -177,6 +177,11 @@ module.exports = function (sequelize, DataTypes) {
           len: [0, 5000]
         }
       },
+      gitlabUserId: {
+        field: 'gitlab_user_id',
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }

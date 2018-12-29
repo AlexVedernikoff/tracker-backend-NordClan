@@ -1,3 +1,10 @@
+const ACCESS_GUEST = 10;
+const ACCESS_DEVELOPER = 20;
+const ACCESS_REPORTER = 30;
+const ACCESS_MAINTAINER = 40;
+const ACCESS_OWNER = 50;
+const validAccessLevels = [ACCESS_GUEST, ACCESS_DEVELOPER, ACCESS_REPORTER, ACCESS_MAINTAINER];
+
 module.exports = function (sequelize, DataTypes) {
   const GitlabUserRoles = sequelize.define('GitlabUserRoles', {
     id: {
@@ -6,16 +13,30 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false
     },
-    roleId: {
-      field: 'role_id',
+    accessLevel: {
+      field: 'access_level',
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        isIn: [validAccessLevels]
+      }
+    },
+    expiresAt: {
+      field: 'expires_at',
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    projectUserId: {
+      field: 'project_user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
         isInt: true
       }
     },
-    projectUserId: {
-      field: 'project_user_id',
+    gitlabProjectId: {
+      field: 'gitlab_project_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
@@ -42,7 +63,7 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: true,
     updatedAt: false,
     paranoid: true,
-    tableName: 'gitlab_users'
+    tableName: 'gitlab_user_roles'
   });
 
   GitlabUserRoles.associate = function (models) {
@@ -53,14 +74,17 @@ module.exports = function (sequelize, DataTypes) {
         field: 'project_user_id'
       }
     });
+  };
 
-    GitlabUserRoles.belongsTo(models.GitlabRolesDictionary, {
-      as: 'role',
-      foreignKey: {
-        name: 'roleId',
-        field: 'role_id'
-      }
-    });
+  GitlabUserRoles.ACCESS_GUEST = ACCESS_GUEST;
+  GitlabUserRoles.ACCESS_DEVELOPER = ACCESS_DEVELOPER;
+  GitlabUserRoles.ACCESS_REPORTER = ACCESS_REPORTER;
+  GitlabUserRoles.ACCESS_MAINTAINER = ACCESS_MAINTAINER;
+  GitlabUserRoles.ACCESS_OWNER = ACCESS_OWNER;
+  GitlabUserRoles.ACCESS_LEVELS = validAccessLevels;
+
+  GitlabUserRoles.isRolesValid = function (roles) {
+    return !roles || roles.every(({ accessLevel, expiresAt, projectId }) => projectId && expiresAt && ~validAccessLevels.indexOf(accessLevel));
   };
 
   return GitlabUserRoles;

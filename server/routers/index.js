@@ -155,7 +155,6 @@ router.get('/project/roles/dictionary', DictionaryController.projectRoles); // D
 router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
-router.get('/dictionary/gitlab/roles', DictionaryController.gitlabRoles);
 
 // Attachments
 router.post(

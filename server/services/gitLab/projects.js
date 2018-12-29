@@ -100,7 +100,9 @@ const getProjectMembers = async function (projectId) {
   const gitlabProjectMembers = await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members`), {headers})
     .then(reply => reply.data)
     .catch(e => {
-      throw e;
+      throw e.response
+        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        : e;
     });
   return gitlabProjectMembers;
 };
@@ -112,6 +114,8 @@ const getProjectMembers = async function (projectId) {
  * @param {number} properties.user_id
  * @param {number} properties.project_id
  * @param {number} properties.access_level
+ * @param {number} properties.access_level
+ * @param {number} properties.invite_email
  */
 const addProjectMember = async function (projectId, memberId, properties) {
   let gitlabProjectMember;
@@ -119,7 +123,9 @@ const addProjectMember = async function (projectId, memberId, properties) {
     gitlabProjectMember = axios.post(
       prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members`),
       { ...properties, user_id: memberId }, { headers }
-    ).then(reply => reply.data);
+    ).then(reply =>
+      reply.data
+    );
   } catch (e) {
     throw e.response
       ? createError(e.response.status || 500, 'GITLAB_ERROR')
