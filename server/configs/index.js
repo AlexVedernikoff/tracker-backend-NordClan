@@ -30,6 +30,14 @@ module.exports = {
     password: process.env.SYSTEMUSER_PASSWORD || '5REhSX',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
+  keycloak: {
+    'realm': 'simbirsoft-dev',
+    'bearer-only': true,
+    'auth-server-url': 'http://sso.simbirsoft:8080/auth',
+    'ssl-required': 'external',
+    'resource': 'local-simtrack-bearer-only',
+    'confidential-port': 0
+  },
   email: {
     enabled: process.env.EMAIL_ENABLED === 'true',
     service: 'Yandex',

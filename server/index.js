@@ -9,7 +9,6 @@ const bodyParser = require('body-parser');
 const sequelize = require('./orm');
 const { routes } = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
-const checkSsoToken = require('./middlewares/CheckSsoTokenMiddleWare').checkSsoToken;
 const getUserByToken = require('./middlewares/CheckTokenMiddleWare').getUserByToken;
 const checkSystemTokenMiddleWare = require('./middlewares/CheckSystemTokenMiddleWare').checkToken;
 const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
@@ -18,11 +17,6 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server, {
   path: '/api/v1/socket'
 });
-
-const session = require('express-session');
-const Keycloak = require('keycloak-connect');
-const memoryStore = new session.MemoryStore();
-const keycloak = new Keycloak({ store: memoryStore });
 
 io.sockets.on('connection', function (socket) {
   getUserByToken(socket.handshake.headers)
@@ -41,9 +35,7 @@ exports.run = function () {
   app.use(bodyParser.json());
   app.use(expressValidator());
   app.use(cookieParser());
-  app.use(session({ secret: 'keycloak' }));
   app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(keycloak.middleware());
 
   app.get('/api/v1/swagger/spec.js', function (req, res) {
     res.send(require('../swaggerSpec.js'));
@@ -59,18 +51,7 @@ exports.run = function () {
     })
   );
 
-  app.get('/api/v1/auth/sso', keycloak.protect(), function (req, res, next) {
-    res.redirect('http://localhost:8080/projects');
-  });
-  app.use(function (req, res, next) {
-    if (req.session['keycloak-token']) {
-      keycloak.protect()(req, res, next);
-    } else {
-      next(checkTokenMiddleWare);
-    }
-  });
-  app.use(checkSsoToken);
-  //app.use(checkTokenMiddleWare);
+  app.use(checkTokenMiddleWare);
   app.use(checkSystemTokenMiddleWare);
   app.use(Access.middleware);
 

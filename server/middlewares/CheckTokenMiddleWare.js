@@ -8,53 +8,40 @@ const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const { middlewareToPromise } = require('../components/utils');
+const Keycloak = require('keycloak-connect');
+const keycloak = new Keycloak({ bearerOnly: true }, config.keycloak);
 
-exports.checkToken = function (req, res, next) {
-  let token, decoded, authorization;
+const validateKeyCloakToken = (req, res, next) => {
+  const originalStatusHandler = res.status;
+  const originalEndHandler = res.end;
+  const _noop = () => {};
+  const restoreReqHandlers = () => {
+    res.status = originalStatusHandler;
+    res.end = originalEndHandler;
+  };
+  const fakeResponseEnd = () => {
+    restoreReqHandlers();
+    req.isValidKeycloakToken = false;
+    next();
+  };
+  res.status = _noop;
+  res.end = fakeResponseEnd;
+  keycloak.protect()(req, res, (err) => {
+    if (err) {
+      next(err);
+      return;
+    }
+    restoreReqHandlers();
+    req.isValidKeycloakToken = true;
+    next();
+  });
+};
 
-  if (/\/auth\/login$/iu.test(req.url) || (/\/user\/password/iu).test(req.url) || (/\/auth\/sso/iu).test(req.url)) {
-    //potential defect /blabla/auth/login - is not validated
-    return next();
-  }
-
-  if (!doesAuthorizationExist(req)) {
-    return next(createError(401, 'Need authorization'));
-  }
-
-  if (isSystemUser(req)) {
-    return next();
-  }
-
-  try {
-    authorization = req.cookies.authorization ? req.cookies.authorization : req.headers.authorization;
-
-    token = authorization.split(' ')[1];
-    decoded = jwt.decode(token, tokenSecret);
-    req.token = token;
-    req.decoded = decoded;
-  } catch (err) {
-    return next(createError(403, 'Can not parse access token - it is not valid'));
-  }
-
-  User.findOne({
-    where: {
-      login: decoded.user.login,
-      active: 1
-    },
+const handleToken = (req, res, next) => {
+  const userQuery = {
     attributes: User.defaultSelect,
     include: [
-      {
-        as: 'token',
-        model: UserTokens,
-        attributes: ['expires'],
-        required: true,
-        where: {
-          token: token,
-          expires: {
-            $gt: moment().format() // expires > now
-          }
-        }
-      },
       {
         as: 'usersProjects',
         model: ProjectUsers,
@@ -84,20 +71,70 @@ exports.checkToken = function (req, res, next) {
         }
       }
     ]
-  })
-    .then(user => {
-      if (!user) {
-        return next(createError(401, 'No found user or access in the system. Or access token has expired'));
+  };
+  let token, decoded, authorization;
+  if (req.isValidKeycloakToken) {
+    const { email } = req.kauth.grant.access_token.content;
+    userQuery.where = {
+      emailPrimary: email,
+      active: 1
+    };
+  } else {
+    try {
+      authorization = req.cookies.authorization ? req.cookies.authorization : req.headers.authorization;
+      token = authorization.split(' ')[1];
+      decoded = jwt.decode(token, tokenSecret);
+      req.token = token;
+      req.decoded = decoded;
+    } catch (err) {
+      return next(createError(403, 'Can not parse access token - it is not valid'));
+    }
+    userQuery.where = {
+      login: decoded.user.login,
+      active: 1
+    };
+    userQuery.include.push({
+      as: 'token',
+      model: UserTokens,
+      attributes: ['expires'],
+      required: true,
+      where: {
+        token: token,
+        expires: {
+          $gt: moment().format() // expires > now
+        }
       }
-      if (user.dataValues.department[0]) {
-        user.dataValues.department = user.dataValues.department[0].name;
-      }
+    });
+  }
+  User.findOne(userQuery).then(user => {
+    if (!user) {
+      return next(createError(401, 'No found user or access in the system. Or access token has expired'));
+    }
+    if (user.dataValues.department[0]) {
+      user.dataValues.department = user.dataValues.department[0].name;
+    }
+    req.user = user;
+    return next();
+  }).catch(err => next(err));
+};
 
-      req.user = user;
-
-      return next();
-    })
-    .catch(err => next(err));
+exports.checkToken = async (req, res, next) => {
+  if ((/\/auth\/login$/iu).test(req.url) || (/\/user\/password/iu).test(req.url)) {
+    //potential defect /blabla/auth/login - is not validated
+    return next();
+  }
+  if (!doesAuthorizationExist(req)) {
+    return next(createError(401, 'Need authorization'));
+  }
+  if (isSystemUser(req)) {
+    return next();
+  }
+  try {
+    await middlewareToPromise([...keycloak.middleware(), validateKeyCloakToken, handleToken], req, res);
+    next();
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.getUserByToken = function (header) {

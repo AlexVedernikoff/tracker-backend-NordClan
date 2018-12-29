@@ -30,3 +30,19 @@ function getDiffObject (keys, firstObject, secondObject) {
 }
 
 exports.NOTAG = ['no tag', 'без тега'];
+
+exports.middlewareToPromise = async (inputMiddleware, req, res) => {
+  const transformMiddleware = (method, request, response) => new Promise((resolve, reject) => {
+    method(request, response, (err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve();
+    });
+  });
+  const middleware = !Array.isArray(inputMiddleware) ? [inputMiddleware] : inputMiddleware;
+  for (const item of middleware) {
+    await transformMiddleware(item, req, res);
+  }
+};
