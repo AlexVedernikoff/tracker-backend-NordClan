@@ -4,11 +4,15 @@ const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
 const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
+const i18n = require('./i18n.json');
 
-exports.getReport = async function (projectId, criteria) {
+exports.getReport = async function (projectId, criteria, options) {
+  const {lang = 'en'} = options || {};
   let startDate;
   let endDate;
   const { label, sprintId } = criteria;
+  const locale = i18n[lang];
+
   const timesheetTypes = await TimesheetTypesDictionary.findAll();
   if (criteria) {
     const validCriteria = validateCriteria(criteria);
@@ -72,7 +76,12 @@ exports.getReport = async function (projectId, criteria) {
         as: 'user',
         model: User,
         required: false,
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameRu'],
+        attributes: [
+          'id',
+          [withSuffix('first_name', lang), 'firstName'],
+          [withSuffix('last_name', lang), 'lastName'],
+          [withSuffix('full_name', lang), 'fullName']
+        ],
         paranoid: false,
         include: [
           {
@@ -92,7 +101,7 @@ exports.getReport = async function (projectId, criteria) {
       }
     ],
     order: [
-      [ { model: User, as: 'user' }, 'fullNameRu', 'ASC' ],
+      [ { model: User, as: 'user' }, withSuffix('full_name', lang), 'ASC' ],
       [ 'onDate', 'ASC' ]
     ]
   });
@@ -122,12 +131,13 @@ exports.getReport = async function (projectId, criteria) {
     const rolesIds = currentProjectRoles
       .map(role => role.projectRoleId)
       .sort((role1, role2) => role1 - role2);
-    const userRolesNames = rolesIds.map(roleId =>
-      projectRolesValues.find(item => item.id === roleId).name).join(', ');
+    const userRolesNames = rolesIds
+      .map(roleId => getProjectRoleName(roleId, projectRolesValues, lang))
+      .join(', ');
     delete data.user.usersProjects;
     data.user.userRolesNames = userRolesNames;
 
-    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues) : null;
+    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues, lang) : null;
     return data;
   });
 
@@ -149,14 +159,15 @@ exports.getReport = async function (projectId, criteria) {
   };
 
   return {
-    workbook: generateExcellDocument(data),
+    workbook: generateExcellDocument(data, {lang}),
     options: {
-      fileName: `${project.name} - ${criteria ? (startDate + ' - ' + endDate) : 'За весь проект'}`
+      fileName: `${project.name} - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
     }
   };
 };
 
-function generateExcellDocument (data) {
+function generateExcellDocument (data, options) {
+  const {lang} = options;
   const workbook = new Excel.Workbook();
   workbook.creator = 'SimTrack';
   workbook.lastModifiedBy = 'SimTrack';
@@ -174,8 +185,8 @@ function generateExcellDocument (data) {
       visibility: 'visible'
     }
   ];
-  const byUserSheet = new ByUserWorkSheet(workbook, data);
-  const byTaskSheet = new ByTaskWorkSheet(workbook, data);
+  const byUserSheet = new ByUserWorkSheet(workbook, data, lang);
+  const byTaskSheet = new ByTaskWorkSheet(workbook, data, lang);
   byUserSheet.init();
   byTaskSheet.init();
   return workbook;
@@ -246,7 +257,7 @@ function groupTimeSheetsInSprint (timeSheets, factStartDate, factFinishDate) {
         resultObject.tasks.push(task);
       }
     }, {}))
-    .sortBy('user.fullNameRu')
+    .sortBy('user.fullName')
     .value();
 
 }
@@ -296,10 +307,20 @@ function generateMessage (errors) {
   return `Incorrect params - ${incorrectParams}`;
 }
 
-function getTaskTypeName (typeId, taskTypesValues) {
-  return taskTypesValues.find(item => item.id === typeId).name;
+function getTaskTypeName (typeId, taskTypesValues, lang) {
+  const field = lang === 'ru' ? 'name' : 'nameEn';
+  return taskTypesValues.find(item => item.id === typeId)[field];
+}
+
+function getProjectRoleName (roleId, projectRolesValues, lang) {
+  const field = lang === 'ru' ? 'name' : 'nameEn';
+  return projectRolesValues.find(item => item.id === roleId)[field];
 }
 
 function formatDate (date) {
   return date && moment(date).format('DD.MM.YYYY');
+}
+
+function withSuffix (baseField, lang) {
+  return baseField + '_' + lang;
 }
