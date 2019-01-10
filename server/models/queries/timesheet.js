@@ -13,7 +13,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
         userId: userId,
         statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS
       },
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'statusId', 'spentTime']
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'statusId', 'spentTime', 'sprintId']
     })
     .then((model) => {
       if (!model) {
@@ -25,7 +25,7 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
 
 exports.getTimesheet = async function (params) {
   const timesheet = await models.Timesheet.findOne({
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'isVisible', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId'],
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'isVisible', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'sprintId'],
     where: params,
     include: [
       {

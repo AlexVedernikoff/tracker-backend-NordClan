@@ -1,0 +1,24 @@
+{
+  "ru": {
+    "TOTAL_AMOUNT": "Общая сумма:",
+    "PERFORMER": "Исполнитель",
+    "ROLE": "Роль",
+    "TYPE": "Тип",
+    "DESCRIPTION": "Описание",
+    "HOURS_PLANNED": "Hours Plan",
+    "HOURS_SPENT": "Hours all",
+    "HOURS_TOTAL": "Total",
+    "SHEET_TITLE": "По задаче"
+  },
+  "en": {
+    "TOTAL_AMOUNT": "Total Amount:",
+    "PERFORMER": "Performer",
+    "ROLE": "Role",
+    "TYPE": "Type",
+    "DESCRIPTION": "Description",
+    "HOURS_PLANNED": "Hours Plan",
+    "HOURS_SPENT": "Hours all",
+    "HOURS_TOTAL": "Total",
+    "SHEET_TITLE": "By Task"
+  }
+}
