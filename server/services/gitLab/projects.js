@@ -97,25 +97,40 @@ const createProject = async function (name, namespace_id, projectId) {
  * @param {number} projectId
  */
 const getProjectMembers = async function (projectId) {
-  const gitlabProjectMembers = await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members`), {headers})
+  return await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members`), {headers})
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
         ? createError(e.response.status || 500, 'GITLAB_ERROR')
         : e;
     });
-  return gitlabProjectMembers;
+};
+
+/**
+ * GET /projects/:id/members/:user_id
+ * @param {number} projectId
+ * @param {number} memberId
+ */
+const getProjectMember = async function (projectId, memberId) {
+  return await axios.get(prettyUrl(
+    `${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`
+  ), {headers})
+    .then(reply => reply.data)
+    .catch(e => {
+      throw e.response
+        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        : e;
+    });
 };
 
 /**
  * POST /projects/:id/members
  * @param {number} projectId
+ * @param {number} memberId
  * @param {object} properties
- * @param {number} properties.user_id
  * @param {number} properties.project_id
  * @param {number} properties.access_level
- * @param {number} properties.access_level
- * @param {number} properties.invite_email
+ * @param {string} properties.expires_at
  */
 const addProjectMember = async function (projectId, memberId, properties) {
   let gitlabProjectMember;
@@ -141,20 +156,17 @@ const addProjectMember = async function (projectId, memberId, properties) {
  * @param {object} properties
  * @param {number} properties.project_id
  * @param {number} properties.access_level
+ * @param {string} properties.expires_at
  */
 const editProjectMember = async function (projectId, memberId, properties) {
-  let gitlabProjectMember;
-  try {
-    gitlabProjectMember = axios.put(
-      prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`),
-      { ...properties, user_id: memberId }, { headers }
-    ).then(reply => reply.data);
-  } catch (e) {
+  return await axios.put(
+    prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`),
+    { ...properties, user_id: memberId }, { headers }
+  ).then(reply => reply.data).catch(e => {
     throw e.response
       ? createError(e.response.status || 500, 'GITLAB_ERROR')
       : e;
-  }
-  return gitlabProjectMember;
+  });
 };
 
 /**
@@ -163,17 +175,14 @@ const editProjectMember = async function (projectId, memberId, properties) {
  * @param {number} memberId
  */
 const removeProjectMember = async function (projectId, memberId) {
-  let gitlabProjectMember;
-  try {
-    gitlabProjectMember = axios.delete(
-      prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`), { headers }
-    ).then(reply => reply.data);
-  } catch (e) {
-    throw e.response
-      ? createError(e.response.status || 500, 'GITLAB_ERROR')
-      : e;
-  }
-  return gitlabProjectMember;
+  return await axios.delete(
+    prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`), { headers }
+  ).then(reply => reply.data)
+    .catch(e => {
+      throw e.response
+        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        : e;
+    });
 };
 
 const getNamespacesList = () =>
@@ -187,6 +196,7 @@ module.exports = {
   createProject,
   getNamespacesList,
   getProjectMembers,
+  getProjectMember,
   addProjectMember,
   editProjectMember,
   removeProjectMember

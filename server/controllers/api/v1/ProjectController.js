@@ -122,6 +122,10 @@ exports.read = function (req, res, next) {
           {
             as: 'roles',
             model: models.ProjectUsersRoles
+          },
+          {
+            as: 'gitlabRoles',
+            model: models.GitlabUserRoles
           }
         ],
         order: [['id', 'DESC']]
@@ -186,7 +190,8 @@ exports.read = function (req, res, next) {
             firstNameEn: projectUser.user.firstNameEn,
             lastNameRu: projectUser.user.lastNameRu,
             lastNameEn: projectUser.user.lastNameEn,
-            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
+            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles),
+            gitlabRoles: projectUser.gitlabRoles
           });
         });
       }

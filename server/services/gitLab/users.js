@@ -12,7 +12,7 @@ const prettyUrl = (url) => (/^https?:\/\//).test(url) ? url : 'http://' + url;
  * @param {number} userId
  */
 async function getUser (userId) {
-  return await axios.get(prettyUrl(`${host}/api/v4/users/${encodeURIComponent(userId)}`), {headers})
+  return await axios.get(prettyUrl(`${host}/api/v4/users/${encodeURIComponent(userId)}`), { headers })
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
@@ -25,7 +25,7 @@ async function getUser (userId) {
  * GET /users
  */
 async function getUsers () {
-  return await axios.get(prettyUrl(`${host}/api/v4/users/`), {headers})
+  return await axios.get(prettyUrl(`${host}/api/v4/users/`), { headers })
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
@@ -34,8 +34,44 @@ async function getUsers () {
     });
 }
 
+/**
+ * GET /users?search=:email
+ * @param {object} user
+ */
+async function findUser (user) {
+  return await axios.get(prettyUrl(`${host}/api/v4/users?search=${encodeURIComponent(user.emailPrimary)}`), { headers })
+    .then(reply => reply.data)
+    .catch(e => {
+      throw e.response
+        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        : e;
+    });
+}
+
+/**
+ * POST /users
+ * https://docs.gitlab.com/ee/api/users.html#user-creation
+ * @param {object} user
+ */
+async function createUser ({ emailPrimary: email, fullNameRu: name, login: username }) {
+  return await axios.post(prettyUrl(`${host}/api/v4/users`), { email, username, name, reset_password: true }, { headers })
+    .then(reply => reply.data)
+    .catch(e => {
+      throw e.response
+        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        : e;
+    });
+}
+
+async function findOrCreateUser (user) {
+  const users = await findUser(user);
+  const gitlabUser = users[0];
+  return gitlabUser || await createUser(user);
+}
+
 module.exports = {
   getUsers,
-  getUser
+  getUser,
+  findOrCreateUser
 };
 
