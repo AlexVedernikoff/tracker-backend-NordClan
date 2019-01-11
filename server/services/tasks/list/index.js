@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
@@ -6,8 +8,11 @@ const layoutAgnostic = require('../../layoutAgnostic');
 const { NOTAG } = require('../../../components/utils');
 
 function getTagsByTaskList (tasks) {
-  const allTags = [];
-  tasks.forEach(task => task.tags.forEach(tag => allTags.push({ name: tag.dataValues.name })));
+  const allTags = _.unionBy(
+    ...tasks.map(task => task.tags.map(o => o.dataValues)),
+    o => o.name
+  )
+    .map(tag => ({name: tag.name}));
   return allTags;
 }
 
@@ -87,7 +92,9 @@ exports.list = async function (req) {
     });
   }
 
-  const allTags = getTagsByTaskList(tasks);
+  const allTags = req.query.projectId
+    ? await queries.tag.getAllTaskTagsByProject(req.query.projectId)
+    : getTagsByTaskList(tasks);
   const offset = req.query.currentPage > 0 ? req.query.pageSize * (req.query.currentPage - 1) : 0;
 
   const responseObject = {

@@ -339,6 +339,28 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/project/{projectId}/tags': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Поиск тега задачи по имени среди задач конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'tagName',
+            description: 'Поиск по имени тега',
+            type: 'string',
+            in: 'query',
+            required: false
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/project/{projectId}/tag': {
       post: {
         tags: ['Projects'],
@@ -1541,6 +1563,29 @@ module.exports = {
                   example: 1
                 }
               }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/user/test/{id}': {
+      put: {
+        tags: ['User'],
+        summary: 'Редактирование тестового пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {}
             }
           }
         ],
