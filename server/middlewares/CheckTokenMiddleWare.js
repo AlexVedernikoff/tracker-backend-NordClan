@@ -129,6 +129,9 @@ exports.checkToken = async (req, res, next) => {
   if (isSystemUser(req)) {
     return next();
   }
+  if (!req.headers.authorization && req.cookies.authorization) {
+    req.headers.authorization = req.cookies.authorization;
+  }
   try {
     await middlewareToPromise([...keycloak.middleware(), validateKeyCloakToken, handleToken], req, res);
     next();
@@ -137,7 +140,7 @@ exports.checkToken = async (req, res, next) => {
   }
 };
 
-exports.getUserByToken = function (header) {
+exports.getUserByToken = async function (header) {
   if (!doesAuthorizationSocket(header)) {
     return Promise.resolve(null);
   }
@@ -148,6 +151,28 @@ exports.getUserByToken = function (header) {
       acc[arr[0]] = arr[1];
       return acc;
     }, {});
+
+    try {
+      const tokenHeader = headerObj.authorization.replace('%20', ' ');
+      const fakeRequest = {
+        headers: {
+          'authorization': tokenHeader
+        },
+        body: {},
+        cookies: {},
+        query: {},
+        params: {},
+        get: () => null
+      };
+      const fakeResponse = {
+        status: null,
+        end: null
+      };
+      await middlewareToPromise([...keycloak.middleware(), validateKeyCloakToken, handleToken], fakeRequest, fakeResponse);
+      return fakeRequest.user;
+    } catch (err) {
+      //
+    }
 
     const token = headerObj.authorization.split('%20')[1];
     const decoded = jwt.decode(token, tokenSecret);
