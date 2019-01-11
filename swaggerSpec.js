@@ -1547,6 +1547,29 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/user/test/{id}': {
+      put: {
+        tags: ['User'],
+        summary: 'Редактирование тестового пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {}
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/user/external/refresh': {
       put: {
         tags: ['User'],
