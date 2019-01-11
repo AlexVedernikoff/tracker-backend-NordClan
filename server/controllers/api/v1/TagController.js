@@ -28,26 +28,36 @@ exports.list = async function (req, res, next){
 };
 
 exports.listByProject = async function (req, res, next) {
-  if (!req.params.projectId || !parseInt(req.params.projectId)) {
-    res.sendStatus(400);
-    return next(createError(400, 'Validation failed'));
-  }
-  let tasks;
-  const query = createQuery(req.params);
   try {
-    tasks = await models.Task.findAll(query);
-  } catch (error) {
-    res.sendStatus(500);
-    return next(createError(error));
-  }
+    const tagName = req.query.tagName && req.query.tagName.toLowerCase();
 
-  const tags = [];
-  tasks.forEach(task => task.tags.forEach(tag => {
-    if (!tags.find(el => el.id === tag.dataValues.id)) {
-      tags.push({id: tag.dataValues.id, name: tag.dataValues.name});
+    if (!req.params.projectId || !parseInt(req.params.projectId)) {
+      res.sendStatus(400);
+      return next(createError(400, 'Validation failed'));
     }
-  }));
-  res.json(tags);
+    let tasks;
+    const query = createQuery(req.params);
+    try {
+      tasks = await models.Task.findAll(query);
+    } catch (error) {
+      res.sendStatus(500);
+      return next(createError(error));
+    }
+
+    let tags = [];
+    tasks.forEach(task => task.tags.forEach(tag => {
+      if (!tags.find(el => el.id === tag.dataValues.id)) {
+        tags.push({id: tag.dataValues.id, name: tag.dataValues.name});
+      }
+    }));
+    tags = tagName
+      ? tags.filter(o => o.name.toLowerCase().indexOf(tagName) !== -1)
+      : tags;
+
+    res.json(tags);
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.create = async function (req, res, next){
