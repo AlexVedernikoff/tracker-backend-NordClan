@@ -339,6 +339,28 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/project/{projectId}/tags': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Поиск тега задачи по имени среди задач конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'tagName',
+            description: 'Поиск по имени тега',
+            type: 'string',
+            in: 'query',
+            required: false
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/project/{projectId}/tag': {
       post: {
         tags: ['Projects'],
