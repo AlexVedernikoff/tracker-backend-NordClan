@@ -43,11 +43,6 @@ exports.create = async function (req, res, next){
         {
           as: 'roles',
           model: models.ProjectUsersRoles
-        // todo: не работает в спреде
-        // },
-        // {
-        //   as: 'user',
-        //   model: models.User
         }
       ],
       defaults: { projectId, userId },
@@ -95,103 +90,7 @@ exports.create = async function (req, res, next){
         }
 
         if (gitlabRoles.length) {
-          const user = await models.User.findOne({
-            where: { id: projectUser.userId },
-            transaction
-          });
-          let gitlabUserId = user.gitlabUserId;
-          //Находим или создаем пользователя в гитлабе и сохраняем ссылку в базе
-          if (!gitlabUserId) {
-            const gitlabUser = await gitLabService.users.findOrCreateUser(user);
-            gitlabUserId = gitlabUser.id;
-            await models.User.update({ gitlabUserId: gitlabUser.id }, {
-              where: { id: projectUser.userId },
-              transaction
-            });
-          }
-          const userGitlabRoles = await models.GitlabUserRoles.findAll({
-            where: {
-              projectUserId: projectUser.id
-            },
-            attributes: ['id', 'accessLevel', 'expiresAt'],
-            transaction
-          });
-          const newGitlabRoles = [];
-          const updatedGitlabRoles = [];
-          const removedGitlabRoles = userGitlabRoles.slice(0);
-
-          gitlabRoles.forEach(({ accessLevel, expiresAt, gitlabProjectId }) => {
-            const existedRoleIndex = removedGitlabRoles.findIndex(role => role.get('projectId') === gitlabProjectId);
-            const existedRole = removedGitlabRoles[existedRoleIndex];
-            if (existedRole && existedRole.get('accessLevel') === accessLevel && existedRole.get('expiresAt') === expiresAt) {
-              updatedGitlabRoles.push({ id: existedRole.id, accessLevel, expiresAt, gitlabProjectId });
-              removedGitlabRoles.splice(existedRoleIndex);
-            } else if (!existedRole) {
-              newGitlabRoles.push({ accessLevel, expiresAt, gitlabProjectId });
-            }
-          });
-
-          if (newGitlabRoles.length) {
-            const members = [];
-            await Promise.all(
-              newGitlabRoles.map(({ accessLevel, expiresAt, gitlabProjectId }) => {
-                const successAddedData = { accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id };
-                return gitLabService.projects.addProjectMember(gitlabProjectId, gitlabUserId, {
-                  access_level: accessLevel,
-                  expires_at: expiresAt,
-                  invite_email: user.emailPrimary
-                })
-                  .then(gitlabReponse => {
-                    members.push(successAddedData);
-                  })
-                  .catch(async error => {
-                    //если пользователь уже есть в проекте гитлаба
-                    if (error.response.status === 409) {
-                      members.push(successAddedData);
-                      await gitLabService.projects.editProjectMember(gitlabProjectId, userId, { access_level: accessLevel, expires_at: expiresAt });
-                    } else {
-                      members.push({ accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id, error: error.message });
-                    }
-                  });
-              })
-            );
-            const successAdded = members.filter(member => !member.error);
-            await models.GitlabUserRoles.bulkCreate(successAdded, { transaction });
-          }
-
-          if (updatedGitlabRoles.length) {
-            const members = [];
-            await Promise.all(
-              updatedGitlabRoles.map(({ id, accessLevel, expiresAt, gitlabProjectId }) => {
-                return gitLabService.projects.editProjectMember(gitlabProjectId, userId, { access_level: accessLevel, expires_at: expiresAt })
-                  .then(gitlabResponse => members.push({ id, accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id }))
-                  .catch(error => members.push({ gitlabProjectId, error: error.message }));
-              })
-            );
-            const successUpdated = members.filter(member => !member.error);
-            for (let i = 0; i < successUpdated.length; i++) {
-              await models.GitlabUserRoles.update(successUpdated[i], {
-                where: { id: successUpdated[i].id }
-              }, { transaction });
-            }
-          }
-
-          if (removedGitlabRoles.length) {
-            const members = [];
-            await Promise.all(
-              removedGitlabRoles.map(({ id, gitlabProjectId }) => {
-                return gitLabService.projects.removeProjectMember(gitlabProjectId, userId)
-                  .then(gitlabResponse => members.push(id))
-                  .catch(error => members.push({ id, gitlabProjectId, error: error.message }));
-              })
-            );
-            const successRemoved = members.filter(member => !member.error);
-            models.GitlabUserRoles.destroy({
-              where: {
-                id: { $in: successRemoved }
-              }
-            }, { transaction });
-          }
+          await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
         }
 
         if (created) {
