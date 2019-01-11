@@ -38,15 +38,15 @@ exports.login = function (req, res, next){
         ]
       }
     ],
-    attributes: [ ...User.defaultSelect, 'ldapLogin', 'password']
+    attributes: [ ...User.defaultSelect, 'ldapLogin', 'password', 'isTest']
   })
     .then((user) => {
       if (!user) return next(createError(404, 'Invalid Login or Password'));
 
       queries.token.deleteExpiredTokens(user);
 
-      if (user.globalRole === 'EXTERNAL_USER') {
-        authExternalUser(user, req.body.password);
+      if (user.globalRole === 'EXTERNAL_USER' || user.isTest) {
+        return authExternalUser(user, req.body.password);
       } else {
         authLdap(user, req.body.password);
       }
@@ -95,10 +95,23 @@ exports.login = function (req, res, next){
     });
   }
 
-  function authExternalUser (user, password) {
+  async function authExternalUser (user, password) {
     if (user.isActive === 0) return next(createError(400, 'Expired Access Timeout'));
     if (moment().isAfter(user.expiredDate)) return next(createError(400, 'Expired Access Timeout'));
-    if (!bcrypt.compareSync(password, user.password)) return next(createError(404, 'Invalid Login or Password'));
+
+    const validPassword = await new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(result);
+
+      });
+    });
+
+    if (!validPassword) {
+      return next(createError(404, 'Invalid Login or Password'));
+    }
 
     const token = Auth.createJwtToken({
       login: req.body.login
