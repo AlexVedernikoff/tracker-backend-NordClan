@@ -75,3 +75,15 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
 
   return chain;
 };
+
+exports.getAllTaskTagsByProject = async (projectId) => {
+  const [rows] = await models.sequelize.query(`
+    SELECT tg.name
+    FROM tags tg
+    JOIN item_tags it ON it.tag_id = tg.id AND it.taggable='task'
+    JOIN tasks tk ON it.taggable_id = tk.id
+    WHERE tk.project_id = :projectId
+    GROUP BY tg.id;
+  `, {replacements: {projectId}});
+  return rows;
+};

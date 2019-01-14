@@ -101,7 +101,8 @@ module.exports = {
       'createExternal': true,
       'getExternalUsers': true,
       'updateExternal': true,
-      'refreshTokenExternal': true
+      'refreshTokenExternal': true,
+      'updateTestUser': true
     }
   },
   SYSTEM_USER: {

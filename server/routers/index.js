@@ -49,6 +49,7 @@ router.post('/user/external', GlobalAccess.can('user', 'createExternal'), UserCo
 router.get('/user/external', GlobalAccess.can('user', 'getExternalUsers'), UserController.getExternalUsers);
 router.put('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), UserController.updateExternal);
 router.put('/user/password/:token', UserController.setPassword);
+router.put('/user/test/:id', GlobalAccess.can('user', 'updateTestUser'), UserController.updateTestUser);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 
 // Tags
