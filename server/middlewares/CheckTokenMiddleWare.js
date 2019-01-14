@@ -10,11 +10,12 @@ const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
 const { statuses } = require('../middlewares/Access/userAuthExtension');
-const { middlewareToPromise } = require('../components/utils');
+const { applyMidlleware } = require('../components/utils');
 const Keycloak = require('keycloak-connect');
 const keycloak = new Keycloak({ bearerOnly: true }, config.keycloak);
 
-const validateKeyCloakToken = (req, res, next) => {
+const validateKeycloakToken = (req, res, next) => {
+  // had to do fake handlers to prevent keycloak call res.end() for invalid token and allow to use next middleware
   const originalStatusHandler = res.status;
   const originalEndHandler = res.end;
   const _noop = () => {};
@@ -38,6 +39,19 @@ const validateKeyCloakToken = (req, res, next) => {
     req.isValidKeycloakToken = true;
     next();
   });
+};
+
+const validateDefaultToken = (req, res, next) => {
+  if (!req.isValidKeycloakToken) {
+    try {
+      const authorization = req.cookies.authorization ? req.cookies.authorization : req.headers.authorization;
+      req.token = authorization.split(' ')[1];
+      req.decoded = jwt.decode(req.token, tokenSecret);
+    } catch (err) {
+      return next(createError(403, 'Can not parse access token - it is not valid'));
+    }
+  }
+  next();
 };
 
 const handleToken = (req, res, next) => {
@@ -74,7 +88,6 @@ const handleToken = (req, res, next) => {
       }
     ]
   };
-  let token, decoded, authorization;
   if (req.isValidKeycloakToken) {
     const { email } = req.kauth.grant.access_token.content;
     userQuery.where = {
@@ -82,17 +95,8 @@ const handleToken = (req, res, next) => {
       active: 1
     };
   } else {
-    try {
-      authorization = req.cookies.authorization ? req.cookies.authorization : req.headers.authorization;
-      token = authorization.split(' ')[1];
-      decoded = jwt.decode(token, tokenSecret);
-      req.token = token;
-      req.decoded = decoded;
-    } catch (err) {
-      return next(createError(403, 'Can not parse access token - it is not valid'));
-    }
     userQuery.where = {
-      login: decoded.user.login,
+      login: req.decoded.user.login,
       active: 1
     };
     userQuery.include.push({
@@ -101,7 +105,7 @@ const handleToken = (req, res, next) => {
       attributes: ['expires'],
       required: true,
       where: {
-        token: token,
+        token: req.token,
         expires: {
           $gt: moment().format() // expires > now
         }
@@ -157,7 +161,7 @@ exports.checkToken = async (req, res, next) => {
     req.headers.authorization = req.cookies.authorization;
   }
   try {
-    await middlewareToPromise([...keycloak.middleware(), validateKeyCloakToken, handleToken], req, res);
+    await applyMidlleware([...keycloak.middleware(), validateKeycloakToken, validateDefaultToken, handleToken], req, res);
     next();
   } catch (err) {
     next(err);
@@ -168,63 +172,29 @@ exports.getUserByToken = async function (header) {
   if (!doesAuthorizationSocket(header)) {
     return Promise.resolve(null);
   }
-
-  try {
-    const headerObj = header.cookie.split(';').reduce((acc, cur) => {
-      const arr = cur.trim().split('=');
-      acc[arr[0]] = arr[1];
-      return acc;
-    }, {});
-
-    try {
-      const tokenHeader = headerObj.authorization.replace('%20', ' ');
-      const fakeRequest = {
-        headers: {
-          'authorization': tokenHeader
-        },
-        body: {},
-        cookies: {},
-        query: {},
-        params: {},
-        get: () => null
-      };
-      const fakeResponse = {
-        status: null,
-        end: null
-      };
-      await middlewareToPromise([...keycloak.middleware(), validateKeyCloakToken, handleToken], fakeRequest, fakeResponse);
-      return fakeRequest.user;
-    } catch (err) {
-      //
-    }
-
-    const token = headerObj.authorization.split('%20')[1];
-    const decoded = jwt.decode(token, tokenSecret);
-
-    return User.findOne({
-      where: {
-        login: decoded.user.login,
-        active: 1
-      },
-      attributes: User.defaultSelect,
-      include: [
-        {
-          as: 'token',
-          model: UserTokens,
-          attributes: ['expires'],
-          required: true,
-          where: {
-            token: token,
-            expires: {
-              $gt: moment().format() // expires > now
-            }
-          }
-        }
-      ]
-    });
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  const headerObj = header.cookie.split(';').reduce((acc, cur) => {
+    const arr = cur.trim().split('=');
+    acc[arr[0]] = arr[1];
+    return acc;
+  }, {});
+  // had to emulate express req\res objects, because keycloak has no method for socket requests
+  const tokenHeader = headerObj.authorization.replace('%20', ' ');
+  const fakeRequest = {
+    headers: {
+      'authorization': tokenHeader
+    },
+    body: {},
+    cookies: {},
+    query: {},
+    params: {},
+    get: () => null
+  };
+  const fakeResponse = {
+    status: null,
+    end: null
+  };
+  await applyMidlleware([...keycloak.middleware(), validateKeycloakToken, validateDefaultToken, handleToken], fakeRequest, fakeResponse);
+  return fakeRequest.user;
 };
 
 exports.createJwtToken = function (user) {
