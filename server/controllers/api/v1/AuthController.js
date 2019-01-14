@@ -163,6 +163,9 @@ exports.logout = function (req, res, next) {
   if (isSystemUser(req)) {
     return systemLogout(req, res, next);
   }
+  if (req.isValidKeycloakToken) {
+    return keycloakUserLogout(req, res);
+  }
   userLogout(req, res, next);
 };
 
@@ -206,6 +209,15 @@ function userLogout (req, res, next) {
     .catch(err => {
       next(err);
     });
+}
+
+function keycloakUserLogout (req, res) {
+  res.cookie('authorization', '', {
+    maxAge: 0,
+    httpOnly: true
+  });
+  userSocketLogout(req, res);
+  res.sendStatus(200);
 }
 
 function userSocketLogout (req, res) {
