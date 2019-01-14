@@ -2036,6 +2036,15 @@ module.exports = {
         summary: 'На этот адрес TTI присылает данные с Jira',
         parameters: [
           {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
             in: 'body',
             name: 'body',
             description: 'неизвестность',
