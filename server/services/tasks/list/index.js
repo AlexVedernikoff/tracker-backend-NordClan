@@ -1,9 +1,20 @@
+const _ = require('lodash');
+
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const moment = require('moment');
 const { Task, Tag, ItemTag } = models;
 const layoutAgnostic = require('../../layoutAgnostic');
 const { NOTAG } = require('../../../components/utils');
+
+function getTagsByTaskList (tasks) {
+  const allTags = _.unionBy(
+    ...tasks.map(task => task.tags.map(o => o.dataValues)),
+    o => o.name
+  )
+    .map(tag => ({name: tag.name}));
+  return allTags;
+}
 
 exports.list = async function (req) {
   let prefixNeed = false;
@@ -51,12 +62,8 @@ exports.list = async function (req) {
     req.query.currentPage = 1;
   }
 
-  const queryOffset = req.query.currentPage > 0 ? req.query.pageSize * (req.query.currentPage - 1) : 0;
-
   const tasks = await Task.findAll({
     attributes: queries.task.defaultAttributes(userRole),
-    limit: req.query.pageSize,
-    offset: queryOffset,
     include: includeForSelect,
     where: queryWhere,
     subQuery: false,
@@ -85,13 +92,20 @@ exports.list = async function (req) {
     });
   }
 
+  const allTags = req.query.projectId
+    ? await queries.tag.getAllTaskTagsByProject(req.query.projectId)
+    : getTagsByTaskList(tasks);
+  const offset = req.query.currentPage > 0 ? req.query.pageSize * (req.query.currentPage - 1) : 0;
+
   const responseObject = {
     currentPage: req.query.currentPage,
     pagesCount: req.query.pageSize ? Math.ceil(projectCount / req.query.pageSize) : 1,
     pageSize: req.query.pageSize ? req.query.pageSize : projectCount,
     rowsCountAll: projectCount,
     rowsCountOnCurrentPage: tasks.length,
-    data: tasks
+    data: req.query.pageSize ? tasks.slice(offset, offset + (+req.query.pageSize)) : tasks,
+    allTags: allTags,
+    queryId: req.query.queryId
   };
 
   return responseObject;
@@ -234,6 +248,21 @@ function createWhereForRequest (req, selectWithoutTags) {
   if (selectWithoutTags) {
     where['$"tags.ItemTag"."tag_id"$'] = {
       $is: null
+    };
+  }
+
+  if (req.user.isDevOps && !req.user.isUserOfProject(+req.query.projectId)) {
+    return {
+      $or: [
+        {
+          ...where,
+          isDevOps: true
+        },
+        {
+          ...where,
+          performerId: req.user.id
+        }
+      ]
     };
   }
 

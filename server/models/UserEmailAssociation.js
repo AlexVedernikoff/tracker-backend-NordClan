@@ -24,9 +24,9 @@ module.exports = function (sequelize, DataTypes) {
           isInt: true
         }
       },
-      internalUserEmail: {
-        field: 'internal_user_email',
-        type: DataTypes.STRING,
+      internalUserId: {
+        field: 'internal_user_id',
+        type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
           isInt: true
@@ -50,6 +50,16 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id'
+      }
+    });
+  };
+
+  UserEmailAssociation.associate = function (models) {
+    UserEmailAssociation.belongsTo(models.User, {
+      as: 'user',
+      foreignKey: {
+        name: 'internalUserId',
+        field: 'internal_user_id'
       }
     });
   };

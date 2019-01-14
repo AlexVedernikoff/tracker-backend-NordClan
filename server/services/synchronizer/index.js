@@ -4,7 +4,12 @@ const {
   setProjectAssociation,
   jiraAuth,
   getJiraProjects,
-  getActiveSimtrackProjects
+  getActiveSimtrackProjects,
+  createBatch,
+  getProjectAssociations,
+  setAssociateWithJiraProject,
+  clearProjectAssociate,
+  getJiraProjectById
 } = require('./jira');
 
 module.exports = {
@@ -13,5 +18,10 @@ module.exports = {
   setProjectAssociation,
   jiraAuth,
   getJiraProjects,
-  getActiveSimtrackProjects
+  getActiveSimtrackProjects,
+  createBatch,
+  getProjectAssociations,
+  setAssociateWithJiraProject,
+  clearProjectAssociate,
+  getJiraProjectById
 };

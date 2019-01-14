@@ -86,6 +86,11 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.JSON,
         allowNull: true
       },
+      isDevOps: {
+        field: 'is_dev_ops',
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
@@ -237,6 +242,7 @@ module.exports = function (sequelize, DataTypes) {
   };
 
   Task.addHistoryForTask();
+  Task.addMeticNeedUpdateHook();
 
   return Task;
 };

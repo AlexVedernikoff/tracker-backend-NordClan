@@ -1,16 +1,11 @@
 const TasksService = require('./synchronize/task');
+const queries = require('./../../../models/queries');
 const TimesheetService = require('./synchronize/timesheet');
 const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
 const moment = require('moment');
 const createError = require('http-errors');
-const {
-  Project,
-  TaskStatusesAssociation,
-  TaskTypesAssociation,
-  UserEmailAssociation,
-  User
-} = models;
+const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User } = models;
 const request = require('./../request');
 const config = require('../../../configs');
 
@@ -21,23 +16,19 @@ exports.jiraSync = async function (headers, data) {
   let resTimesheets, resSprints, resTasks;
 
   // Подгрузка ассоциаций
-  const [
-    taskStatusesAssociation,
-    taskTypesAssociation,
-    userEmailAssociation
-  ] = await Promise.all([
+  const [taskStatusesAssociation, taskTypesAssociation, userEmailAssociation] = await Promise.all([
     TaskStatusesAssociation.findAll({}),
     TaskTypesAssociation.findAll({}),
     UserEmailAssociation.findAll({})
   ]);
 
   // подгрузка хостнейма джиры по токену
-  //const jiraHostname = await getJiraHostname(headers);
-  const jiraHostname = 'http://jirademo.teamlead.ru';
+  const jiraHostname = await getJiraHostname(headers);
+
   // Подготовка проекта
   const [{ projectId }] = data;
   const project = await Project.findOne({
-    where: { externalId: projectId, jiraHostname }
+    where: { externalId: projectId, jiraHostname: jiraHostname.server }
   });
 
   // Подготовка пользователей
@@ -47,9 +38,9 @@ exports.jiraSync = async function (headers, data) {
   let usersAssociation = await UserEmailAssociation.findAll({
     where: { externalUserEmail: { $in: users } }
   });
-  usersAssociation = usersAssociation.map(ua => ua.internalUserEmail);
+  usersAssociation = usersAssociation.map(ua => ua.internalUserId);
   users = await User.findAll({
-    where: { emailPrimary: { $in: usersAssociation } }
+    where: { id: { $in: usersAssociation } }
   });
 
   /**
@@ -69,7 +60,8 @@ exports.jiraSync = async function (headers, data) {
     sprints.push({
       externalId: key,
       name: sprintsObj[key].name,
-      authorId: sprintsObj[key].authorId
+      authorId: sprintsObj[key].authorId,
+      projectId: project.id
     });
   }
 
@@ -86,23 +78,15 @@ exports.jiraSync = async function (headers, data) {
   const tasks = data.map(task => {
     let sInd;
     if (task.sprint) {
-      sInd = resSprints.findIndex(
-        sp => sp.externalId.toString() === task.sprint.id.toString()
-      );
+      sInd = resSprints.findIndex(sp => sp.externalId.toString() === task.sprint.id.toString());
     }
 
     const statusAssociation = taskStatusesAssociation.find(tsa => {
-      return (
-        tsa.projectId === project.id
-        && tsa.externalStatusId.toString() === task.status
-      );
+      return tsa.projectId === project.id && tsa.externalStatusId.toString() === task.status;
     });
 
     const typeAssociation = taskTypesAssociation.find(tsa => {
-      return (
-        tsa.projectId === project.id
-        && tsa.externalTaskTypeId.toString() === task.type
-      );
+      return tsa.projectId === project.id && tsa.externalTaskTypeId.toString() === task.type;
     });
 
     const t = Object.assign(
@@ -141,7 +125,7 @@ exports.jiraSync = async function (headers, data) {
           return ua.externalUserEmail === worklog.assignee;
         });
         const user = users.find(u => {
-          return u.emailPrimary === ueassociation.internalUserEmail;
+          return u.id === ueassociation.internalUserId;
         });
         // ------------------
         // Поиск спринта
@@ -179,10 +163,7 @@ exports.jiraSync = async function (headers, data) {
   });
 
   try {
-    resTimesheets = await TimesheetService.synchronizeTimesheets(
-      timesheets,
-      project.id
-    );
+    resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets, project.id);
   } catch (e) {
     throw createError(400, 'Invalid input data');
   }
@@ -190,34 +171,61 @@ exports.jiraSync = async function (headers, data) {
   return { resSprints, resTasks, resTimesheets };
 };
 
+exports.clearProjectAssociate = async function (simTrackProjectId) {
+  const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+  if (!simTrackProjectId) {
+    throw createError(404, 'Project not found');
+  }
+  await simTrackProject.update({ externalId: null, jira_hostname: null, jiraProjectName: null });
+};
+
+exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraProjectId, jiraHostName, jiraProjectName) {
+  const simTrackProject = await Project.findByPrimary(simTrackProjectId);
+  if (!simTrackProject) {
+    throw createError(404, 'Project not found');
+  }
+  await simTrackProject.update({ externalId: jiraProjectId, jiraHostname: jiraHostName, jiraProjectName: jiraProjectName });
+  return jiraProjectId;
+};
+
 /**
  * @param {string} id
- * @param {string} authorId
+ * @param {string} authorI
+ * @deprecated
  */
 exports.createProject = async function (headers, id, authorId, prefix) {
-  const { data: jiraProject } = await request.get(
-    `${config.ttiUrl}/project/${id}`,
-    {
-      headers
-    }
-  );
+  const { data: jiraProject } = await request.get(`${config.ttiUrl}/project/${id}`, {
+    headers
+  });
   const jiraHostname = await getJiraHostname(headers);
   const users = await getJiraProjectUsers(headers, id);
+  let project;
 
-  let project = await Project.create({
-    name: jiraProject.name,
-    createdBySystemUser: true,
-    externalId: jiraProject.id,
-    authorId,
-    prefix,
-    jiraHostname
-  });
-  project = {
-    ...project.dataValues,
-    ...{ issue_types: jiraProject.issue_types },
-    ...{ status_types: jiraProject.status_type },
-    ...{ users }
-  };
+  project = await Project.find({ where: { externalId: jiraProject.id } });
+  if (project) {
+    project = {
+      ...project.dataValues,
+      ...{ issue_types: jiraProject.issue_types },
+      ...{ status_types: jiraProject.status_type },
+      ...{ users }
+    };
+  } else {
+    project = await Project.create({
+      name: jiraProject.name,
+      createdBySystemUser: true,
+      externalId: jiraProject.id,
+      authorId,
+      prefix,
+      jiraHostname: jiraHostname.server
+    });
+    project = {
+      ...project.dataValues,
+      ...{ issue_types: jiraProject.issue_types },
+      ...{ status_types: jiraProject.status_type },
+      ...{ users }
+    };
+  }
+
   return project;
 };
 
@@ -234,31 +242,40 @@ exports.setProjectAssociation = async function (
 ) {
   const ita = issueTypesAssociation.map(it => {
     it.projectId = projectId;
+    delete it.id;
     return it;
   });
 
   const sa = statusesAssociation.map(s => {
     s.projectId = projectId;
+    delete s.id;
     return s;
   });
 
   const ua = userEmailAssociation.map(u => {
     u.projectId = projectId;
+    delete u.id;
     return u;
   });
 
-  const beforeCreateRes = await Promise.all([
+  // ------
+  const [createdTaskTypes, createdTaskStatuses, createdUserEmail] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
     TaskStatusesAssociation.findAll({ where: { projectId } }),
     UserEmailAssociation.findAll({ where: { projectId } })
   ]);
-  if (
-    beforeCreateRes[0].length !== 0
-    || beforeCreateRes[1].length !== 0
-    || beforeCreateRes[2].length !== 0
-  ) {
-    throw new Error(400, 'Project already has associations');
+
+  if (createdTaskTypes.length !== 0) {
+    await TaskTypesAssociation.destroy({ where: { projectId } });
   }
+  if (createdTaskStatuses.length !== 0) {
+    await TaskStatusesAssociation.destroy({ where: { projectId } });
+  }
+  if (createdUserEmail.length !== 0) {
+    await UserEmailAssociation.destroy({ where: { projectId } });
+  }
+
+  // ------
 
   await Promise.all([
     TaskTypesAssociation.bulkCreate(ita),
@@ -295,6 +312,12 @@ exports.getJiraProjects = async function (headers) {
   }
 };
 
+exports.getJiraProjectById = async function (jiraProjectId, headers) {
+  return await request.get(`${config.ttiUrl}/project/${jiraProjectId}`, {
+    headers
+  });
+};
+
 exports.getActiveSimtrackProjects = async function () {
   try {
     return Project.findAll({
@@ -314,12 +337,9 @@ exports.getActiveSimtrackProjects = async function () {
  * @param projectId - id проекта в джире
  */
 async function getJiraProjectUsers (headers, projectId) {
-  const { data: users } = await request.get(
-    `${config.ttiUrl}/project/${projectId}/users`,
-    {
-      headers
-    }
-  );
+  const { data: users } = await request.get(`${config.ttiUrl}/project/${projectId}/users`, {
+    headers
+  });
   return users;
 }
 
@@ -329,3 +349,41 @@ async function getJiraHostname (headers) {
   });
   return server;
 }
+
+exports.createBatch = async function (headers, pid) {
+  const res = await request.post(
+    `${config.ttiUrl}/batch`,
+    {
+      pid
+    },
+    { headers }
+  );
+  return res;
+};
+
+exports.getProjectAssociations = async function (projectId) {
+  try {
+    const [issueTypesAssociation, statusesAssociation, userAssociation] = await Promise.all([
+      TaskTypesAssociation.findAll({ where: { projectId } }),
+      TaskStatusesAssociation.findAll({ where: { projectId } }),
+      UserEmailAssociation.findAll({ where: { projectId } })
+    ]);
+
+    const userIds = userAssociation.map(e => e.internalUserId);
+    const users = await User.findAll({ where: { id: { $in: userIds } } });
+    const userEmailAssociation = userAssociation.map(ua => {
+      const user = users.find(u => ua.internalUserId === u.id);
+      return {
+        ...ua.dataValues,
+        ...{ fullNameRu: user.fullNameRu }
+      };
+    });
+    return {
+      issueTypesAssociation,
+      statusesAssociation,
+      userEmailAssociation
+    };
+  } catch (e) {
+    throw e;
+  }
+};

@@ -1,10 +1,12 @@
 const http = require('../http');
+const createError = require('http-errors');
 const config = require('../../configs').gitLab;
 const token = config.token;
 const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { Project } = require('../../models');
 const { createMasterCommit } = require('./commits');
+const axios = require('axios');
 
 const getProject = id =>
   http.get({ host, path: `/api/v4/projects/${id}`, headers });
@@ -20,16 +22,33 @@ const getProjects = async function (ids) {
   return projects;
 };
 
+const prettyUrl = (url) => (/^https?:\/\//).test(url) ? url : 'http://' + url;
+const getProjectsOrErrors = ids =>
+  Promise.all(ids.map(id =>
+    axios.get(prettyUrl(`${host}/api/v4/projects/${id}`), {headers})
+      .then(reply => reply.data)
+      .catch(err => ({
+        id,
+        status: err.response && err.response.status,
+        error: err.response ? err.response.data.message : err.message
+      }))
+  ));
+
 const addProjectByPath = async function (projectId, path) {
-  const gitlabProject = await http.get({
-    host,
-    path: `/api/v4/projects/${encodeURIComponent(path)}`,
-    headers
-  });
+  const gitlabProject = await axios.get(prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(path)}`), {headers})
+    .then(reply => reply.data)
+    .catch(e => {
+      throw createError(
+        e.response.status || 500,
+        e.response.data.message === '404 Project Not Found'
+          ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
+          : e.response.data.message
+      );
+    });
   const project = await Project.find({ where: { id: projectId } });
 
   if (project.gitlabProjectIds.includes(gitlabProject.id)) {
-    throw new Error(400, 'Gitlab identifier is invalid');
+    throw createError(400, 'GITLAB_PROJECT_ALREADY_LINKED');
   }
 
   if (project.gitlabProjectIds instanceof Array) {
@@ -51,13 +70,13 @@ const createProject = async function (name, namespace_id, projectId) {
   };
   let gitlabProject;
   try {
-    gitlabProject = await http.post(
-      { host, path: '/api/v4/projects', headers },
-      postData
-    );
+    gitlabProject = await axios.post(prettyUrl(`${host}/api/v4/projects`), postData, {headers})
+      .then(reply => reply.data);
     await createMasterCommit(gitlabProject.id);
   } catch (e) {
-    throw new Error(404, 'Gitlab error');
+    throw e.response
+      ? createError(e.response.status || 500, 'GITLAB_ERROR')
+      : e;
   }
 
   const project = await Project.find({ where: { id: projectId } });
@@ -79,6 +98,7 @@ module.exports = {
   getProject,
   addProjectByPath,
   getProjects,
+  getProjectsOrErrors,
   createProject,
   getNamespacesList
 };

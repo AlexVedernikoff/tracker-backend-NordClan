@@ -32,13 +32,14 @@ async function update (body, taskId, user) {
     };
 
     const updatedTask = await findByPrimary(taskId, user.globalRole);
+    const performerId = updatedTask.dataValues.performerId || user.id;
 
     const createdDraft = body.statusId && body.performerId !== 0
       ? await createDraftIfNeeded(originTask, body.statusId)
       : null;
 
     const {activeTask, stoppedTasks} = body.statusId
-      ? await updateTasksStatuses(updatedTask, originTask, user.id)
+      ? await updateTasksStatuses(updatedTask, originTask, performerId)
       : {stoppedTasks: []};
 
     const {qaFactExecutionTime, qaPlannedTime} = await getQaTimeByTask(updatedTask);
@@ -237,6 +238,9 @@ async function validateTask (task, body, user) {
       throw createError(404, 'Task not found');
     }
     if (!user.canReadProject(task.projectId)) {
+      throw createError(403, 'Access denied');
+    }
+    if (user.isDevOpsProject(task.projectId) && !task.dataValues.isDevOps) {
       throw createError(403, 'Access denied');
     }
     if (task.statusId === models.TaskStatusesDictionary.CLOSED_STATUS

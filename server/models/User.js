@@ -177,6 +177,12 @@ module.exports = function (sequelize, DataTypes) {
           len: [0, 5000]
         }
       },
+      isTest: {
+        field: 'is_test',
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
@@ -197,13 +203,13 @@ module.exports = function (sequelize, DataTypes) {
           const fullNameRuArr = [this.firstNameRu, this.lastNameRu].filter(
             i => i
           );
-          return fullNameRuArr.join(' ');
+          return fullNameRuArr.join(' ') || this.getDataValue('fullNameRu');
         },
         fullNameEn: function () {
           const fullNameEnArr = [this.firstNameEn, this.lastNameEn].filter(
             i => i
           );
-          return fullNameEnArr.join(' ');
+          return fullNameEnArr.join(' ') || this.getDataValue('fullNameEn');
         }
       }
     }

@@ -56,7 +56,9 @@ exports.historyHandler = function (sequelize, historyModel) {
         [modelIdProperty]: modelId,
         action: 'create'
       }).catch((err) => {
-        createError(err);
+        if (err) {
+          throw createError(err);
+        }
       });
 
       // Сведения о созданной подзадаче в родительской задаче
@@ -68,7 +70,9 @@ exports.historyHandler = function (sequelize, historyModel) {
           [modelIdProperty]: model.parentId,
           action: 'create'
         }).catch((err) => {
-          createError(err);
+          if (err) {
+            throw createError(err);
+          }
         });
       }
 
@@ -91,7 +95,9 @@ exports.historyHandler = function (sequelize, historyModel) {
 
       sequelize.models[modelName].bulkCreate(histories)
         .catch((err) => {
-          if (err) throw createError(err);
+          if (err) {
+            throw createError(err);
+          }
         });
 
       // Сведения об удаленной подзадаче в родительской задаче
@@ -105,7 +111,9 @@ exports.historyHandler = function (sequelize, historyModel) {
           [modelIdProperty]: model.parentId,
           action: 'update'
         }).catch((err) => {
-          if (err) throw createError(err);
+          if (err) {
+            throw createError(err);
+          }
         });
       }
     }

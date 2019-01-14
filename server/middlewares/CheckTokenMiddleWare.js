@@ -4,10 +4,12 @@ const jwt = require('jwt-simple');
 const models = require('../models/index');
 const User = models.User;
 const ProjectUsers = models.ProjectUsers;
+const { Task } = models;
 const Project = models.Project;
 const UserTokens = models.Token;
 const config = require('../configs/index');
 const tokenSecret = 'token_s';
+const { statuses } = require('../middlewares/Access/userAuthExtension');
 const { middlewareToPromise } = require('../components/utils');
 const Keycloak = require('keycloak-connect');
 const keycloak = new Keycloak({ bearerOnly: true }, config.keycloak);
@@ -40,7 +42,7 @@ const validateKeyCloakToken = (req, res, next) => {
 
 const handleToken = (req, res, next) => {
   const userQuery = {
-    attributes: User.defaultSelect,
+    attributes: ['globalRole', ...User.defaultSelect],
     include: [
       {
         as: 'usersProjects',
@@ -106,16 +108,38 @@ const handleToken = (req, res, next) => {
       }
     });
   }
-  User.findOne(userQuery).then(user => {
-    if (!user) {
-      return next(createError(401, 'No found user or access in the system. Or access token has expired'));
-    }
-    if (user.dataValues.department[0]) {
-      user.dataValues.department = user.dataValues.department[0].name;
-    }
-    req.user = user;
-    return next();
-  }).catch(err => next(err));
+  User.findOne(userQuery)
+    .then(user => {
+      if (user) {
+        if (user.dataValues.globalRole === statuses.DEV_OPS) {
+          return Task.findAll({
+            attributes: ['projectId'],
+            where: {
+              isDevOps: true
+            }
+          }).then((tasks) => {
+            if (tasks !== 0) {
+              user.devOpsProjects = tasks.map(task => task.projectId);
+            }
+            return user;
+          });
+        } else {
+          return user;
+        }
+      } else {
+        return user;
+      }
+    })
+    .then(user => {
+      if (!user) {
+        return next(createError(401, 'No found user or access in the system. Or access token has expired'));
+      }
+      if (user.dataValues.department[0]) {
+        user.dataValues.department = user.dataValues.department[0].name;
+      }
+      req.user = user;
+      return next();
+    }).catch(err => next(err));
 };
 
 exports.checkToken = async (req, res, next) => {

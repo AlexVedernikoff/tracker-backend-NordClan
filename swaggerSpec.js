@@ -80,6 +80,19 @@ module.exports = {
             type: 'integer',
             in: 'query'
           },
+          // TODO: подобрать более подходящие названия для флагов onlyUserInProject и userIsParticipant
+          {
+            name: 'onlyUserInProject',
+            description: 'Получить проекты где текущий пользователь находится в участниках (исключает проекты где пользователь только создатель)',
+            type: 'boolean',
+            in: 'query'
+          },
+          {
+            name: 'userIsParticipant',
+            description: 'Получить проекты где текущий пользователь находися как участник и как создатель',
+            type: 'boolean',
+            in: 'query'
+          },
           {
             name: 'pageSize',
             type: 'integer',
@@ -321,6 +334,28 @@ module.exports = {
             type: 'integer',
             in: 'path',
             required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/project/{projectId}/tags': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Поиск тега задачи по имени среди задач конкретного проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'tagName',
+            description: 'Поиск по имени тега',
+            type: 'string',
+            in: 'query',
+            required: false
           }
         ],
         responses: responsesCodes
@@ -1534,6 +1569,29 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/user/test/{id}': {
+      put: {
+        tags: ['User'],
+        summary: 'Редактирование тестового пользователя',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'user',
+            schema: {
+              type: 'object',
+              properties: {}
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/user/external/refresh': {
       put: {
         tags: ['User'],
@@ -1911,6 +1969,13 @@ module.exports = {
             required: true
           }
         ],
+        responses: responsesCodes
+      }
+    },
+    '/healthcheck': {
+      get: {
+        tags: ['Healthcheck'],
+        summary: 'Проверка жив ли бек, реализует простой запрос в бд',
         responses: responsesCodes
       }
     }

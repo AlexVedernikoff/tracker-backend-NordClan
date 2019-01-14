@@ -13,6 +13,10 @@ exports.read = async (id, user) => {
     throw createError(403, 'Access denied');
   }
 
+  if (user.isDevOps && !task.isDevOps && !user.canReadProject(task.projectId)) {
+    throw createError(403, 'Access denied');
+  }
+
   if (task.tags) {
     task.tags = Object.keys(task.tags).map((k) => task.tags[k].name);
   }

@@ -12,7 +12,7 @@ services:
     env_file:
       - .docker-compose-dev.env
     restart: unless-stopped
-    
+
   app:
     build: .
     volumes:

@@ -7,14 +7,19 @@ exports.create = async function (req, res, next) {
   if (!req.body.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if (!req.body.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be int'));
 
-  let t;
+  let transaction;
   try {
-    t = await models.sequelize.transaction();
+    transaction = await models.sequelize.transaction();
     req.params.taskId = req.params.taskId.trim();
     const task = await models.Task.findByPrimary(req.params.taskId, { attributes: ['id', 'projectId']});
 
     if (!req.user.canReadProject(task.projectId)) {
-      await t.rollback();
+      await transaction.rollback();
+      return next(createError(403, 'Access denied'));
+    }
+
+    if (req.user.isDevOpsProject(task.projectId)) {
+      await transaction.rollback();
       return next(createError(403, 'Access denied'));
     }
 
@@ -25,7 +30,7 @@ exports.create = async function (req, res, next) {
           linkedTaskId: req.body.linkedTaskId
         },
         attributes: ['id'],
-        transaction: t,
+        transaction,
         historyAuthorId: req.user.id
       }),
       models.TaskTasks.findOrCreate({
@@ -34,18 +39,19 @@ exports.create = async function (req, res, next) {
           linkedTaskId: req.params.taskId
         },
         attributes: ['id'],
-        transaction: t,
+        transaction,
         historyAuthorId: req.user.id
       })
     ]);
 
-    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], t);
+    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], transaction);
+    await transaction.commit();
     res.json(taskTasks);
-    t.commit();
-
 
   } catch (e) {
-    await t.rollback();
+    if (transaction) {
+      await transaction.rollback();
+    }
     return next(createError(e));
   }
 };
@@ -56,14 +62,19 @@ exports.delete = async function (req, res, next) {
   if (!req.params.linkedTaskId) return next(createError(400, 'linkedTaskId must be not empty'));
   if (!req.params.linkedTaskId.toString().match(/^[0-9]+$/)) return next(createError(400, 'linkedTaskId must be not empty'));
 
-  let t;
+  let transaction;
   try {
-    t = await models.sequelize.transaction();
+    transaction = await models.sequelize.transaction();
     req.params.taskId = req.params.taskId.trim();
     const task = await models.Task.findByPrimary(req.params.taskId, { attributes: ['id', 'projectId']});
 
     if (!req.user.canReadProject(task.projectId)) {
-      await t.rollback();
+      await transaction.rollback();
+      return next(createError(403, 'Access denied'));
+    }
+
+    if (req.user.isDevOpsProject(task.projectId)) {
+      await transaction.rollback();
       return next(createError(403, 'Access denied'));
     }
 
@@ -74,27 +85,29 @@ exports.delete = async function (req, res, next) {
             taskId: req.params.taskId,
             linkedTaskId: req.params.linkedTaskId
           },
-          transaction: t,
+          transaction,
           lock: 'UPDATE'
         })
         .then(model => {
-          if (model) return model.destroy({ transaction: t, historyAuthorId: req.user.id });
+          if (model) return model.destroy({ transaction, historyAuthorId: req.user.id });
         }),
       models.TaskTasks.destroy({
         where: {
           taskId: req.params.linkedTaskId,
           linkedTaskId: req.params.taskId
         },
-        transaction: t,
+        transaction,
         historyAuthorId: req.user.id
       })
     ]);
 
-    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], t);
+    const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], transaction);
+    await transaction.commit();
     res.json(taskTasks);
-    t.commit();
-  } catch (e) {
-    await t.rollback();
-    return next(createError(e));
+  } catch (err) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    return next(createError(err));
   }
 };

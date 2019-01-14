@@ -6,6 +6,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
+const { bcryptPromise } = require('../../../components/utils');
 
 exports.me = function (req, res, next) {
   try {
@@ -65,38 +66,47 @@ exports.autocomplete = function (req, res, next) {
     .getValidationResult()
     .then(validationResult => {
       if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
-
       const result = [];
-      const userName = req.query.userName.trim();
-      let $iLike = layoutAgnostic(userName);
-      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла
-      let $or = [
+      const userName = req.query.userName;
+      const userNameArray = userName.trim().split(/\s+/);
+      const iLikeFirstName = layoutAgnostic(userNameArray[0] ? userNameArray[0] : '');
+      const iLikeLastName = layoutAgnostic(userNameArray[1] ? userNameArray[1] : '');
+
+
+      const $or = [
         {
-          fullNameRu: {
-            $iLike
+          firstNameEn: {
+            $iLike: iLikeFirstName
+          },
+          lastNameEn: {
+            $iLike: iLikeLastName
           }
         },
         {
-          fullNameEn: {
-            $iLike
+          firstNameRu: {
+            $iLike: iLikeFirstName
+          },
+          lastNameRu: {
+            $iLike: iLikeLastName
+          }
+        },
+        {
+          firstNameEn: {
+            $iLike: iLikeLastName
+          },
+          lastNameEn: {
+            $iLike: iLikeFirstName
+          }
+        },
+        {
+          firstNameRu: {
+            $iLike: iLikeLastName
+          },
+          lastNameRu: {
+            $iLike: iLikeFirstName
           }
         }
       ];
-      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
-        $iLike = layoutAgnostic(reverseUserName);
-        $or = $or.concat([
-          {
-            fullNameRu: {
-              $iLike
-            }
-          },
-          {
-            fullNameEn: {
-              $iLike
-            }
-          }
-        ]);
-      }
 
       return models.User
         .findAll({
@@ -118,6 +128,32 @@ exports.autocomplete = function (req, res, next) {
         });
     })
     .catch(err => next(createError(err)));
+};
+
+exports.devOpsUsers = async function (req, res, next) {
+  try {
+    const devOpsList = await models.User.findAll({
+      where: {
+        globalRole: {
+          $eq: 'DEV_OPS'
+        }
+      },
+      attributes: [
+        'id',
+        'firstNameRu',
+        'lastNameRu',
+        'firstNameEn',
+        'lastNameEn',
+        'photo',
+        'skype',
+        'emailPrimary',
+        'mobile'
+      ]
+    });
+    res.json(devOpsList);
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.getUsersRoles = async function (req, res, next) {
@@ -165,34 +201,34 @@ exports.getUsersRoles = async function (req, res, next) {
 
 exports.updateUserRole = async function (req, res, next) {
   const { id, globalRole } = req.body;
+  let transaction;
 
-  return models.sequelize
-    .transaction(function (t) {
-      return User.findByPrimary(id, { transaction: t, lock: 'UPDATE' }).then(
-        model => {
-          if (!model) {
-            return next(createError(404));
-          }
+  try {
+    transaction = models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
 
-          return model
-            .updateAttributes({ globalRole }, { transaction: t })
-            .then(updatedModel => {
-              const updatedUser = {
-                id: updatedModel.id,
-                globalRole: updatedModel.globalRole,
-                firstNameRu: updatedModel.firstNameRu,
-                lastNameRu: updatedModel.lastNameRu,
-                firstNameEn: updatedModel.firstNameEn,
-                lastNameEn: updatedModel.lastNameEn
-              };
-              res.json(updatedUser);
-            });
-        }
-      );
-    })
-    .catch(err => {
-      next(err);
+    const updatedModel = await model.updateAttributes({ globalRole }, { transaction });
+    await transaction.commit();
+    res.json({
+      id: updatedModel.id,
+      globalRole: updatedModel.globalRole,
+      firstNameRu: updatedModel.firstNameRu,
+      lastNameRu: updatedModel.lastNameRu,
+      firstNameEn: updatedModel.firstNameEn,
+      lastNameEn: updatedModel.lastNameEn
     });
+
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 exports.createExternal = async function (req, res, next) {
@@ -287,26 +323,30 @@ exports.updateExternal = async function (req, res, next) {
     return next(createError(400, validationResult));
   }
 
-  return models.sequelize
-    .transaction(function (t) {
-      return User.findByPrimary(req.params.id, {
-        transaction: t,
-        lock: 'UPDATE'
-      }).then(model => {
-        if (!model) {
-          return next(createError(404));
-        }
+  let transaction;
 
-        return model
-          .updateAttributes(req.body, { transaction: t })
-          .then(updatedModel => {
-            res.json(updatedModel);
-          });
-      });
-    })
-    .catch(err => {
-      next(err);
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(req.params.id, {
+      transaction,
+      lock: 'UPDATE'
     });
+
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+
+    const updatedModel = await model.updateAttributes(req.body, { transaction });
+    await transaction.commit();
+    res.json(updatedModel);
+
+  } catch (err) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
 };
 
 exports.setPassword = async function (req, res, next) {
@@ -341,6 +381,44 @@ exports.setPassword = async function (req, res, next) {
     };
 
     user.updateAttributes(params).then(updatedModel => res.json(updatedModel));
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
+exports.updateTestUser = async function (req, res, next) {
+  try {
+    req.sanitize('id').trim();
+    req
+      .checkParams('id', 'id must be int')
+      .notEmpty()
+      .isInt();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
+
+    const model = await models.User.findOne({
+      where: {
+        id: req.params.id,
+        isTest: true
+      },
+      attributes: models.User.defaultSelect
+    });
+
+    if (!model) {
+      return next(createError(404, 'User not found'));
+    }
+
+    if (req.body.password) {
+      req.body.password = await bcryptPromise.hash(req.body.password);
+    }
+
+
+    const updatedModel = await model.updateAttributes(req.body);
+    res.json(updatedModel);
+
   } catch (e) {
     return next(createError(e));
   }
@@ -406,10 +484,11 @@ exports.autocompleteExternal = function (req, res, next) {
           where: {
             globalRole: 'EXTERNAL_USER',
             active: 1,
+            isActive: 1,
             $or
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
+          attributes: ['id', 'active', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
         })
         .then((users) => {
           users.forEach((user) => {

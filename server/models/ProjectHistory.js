@@ -1,6 +1,6 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const ProjectHistory = sequelize.define('ProjectHistory', {
-    id : {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -78,7 +78,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(6),
       allowNull: false
     },
-    createdAt: {type: DataTypes.DATE, field: 'created_at'},
+    createdAt: {type: DataTypes.DATE, field: 'created_at'}
   }, {
     underscored: true,
     timestamps: true,
@@ -87,14 +87,14 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'project_histories'
   });
 
-  ProjectHistory.associate = function(models) {
+  ProjectHistory.associate = function (models) {
     ProjectHistory.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'userId',
         field: 'user_id'
       },
-      constraints: true,
+      constraints: true
     });
 
     ProjectHistory.belongsTo(models.ProjectUsers, {
@@ -103,7 +103,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'entityId',
         field: 'entity_id'
       },
-      constraints: true,
+      constraints: true
     });
 
     ProjectHistory.belongsTo(models.Sprint, {
@@ -112,7 +112,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'entityId',
         field: 'entity_id'
       },
-      constraints: false,
+      constraints: false
     });
 
     ProjectHistory.belongsTo(models.ItemTag, {
@@ -121,7 +121,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'entityId',
         field: 'entity_id'
       },
-      constraints: false,
+      constraints: false
     });
 
     ProjectHistory.belongsTo(models.Portfolio, {
@@ -130,7 +130,7 @@ module.exports = function(sequelize, DataTypes) {
         name: 'valueInt',
         field: 'value_int'
       },
-      constraints: true,
+      constraints: true
     });
   };
 
