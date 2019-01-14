@@ -31,11 +31,11 @@ module.exports = {
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
   keycloak: {
-    'realm': process.env.KEYCLOAK_REALM || 'simbirsoft-dev',
+    realm: process.env.KEYCLOAK_REALM || 'simbirsoft-dev',
     'bearer-only': true,
     'auth-server-url': process.env.KEYCLOAK_URL || 'http://sso.simbirsoft:8080/auth',
     'ssl-required': 'external',
-    'resource': 'local-simtrack-bearer-only',
+    resource: 'local-simtrack-bearer-only',
     'confidential-port': 0
   },
   email: {

@@ -14,28 +14,32 @@ const { applyMidlleware } = require('../components/utils');
 const Keycloak = require('keycloak-connect');
 const keycloak = new Keycloak({ bearerOnly: true }, config.keycloak);
 
+const _noop = () => {};
+
 const validateKeycloakToken = (req, res, next) => {
   // had to do fake handlers to prevent keycloak call res.end() for invalid token and allow to use next middleware
   const originalStatusHandler = res.status;
   const originalEndHandler = res.end;
-  const _noop = () => {};
-  const restoreReqHandlers = () => {
+  const restoreResHandlers = () => {
     res.status = originalStatusHandler;
     res.end = originalEndHandler;
   };
   const fakeResponseEnd = () => {
-    restoreReqHandlers();
+    restoreResHandlers();
     req.isValidKeycloakToken = false;
     next();
   };
-  res.status = _noop;
-  res.end = fakeResponseEnd;
+  const makeFakeResHandlers = () => {
+    res.status = _noop;
+    res.end = fakeResponseEnd;
+  };
+  makeFakeResHandlers();
   keycloak.protect()(req, res, (err) => {
     if (err) {
       next(err);
       return;
     }
-    restoreReqHandlers();
+    restoreResHandlers();
     req.isValidKeycloakToken = true;
     next();
   });
