@@ -83,7 +83,7 @@ module.exports = function (sequelize, DataTypes) {
   GitlabUserRoles.ACCESS_LEVELS = validAccessLevels;
 
   GitlabUserRoles.isRolesValid = function (roles) {
-    return !roles || roles.every(({ accessLevel, expiresAt, gitlabProjectId }) => gitlabProjectId && expiresAt && ~validAccessLevels.indexOf(accessLevel));
+    return !roles || roles.every(({ accessLevel, gitlabProjectId }) => gitlabProjectId && ~validAccessLevels.indexOf(accessLevel));
   };
 
   return GitlabUserRoles;
