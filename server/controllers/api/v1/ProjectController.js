@@ -702,7 +702,8 @@ exports.addGitlabProject = async function (req, res, next) {
   try {
     const { projectId, path } = req.body;
     const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
-    res.json(gitlabProject);
+    const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json({ gitlabProject, projectUsers });
   } catch (e) {
     next(e);
   }
@@ -721,8 +722,9 @@ exports.createGitlabProject = async function (req, res, next) {
   try {
     const { name, namespace_id } = req.body;
     const projectId = req.params.id;
-    const project = await gitLabService.projects.createProject(name, namespace_id, projectId);
-    res.json(project);
+    const gitlabProject = await gitLabService.projects.createProject(name, namespace_id, projectId);
+    const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json({ gitlabProject, projectUsers });
   } catch (e) {
     next(e);
   }

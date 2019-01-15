@@ -65,7 +65,7 @@ const addProjectByPath = async function (projectId, path) {
   try {
     transaction = await sequelize.transaction();
     await addAllProjectUsersToGitlab(projectId, gitlabProject, transaction);
-    transaction.commit();
+    await transaction.commit();
   } catch (e) {
     transaction && await transaction.rollback();
     throw e.response
@@ -90,7 +90,7 @@ const createProject = async function (name, namespace_id, projectId) {
     await createMasterCommit(gitlabProject.id);
     transaction = await sequelize.transaction();
     await addAllProjectUsersToGitlab(projectId, gitlabProject, transaction);
-    transaction.commit();
+    await transaction.commit();
   } catch (e) {
     transaction && await transaction.rollback();
     throw e.response
