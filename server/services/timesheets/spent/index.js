@@ -14,7 +14,7 @@ async function getTimesheets (queryParams) {
 function transformSpent (timesheet) {
   return {
     spentTime: timesheet.dataValues.spentTime,
-    taskStatusId: timesheet.dataValues.taskStatus.id,
+    taskStatusId: timesheet.task.taskStatus.id,
     user: timesheet.dataValues.user,
     userRole: timesheet.dataValues.userRoleId
   };
