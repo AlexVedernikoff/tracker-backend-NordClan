@@ -133,7 +133,7 @@ exports.jiraSync = async function (headers, data) {
         // ------------------
         // Поиск спринта
         const sprint = task.sprint
-          ? resSprints.find(sp => +sp.externalId === task.sprint.id)
+          ? resSprints.find(sp => sp.externalId === task.sprint.id.toString())
           : null;
 
         // ------------------
