@@ -1,5 +1,4 @@
 const TasksService = require('./synchronize/task');
-const queries = require('./../../../models/queries');
 const TimesheetService = require('./synchronize/timesheet');
 const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
@@ -33,6 +32,10 @@ exports.jiraSync = async function (headers, data) {
     const project = await Project.findOne({
       where: { externalId: projectId, jiraHostname: jiraHostname.server }
     });
+
+    if (!project) {
+      throw createError(404, 'Project with specified externalId and jiraHostname not found');
+    }
 
     // Подготовка пользователей
     let users = await getJiraProjectUsers(headers, projectId);
@@ -77,11 +80,10 @@ exports.jiraSync = async function (headers, data) {
      * Модуль с задачами
      */
 
-    const tasks = data.map(task => {
-      let sInd;
-      if (task.sprint) {
-        sInd = resSprints.findIndex(sp => sp.externalId.toString() === task.sprint.id.toString());
-      }
+    const tasks = data.reduce((acc, task) => {
+      const sprint = task.sprint
+        ? resSprints.find(sp => sp.externalId.toString() === task.sprint.id.toString())
+        : null;
 
       const statusAssociation = taskStatusesAssociation.find(tsa => {
         return tsa.projectId === project.id && tsa.externalStatusId.toString() === task.status;
@@ -91,80 +93,88 @@ exports.jiraSync = async function (headers, data) {
         return tsa.projectId === project.id && tsa.externalTaskTypeId.toString() === task.type;
       });
 
-      const t = Object.assign(
-        {},
-        {
+      if (statusAssociation && typeAssociation) {
+        acc.push({
           externalId: task.id.toString(),
           name: task.summary,
           factExecutionTime: task.timeSpent / 100,
-          sprintId: sInd >= 0 ? resSprints[sInd].id : null,
+          sprintId: sprint ? sprint.id : null,
           typeId: typeAssociation.internalTaskTypeId,
           statusId: statusAssociation.internalStatusId,
           authorId: project.authorId,
           projectId: project.id
-        }
-      );
-      return t;
-    });
+        });
+
+      }
+
+      return acc;
+    }, []);
 
     resTasks = await TasksService.synchronizeTasks(tasks, project.id);
-
 
     /**
      * Модуль с таймшитами
      */
 
-    let timesheets = [];
+    const timesheets = data.reduce((acc, task) => {
 
-    data.map(task => {
-      if (task.worklogs && task.worklogs.length !== 0) {
-        const ts = task.worklogs.map(worklog => {
-          // Поиск пользователя
-          const ueassociation = userEmailAssociation.find(ua => {
-            return ua.externalUserEmail === worklog.assignee;
-          });
-          const user = users.find(u => {
-            return u.id === ueassociation.internalUserId;
-          });
-          // ------------------
-          // Поиск спринта
-          let sprint;
-          if (task.sprint) {
-            sprint = resSprints.find(sp => {
-              return sp.externalId === task.sprint.id.toString();
-            });
-          }
-
-          // ------------------
-          // Поиск задачи
-          const tsk = resTasks.find(t => {
-            return t.externalId === task.id.toString();
-          });
-          // ------------------
-          return {
-            ...{
-              taskId: tsk.id,
-              sprintId: sprint ? sprint.id : null,
-              userId: user.id,
-              onDate: moment(new Date(worklog.onDate)).format('YYYY-MM-DD'), // поправить
-              spentTime: worklog.timeSpent / 100,
-              externalId: worklog.id,
-              comment: worklog.comment,
-              typeId: 1,
-              statusId: 1,
-              projectId: project.id,
-              isBillable: true
-            }
-          };
-        });
-        timesheets = [...timesheets, ...ts];
+      if (!task.worklogs || task.worklogs.length === 0) {
+        return acc;
       }
-    });
+
+      task.worklogs.forEach((worklog) => {
+
+        const ueassociation = userEmailAssociation.find(ua => {
+          return ua.externalUserEmail === worklog.assignee;
+        });
+        const user = users.find(u => {
+          return u.id === ueassociation.internalUserId;
+        });
+        // ------------------
+        // Поиск спринта
+        const sprint = task.sprint
+          ? resSprints.find(sp => +sp.externalId === task.sprint.id)
+          : null;
+
+        // ------------------
+        // Поиск задачи
+        const tsk = resTasks.find(t => {
+          return t.externalId === task.id.toString();
+        });
+
+        if (!tsk) {
+          return;
+        }
+
+        // ------------------
+        const newWorklog = {
+          taskId: tsk.id,
+          sprintId: sprint ? sprint.id : null,
+          userId: user.id,
+          onDate: moment(new Date(worklog.onDate)).format('YYYY-MM-DD'), // поправить
+          spentTime: worklog.timeSpent / 100,
+          externalId: worklog.id,
+          comment: worklog.comment,
+          typeId: 1,
+          statusId: 1,
+          projectId: project.id,
+          isBillable: true
+        };
+
+        acc.push(newWorklog);
+
+      });
+
+      return acc;
+    }, []);
+
     resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets, project.id);
+
+
     return { resSprints, resTasks, resTimesheets };
 
   } catch (e) {
-    throw createError(400, 'Invalid input data');
+    throw e;
   }
 
 };

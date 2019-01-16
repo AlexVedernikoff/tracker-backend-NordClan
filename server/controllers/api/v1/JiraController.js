@@ -20,7 +20,7 @@ exports.jiraSynchronize = async function (req, res, next) {
     const response = await jiraSync(req.headers, req.body);
     res.json(response);
   } catch (e) {
-    next(createError(e));
+    next(e);
   }
 };
 

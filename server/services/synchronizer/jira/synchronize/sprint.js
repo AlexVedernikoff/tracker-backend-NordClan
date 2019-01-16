@@ -35,7 +35,10 @@ exports.synchronizeSprints = async function (sprints, projectId) {
 
   const newSprints = sprints.filter(spr => createdSprints.findIndex(cspr => cspr.dataValues.externalId === spr.externalId) === -1);
   // создание новых спринтов
-  if (newSprints.length > 0) await Sprint.bulkCreate(newSprints);
+  if (newSprints.length > 0) {
+    await Sprint.bulkCreate(newSprints);
+  }
+
   return Sprint.findAll({
     where: { externalId: { $in: extIds }, projectId }
   });
