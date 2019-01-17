@@ -26,7 +26,7 @@ exports.create = async function (req, res, next){
 
     const gitlabRoles = req.body.gitlabRoles;
     if (!models.GitlabUserRoles.isRolesValid(gitlabRoles)) {
-      return next(createError('gitlabRoles is invalid, see gitlab api'));
+      return next(createError(400, 'gitlabRoles is invalid, see gitlab api'));
     }
 
     models.ProjectUsers.beforeValidate((model) => {
@@ -110,12 +110,6 @@ exports.create = async function (req, res, next){
         await transaction.commit();
         const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
         res.json(allProjectUsers);
-      })
-      .catch(async e => {
-        if (transaction) {
-          await transaction.rollback();
-        }
-        return next(createError(e));
       });
   } catch (error) {
     if (transaction) {

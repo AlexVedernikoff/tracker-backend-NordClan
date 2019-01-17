@@ -64,12 +64,12 @@ const addProjectByPath = async function (projectId, path) {
   let transaction;
   try {
     transaction = await sequelize.transaction();
-    await addAllProjectUsersToGitlab(projectId, gitlabProject, transaction);
+    await addAllProjectUsersToGitlab(projectId, gitlabProject.id, transaction);
     await transaction.commit();
   } catch (e) {
     transaction && await transaction.rollback();
     throw e.response
-      ? createError(e.response.status || 500, 'GITLAB_ERROR')
+      ? createError(e.response.status || 500, e.response.data.message)
       : e;
   }
 
@@ -89,12 +89,12 @@ const createProject = async function (name, namespace_id, projectId) {
       .then(reply => reply.data);
     await createMasterCommit(gitlabProject.id);
     transaction = await sequelize.transaction();
-    await addAllProjectUsersToGitlab(projectId, gitlabProject, transaction);
+    await addAllProjectUsersToGitlab(projectId, gitlabProject.id, transaction);
     await transaction.commit();
   } catch (e) {
     transaction && await transaction.rollback();
     throw e.response
-      ? createError(e.response.status || 500, 'GITLAB_ERROR')
+      ? createError(e.response.status || 500, e.response.data.message)
       : e;
   }
 
@@ -119,7 +119,7 @@ const getProjectMembers = async function (projectId) {
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
-        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        ? createError(e.response.status || 500, e.response.data.message)
         : e;
     });
 };
@@ -136,7 +136,7 @@ const getProjectMember = async function (projectId, memberId) {
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
-        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        ? createError(e.response.status || 500, e.response.data.message)
         : e;
     });
 };
@@ -161,7 +161,7 @@ const addProjectMember = async function (projectId, memberId, properties) {
     );
   } catch (e) {
     throw e.response
-      ? createError(e.response.status || 500, 'GITLAB_ERROR')
+      ? createError(e.response.status || 500, e.response.data.message)
       : e;
   }
   return gitlabProjectMember;
@@ -182,7 +182,7 @@ const editProjectMember = async function (projectId, memberId, properties) {
     { ...properties, user_id: memberId }, { headers }
   ).then(reply => reply.data).catch(e => {
     throw e.response
-      ? createError(e.response.status || 500, 'GITLAB_ERROR')
+      ? createError(e.response.status || 500, e.response.data.message)
       : e;
   });
 };
@@ -200,13 +200,19 @@ const removeProjectMember = async function (projectId, memberId) {
       //если пользователь уже удален, то все нормально
       if (e.response.status !== 404) {
         throw e.response
-          ? createError(e.response.status || 500, 'GITLAB_ERROR')
+          ? createError(e.response.status || 500, e.response.data.message)
           : e;
       }
     });
 };
 
-async function addAllProjectUsersToGitlab (projectId, gitlabProject, transaction) {
+/**
+ * Всем участникам проекта выдаются соответствующие доступы к репозиторию
+ * @param {number} projectId
+ * @param {number} gitlabProjectId
+ * @param {object} transaction
+ */
+async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transaction) {
   const projectUsers = await ProjectUsers.findAll({
     where: { projectId, deletedAt: null },
     include: [
@@ -229,19 +235,52 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProject, transaction
     defaults: { projectId },
     transaction
   });
-  for (const key in projectUsers) {
-    const projectUser = projectUsers[key];
-    const role = {
-      // expiresAt:
-      gitlabProjectId: gitlabProject.id
-    };
-    if (projectUser.roles.some(({ projectRoleId }) => ProjectRolesDictionary.MAINTAINER_IDS.indexOf(projectRoleId) !== -1)) {
-      role.accessLevel = GitlabUserRoles.ACCESS_MAINTAINER;
-    } else {
-      role.accessLevel = GitlabUserRoles.ACCESS_DEVELOPER;
-    }
-    await processGitlabRoles([role], projectUser, transaction);
-  }
+  await Promise.all(
+    projectUsers.map((projectUser) => {
+      const role = {
+        // expiresAt:
+        gitlabProjectId
+      };
+      if (projectUser.roles.some(({ projectRoleId }) => ProjectRolesDictionary.MAINTAINER_IDS.indexOf(projectRoleId) !== -1)) {
+        role.accessLevel = GitlabUserRoles.ACCESS_MAINTAINER;
+      } else {
+        role.accessLevel = GitlabUserRoles.ACCESS_DEVELOPER;
+      }
+      return processGitlabRoles([role], projectUser, transaction);
+    })
+  );
+}
+
+/**
+ * У  всех участников проекта отнимаются доступы к репозиторию
+ * @param {number} projectId
+ * @param {number} gitlabProjectId
+ */
+async function removeAllProjectUsersFromGitlab (projectId, gitlabProjectId) {
+  const projectUsers = await ProjectUsers.findAll({
+    where: { projectId, deletedAt: null },
+    include: [
+      {
+        as: 'roles',
+        model: ProjectUsersRoles
+      },
+      {
+        as: 'user',
+        model: User,
+        where: {
+          active: 1,
+          globalRole: {
+            $not: User.EXTERNAL_USER_ROLE
+          }
+        },
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login', 'gitlabUserId']
+      }
+    ],
+    defaults: { projectId }
+  });
+  await Promise.all(
+    projectUsers.map((projectUser) => removeProjectMember(gitlabProjectId, projectUser.user.gitlabUserId))
+  );
 }
 
 /**
@@ -365,5 +404,6 @@ module.exports = {
   addProjectMember,
   editProjectMember,
   removeProjectMember,
-  processGitlabRoles
+  processGitlabRoles,
+  removeAllProjectUsersFromGitlab
 };

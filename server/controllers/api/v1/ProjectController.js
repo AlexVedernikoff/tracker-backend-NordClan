@@ -230,7 +230,7 @@ exports.update = async function (req, res, next) {
     .concat(['id', 'portfolioId', 'statusId']);
 
   let portfolioIdOld;
-
+  let removedGitlabProjectIds = [];
   const gitlabProjectIdsOld = [];
   const gitlabProjectIdsNew = [];
   let gitlabProjectsOld = [];
@@ -264,6 +264,13 @@ exports.update = async function (req, res, next) {
                 ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
                 : firstError.error
             ));
+          }
+        }
+        if (project.gitlabProjectIds && project.gitlabProjectIds.length) {
+          if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+            removedGitlabProjectIds = project.gitlabProjectIds.filter(id => req.body.gitlabProjectIds.indexOf(id) === -1);
+          } else {
+            removedGitlabProjectIds = project.gitlabProjectIds;
           }
         }
 
@@ -311,6 +318,11 @@ exports.update = async function (req, res, next) {
             if (req.body.gitlabProjectIds) {
               gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
               model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
+            }
+            if (removedGitlabProjectIds.length) {
+              await Promise.all(
+                removedGitlabProjectIds.map((gitlabProjectId) => gitLabService.projects.removeAllProjectUsersFromGitlab(model.id, gitlabProjectId))
+              );
             }
             await transaction.commit();
             res.json(model);

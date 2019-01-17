@@ -16,7 +16,7 @@ async function getUser (userId) {
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
-        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        ? createError(e.response.status || 500, e.response.data.message)
         : e;
     });
 }
@@ -29,7 +29,7 @@ async function getUsers () {
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
-        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        ? createError(e.response.status || 500, e.response.data.message)
         : e;
     });
 }
@@ -43,7 +43,7 @@ async function findUser (user) {
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
-        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        ? createError(e.response.status || 500, e.response.data.message)
         : e;
     });
 }
@@ -58,7 +58,7 @@ async function createUser ({ emailPrimary: email, fullNameRu: name, login: usern
     .then(reply => reply.data)
     .catch(e => {
       throw e.response
-        ? createError(e.response.status || 500, 'GITLAB_ERROR')
+        ? createError(e.response.status || 500, e.response.data.message)
         : e;
     });
 }
