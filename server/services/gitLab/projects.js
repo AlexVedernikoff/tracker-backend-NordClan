@@ -49,11 +49,11 @@ const addProjectByPath = async function (projectId, path) {
     });
   const project = await Project.find({ where: { id: projectId } });
 
-  if (project.gitlabProjectIds.includes(gitlabProject.id)) {
+  if (project.gitlabProjectIds && project.gitlabProjectIds.includes(gitlabProject.id)) {
     throw createError(400, 'GITLAB_PROJECT_ALREADY_LINKED');
   }
 
-  if (project.gitlabProjectIds instanceof Array) {
+  if (Array.isArray(project.gitlabProjectIds)) {
     project.gitlabProjectIds.push(gitlabProject.id);
   } else {
     project.gitlabProjectIds = [gitlabProject.id];
