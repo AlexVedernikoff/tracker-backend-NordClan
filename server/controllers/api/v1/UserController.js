@@ -6,6 +6,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
+const { bcryptPromise } = require('../../../components/utils');
 
 exports.me = function (req, res, next) {
   try {
@@ -380,6 +381,44 @@ exports.setPassword = async function (req, res, next) {
     };
 
     user.updateAttributes(params).then(updatedModel => res.json(updatedModel));
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
+exports.updateTestUser = async function (req, res, next) {
+  try {
+    req.sanitize('id').trim();
+    req
+      .checkParams('id', 'id must be int')
+      .notEmpty()
+      .isInt();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
+
+    const model = await models.User.findOne({
+      where: {
+        id: req.params.id,
+        isTest: true
+      },
+      attributes: models.User.defaultSelect
+    });
+
+    if (!model) {
+      return next(createError(404, 'User not found'));
+    }
+
+    if (req.body.password) {
+      req.body.password = await bcryptPromise.hash(req.body.password);
+    }
+
+
+    const updatedModel = await model.updateAttributes(req.body);
+    res.json(updatedModel);
+
   } catch (e) {
     return next(createError(e));
   }
