@@ -279,7 +279,9 @@ async function removeAllProjectUsersFromGitlab (projectId, gitlabProjectId) {
     defaults: { projectId }
   });
   await Promise.all(
-    projectUsers.map((projectUser) => removeProjectMember(gitlabProjectId, projectUser.user.gitlabUserId))
+    projectUsers
+      .filter(projectUser => projectUser.user.gitlabUserId)
+      .map(projectUser => removeProjectMember(gitlabProjectId, projectUser.user.gitlabUserId))
   );
 }
 
