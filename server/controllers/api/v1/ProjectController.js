@@ -713,9 +713,9 @@ exports.list = function (req, res, next) {
 exports.addGitlabProject = async function (req, res, next) {
   try {
     const { projectId, path } = req.body;
-    const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
+    const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.addProjectByPath(projectId, path);
     const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
-    res.json({ gitlabProject, projectUsers });
+    res.json({ gitlabProject, projectUsers, notProcessedGitlabUsers: _.flatten(notProcessedGitlabUsers) });
   } catch (e) {
     next(e);
   }
@@ -734,9 +734,9 @@ exports.createGitlabProject = async function (req, res, next) {
   try {
     const { name, namespace_id } = req.body;
     const projectId = req.params.id;
-    const gitlabProject = await gitLabService.projects.createProject(name, namespace_id, projectId);
+    const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.createProject(name, namespace_id, projectId);
     const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
-    res.json({ gitlabProject, projectUsers });
+    res.json({ gitlabProject, projectUsers, notProcessedGitlabUsers: _.flatten(notProcessedGitlabUsers) });
   } catch (e) {
     next(e);
   }

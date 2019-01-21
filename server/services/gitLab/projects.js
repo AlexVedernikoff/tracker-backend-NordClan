@@ -62,9 +62,10 @@ const addProjectByPath = async function (projectId, path) {
   await project.set('gitlabProjectIds', project.gitlabProjectIds);
   await project.save();
   let transaction;
+  let notProcessedGitlabUsers = [];
   try {
     transaction = await sequelize.transaction();
-    await addAllProjectUsersToGitlab(projectId, gitlabProject.id, transaction);
+    notProcessedGitlabUsers = await addAllProjectUsersToGitlab(projectId, gitlabProject.id, transaction);
     await transaction.commit();
   } catch (e) {
     transaction && await transaction.rollback();
@@ -73,7 +74,7 @@ const addProjectByPath = async function (projectId, path) {
       : e;
   }
 
-  return gitlabProject;
+  return { gitlabProject, notProcessedGitlabUsers };
 };
 
 const createProject = async function (name, namespace_id, projectId) {
@@ -84,12 +85,13 @@ const createProject = async function (name, namespace_id, projectId) {
   };
   let gitlabProject;
   let transaction;
+  let notProcessedGitlabUsers = [];
   try {
     gitlabProject = await axios.post(prettyUrl(`${host}/api/v4/projects`), postData, {headers})
       .then(reply => reply.data);
     await createMasterCommit(gitlabProject.id);
     transaction = await sequelize.transaction();
-    await addAllProjectUsersToGitlab(projectId, gitlabProject.id, transaction);
+    notProcessedGitlabUsers = await addAllProjectUsersToGitlab(projectId, gitlabProject.id, transaction);
     await transaction.commit();
   } catch (e) {
     transaction && await transaction.rollback();
@@ -107,7 +109,7 @@ const createProject = async function (name, namespace_id, projectId) {
   await project.set('gitlabProjectIds', project.gitlabProjectIds);
   await project.save();
 
-  return gitlabProject;
+  return { gitlabProject, notProcessedGitlabUsers };
 };
 
 /**
@@ -211,6 +213,7 @@ const removeProjectMember = async function (projectId, memberId) {
  * @param {number} projectId
  * @param {number} gitlabProjectId
  * @param {object} transaction
+ * @returns {object[]}
  */
 async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transaction) {
   const projectUsers = await ProjectUsers.findAll({
@@ -235,7 +238,7 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
     defaults: { projectId },
     transaction
   });
-  await Promise.all(
+  return await Promise.all(
     projectUsers.map((projectUser) => {
       const role = {
         // expiresAt:
@@ -290,6 +293,7 @@ async function removeAllProjectUsersFromGitlab (projectId, gitlabProjectId) {
  * @param {array} gitlabRoles
  * @param {object} projectUser
  * @param {object} transaction
+ * @returns {{user: object, data: object, error: string}[]}
  */
 async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   const user = await User.findOne({
@@ -297,6 +301,7 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
     transaction
   });
   let gitlabUserId = user.gitlabUserId;
+  const notProcessedGitlabUsers = [];
   //Находим или создаем пользователя в гитлабе и сохраняем ссылку в базе
   if (!gitlabUserId) {
     const gitlabUser = await findOrCreateUser(user);
@@ -329,15 +334,14 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   });
 
   if (removedGitlabRoles.length) {
-    const members = [];
+    const successRemoved = [];
     await Promise.all(
       removedGitlabRoles.map(({ id, gitlabProjectId }) => {
         return removeProjectMember(gitlabProjectId, gitlabUserId)
-          .then(gitlabResponse => members.push(id))
-          .catch(error => members.push({ id, gitlabProjectId, error: error.message }));
+          .then(gitlabResponse => successRemoved.push(id))
+          .catch(error => notProcessedGitlabUsers.push({ user, data: { delete: true, gitlabProjectId }, error: error.response.data.error }));
       })
     );
-    const successRemoved = members.filter(member => !member.error);
     GitlabUserRoles.destroy({
       where: {
         id: { $in: successRemoved }
@@ -346,7 +350,7 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   }
 
   if (newGitlabRoles.length) {
-    const members = [];
+    const successAdded = [];
     await Promise.all(
       newGitlabRoles.map(({ accessLevel, expiresAt, gitlabProjectId }) => {
         const successAddedData = { accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id };
@@ -356,39 +360,40 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
           invite_email: user.emailPrimary
         })
           .then(gitlabReponse => {
-            members.push(successAddedData);
+            successAdded.push(successAddedData);
           })
           .catch(async error => {
             //если пользователь уже есть в проекте гитлаба
             if (error.response.status === 409) {
-              members.push(successAddedData);
+              successAdded.push(successAddedData);
               await editProjectMember(gitlabProjectId, gitlabUserId, { access_level: accessLevel, expires_at: expiresAt });
             } else {
-              members.push({ accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id, error: error.message });
+              notProcessedGitlabUsers.push({ user, data: { accessLevel, expiresAt, gitlabProjectId }, error: error.response.data.error });
             }
           });
       })
     );
-    const successAdded = members.filter(member => !member.error);
     await GitlabUserRoles.bulkCreate(successAdded, { transaction });
   }
 
   if (updatedGitlabRoles.length) {
-    const members = [];
+    const successUpdated = [];
     await Promise.all(
       updatedGitlabRoles.map(({ id, accessLevel, expiresAt, gitlabProjectId }) => {
         return editProjectMember(gitlabProjectId, gitlabUserId, { access_level: accessLevel, expires_at: expiresAt })
-          .then(gitlabResponse => members.push({ id, accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id }))
-          .catch(error => members.push({ gitlabProjectId, error: error.message }));
+          .then(gitlabResponse => successUpdated.push({ id, accessLevel, expiresAt, gitlabProjectId, projectUserId: projectUser.id }))
+          .catch(error => notProcessedGitlabUsers.push({ user, data: { accessLevel, expiresAt, gitlabProjectId }, error: error.response.data.error }));
       })
     );
-    const successUpdated = members.filter(member => !member.error);
-    for (let i = 0; i < successUpdated.length; i++) {
-      await GitlabUserRoles.update(successUpdated[i], {
-        where: { id: successUpdated[i].id }
-      }, { transaction });
-    }
+    await Promise.all(
+      successUpdated.map((member) => {
+        return GitlabUserRoles.update(member, {
+          where: { id: member.id }
+        }, { transaction });
+      })
+    );
   }
+  return notProcessedGitlabUsers;
 }
 
 const getNamespacesList = () =>
