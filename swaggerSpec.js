@@ -602,6 +602,10 @@ module.exports = {
                   type: 'array',
                   required: true,
                   example: '[]'
+                },
+                notProcessedGitlabUsers: {
+                  type: 'array',
+                  example: '[]'
                 }
               }
             }
@@ -655,6 +659,10 @@ module.exports = {
                 projectUsers: {
                   type: 'array',
                   required: true,
+                  example: '[]'
+                },
+                notProcessedGitlabUsers: {
+                  type: 'array',
                   example: '[]'
                 }
               }
