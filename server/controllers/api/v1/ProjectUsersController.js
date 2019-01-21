@@ -49,68 +49,65 @@ exports.create = async function (req, res, next){
       transaction
     };
 
-    models.ProjectUsers
-      .findOrCreate(options)
-      .spread(async (projectUser, created) => {
+    const [projectUser, created] = await models.ProjectUsers.findOrCreate(options);
 
-        if (rolesIds.length > 0) {
-          const deleteRoles = [];
-          const createRoles = [];
+    if (rolesIds.length > 0) {
+      const deleteRoles = [];
+      const createRoles = [];
 
-          const roles = await models.ProjectRolesDictionary.findAll({
-            attributes: ['id'],
-            transaction
-          });
-          roles.forEach((projectRole) => {
-            if (rolesIds.indexOf(projectRole.id) === -1) {
-              deleteRoles.push(projectRole.id);
-            } else if (!_.find(projectUser.roles, { projectRoleId: projectRole.id })) {
-              createRoles.push({
-                projectUserId: projectUser.id,
-                projectRoleId: projectRole.id
-              });
-            }
-          });
-
-          if (deleteRoles.length > 0) {
-            await models.ProjectUsersRoles.destroy({
-              where: {
-                projectUserId: projectUser.id,
-                projectRoleId: {
-                  '$in': deleteRoles
-                }
-              },
-              transaction
-            });
-          }
-
-          if (createRoles.length > 0) {
-            await models.ProjectUsersRoles.bulkCreate(createRoles, { transaction });
-          }
-        }
-
-        if (gitlabRoles.length) {
-          await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
-        }
-
-        if (created) {
-          const projectEvents = await models.ProjectEventsDictionary.findAll({
-            attributes: ['id'],
-            transaction
-          });
-          const projectUsersSubscriptionsData = projectEvents.map((projectEvent) => {
-            return {
-              projectUserId: projectUser.id,
-              projectEventId: projectEvent.id
-            };
-          });
-          await models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData, { transaction });
-        }
-
-        await transaction.commit();
-        const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
-        res.json(allProjectUsers);
+      const roles = await models.ProjectRolesDictionary.findAll({
+        attributes: ['id'],
+        transaction
       });
+      roles.forEach((projectRole) => {
+        if (rolesIds.indexOf(projectRole.id) === -1) {
+          deleteRoles.push(projectRole.id);
+        } else if (!_.find(projectUser.roles, { projectRoleId: projectRole.id })) {
+          createRoles.push({
+            projectUserId: projectUser.id,
+            projectRoleId: projectRole.id
+          });
+        }
+      });
+
+      if (deleteRoles.length > 0) {
+        await models.ProjectUsersRoles.destroy({
+          where: {
+            projectUserId: projectUser.id,
+            projectRoleId: {
+              '$in': deleteRoles
+            }
+          },
+          transaction
+        });
+      }
+
+      if (createRoles.length > 0) {
+        await models.ProjectUsersRoles.bulkCreate(createRoles, { transaction });
+      }
+    }
+
+    if (gitlabRoles.length) {
+      await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
+    }
+
+    if (created) {
+      const projectEvents = await models.ProjectEventsDictionary.findAll({
+        attributes: ['id'],
+        transaction
+      });
+      const projectUsersSubscriptionsData = projectEvents.map((projectEvent) => {
+        return {
+          projectUserId: projectUser.id,
+          projectEventId: projectEvent.id
+        };
+      });
+      await models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData, { transaction });
+    }
+
+    await transaction.commit();
+    const allProjectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json(allProjectUsers);
   } catch (error) {
     if (transaction) {
       await transaction.rollback();
