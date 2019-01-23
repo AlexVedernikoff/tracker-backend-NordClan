@@ -74,6 +74,21 @@ module.exports = function (sequelize, DataTypes) {
         field: 'project_user_id'
       }
     });
+    ProjectUsers.hasMany(models.GitlabUserRoles, {
+      as: 'gitlabRoles',
+      foreignKey: {
+        name: 'projectUserId',
+        field: 'project_user_id'
+      }
+    });
+
+    ProjectUsers.hasMany(models.ProjectUsersSubscriptions, {
+      as: 'subscriptions',
+      foreignKey: {
+        name: 'projectUserId',
+        field: 'project_user_id'
+      }
+    });
 
     ProjectUsers.hasMany(models.ProjectUsersSubscriptions, {
       as: 'subscriptions',
