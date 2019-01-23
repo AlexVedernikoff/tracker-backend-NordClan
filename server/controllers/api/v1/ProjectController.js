@@ -723,7 +723,7 @@ exports.addGitlabProject = async function (req, res, next) {
 
 exports.getGitlabNamespaces = async function (req, res, next) {
   try {
-    const namespaces = await gitLabService.projects.getNamespacesList();
+    const namespaces = await gitLabService.projects.getNamespacesList(req.query.search);
     res.json(namespaces);
   } catch (e) {
     next(e);

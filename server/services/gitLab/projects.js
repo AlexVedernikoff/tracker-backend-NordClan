@@ -396,8 +396,8 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   return notProcessedGitlabUsers;
 }
 
-const getNamespacesList = () =>
-  http.get({ host, path: '/api/v4/namespaces', headers });
+const getNamespacesList = (search) =>
+  http.get({ host, path: `/api/v4/namespaces${search ? `?search=${encodeURIComponent(search)}` : ''}`, headers });
 
 module.exports = {
   getProject,
