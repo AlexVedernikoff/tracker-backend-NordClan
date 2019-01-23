@@ -238,7 +238,7 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
     defaults: { projectId },
     transaction
   });
-  return await Promise.all(
+  const notProcessedGitlabUsers = await Promise.all(
     projectUsers.map((projectUser) => {
       const role = {
         // expiresAt:
@@ -252,6 +252,8 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
       return processGitlabRoles([role], projectUser, transaction);
     })
   );
+
+  return notProcessedGitlabUsers;
 }
 
 /**
@@ -311,9 +313,20 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
       transaction
     });
   }
+  const gitlabProjectsIds = gitlabRoles.reduce((acc, { gitlabProjectId }) => {
+    if (acc.indexOf(gitlabProjectId) === -1) {
+      acc.push(gitlabProjectId);
+    }
+    return acc;
+  }, []);
   const userGitlabRoles = await GitlabUserRoles.findAll({
     where: {
-      projectUserId: projectUser.id
+      $and: {
+        projectUserId: projectUser.id,
+        gitlabProjectId: {
+          $in: gitlabProjectsIds
+        }
+      }
     },
     attributes: ['id', 'accessLevel', 'expiresAt'],
     transaction
