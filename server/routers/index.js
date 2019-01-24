@@ -204,5 +204,4 @@ router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchro
 // Нужно питонистам
 router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
 
-
-module.exports = router;
+module.exports = { routes: router };

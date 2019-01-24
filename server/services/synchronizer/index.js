@@ -9,7 +9,7 @@ const {
   getProjectAssociations,
   setAssociateWithJiraProject,
   clearProjectAssociate,
-  getJiraProjectById,
+  getJiraProjectById
 } = require('./jira');
 
 module.exports = {
@@ -23,5 +23,5 @@ module.exports = {
   getProjectAssociations,
   setAssociateWithJiraProject,
   clearProjectAssociate,
-  getJiraProjectById,
+  getJiraProjectById
 };

@@ -10,7 +10,7 @@ const queries = require('../../../models/queries');
 const config = require('../../../configs');
 const bcrypt = require('bcrypt-nodejs');
 
-exports.login = function (req, res, next){
+exports.login = function (req, res, next) {
   if (!req.body.login || !req.body.password) return next(createError(401, 'Login and password are required'));
 
   if (isSystemUser(req)) {
@@ -40,7 +40,7 @@ exports.login = function (req, res, next){
     ],
     attributes: [ ...User.defaultSelect, 'ldapLogin', 'password', 'isTest']
   })
-    .then((user) => {
+    .then(user => {
       if (!user) return next(createError(404, 'Invalid Login or Password'));
 
       queries.token.deleteExpiredTokens(user);
@@ -51,7 +51,7 @@ exports.login = function (req, res, next){
         authLdap(user, req.body.password);
       }
     })
-    .catch((err) => {
+    .catch(err => {
       next(err);
     });
 
@@ -70,12 +70,11 @@ exports.login = function (req, res, next){
         login: req.body.login
       });
 
-      Token
-        .create({
-          userId: user.dataValues.id,
-          token: token.token,
-          expires: token.expires.format()
-        })
+      Token.create({
+        userId: user.dataValues.id,
+        token: token.token,
+        expires: token.expires.format()
+      })
         .then(() => {
           res.cookie('authorization', 'Basic ' + token.token, {
             maxAge: config.auth.accessTokenLifetime * 1000,
@@ -90,8 +89,7 @@ exports.login = function (req, res, next){
             user: userAuthExtension(user)
           });
         })
-        .catch((e) => next(createError(e)));
-
+        .catch(e => next(createError(e)));
     });
   }
 
@@ -117,18 +115,16 @@ exports.login = function (req, res, next){
       login: req.body.login
     });
 
-    Token
-      .create({
-        userId: user.dataValues.id,
-        token: token.token,
-        expires: token.expires.format()
-      })
+    Token.create({
+      userId: user.dataValues.id,
+      token: token.token,
+      expires: token.expires.format()
+    })
       .then(() => {
         res.cookie('authorization', 'Basic ' + token.token, {
           maxAge: config.auth.accessTokenLifetime * 1000,
           httpOnly: true
         });
-
 
         res.json({
           token: token.token,
@@ -136,55 +132,50 @@ exports.login = function (req, res, next){
           user: userAuthExtension(user)
         });
       })
-      .catch((err) => next(createError(err)));
+      .catch(err => next(createError(err)));
   }
 
   function authSystemUser (user, password) {
-
-    if (
-      user !== config.systemAuth.login
-      || password !== config.systemAuth.password
-    ) return next(createError(404, 'Invalid Login or Password'));
+    if (user !== config.systemAuth.login || password !== config.systemAuth.password) {return next(createError(404, 'Invalid Login or Password'));}
 
     const token = SystemAuth.createJwtToken(req.body.login);
 
-    SystemToken
-      .create({
-        token: token.token,
-        expires: token.expires.format()
-      })
+    SystemToken.create({
+      token: token.token,
+      expires: token.expires.format()
+    })
       .then(() => {
         res.cookie('system-authorization', 'Basic ' + token.token, {
           maxAge: config.auth.accessTokenLifetime * 1000,
           httpOnly: true
         });
 
-
         res.json({
           token: token.token,
           expire: token.expires
         });
       })
-      .catch((err) => next(createError(err)));
+      .catch(err => next(createError(err)));
   }
 };
-
 
 exports.logout = function (req, res, next) {
   if (isSystemUser(req)) {
     return systemLogout(req, res, next);
   }
+  if (req.isValidKeycloakToken) {
+    return keycloakUserLogout(req, res);
+  }
   userLogout(req, res, next);
 };
 
 function systemLogout (req, res, next) {
-  SystemToken
-    .destroy({
-      where: {
-        token: req.systemToken
-      }
-    })
-    .then((row) => {
+  SystemToken.destroy({
+    where: {
+      token: req.systemToken
+    }
+  })
+    .then(row => {
       if (!row) return next(createError(404));
 
       res.cookie('system-authorization', '', {
@@ -194,7 +185,7 @@ function systemLogout (req, res, next) {
 
       res.sendStatus(200);
     })
-    .catch((err) => next(createError(err)));
+    .catch(err => next(createError(err)));
 }
 
 function userLogout (req, res, next) {
@@ -204,7 +195,7 @@ function userLogout (req, res, next) {
       token: req.token
     }
   })
-    .then((row) => {
+    .then(row => {
       if (!row) return next(createError(404));
 
       res.cookie('authorization', '', {
@@ -215,18 +206,29 @@ function userLogout (req, res, next) {
       userSocketLogout(req, res);
       res.sendStatus(200);
     })
-    .catch((err) => {
+    .catch(err => {
       next(err);
     });
 }
 
-function userSocketLogout (req, res) {
-  res.io.of('/').in(`user_${ req.user.id }`).clients((error, socketIds) => {
-    socketIds.forEach(socketId => res.io.sockets.sockets[socketId].leave(`user_${ req.user.id }`));
-    console.log('leave: ' + `user_${ req.user.id }`);
+function keycloakUserLogout (req, res) {
+  res.cookie('authorization', '', {
+    maxAge: 0,
+    httpOnly: true
   });
+  userSocketLogout(req, res);
+  res.sendStatus(200);
 }
 
+function userSocketLogout (req, res) {
+  res.io
+    .of('/')
+    .in(`user_${req.user.id}`)
+    .clients((error, socketIds) => {
+      socketIds.forEach(socketId => res.io.sockets.sockets[socketId].leave(`user_${req.user.id}`));
+      console.log('leave: ' + `user_${req.user.id}`);
+    });
+}
 
 function isSystemUser (req) {
   return req.body.isSystemUser;
