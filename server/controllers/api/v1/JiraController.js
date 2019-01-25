@@ -89,8 +89,8 @@ exports.getJiraProject = async function (req, res, next) {
       getJiraProjectUsers(req.headers, req.params.jiraProjectId)
     ]);
     res.json({
-      issue_type: data.issue_types,
-      status_type: data.status_type,
+      issueTypes: data.issue_types,
+      statusTypes: data.status_type,
       users
     });
   } catch (e) {
