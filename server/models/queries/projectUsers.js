@@ -37,6 +37,10 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
         {
           as: 'roles',
           model: models.ProjectUsersRoles
+        },
+        {
+          as: 'gitlabRoles',
+          model: models.GitlabUserRoles
         }
       ],
       order: [
@@ -52,7 +56,8 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
           ...projectUser.user.get(),
           fullNameRu: projectUser.user.fullNameRu,
           fullNameEn: projectUser.user.fullNameEn,
-          roles: getTransRolesToObject(projectUser.roles, projectRoles)
+          roles: getTransRolesToObject(projectUser.roles, projectRoles),
+          gitlabRoles: projectUser.gitlabRoles
         };
       });
 

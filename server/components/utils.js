@@ -56,3 +56,22 @@ exports.bcryptPromise = {
     });
   }
 };
+
+const transformAndApplyMiddleware = (method, request, response) => new Promise((resolve, reject) => {
+  method(request, response, (err) => {
+    if (err) {
+      reject(err);
+      return;
+    }
+    resolve();
+  });
+});
+
+exports.applyMidlleware = async (inputMiddleware, req, res) => {
+  const middleware = !Array.isArray(inputMiddleware)
+    ? [inputMiddleware]
+    : inputMiddleware;
+  for (const item of middleware) {
+    await transformAndApplyMiddleware(item, req, res);
+  }
+};

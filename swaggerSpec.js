@@ -292,6 +292,26 @@ module.exports = {
                   type: 'string',
                   example: 'string',
                   description: 'можно разделять через ",". Смотри словарь ролей. Новое значение затерет предыдушие роли пользователя'
+                },
+                gitlabRoles: {
+                  type: 'array',
+                  example: '[]',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      accessLevel: {
+                        type: 'integer',
+                        required: true
+                      },
+                      gitlabProjectId: {
+                        type: 'integer',
+                        required: true
+                      },
+                      expiredDate: {
+                        type: 'string'
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -513,6 +533,142 @@ module.exports = {
           }
         ],
         responses: responsesCodes
+      }
+    },
+    '/project/{projectId}/history': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить историю сущности в контексте проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query'
+          },
+          {
+            name: 'currentPage',
+            type: 'integer',
+            in: 'query'
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/project/:projectId/addGitlabProject': {
+      post: {
+        tags: ['Projects'],
+        summary: 'Привязать существующий gitlab репозиторий',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'project',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                path: {
+                  type: 'string',
+                  required: true,
+                  example: 'front-end/gitlab-local-test'
+                }
+              }
+            }
+          }
+        ],
+        responses: {
+          ...responsesCodes,
+          '200': {
+            ...responsesCodes['200'],
+            schema: {
+              type: 'object',
+              properties: {
+                gitlabProject: {
+                  type: 'object',
+                  example: '{}'
+                },
+                projectUsers: {
+                  type: 'array',
+                  required: true,
+                  example: '[]'
+                },
+                notProcessedGitlabUsers: {
+                  type: 'array',
+                  example: '[]'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/project/:projectId/createGitlabProject': {
+      post: {
+        tags: ['Projects'],
+        summary: 'Создать gitlab репозиторий и привязать к проекту',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'project',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                name: {
+                  type: 'string',
+                  required: true,
+                  example: 'some repo name'
+                },
+                namespace_id: {
+                  type: 'integer',
+                  required: true,
+                  example: '1'
+                }
+              }
+            }
+          }
+        ],
+        responses: {
+          ...responsesCodes,
+          '200': {
+            ...responsesCodes['200'],
+            schema: {
+              type: 'object',
+              properties: {
+                gitlabProject: {
+                  type: 'object',
+                  example: '{}'
+                },
+                projectUsers: {
+                  type: 'array',
+                  required: true,
+                  example: '[]'
+                },
+                notProcessedGitlabUsers: {
+                  type: 'array',
+                  example: '[]'
+                }
+              }
+            }
+          }
+        }
       }
     },
 
@@ -1252,31 +1408,6 @@ module.exports = {
         parameters: [
           {
             name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'pageSize',
-            type: 'integer',
-            in: 'query'
-          },
-          {
-            name: 'currentPage',
-            type: 'integer',
-            in: 'query'
-          }
-        ],
-        responses: responsesCodes
-      }
-    },
-    '/project/{projectId}/history': {
-      get: {
-        tags: ['Projects'],
-        summary: 'Получить историю сущности в контексте проекта',
-        parameters: [
-          {
-            name: 'projectId',
             type: 'integer',
             in: 'path',
             required: true

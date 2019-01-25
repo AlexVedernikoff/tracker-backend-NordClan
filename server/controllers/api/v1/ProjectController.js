@@ -3,7 +3,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
 const models = require('../../../models');
-const { Project, Tag, ItemTag, Portfolio, Sprint, Task } = models;
+const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
@@ -122,6 +122,10 @@ exports.read = function (req, res, next) {
           {
             as: 'roles',
             model: models.ProjectUsersRoles
+          },
+          {
+            as: 'gitlabRoles',
+            model: models.GitlabUserRoles
           }
         ],
         order: [['id', 'DESC']]
@@ -186,7 +190,8 @@ exports.read = function (req, res, next) {
             firstNameEn: projectUser.user.firstNameEn,
             lastNameRu: projectUser.user.lastNameRu,
             lastNameEn: projectUser.user.lastNameEn,
-            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
+            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles),
+            gitlabRoles: projectUser.gitlabRoles
           });
         });
       }
@@ -225,7 +230,7 @@ exports.update = async function (req, res, next) {
     .concat(['id', 'portfolioId', 'statusId']);
 
   let portfolioIdOld;
-
+  let removedGitlabProjectIds = [];
   const gitlabProjectIdsOld = [];
   const gitlabProjectIdsNew = [];
   let gitlabProjectsOld = [];
@@ -259,6 +264,13 @@ exports.update = async function (req, res, next) {
                 ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
                 : firstError.error
             ));
+          }
+        }
+        if (project.gitlabProjectIds && project.gitlabProjectIds.length) {
+          if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+            removedGitlabProjectIds = project.gitlabProjectIds.filter(id => req.body.gitlabProjectIds.indexOf(id) === -1);
+          } else {
+            removedGitlabProjectIds = project.gitlabProjectIds;
           }
         }
 
@@ -306,6 +318,11 @@ exports.update = async function (req, res, next) {
             if (req.body.gitlabProjectIds) {
               gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
               model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
+            }
+            if (removedGitlabProjectIds.length) {
+              await Promise.all(
+                removedGitlabProjectIds.map((gitlabProjectId) => gitLabService.projects.removeAllProjectUsersFromGitlab(model.id, gitlabProjectId))
+              );
             }
             await transaction.commit();
             res.json(model);
@@ -696,8 +713,9 @@ exports.list = function (req, res, next) {
 exports.addGitlabProject = async function (req, res, next) {
   try {
     const { projectId, path } = req.body;
-    const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
-    res.json(gitlabProject);
+    const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.addProjectByPath(projectId, path);
+    const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json({ gitlabProject, projectUsers, notProcessedGitlabUsers: _.flatten(notProcessedGitlabUsers) });
   } catch (e) {
     next(e);
   }
@@ -705,7 +723,7 @@ exports.addGitlabProject = async function (req, res, next) {
 
 exports.getGitlabNamespaces = async function (req, res, next) {
   try {
-    const namespaces = await gitLabService.projects.getNamespacesList();
+    const namespaces = await gitLabService.projects.getNamespacesList(req.query.search);
     res.json(namespaces);
   } catch (e) {
     next(e);
@@ -716,8 +734,9 @@ exports.createGitlabProject = async function (req, res, next) {
   try {
     const { name, namespace_id } = req.body;
     const projectId = req.params.id;
-    const project = await gitLabService.projects.createProject(name, namespace_id, projectId);
-    res.json(project);
+    const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.createProject(name, namespace_id, projectId);
+    const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json({ gitlabProject, projectUsers, notProcessedGitlabUsers: _.flatten(notProcessedGitlabUsers) });
   } catch (e) {
     next(e);
   }

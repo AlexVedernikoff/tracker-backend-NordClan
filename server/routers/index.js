@@ -186,5 +186,4 @@ router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
 router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // эксперементальная функция, не документирована
 
-
-module.exports = router;
+module.exports = { routes: router };

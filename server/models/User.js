@@ -177,6 +177,11 @@ module.exports = function (sequelize, DataTypes) {
           len: [0, 5000]
         }
       },
+      gitlabUserId: {
+        field: 'gitlab_user_id',
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
       isTest: {
         field: 'is_test',
         type: DataTypes.BOOLEAN,
