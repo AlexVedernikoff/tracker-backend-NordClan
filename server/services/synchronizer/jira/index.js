@@ -8,6 +8,37 @@ const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssocia
 const request = require('./../request');
 const config = require('../../../configs');
 
+const timeSheetsCustomCompare = (a, b) => {
+  if (
+    a.taskId === b.taskId
+    && a.userId === b.userId
+    && a.onDate === b.onDate
+    && a.externalId === b.externalId
+    && a.statusId === b.statusId
+    && a.projectId === b.projectId
+
+  ) {
+    return true;
+  }
+};
+
+const summaryTimesheet = (a, b) => {
+  a.spentTime += b.spentTime;
+  return a;
+};
+
+const reduceDuplicateTimesheet = (value, valueIndx, arr) => {
+  arr.forEach((el, indx) => {
+    if (indx !== valueIndx) {
+      if (timeSheetsCustomCompare(value, el)) {
+        arr[valueIndx] = summaryTimesheet(value, el);
+        arr[indx] = null;
+      }
+    }
+  });
+  return arr.filter(el => el);
+};
+
 /**
  * @param data - Данные для синхронизации
  */
@@ -167,6 +198,10 @@ exports.jiraSync = async function (headers, data) {
 
       return acc;
     }, []);
+
+    timesheets.forEach((el, indx) => {
+      reduceDuplicateTimesheet(el, indx, timesheets);
+    });
 
     resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets, project.id);
 
