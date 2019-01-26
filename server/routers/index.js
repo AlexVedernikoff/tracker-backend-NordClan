@@ -175,33 +175,15 @@ router.get('/:entity(project|task)/:entityId/history', GlobalAccess.can('history
 // Metrics
 router.post('/metrics', GlobalAccess.can('metrics', 'list'), MetricsController.list);
 
-// JiraSynchronize
-
-// ДЛЯ ФРОНТА:
-// post auth
+// JiraS
 router.post('/jira/auth', JiraController.jiraAuth);
-// get projectsJira
-router.get('/jira/projects', replaceAuthHeader(), JiraController.getJiraProjects);
-// get projectJiraStatusesForAssocciation
-router.get('/jira/getProjectAssociation', JiraController.getProjectAssociation); // созданнные ассоциации
-router.get('/jira/project/:jiraProjectId', replaceAuthHeader(), JiraController.getJiraProject); // статусы и типы из жиры
-// post association // Отдельный роут, который принимает все данные
-router.post('/jira/associateProjectWithJira', replaceAuthHeader(), JiraController.associateWithJiraProject); // проставляет externalId
-router.post('/jira/setProjectAssociation', JiraController.setJiraProjectAssociation); // все собранная инфа скидывается сюда
-router.post('/jira/project', replaceAuthHeader(), JiraController.createJiraProject); // устарел
-
-
-// post handle start sync
-router.post('/jira/batch', replaceAuthHeader(), JiraController.createBatch); // только менеджер
-
-// cleanProject, destroy association
-router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // пока не делаем
-
-// ЧИСТО ДЛЯ JIRA:
-// Отдать данные
+router.get('/jira/project', replaceAuthHeader(), JiraController.getJiraProjects);
+router.get('/jira/project/:jiraProjectId/info', replaceAuthHeader(), JiraController.getJiraProject);
+router.get('/project/:projectId/jira/association', JiraController.getProjectAssociation);
+router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
+router.post('/jira/project/:jiraProjectId/handleSync', replaceAuthHeader(), JiraController.createBatch);
+router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects); // Нужно питонистам
 router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
-
-// Нужно питонистам
-router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects);
+router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // эксперементальная функция, не документирована
 
 module.exports = { routes: router };

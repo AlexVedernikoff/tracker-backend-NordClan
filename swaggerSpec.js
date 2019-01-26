@@ -2103,6 +2103,235 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/jira/auth': {
+      post: {
+        tags: ['Jira'],
+        summary: 'Авторизация в Jira',
+        parameters: [
+          {
+            in: 'body',
+            name: 'credentials',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                server: {
+                  type: 'string',
+                  example: 'http://jira-test.simbirsoft:8080'
+                },
+                username: {
+                  type: 'string',
+                  example: 'admin'
+                },
+                password: {
+                  type: 'string',
+                  example: 'admin'
+                },
+                email: {
+                  type: 'string',
+                  example: 'test@example.org'
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    '/jira/project': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить проекты из Jira',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          }
+        ]
+      }
+    },
+    '/jira/getActiveProjects': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить все заинтегрированные проекты с Jira (нужно для TTI)'
+      }
+    },
+    '/jira/synchronize': {
+      post: {
+        tags: ['Jira'],
+        summary: 'На этот адрес TTI присылает данные с Jira',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'body',
+            description: 'неизвестность',
+            schema: {
+              type: 'object'
+            },
+            required: true
+          }
+        ]
+      }
+    },
+    '/jira/project/{jiraProjectId}/info': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить информацию из Jira (status_type и issue_type, users)',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            name: 'jiraProjectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
+    '/jira/project/{jiraProjectId}/handleSync': {
+      post: {
+        tags: ['Jira'],
+        summary: 'Вручную запустить команду на синхронизацию с JIRA, далее TTI пришлет данные по другому роуту',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            name: 'jiraProjectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
+    '/project/{projectId}/jira/association/': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить существующие ассоциации проекта с Jira',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      },
+      post: {
+        tags: ['Jira'],
+        summary: 'Привязать проект Jira к проекту в simtrack',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            in: 'body',
+            name: '',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                jiraProjectId: {
+                  type: 'integer',
+                  example: 1000
+                },
+                jiraHostName: {
+                  type: 'string',
+                  example: 'http://jira-test.simbirsoft:8080'
+                },
+                issueTypesAssociation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: [],
+                    properties: {
+                      internalTaskTypeId: {
+                        type: 'integer',
+                        example: 1
+                      },
+                      externalTaskTypeId: {
+                        type: 'integer',
+                        example: 5
+                      }
+                    }
+                  }
+                },
+                statusesAssociation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: [],
+                    properties: {
+                      internalStatusId: {
+                        type: 'integer',
+                        example: 1
+                      },
+                      externalStatusId: {
+                        type: 'integer',
+                        example: 5
+                      }
+                    }
+                  }
+                },
+                userEmailAssociation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: [],
+                    properties: {
+                      internalUserEmail: {
+                        type: 'string',
+                        example: 'abs@simbirsoft.com'
+                      },
+                      externalUserEmail: {
+                        type: 'string',
+                        example: 'abs@simbirsoft.com'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
     '/healthcheck': {
       get: {
         tags: ['Healthcheck'],
