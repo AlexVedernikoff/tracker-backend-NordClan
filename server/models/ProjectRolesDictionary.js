@@ -36,6 +36,7 @@ module.exports = function (sequelize, DataTypes) {
   });
 
   ProjectRoles.ADMIN_IDS = [1, 2];
+  ProjectRoles.MAINTAINER_IDS = [...ProjectRoles.ADMIN_IDS, 8];
   ProjectRoles.UNBILLABLE_ID = 2;
   ProjectRoles.UNBILLABLE_ID = 10;
   ProjectRoles.CUSTOMER_ID = 11;
