@@ -9,17 +9,20 @@ const request = require('./../request');
 const config = require('../../../configs');
 
 const timeSheetsCustomCompare = (a, b) => {
-  if (
-    a.taskId === b.taskId
-    && a.userId === b.userId
-    && a.onDate === b.onDate
-    && a.externalId === b.externalId
-    && a.statusId === b.statusId
-    && a.projectId === b.projectId
+  if (a && b) {
+    if (
+      a.taskId === b.taskId
+      && a.userId === b.userId
+      && a.onDate === b.onDate
+      && a.externalId === b.externalId
+      && a.statusId === b.statusId
+      && a.projectId === b.projectId
 
-  ) {
-    return true;
+    ) {
+      return true;
+    }
   }
+  return false;
 };
 
 const summaryTimesheet = (a, b) => {
