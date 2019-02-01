@@ -14,7 +14,6 @@ const timeSheetsCustomCompare = (a, b) => {
       a.taskId === b.taskId
       && a.userId === b.userId
       && a.onDate === b.onDate
-      && a.externalId === b.externalId
       && a.statusId === b.statusId
       && a.projectId === b.projectId
 
@@ -27,6 +26,7 @@ const timeSheetsCustomCompare = (a, b) => {
 
 const summaryTimesheet = (a, b) => {
   a.spentTime += b.spentTime;
+  a.comment += ', ' + b.comment;
   return a;
 };
 
@@ -39,7 +39,6 @@ const reduceDuplicateTimesheet = (value, valueIndx, arr) => {
       }
     }
   });
-  return arr.filter(el => el);
 };
 
 /**
@@ -58,13 +57,10 @@ exports.jiraSync = async function (headers, data) {
       UserEmailAssociation.findAll({})
     ]);
 
-    // подгрузка хостнейма джиры по токену
-    const jiraHostname = await getJiraHostname(headers);
-
     // Подготовка проекта
     const [{ projectId }] = data;
     const project = await Project.findOne({
-      where: { externalId: projectId, jiraHostname: jiraHostname.server }
+      where: { externalId: projectId }
     });
 
     if (!project) {
@@ -131,7 +127,7 @@ exports.jiraSync = async function (headers, data) {
         acc.push({
           externalId: task.id.toString(),
           name: task.summary,
-          factExecutionTime: task.timeSpent / 100,
+          factExecutionTime: Math.trunc(task.timeSpent / 3600 * 10000) / 10000,
           sprintId: sprint ? sprint.id : null,
           typeId: typeAssociation.internalTaskTypeId,
           statusId: statusAssociation.internalStatusId,
@@ -150,7 +146,7 @@ exports.jiraSync = async function (headers, data) {
      * Модуль с таймшитами
      */
 
-    const timesheets = data.reduce((acc, task) => {
+    let timesheets = data.reduce((acc, task) => {
 
       if (!task.worklogs || task.worklogs.length === 0) {
         return acc;
@@ -186,7 +182,7 @@ exports.jiraSync = async function (headers, data) {
           sprintId: sprint ? sprint.id : null,
           userId: user.id,
           onDate: moment(new Date(worklog.onDate)).format('YYYY-MM-DD'), // поправить
-          spentTime: worklog.timeSpent / 100,
+          spentTime: Math.trunc(worklog.timeSpent / 3600 * 10000) / 10000,
           externalId: worklog.id,
           comment: worklog.comment,
           typeId: 1,
@@ -205,6 +201,8 @@ exports.jiraSync = async function (headers, data) {
     timesheets.forEach((el, indx) => {
       reduceDuplicateTimesheet(el, indx, timesheets);
     });
+
+    timesheets = timesheets.filter(el => el);
 
     resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets, project.id);
 

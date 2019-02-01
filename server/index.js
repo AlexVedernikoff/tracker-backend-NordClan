@@ -15,6 +15,8 @@ const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 const Access = require('./middlewares/Access/SetUserAccessMiddleWare');
 const server = require('http').Server(app);
 const HealthcheckController = require('./controllers/api/v1/HealthcheckController');
+const expressWinston = require('express-winston');
+const winston = require('winston');
 const io = require('socket.io')(server, {
   path: '/api/v1/socket'
 });
@@ -72,7 +74,29 @@ exports.run = function () {
     next();
   });
 
+  expressWinston.requestWhitelist.push('body');
+  expressWinston.responseWhitelist.push('body');
+
+  app.use(expressWinston.logger({
+    transports: [
+      new winston.transports.Console()
+    ],
+    format: winston.format.combine(
+      winston.format.json()
+    )
+  }));
+
   app.use('/api/v1', routes);
+
+  app.use(expressWinston.logger({
+    transports: [
+      new winston.transports.Console()
+    ],
+    format: winston.format.combine(
+      winston.format.json()
+    )
+  }));
+
   app.use(errorHandlerMiddleWare);
 
   app.get('*', function (req, res) {
