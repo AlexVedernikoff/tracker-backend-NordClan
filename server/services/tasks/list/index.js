@@ -7,16 +7,14 @@ const { Task, Tag, ItemTag } = models;
 const layoutAgnostic = require('../../layoutAgnostic');
 const { NOTAG } = require('../../../components/utils');
 
-function getTagsByTaskList (tasks) {
-  const allTags = _.unionBy(
-    ...tasks.map(task => task.tags.map(o => o.dataValues)),
-    o => o.name
-  )
-    .map(tag => ({name: tag.name}));
+function getTagsByTaskList(tasks) {
+  const allTags = _.unionBy(...tasks.map(task => task.tags.map(o => o.dataValues)), o => o.name).map(tag => ({
+    name: tag.name
+  }));
   return allTags;
 }
 
-exports.list = async function (req) {
+exports.list = async function(req) {
   let prefixNeed = false;
 
   if (req.query.fields) {
@@ -68,11 +66,11 @@ exports.list = async function (req) {
     where: queryWhere,
     subQuery: false,
     order: models.sequelize.literal(
-      'CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
-        + ', "sprint"."fact_start_date" ASC'
-        + ', "statusId" ASC'
-        + ', "prioritiesId" ASC'
-        + ', "name" ASC'
+      'CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END' +
+        ', "sprint"."fact_start_date" ASC' +
+        ', "statusId" ASC' +
+        ', "prioritiesId" ASC' +
+        ', "name" ASC'
     )
   });
 
@@ -103,7 +101,7 @@ exports.list = async function (req) {
     pageSize: req.query.pageSize ? req.query.pageSize : projectCount,
     rowsCountAll: projectCount,
     rowsCountOnCurrentPage: tasks.length,
-    data: req.query.pageSize ? tasks.slice(offset, offset + (+req.query.pageSize)) : tasks,
+    data: req.query.pageSize ? tasks.slice(offset, offset + +req.query.pageSize) : tasks,
     allTags: allTags,
     queryId: req.query.queryId
   };
@@ -111,7 +109,7 @@ exports.list = async function (req) {
   return responseObject;
 };
 
-function createWhereForRequest (req, selectWithoutTags) {
+function createWhereForRequest(req, selectWithoutTags) {
   const where = {
     deletedAt: { $eq: null } // IS NULL
   };
@@ -128,7 +126,16 @@ function createWhereForRequest (req, selectWithoutTags) {
 
   if (req.query.name) {
     if (+req.query.name > 0) {
-      where.id = req.query.name;
+      const searchTemplate = `%${req.query.name}%`;
+
+      where.$or = [
+        {
+          name: { $iLike: searchTemplate }
+        },
+        models.sequelize.where(models.sequelize.cast(models.sequelize.col('Task.id'), 'varchar'), {
+          $iLike: searchTemplate
+        })
+      ];
     } else {
       where.name = {
         $iLike: layoutAgnostic(req.query.name)
@@ -205,17 +212,17 @@ function createWhereForRequest (req, selectWithoutTags) {
       const ind = sprints.findIndex(e => e === '0');
       if (~ind) {
         sprints.splice(ind, 1);
-        where.$or = [
-          { sprintId: { $eq: null } },
-          {
-            sprintId: {
+        where.sprintId = {
+          $or: [
+            { $eq: null },
+            {
               in: sprints
                 .toString()
                 .split(',')
                 .map(el => el.trim())
             }
-          }
-        ];
+          ]
+        };
       } else {
         where.sprintId = {
           in: req.query.sprintId
@@ -269,14 +276,14 @@ function createWhereForRequest (req, selectWithoutTags) {
   return where;
 }
 
-async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
+async function createIncludeForRequest(tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
   const parsedTags = tagsParams
     ? tagsParams.map(el =>
-      el
-        .toString()
-        .trim()
-        .toLowerCase()
-    )
+        el
+          .toString()
+          .trim()
+          .toLowerCase()
+      )
     : null;
 
   const includeAuthor = {
