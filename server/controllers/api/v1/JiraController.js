@@ -117,12 +117,18 @@ exports.linkProject = async function (req, res, next) {
     // link Project
     const simtrackProjectId = req.params.projectId;
     const { data: projects } = await getJiraProjects(req.headers);
-    const { jiraProjectId, jiraHostName } = req.body;
+    const { jiraProjectId, jiraHostName, jiraToken } = req.body;
     const jiraProject = projects.find((p) => p.id === jiraProjectId);
     if (!jiraProject) {
       throw createError(404, 'Not found jira project');
     }
-    const jiraExternalId = await setAssociateWithJiraProject(simtrackProjectId, jiraProjectId, jiraHostName, jiraProject.name);
+    const jiraExternalId = await setAssociateWithJiraProject(
+      simtrackProjectId,
+      jiraProjectId,
+      jiraHostName,
+      jiraProject.name,
+      jiraToken
+    );
 
     // create Association
     const { issueTypesAssociation, statusesAssociation, userEmailAssociation } = req.body;
