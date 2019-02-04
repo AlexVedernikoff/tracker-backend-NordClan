@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const { Milestone } = require('../../../models');
 
 const canUpdateOrCreateMilestones = (req, projectId) => {
-  req.user.dataValues.usersProjects.some(
+  return req.user.dataValues.usersProjects.some(
     el => el.roles.some(
       role => (role.dataValues.projectRoleId === 1 || role.dataValues.projectRoleId === 2)
       && el.dataValues.projectId === projectId
@@ -28,8 +28,10 @@ exports.update = (req, res, next) => {
       if (!milestone) {
         return next(createError(404));
       }
-      if (!canUpdateOrCreateMilestones(req, milestone.projectId) || req.user.isGlobalAdmin) {
-        return next(createError(403));
+      if (!canUpdateOrCreateMilestones(req, milestone.projectId)) {
+        if (!req.user.isGlobalAdmin) {
+          return next(createError(403));
+        }
       }
     });
   Milestone
@@ -48,8 +50,10 @@ exports.delete = (req, res, next) => {
       if (!milestone) {
         return next(createError(404));
       }
-      if (!canUpdateOrCreateMilestones(req, milestone.projectId) || req.user.isGlobalAdmin) {
-        return next(createError(403));
+      if (!canUpdateOrCreateMilestones(req, milestone.projectId)) {
+        if (!req.user.isGlobalAdmin) {
+          return next(createError(403));
+        }
       }
       return milestone.destroy()
         .then(()=>{
