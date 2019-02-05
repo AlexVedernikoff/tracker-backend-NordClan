@@ -185,5 +185,7 @@ router.post('/jira/project/:jiraProjectId/handleSync', replaceAuthHeader(), Jira
 router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects); // Нужно питонистам
 router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // эксперементальная функция, не документирована
+router.post('/jira/setJiraSynchronizeStatus', JiraController.setJiraSyncStatus);
+router.get('/jira/getJiraSyncStatuses', JiraController.getJiraSyncStatuses);
 
 module.exports = { routes: router };

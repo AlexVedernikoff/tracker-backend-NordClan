@@ -10,7 +10,9 @@ const {
   setAssociateWithJiraProject,
   clearProjectAssociate,
   getJiraProjectById,
-  getJiraProjectUsers
+  getJiraProjectUsers,
+  getJiraSyncStatuses,
+  setJiraSyncStatus
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -146,6 +148,26 @@ exports.linkProject = async function (req, res, next) {
     });
 
 
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.getJiraSyncStatuses = async function (req, res, next) {
+  try {
+    const { simtrackProjectId } = req.body;
+    const statusesData = await getJiraSyncStatuses(simtrackProjectId);
+    res.json(statusesData);
+  } catch (e) {
+    next(createError(e));
+  }
+};
+
+exports.setJiraSyncStatus = async function (req, res, next) {
+  try {
+    const { simtrackProjectId, jiraProjectId, date, status } = req.body;
+    await setJiraSyncStatus(simtrackProjectId, jiraProjectId, new Date(date), status);
+    res.end();
   } catch (e) {
     next(createError(e));
   }
