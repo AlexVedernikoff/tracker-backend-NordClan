@@ -17,7 +17,7 @@ build_docker_be:
     - cp ci/Dockerfile.be ./
     - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASS $DOCKER_REGISTRY
     - docker pull $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG || true
-    - docker build --rm -t $DOCKER_REGISTRY_IMAGE:$TAG $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG -f Dockerfile.be .
+    - docker build --rm -t $DOCKER_REGISTRY_IMAGE:$TAG -t $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG -f Dockerfile.be .
     - docker push $DOCKER_REGISTRY_IMAGE:$TAG
     - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     - docker logout $DOCKER_REGISTRY
