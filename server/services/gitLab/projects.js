@@ -197,7 +197,9 @@ const editProjectMember = async function (projectId, memberId, properties) {
 const removeProjectMember = async function (projectId, memberId) {
   return await axios.delete(
     prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`), { headers }
-  ).then(reply => reply.data)
+  ).then(reply => {
+    return reply.data;
+  })
     .catch(e => {
       //если пользователь уже удален, то все нормально
       if (e.response.status !== 404) {
@@ -240,16 +242,11 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
   });
   const notProcessedGitlabUsers = await Promise.all(
     projectUsers.map((projectUser) => {
-      const role = {
-        // expiresAt:
-        gitlabProjectId
-      };
-      if (projectUser.roles.some(({ projectRoleId }) => ProjectRolesDictionary.MAINTAINER_IDS.indexOf(projectRoleId) !== -1)) {
-        role.accessLevel = GitlabUserRoles.ACCESS_MAINTAINER;
-      } else {
-        role.accessLevel = GitlabUserRoles.ACCESS_DEVELOPER;
-      }
-      return processGitlabRoles([role], projectUser, transaction);
+      const roles = GitlabUserRoles.fromProjectUserRole(
+        projectUser.roles.map(({ projectRoleId }) => projectRoleId),
+        [gitlabProjectId]
+      );
+      return processGitlabRoles(roles, projectUser, transaction);
     })
   );
 
