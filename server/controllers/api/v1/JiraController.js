@@ -155,8 +155,10 @@ exports.linkProject = async function (req, res, next) {
 
 exports.getJiraSyncStatuses = async function (req, res, next) {
   try {
-    const { simtrackProjectId } = req.body;
-    const statusesData = await getJiraSyncStatuses(simtrackProjectId);
+    const statusesData = await getJiraSyncStatuses(req.params.simtrackProjectId);
+    statusesData.sort((a, b) => {
+      return +new Date(b.date) - +new Date(a.date);
+    });
     res.json(statusesData);
   } catch (e) {
     next(createError(e));
