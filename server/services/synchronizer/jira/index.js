@@ -4,7 +4,7 @@ const SprintService = require('./synchronize/sprint');
 const models = require('../../../models');
 const moment = require('moment');
 const createError = require('http-errors');
-const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User } = models;
+const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User, JiraSyncStatus } = models;
 const request = require('./../request');
 const config = require('../../../configs');
 
@@ -409,6 +409,27 @@ exports.createBatch = async function (headers, pid) {
     { headers }
   );
   return res;
+};
+
+exports.setJiraSyncStatus = async function (simtrackProjectId, jiraProjectId, date, status) {
+  try {
+    await JiraSyncStatus.create({
+      simtrackProjectId,
+      jiraProjectId,
+      date,
+      status
+    });
+  } catch (e) {
+    throw e;
+  }
+};
+
+exports.getJiraSyncStatuses = async function (simtrackProjectId) {
+  try {
+    return await JiraSyncStatus.findAll({ where: { simtrackProjectId }});
+  } catch (e) {
+    throw e;
+  }
 };
 
 exports.getProjectAssociations = async function (projectId) {
