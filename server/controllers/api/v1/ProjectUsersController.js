@@ -24,7 +24,7 @@ exports.create = async function (req, res, next){
       return next(createError('roleId is invalid, see project roles dictionary'));
     }
 
-    const gitlabRoles = req.body.gitlabRoles;
+    let gitlabRoles = req.body.gitlabRoles;
     if (!models.GitlabUserRoles.isRolesValid(gitlabRoles)) {
       return next(createError(400, 'gitlabRoles is invalid, see gitlab api'));
     }
@@ -50,10 +50,10 @@ exports.create = async function (req, res, next){
     };
 
     const [projectUser, created] = await models.ProjectUsers.findOrCreate(options);
-
     if (rolesIds.length > 0) {
       const deleteRoles = [];
       const createRoles = [];
+      const allActiveRoles = [];
 
       const roles = await models.ProjectRolesDictionary.findAll({
         attributes: ['id'],
@@ -62,11 +62,14 @@ exports.create = async function (req, res, next){
       roles.forEach((projectRole) => {
         if (rolesIds.indexOf(projectRole.id) === -1) {
           deleteRoles.push(projectRole.id);
-        } else if (!_.find(projectUser.roles, { projectRoleId: projectRole.id })) {
-          createRoles.push({
-            projectUserId: projectUser.id,
-            projectRoleId: projectRole.id
-          });
+        } else {
+          allActiveRoles.push(projectRole.id);
+          if (!_.find(projectUser.roles, { projectRoleId: projectRole.id })) {
+            createRoles.push({
+              projectUserId: projectUser.id,
+              projectRoleId: projectRole.id
+            });
+          }
         }
       });
 
@@ -85,11 +88,14 @@ exports.create = async function (req, res, next){
       if (createRoles.length > 0) {
         await models.ProjectUsersRoles.bulkCreate(createRoles, { transaction });
       }
+
+      if (!gitlabRoles || !gitlabRoles.length) {
+        const project = await models.Project.findOne({ where: { id: projectId }});
+        gitlabRoles = models.GitlabUserRoles.fromProjectUserRole(allActiveRoles, project.gitlabProjectIds);
+      }
     }
 
-    if (gitlabRoles.length) {
-      await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
-    }
+    await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
 
     if (created) {
       const projectEvents = await models.ProjectEventsDictionary.findAll({
@@ -149,7 +155,6 @@ exports.delete = async function (req, res, next){
   if (!req.user.canUpdateProject(req.params.projectId)) {
     return next(createError(403, 'Access denied'));
   }
-
   let transaction;
   try {
     transaction = await models.sequelize.transaction();
