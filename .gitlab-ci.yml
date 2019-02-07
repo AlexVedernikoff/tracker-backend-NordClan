@@ -4,29 +4,54 @@ stages:
   - docker
   - deploy
 
-variables:
-  DEPLOYMENT_REPO: git@gitlab.simbirsoft:devops/simtrack.git
-
 before_script:
   - mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
-  - export DOCKER_PREFIX=dr.simbirsoft1.com/simtrack
-  - export CI_SHORT_REF_NAME=$(echo $CI_COMMIT_REF_NAME | sed 's/\//-/g' )
-  - export TAG="${CI_SHORT_REF_NAME}-${CI_COMMIT_SHA:0:8}"
+  - export TAG="${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA:0:8}"
+  - export CI_SHORT_REF_NAME=$CI_COMMIT_REF_SLUG
+  - export DOCKER_REGISTRY_IMAGE=$DOCKER_REGISTRY_PREFIX/be
 
 build_docker_be:
   image: docker:stable
   stage: docker
   script:
     - cp ci/Dockerfile.be ./
-    - docker build --rm --tag "$DOCKER_PREFIX/be:$TAG" -f Dockerfile.be .
-    - docker tag $DOCKER_PREFIX/be:$TAG $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
-    - docker push $DOCKER_PREFIX/be:$TAG
-    - docker push $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
-    - docker rmi $DOCKER_PREFIX/be:$CI_SHORT_REF_NAME
-
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASS $DOCKER_REGISTRY
+    - docker pull $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG || true
+    - docker build --rm -t $DOCKER_REGISTRY_IMAGE:$TAG -t $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG -f Dockerfile.be .
+    - docker push $DOCKER_REGISTRY_IMAGE:$TAG
+    - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker logout $DOCKER_REGISTRY
   tags:
     - docker
 
+.deploy_ansible:
+  image: $ANSIBLE_IMAGE
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - mkdir -p ~/.ssh/
+    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - git clone --depth 1 -b feature/improve-deploy $DEPLOYMENT_REPO ~/deploy
+    - cd ~/deploy
+    - ansible-playbook -i environments/${CURRENT_ENV}/inventory deploy.yaml --tags=be
+  tags:
+    - docker
+
+deploy_dev_new:
+  variables:
+    CURRENT_ENV: "dev"
+    CURRENT_DEPLOYMENT_KEY: "$DEPLOYMENT_DEV_KEY"
+  only:
+    - develop
+  environment:
+    name: $CURRENT_ENV
+    url: https://simtrack-dev.docker.simbirsoft/
+  extends: .deploy_ansible
 
 deploy_to_dev:
   image: dr.simbirsoft1.com/library/ansible:2.4
