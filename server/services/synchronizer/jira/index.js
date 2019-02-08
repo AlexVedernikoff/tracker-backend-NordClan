@@ -7,6 +7,7 @@ const createError = require('http-errors');
 const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User, JiraSyncStatus } = models;
 const request = require('./../request');
 const config = require('../../../configs');
+const utf8 = require('utf8');
 
 const timeSheetsCustomCompare = (a, b) => {
   if (a && b) {
@@ -47,18 +48,12 @@ const reduceDuplicateTimesheet = (value, valueIndx, arr) => {
 exports.jiraSync = async function (headers, data) {
   let resTimesheets, resSprints, resTasks;
 
-
   try {
 
-    // Подгрузка ассоциаций
-    const [taskStatusesAssociation, taskTypesAssociation, userEmailAssociation] = await Promise.all([
-      TaskStatusesAssociation.findAll({}),
-      TaskTypesAssociation.findAll({}),
-      UserEmailAssociation.findAll({})
-    ]);
+    const { date, status } = data;
 
     // Подготовка проекта
-    const [{ projectId }] = data;
+    const [{ projectId }] = data.batch;
     const project = await Project.findOne({
       where: { externalId: projectId }
     });
@@ -67,8 +62,24 @@ exports.jiraSync = async function (headers, data) {
       throw createError(404, 'Project with specified externalId and jiraHostname not found');
     }
 
+    const simtrackProjectId = project.dataValues.id;
+
+    // Подгрузка ассоциаций
+    const [taskStatusesAssociation, taskTypesAssociation, userEmailAssociation] = await Promise.all([
+      TaskStatusesAssociation.findAll({ where: { projectId: simtrackProjectId } }),
+      TaskTypesAssociation.findAll({ where: { projectId: simtrackProjectId } }),
+      UserEmailAssociation.findAll({ where: { projectId: simtrackProjectId } })
+    ]);
+
+    JiraSyncStatus.create({
+      simtrackProjectId,
+      jiraProjectId: projectId,
+      date,
+      status
+    });
+
     // Подготовка пользователей
-    let users = await getJiraProjectUsers(headers, projectId);
+    let users = await getJiraProjectUsers({ 'authorization': headers.authorization }, projectId);
 
     users = users.map(u => u.email);
     let usersAssociation = await UserEmailAssociation.findAll({
@@ -82,7 +93,7 @@ exports.jiraSync = async function (headers, data) {
     /**
      * Модуль со спринтами
      */
-    const jiraSprintsObj = data.reduce((acc, task) => {
+    const jiraSprintsObj = data.batch.reduce((acc, task) => {
       if (task.sprint && !acc[task.sprint.id]) {
         acc[task.sprint.id] = {
           name: task.sprint.name,
@@ -110,7 +121,7 @@ exports.jiraSync = async function (headers, data) {
      * Модуль с задачами
      */
 
-    const tasks = data.reduce((acc, task) => {
+    const tasks = data.batch.reduce((acc, task) => {
       const sprint = task.sprint
         ? resSprints.find(sp => sp.externalId.toString() === task.sprint.id.toString())
         : null;
@@ -146,7 +157,7 @@ exports.jiraSync = async function (headers, data) {
      * Модуль с таймшитами
      */
 
-    let timesheets = data.reduce((acc, task) => {
+    let timesheets = data.batch.reduce((acc, task) => {
 
       if (!task.worklogs || task.worklogs.length === 0) {
         return acc;
@@ -387,9 +398,10 @@ exports.getActiveSimtrackProjects = async function () {
  * @param projectId - id проекта в джире
  */
 async function getJiraProjectUsers (headers, projectId) {
-  const { data: users } = await request.get(`${config.ttiUrl}/project/${projectId}/users`, {
-    headers
-  });
+  const { data: users } = await request.get(`${config.ttiUrl}/project/${projectId}/users`, { headers: {
+    'authorization': headers.authorization,
+    'Content-Type': 'application/json'
+  }});
   return users;
 }
 
