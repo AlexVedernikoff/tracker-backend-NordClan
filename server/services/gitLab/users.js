@@ -69,9 +69,40 @@ async function findOrCreateUser (user) {
   return gitlabUser || await createUser(user);
 }
 
+async function findGroup (group) {
+  return await axios.get(prettyUrl(`${host}/api/v4/groups?search=${encodeURIComponent(group.name)}`), { headers })
+    .then(reply => reply.data)
+    .catch(e => {
+      throw e.response
+        ? createError(e.response.status || 500, e.response.data.message)
+        : e;
+    });
+}
+
+/**
+ * POST /groups
+ * https://docs.gitlab.com/ee/api/groups.html
+ * @param {object} group
+ */
+async function createGroup (group) {
+  return await axios.post(prettyUrl(`${host}/api/v4/groups`), { name: group.name, path: group.name }, { headers })
+    .then(reply => reply.data)
+    .catch(e => {
+      throw e.response
+        ? createError(e.response.status || 500, e.response.data.message)
+        : e;
+    });
+}
+
+async function findOrCreateGroup (group) {
+  const grops = await findGroup(group);
+  const gitlabGroup = grops[0];
+  return gitlabGroup || await createGroup(group);
+}
+
 module.exports = {
   getUsers,
   getUser,
-  findOrCreateUser
+  findOrCreateUser,
+  findOrCreateGroup
 };
-

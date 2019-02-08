@@ -7,7 +7,7 @@ const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { sequelize, User, Project, ProjectUsers, ProjectUsersRoles, ProjectRolesDictionary, GitlabUserRoles } = require('../../models');
 const { createMasterCommit } = require('./commits');
-const { findOrCreateUser } = require('./users');
+const { findOrCreateUser, findOrCreateGroup } = require('./users');
 
 const prettyUrl = (url) => (/^https?:\/\//).test(url) ? url : 'http://' + url;
 const getProject = id =>
@@ -78,11 +78,7 @@ const addProjectByPath = async function (projectId, path) {
 };
 
 const createProject = async function (name, namespace_id, projectId) {
-  const postData = {
-    merge_requests_enabled: true,
-    name,
-    namespace_id
-  };
+  const postData = await getGroup(name, namespace_id);
   let gitlabProject;
   let transaction;
   let notProcessedGitlabUsers = [];
@@ -406,8 +402,26 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   return notProcessedGitlabUsers;
 }
 
-const getNamespacesList = (search) =>
-  http.get({ host, path: `/api/v4/namespaces${search ? `?search=${encodeURIComponent(search)}` : ''}`, headers });
+const getNamespacesList = () =>
+  http.get({ host, path: '/api/v4/groups', headers });
+
+
+async function getGroup (name, namespace_id) {
+  if (typeof (namespace_id) === 'string') {
+    const group = await findOrCreateGroup({name: namespace_id});
+    return {
+      merge_requests_enabled: true,
+      name,
+      namespace_id: group.id
+    };
+  } else {
+    return {
+      merge_requests_enabled: true,
+      name,
+      namespace_id
+    };
+  }
+}
 
 module.exports = {
   getProject,
