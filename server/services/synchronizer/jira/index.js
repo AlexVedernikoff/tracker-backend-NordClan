@@ -399,7 +399,7 @@ exports.getActiveSimtrackProjects = async function () {
  */
 async function getJiraProjectUsers (headers, projectId) {
   const { data: users } = await request.get(`${config.ttiUrl}/project/${projectId}/users`, { headers: {
-    'authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4iLCJzZXJ2ZXIiOiJodHRwOi8vamlyYS10ZXN0LnNpbWJpcnNvZnQ6ODA4MCJ9.DuGm6U7efq4Fy4IOnQki9AkYRtNDt5sOZaWn0CX1ZWo',
+    'authorization': headers.authorization,
     'Content-Type': 'application/json'
   }});
   return users;
