@@ -7,7 +7,6 @@ const createError = require('http-errors');
 const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User, JiraSyncStatus } = models;
 const request = require('./../request');
 const config = require('../../../configs');
-const utf8 = require('utf8');
 
 const timeSheetsCustomCompare = (a, b) => {
   if (a && b) {
