@@ -36,23 +36,19 @@ exports.listByProject = async function (req, res, next) {
       return next(createError(400, 'Validation failed'));
     }
     let tasks;
-    const query = createQuery(req.params);
+    const query = createQuery(req.params, tagName);
     try {
       tasks = await models.Task.findAll(query);
     } catch (error) {
       res.sendStatus(500);
       return next(createError(error));
     }
-
-    let tags = [];
+    const tags = [];
     tasks.forEach(task => task.tags.forEach(tag => {
       if (!tags.find(el => el.id === tag.dataValues.id)) {
         tags.push({id: tag.dataValues.id, name: tag.dataValues.name});
       }
     }));
-    tags = tagName
-      ? tags.filter(o => o.name.toLowerCase().indexOf(tagName) !== -1)
-      : tags;
 
     res.json(tags);
   } catch (err) {
@@ -207,7 +203,7 @@ exports.autocompliter = function (req, res, next){
     .catch((err) => next(createError(err)));
 };
 
-function createQuery (params) {
+function createQuery (params, tagName) {
   return {
     where: {
       projectId: {
@@ -218,7 +214,14 @@ function createQuery (params) {
       as: 'tags',
       model: models.Tag,
       attribute: ['name'],
-      required: true
+      required: true,
+      ...(tagName && {
+        where: {
+          name: {
+            $iLike: layoutAgnostic(tagName)
+          }
+        }
+      })
     }
   };
 }
