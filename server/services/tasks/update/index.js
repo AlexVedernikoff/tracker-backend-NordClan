@@ -72,7 +72,8 @@ async function updateAllByAttribute (attr, taskIds, user) {
 
     if (attr.sprintId) await validateSprint(attr.sprintId);
 
-    const updatedTasks = await Task.update(attr, {
+    const sprintId = attr.sprintId !== 0 ? attr.sprintId : null;
+    const updatedTasks = await Task.update({...attr, sprintId}, {
       where: {
         id: validTaskIds
       },
