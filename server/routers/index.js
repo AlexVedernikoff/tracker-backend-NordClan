@@ -183,7 +183,7 @@ router.get('/project/:projectId/jira/association', JiraController.getProjectAsso
 router.post('/project/:projectId/jira/link', replaceAuthHeader(), JiraController.linkProject);
 router.post('/jira/project/:jiraProjectId/handleSync', replaceAuthHeader(), JiraController.createBatch);
 router.get('/jira/getActiveProjects', JiraController.getActiveSimtrackProjects); // Нужно питонистам
-router.post('/jira/synchronize', replaceAuthHeader(), JiraController.jiraSynchronize);
+router.post('/jira/synchronize', GlobalAccess.can('jira', 'synchronize'), JiraController.jiraSynchronize);
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // эксперементальная функция, не документирована
 router.post('/jira/setJiraSynchronizeStatus', JiraController.setJiraSyncStatus);
 router.get('/jira/getJiraSyncStatuses/:simtrackProjectId', JiraController.getJiraSyncStatuses);
