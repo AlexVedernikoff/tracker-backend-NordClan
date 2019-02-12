@@ -28,12 +28,12 @@ module.exports = {
     return bcryptPromise.hash(user.login)
       .then(password => { user.password = password; })
       .then(() =>
-        Promise.all([
-          queryInterface.sequelize.query(`
+        queryInterface.sequelize.query(`
           ALTER TYPE global_role_type ADD VALUE 'EXTERNAL_SERVICE' AFTER 'USER';
-          `),
-          queryInterface.bulkInsert('users', [user])
-        ]));
+          `))
+      .then(() =>
+        queryInterface.bulkInsert('users', [user])
+      );
   },
   down: function (queryInterface) {
     return Promise.all([

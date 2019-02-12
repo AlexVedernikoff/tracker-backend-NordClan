@@ -164,6 +164,9 @@ module.exports = {
     }
   },
   EXTERNAL_SERVICE: {
-    jira: 'synchronize'
+    jira: {
+      'setStatus': true,
+      'synchronize': true
+    }
   }
 };
