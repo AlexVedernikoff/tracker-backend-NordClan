@@ -45,7 +45,7 @@ exports.login = function (req, res, next) {
 
       queries.token.deleteExpiredTokens(user);
 
-      if (user.globalRole === 'EXTERNAL_USER' || user.isTest) {
+      if (user.globalRole === 'EXTERNAL_USER' || user.isTest || user.globalRole === 'EXTERNAL_SERVICE') {
         return authExternalUser(user, req.body.password);
       } else {
         authLdap(user, req.body.password);
