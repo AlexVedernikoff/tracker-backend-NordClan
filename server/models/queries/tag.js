@@ -18,21 +18,14 @@ exports.getAllTagsByModel = function (modelName, modelId, t = null) {
             model: models.ItemTag,
             attributes: []
           },
-          order: [
-            ['name', 'ASC']
-          ]
+          order: [['name', 'ASC']]
         }
       ]
     })
-    .then((model) => {
+    .then(model => {
       if (!model) return createError(404, 'taggable model not found');
-      const row = model.dataValues;
-      let result = [];
-      if (row.tags){
-        result = Object.keys(row.tags).map((k) => row.tags[k].name); // Преобразую теги в массив
-      }
 
-      return result;
+      return model.dataValues.tags || [];
     });
 };
 
@@ -54,20 +47,25 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
 
   tags.forEach(function (itemTag) {
     chain = chain.then(() => {
-      return models.Tag
-        .findOrCreate({where: {name: itemTag.toString().trim().toLowerCase()} })
-        .spread((tag) => {
-          return models.ItemTag
-            .findOrCreate({
-              where: {
-                tagId: tag.id,
-                taggableId: Model.id,
-                taggable: taggable
-              },
-              historyAuthorId: userId
-            });
+      return models.Tag.findOrCreate({
+        where: {
+          name: itemTag
+            .toString()
+            .trim()
+            .toLowerCase()
+        }
+      })
+        .spread(tag => {
+          return models.ItemTag.findOrCreate({
+            where: {
+              tagId: tag.id,
+              taggableId: Model.id,
+              taggable: taggable
+            },
+            historyAuthorId: userId
+          });
         })
-        .catch((err) => {
+        .catch(err => {
           if (err) throw createError(err);
         });
     });
@@ -76,14 +74,17 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
   return chain;
 };
 
-exports.getAllTaskTagsByProject = async (projectId) => {
-  const [rows] = await models.sequelize.query(`
+exports.getAllTaskTagsByProject = async projectId => {
+  const [rows] = await models.sequelize.query(
+    `
     SELECT tg.name
     FROM tags tg
     JOIN item_tags it ON it.tag_id = tg.id AND it.taggable='task'
     JOIN tasks tk ON it.taggable_id = tk.id
     WHERE tk.project_id = :projectId
     GROUP BY tg.id;
-  `, {replacements: {projectId}});
+  `,
+    { replacements: { projectId } }
+  );
   return rows;
 };
