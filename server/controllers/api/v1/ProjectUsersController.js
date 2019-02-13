@@ -91,7 +91,9 @@ exports.create = async function (req, res, next){
 
       if (!gitlabRoles || !gitlabRoles.length) {
         const project = await models.Project.findOne({ where: { id: projectId }});
-        gitlabRoles = models.GitlabUserRoles.fromProjectUserRole(allActiveRoles, project.gitlabProjectIds);
+        if (project.gitlabProjectIds) {
+          gitlabRoles = models.GitlabUserRoles.fromProjectUserRole(allActiveRoles, project.gitlabProjectIds);
+        }
       }
     }
 
