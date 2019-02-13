@@ -7,7 +7,25 @@ const createError = require('http-errors');
 const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User, JiraSyncStatus } = models;
 const request = require('./../request');
 const config = require('../../../configs');
-const utf8 = require('utf8');
+const { SUCCESS, FAILED } = require('./statuses');
+
+const saveJiraErrorStatus = async ({simtrackProjectId, projectId, date }) => {
+  return JiraSyncStatus.create({
+    simtrackProjectId,
+    jiraProjectId: projectId,
+    date,
+    FAILED
+  });
+};
+
+const saveJiraSuccessStatus = async ({simtrackProjectId, projectId, date }) => {
+  return JiraSyncStatus.create({
+    simtrackProjectId,
+    jiraProjectId: projectId,
+    date,
+    SUCCESS
+  });
+};
 
 const timeSheetsCustomCompare = (a, b) => {
   if (a && b) {
@@ -71,15 +89,8 @@ exports.jiraSync = async function (headers, data) {
       UserEmailAssociation.findAll({ where: { projectId: simtrackProjectId } })
     ]);
 
-    JiraSyncStatus.create({
-      simtrackProjectId,
-      jiraProjectId: projectId,
-      date,
-      status
-    });
-
     // Подготовка пользователей
-    let users = await getJiraProjectUsers({ 'authorization': headers.authorization }, projectId);
+    let users = await getJiraProjectUsers({ 'authorization': headers['x-jira-auth'] }, projectId);
 
     users = users.map(u => u.email);
     let usersAssociation = await UserEmailAssociation.findAll({
