@@ -961,6 +961,13 @@ module.exports = {
             in: 'query'
           },
           {
+            name: 'isDevOps',
+            description: 'true false или пусто, при пустом все задачи вернуться',
+            type: 'boolean',
+            in: 'query',
+            example: null
+          },
+          {
             name: 'tags',
             type: 'string',
             description: 'можно разделять через ",". Можно исползовать "No tag", "Без тега" для поиска тасок без тегов.',
