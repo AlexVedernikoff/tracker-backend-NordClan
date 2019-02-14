@@ -1,3 +1,4 @@
+const { updateJiraStatus } = require('../../../channels/Jira');
 const TasksService = require('./synchronize/task');
 const TimesheetService = require('./synchronize/timesheet');
 const SprintService = require('./synchronize/sprint');
@@ -18,14 +19,7 @@ const saveJiraErrorStatus = async ({simtrackProjectId, projectId, date }) => {
   });
 };
 
-const saveJiraSuccessStatus = async ({simtrackProjectId, projectId, date }) => {
-  return JiraSyncStatus.create({
-    simtrackProjectId,
-    jiraProjectId: projectId,
-    date,
-    SUCCESS
-  });
-};
+let cacheStatusData;
 
 const timeSheetsCustomCompare = (a, b) => {
   if (a && b) {
@@ -63,7 +57,7 @@ const reduceDuplicateTimesheet = (value, valueIndx, arr) => {
 /**
  * @param data - Данные для синхронизации
  */
-exports.jiraSync = async function (headers, data) {
+exports.jiraSync = async function (headers, data, socketIO) {
   let resTimesheets, resSprints, resTasks;
 
   try {
@@ -82,6 +76,8 @@ exports.jiraSync = async function (headers, data) {
 
     const simtrackProjectId = project.dataValues.id;
 
+    cacheStatusData = { projectId, simtrackProjectId, status, date };
+
     // Подгрузка ассоциаций
     const [taskStatusesAssociation, taskTypesAssociation, userEmailAssociation] = await Promise.all([
       TaskStatusesAssociation.findAll({ where: { projectId: simtrackProjectId } }),
@@ -90,7 +86,7 @@ exports.jiraSync = async function (headers, data) {
     ]);
 
     // Подготовка пользователей
-    let users = await getJiraProjectUsers({ 'authorization': headers['x-jira-auth'] }, projectId);
+    let users = await getJiraProjectUsers({ 'authorization': project.dataValues.jiraToken }, projectId);
 
     users = users.map(u => u.email);
     let usersAssociation = await UserEmailAssociation.findAll({
@@ -228,10 +224,24 @@ exports.jiraSync = async function (headers, data) {
 
     resTimesheets = await TimesheetService.synchronizeTimesheets(timesheets, project.id);
 
+    JiraSyncStatus.create({
+      simtrackProjectId,
+      jiraProjectId: projectId,
+      date,
+      status
+    }).then(() => updateJiraStatus(
+      socketIO,
+      cacheStatusData.simtrackProjectId
+    ));
 
     return { resSprints, resTasks, resTimesheets };
 
   } catch (e) {
+    await saveJiraErrorStatus(cacheStatusData)
+      .then(() => updateJiraStatus(
+        socketIO,
+        cacheStatusData.simtrackProjectId
+      ));
     throw e;
   }
 

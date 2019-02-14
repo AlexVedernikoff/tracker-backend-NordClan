@@ -19,7 +19,7 @@ const createError = require('http-errors');
 // принимает данные для синхронизации и проводит синхронизацию
 exports.jiraSynchronize = async function (req, res, next) {
   try {
-    const response = await jiraSync(req.headers, req.body);
+    const response = await jiraSync(req.headers, req.body, res.io);
     res.json(response);
   } catch (e) {
     next(e);
