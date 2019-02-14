@@ -25,7 +25,10 @@ exports.getReport = async function (projectId, criteria, options) {
       {
         onDate: {$between: [startDate, endDate]}
       }
-    ) : null)
+    ) : null),
+    spentTime: {
+      $gt: 0
+    }
   };
 
   const parseSprintId = parseInt(sprintId);
@@ -105,7 +108,6 @@ exports.getReport = async function (projectId, criteria, options) {
       [ 'onDate', 'ASC' ]
     ]
   });
-
   // Подгрузка словарей из БД
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
