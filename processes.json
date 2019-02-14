@@ -7,6 +7,7 @@
       "exec_mode": "cluster",
       "env": {
         "NODE_ENV": "develop",
+        "EMAIL_ENABLED": "true",
         "watch": "server",
         "ignore_watch": "public/uploads*"
       },
