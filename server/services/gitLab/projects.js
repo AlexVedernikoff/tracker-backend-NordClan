@@ -7,7 +7,7 @@ const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
 const { sequelize, User, Project, ProjectUsers, ProjectUsersRoles, ProjectRolesDictionary, GitlabUserRoles } = require('../../models');
 const { createMasterCommit } = require('./commits');
-const { findOrCreateUser } = require('./users');
+const { findOrCreateUser, findOrCreateGroup } = require('./users');
 
 const prettyUrl = (url) => (/^https?:\/\//).test(url) ? url : 'http://' + url;
 const getProject = id =>
@@ -78,11 +78,7 @@ const addProjectByPath = async function (projectId, path) {
 };
 
 const createProject = async function (name, namespace_id, projectId) {
-  const postData = {
-    merge_requests_enabled: true,
-    name,
-    namespace_id
-  };
+  const postData = await getGroup(name, namespace_id);
   let gitlabProject;
   let transaction;
   let notProcessedGitlabUsers = [];
@@ -197,7 +193,9 @@ const editProjectMember = async function (projectId, memberId, properties) {
 const removeProjectMember = async function (projectId, memberId) {
   return await axios.delete(
     prettyUrl(`${host}/api/v4/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`), { headers }
-  ).then(reply => reply.data)
+  ).then(reply => {
+    return reply.data;
+  })
     .catch(e => {
       //если пользователь уже удален, то все нормально
       if (e.response.status !== 404) {
@@ -240,16 +238,11 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
   });
   const notProcessedGitlabUsers = await Promise.all(
     projectUsers.map((projectUser) => {
-      const role = {
-        // expiresAt:
-        gitlabProjectId
-      };
-      if (projectUser.roles.some(({ projectRoleId }) => ProjectRolesDictionary.MAINTAINER_IDS.indexOf(projectRoleId) !== -1)) {
-        role.accessLevel = GitlabUserRoles.ACCESS_MAINTAINER;
-      } else {
-        role.accessLevel = GitlabUserRoles.ACCESS_DEVELOPER;
-      }
-      return processGitlabRoles([role], projectUser, transaction);
+      const roles = GitlabUserRoles.fromProjectUserRole(
+        projectUser.roles.map(({ projectRoleId }) => projectRoleId),
+        [gitlabProjectId]
+      );
+      return processGitlabRoles(roles, projectUser, transaction);
     })
   );
 
@@ -409,8 +402,26 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   return notProcessedGitlabUsers;
 }
 
-const getNamespacesList = (search) =>
-  http.get({ host, path: `/api/v4/namespaces${search ? `?search=${encodeURIComponent(search)}` : ''}`, headers });
+const getNamespacesList = () =>
+  http.get({ host, path: '/api/v4/groups', headers });
+
+
+async function getGroup (name, namespace_id) {
+  if (typeof (namespace_id) === 'string') {
+    const group = await findOrCreateGroup({name: namespace_id});
+    return {
+      merge_requests_enabled: true,
+      name,
+      namespace_id: group.id
+    };
+  } else {
+    return {
+      merge_requests_enabled: true,
+      name,
+      namespace_id
+    };
+  }
+}
 
 module.exports = {
   getProject,

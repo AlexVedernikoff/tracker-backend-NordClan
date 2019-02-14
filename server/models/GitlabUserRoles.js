@@ -4,6 +4,22 @@ const ACCESS_DEVELOPER = 30;
 const ACCESS_MAINTAINER = 40;
 const ACCESS_OWNER = 50;
 const validAccessLevels = [ACCESS_GUEST, ACCESS_DEVELOPER, ACCESS_REPORTER, ACCESS_MAINTAINER];
+const projectUserRoleMapping = {
+  1: ACCESS_REPORTER, // Account
+  2: ACCESS_REPORTER, // PM
+  3: ACCESS_REPORTER, // UX
+  4: ACCESS_REPORTER, // Analyst
+  5: ACCESS_DEVELOPER, // Back
+  6: ACCESS_DEVELOPER, // Front
+  7: ACCESS_DEVELOPER, // Mobile
+  8: ACCESS_MAINTAINER, // TeamLead
+  9: ACCESS_REPORTER, // QA
+  10: ACCESS_GUEST, // Unbillable
+  12: ACCESS_DEVELOPER, // Android
+  13: ACCESS_DEVELOPER, // IOS
+  14: ACCESS_MAINTAINER, // DevOps
+  default: ACCESS_GUEST
+};
 
 module.exports = function (sequelize, DataTypes) {
   const GitlabUserRoles = sequelize.define('GitlabUserRoles', {
@@ -85,6 +101,25 @@ module.exports = function (sequelize, DataTypes) {
   GitlabUserRoles.isRolesValid = function (roles) {
     return !roles || roles.every(({ accessLevel, gitlabProjectId }) => gitlabProjectId && ~validAccessLevels.indexOf(accessLevel));
   };
+
+  GitlabUserRoles.fromProjectUserRole = (projectUserRoleIds, gitlabProjectIds) =>
+    gitlabProjectIds.reduce((result, gitlabProjectId) => {
+      const allRoles = projectUserRoleIds.map(
+        projectUserRoleId =>
+          ({
+            gitlabProjectId,
+            accessLevel: projectUserRoleMapping[projectUserRoleId] || projectUserRoleMapping.default
+          }),
+        []
+      );
+      const highestRole = allRoles.reduce(
+        (lastHighestRole, roleObject) =>
+          (!lastHighestRole || lastHighestRole.accessLevel < roleObject.accessLevel) ? roleObject : lastHighestRole,
+        null
+      );
+      result.push(highestRole);
+      return result;
+    }, []);
 
   return GitlabUserRoles;
 };
