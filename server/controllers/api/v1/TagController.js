@@ -4,7 +4,7 @@ const queries = require('../../../models/queries');
 const StringHelper = require('../../../components/StringHelper');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 
-exports.list = async function(req, res, next) {
+exports.list = async function (req, res, next) {
   req.checkParams('taggable', "taggable must be 'task' or 'project'").isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   const validationResult = await req.getValidationResult();
@@ -28,7 +28,7 @@ exports.list = async function(req, res, next) {
     });
 };
 
-exports.listByProject = async function(req, res, next) {
+exports.listByProject = async function (req, res, next) {
   try {
     const tagName = req.query.tagName && req.query.tagName.toLowerCase();
 
@@ -37,7 +37,7 @@ exports.listByProject = async function(req, res, next) {
       return next(createError(400, 'Validation failed'));
     }
     let tasks;
-    const query = createQuery(req.params);
+    const query = createQuery(req.params, tagName);
     try {
       tasks = await models.Task.findAll(query);
     } catch (error) {
@@ -45,7 +45,7 @@ exports.listByProject = async function(req, res, next) {
       return next(createError(error));
     }
 
-    let tags = [];
+    const tags = [];
     tasks.forEach(task =>
       task.tags.forEach(tag => {
         if (!tags.find(el => el.id === tag.dataValues.id)) {
@@ -53,7 +53,6 @@ exports.listByProject = async function(req, res, next) {
         }
       })
     );
-    tags = tagName ? tags.filter(o => o.name.toLowerCase().indexOf(tagName) !== -1) : tags;
 
     res.json(tags);
   } catch (err) {
@@ -61,7 +60,7 @@ exports.listByProject = async function(req, res, next) {
   }
 };
 
-exports.create = async function(req, res, next) {
+exports.create = async function (req, res, next) {
   let transaction;
 
   try {
@@ -115,7 +114,7 @@ exports.create = async function(req, res, next) {
   }
 };
 
-exports.delete = async function(req, res, next) {
+exports.delete = async function (req, res, next) {
   req.checkParams('taggable', "taggable must be 'task' or 'project'").isIn(['task', 'project']);
   req.checkParams('taggableId', 'taggableId must be int').isInt();
   req.checkParams('tag', 'tag must be more then 1 char').isLength({ min: 1 });
@@ -174,7 +173,7 @@ exports.delete = async function(req, res, next) {
   }
 };
 
-exports.autocompliter = function(req, res, next) {
+exports.autocompliter = function (req, res, next) {
   const resultResponse = [];
 
   req.checkParams('taggable', "taggable must be 'task' or 'project'").isIn(['task', 'project']);
@@ -214,7 +213,7 @@ exports.autocompliter = function(req, res, next) {
     .catch(err => next(createError(err)));
 };
 
-function createQuery(params) {
+function createQuery (params, tagName) {
   return {
     where: {
       projectId: {
@@ -225,7 +224,14 @@ function createQuery(params) {
       as: 'tags',
       model: models.Tag,
       attribute: ['name'],
-      required: true
+      required: true,
+      ...(tagName && {
+        where: {
+          name: {
+            $iLike: layoutAgnostic(tagName)
+          }
+        }
+      })
     }
   };
 }
