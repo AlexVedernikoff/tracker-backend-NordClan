@@ -204,7 +204,7 @@ exports.updateUserRole = async function (req, res, next) {
   let transaction;
 
   try {
-    transaction = models.sequelize.transaction();
+    transaction = await models.sequelize.transaction();
     const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
     if (!model) {
       await transaction.rollback();
