@@ -25,7 +25,11 @@ exports.getAllTagsByModel = function (modelName, modelId, t = null) {
     .then(model => {
       if (!model) return createError(404, 'taggable model not found');
 
-      return model.dataValues.tags || [];
+      const {
+        dataValues: { tags = [] }
+      } = model;
+
+      return tags.map(({ name }) => name);
     });
 };
 
