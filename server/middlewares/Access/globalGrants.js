@@ -162,5 +162,11 @@ module.exports = {
       'upload': true,
       'delete': true
     }
+  },
+  EXTERNAL_SERVICE: {
+    jira: {
+      'setStatus': true,
+      'synchronize': true
+    }
   }
 };
