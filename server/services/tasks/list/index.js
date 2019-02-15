@@ -7,14 +7,14 @@ const { Task, Tag, ItemTag } = models;
 const layoutAgnostic = require('../../layoutAgnostic');
 const { NOTAG } = require('../../../components/utils');
 
-function getTagsByTaskList(tasks) {
+function getTagsByTaskList (tasks) {
   const allTags = _.unionBy(...tasks.map(task => task.tags.map(o => o.dataValues)), o => o.name).map(tag => ({
     name: tag.name
   }));
   return allTags;
 }
 
-exports.list = async function(req) {
+exports.list = async function (req) {
   let prefixNeed = false;
 
   if (req.query.fields) {
@@ -33,7 +33,10 @@ exports.list = async function(req) {
 
   const userRole = req.user.dataValues.globalRole;
 
-  let tags = typeof req.query.tags === 'string' ? req.query.tags.split(',') : req.query.tags;
+  let tags = null;
+  if (req.query.tags) {
+    tags = typeof req.query.tags === 'string' ? req.query.tags.split(',') : req.query.tags;
+  }
 
   // Поиск тасок без тега
   const selectWithoutTags = Array.isArray(tags) && tags.length === 1 && NOTAG.indexOf(tags[0].toLowerCase()) !== -1;
@@ -66,11 +69,11 @@ exports.list = async function(req) {
     where: queryWhere,
     subQuery: false,
     order: models.sequelize.literal(
-      'CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END' +
-        ', "sprint"."fact_start_date" ASC' +
-        ', "statusId" ASC' +
-        ', "prioritiesId" ASC' +
-        ', "name" ASC'
+      'CASE WHEN "sprint"."fact_start_date" <= now() AND "sprint"."fact_finish_date" >= now() THEN 1 ELSE 2 END'
+        + ', "sprint"."fact_start_date" ASC'
+        + ', "statusId" ASC'
+        + ', "prioritiesId" ASC'
+        + ', "name" ASC'
     )
   });
 
@@ -109,7 +112,7 @@ exports.list = async function(req) {
   return responseObject;
 };
 
-function createWhereForRequest(req, selectWithoutTags) {
+function createWhereForRequest (req, selectWithoutTags) {
   const where = {
     deletedAt: { $eq: null } // IS NULL
   };
@@ -142,7 +145,6 @@ function createWhereForRequest(req, selectWithoutTags) {
       };
     }
   }
-
   // Если +req.query.statusId === 0 или указан спринт вывожу все статусы, если указаны конкретные вывожу их.
   if (req.query.statusId && +req.query.statusId !== 0) {
     where.statusId = {
@@ -276,14 +278,14 @@ function createWhereForRequest(req, selectWithoutTags) {
   return where;
 }
 
-async function createIncludeForRequest(tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
+async function createIncludeForRequest (tagsParams, prefixNeed, performerId, role, selectWithoutTags) {
   const parsedTags = tagsParams
     ? tagsParams.map(el =>
-        el
-          .toString()
-          .trim()
-          .toLowerCase()
-      )
+      el
+        .toString()
+        .trim()
+        .toLowerCase()
+    )
     : null;
 
   const includeAuthor = {
