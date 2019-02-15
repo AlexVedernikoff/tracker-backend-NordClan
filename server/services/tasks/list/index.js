@@ -127,6 +127,10 @@ function createWhereForRequest (req, selectWithoutTags) {
     where.performerId = req.query.performerId;
   }
 
+  if (+req.query.performerId === 0 && req.query.isDevOps && (req.user.isDevOps || req.user.isGlobalAdmin)) {
+    delete where.performerId;
+  }
+
   if (req.query.name) {
     if (+req.query.name > 0) {
       const searchTemplate = `%${req.query.name}%`;
@@ -258,6 +262,9 @@ function createWhereForRequest (req, selectWithoutTags) {
     where['$"tags.ItemTag"."tag_id"$'] = {
       $is: null
     };
+  }
+  if (req.query.isDevOps) {
+    where.isDevOps = req.query.isDevOps;
   }
 
   if (req.user.isDevOps && !req.user.isUserOfProject(+req.query.projectId)) {
