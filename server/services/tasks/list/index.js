@@ -328,7 +328,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeLLnkedTasks = {
     as: 'linkedTasks',
     model: models.Task,
-    attributes: ['id', 'name'],
+    attributes: ['id', 'name', 'statusId'],
     through: {
       model: models.TaskTasks,
       attributes: []
