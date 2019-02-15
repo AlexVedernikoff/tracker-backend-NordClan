@@ -171,7 +171,7 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING
       },
       description: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
         validate: {
           len: [0, 5000]

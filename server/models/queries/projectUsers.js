@@ -92,6 +92,14 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
     });
 };
 
+exports.findAllUsersByProjectId = function (projectId) {
+  return models.ProjectUsers.findAll({
+    where: {
+      projectId
+    }
+  });
+};
+
 
 function getTransRolesToObject (rolesIds, projectRoles) {
   const projectRoleIds = rolesIds ? rolesIds.map((role) => role.projectRoleId) : [];
