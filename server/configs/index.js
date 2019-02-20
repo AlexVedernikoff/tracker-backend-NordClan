@@ -39,7 +39,7 @@ module.exports = {
     'confidential-port': 0
   },
   email: {
-    enabled: process.env.EMAIL_ENABLED === 'true',
+    enabled: process.env.EMAIL_ENABLED === 'true' || process.env.email_enabled === 'true',
     service: 'Yandex',
     login: 'sim-track@simbirsoft.com',
     password: 'AP2y2CHU',
