@@ -52,31 +52,18 @@ deploy_dev:
     name: $CURRENT_ENV
     url: https://simtrack-dev.docker.simbirsoft/
   extends: .deploy_ansible
-    
-deploy_to_test:
-  image: dr.simbirsoft1.com/library/ansible:2.4
-  stage: deploy
+
+deploy_test:
   variables:
-    CURRENT_DEPLOYMENT_KEY: "$TEST_DEPLOYMENT_KEY"
-    CURRENT_DEPLOYMENT_ENV: "test"
-  script:
-    - mkdir -p ~/.ssh/
-    - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - eval $(ssh-agent -s)
-    - ssh-add ~/.ssh/id_rsa
-    - git clone $DEPLOYMENT_REPO ~/deploy
-    - cd ~/deploy
-    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG"
+    CURRENT_ENV: "test"
+    CURRENT_DEPLOYMENT_KEY: "$DEPLOYMENT_DEV_KEY"
   only:
     - test
-  tags:
-    - docker
   when: manual
   environment:
-    name: test
-    url: https://simtrack-test.simbirsoft/
+    name: $CURRENT_ENV
+    url: https://simtrack-test.docker.simbirsoft/
+  extends: .deploy_ansible
 
 deploy_to_prod:
   image: dr.simbirsoft1.com/library/ansible:2.4
