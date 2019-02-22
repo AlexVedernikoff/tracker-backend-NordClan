@@ -38,14 +38,24 @@ def tasks_for_dev():
     schedule.every().day.at("01:00").do(run_create_draft_ts)
 
 
+def tasks_for_prod():
+    schedule.every(3).hours.do(run_ps_sync)
+    schedule.every().day.at("00:00").do(run_calculate_metrics)
+    schedule.every().day.at("00:30").do(run_del_draft_ts)
+    schedule.every().day.at("01:00").do(run_create_draft_ts)
+
+
 if __name__ == '__main__':
     if 'ENV_NAME' in os.environ:
         env_name = os.getenv('ENV_NAME')
     else:
         sys.exit("Environment variable ENV_NAME must be specified. Exiting.")
 
-    if env_name.lower() == "dev":
+    if env_name.lower() == "dev" or env_name.lower() == "test":
         tasks_for_dev()
+
+    if env_name.lower() == "prod":
+        tasks_for_prod()
 
     while True:
         schedule.run_pending()
