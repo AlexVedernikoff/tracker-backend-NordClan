@@ -310,13 +310,13 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeParentTask = {
     as: 'parentTask',
     model: models.Task,
-    attributes: ['id', 'name']
+    attributes: ['id', 'name', 'statusId']
   };
 
   const includeSubTasks = {
     as: 'subTasks',
     model: models.Task,
-    attributes: ['id', 'name'],
+    attributes: ['id', 'name', 'statusId'],
     where: {
       statusId: {
         $notIn: [9] // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
