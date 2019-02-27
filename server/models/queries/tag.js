@@ -48,6 +48,7 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
   });
 
   let chain = Promise.resolve();
+  let tagId = null;
 
   tags.forEach(function (itemTag) {
     chain = chain.then(() => {
@@ -60,14 +61,28 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
         }
       })
         .spread(tag => {
-          return models.ItemTag.findOrCreate({
+          tagId = tag.id;
+          return models.ItemTag.findOne({
             where: {
               tagId: tag.id,
               taggableId: Model.id,
               taggable: taggable
             },
-            historyAuthorId: userId
+            historyAuthorId: userId,
+            paranoid: false
           });
+        }).then(tagResponse => {
+          if (tagResponse) {
+            return tagResponse.restore();
+          } else {
+            return models.ItemTag.create({
+              tagId: tagId,
+              taggableId: Model.id,
+              taggable: taggable
+            }, {
+              historyAuthorId: userId
+            });
+          }
         })
         .catch(err => {
           if (err) throw createError(err);
