@@ -8,14 +8,14 @@ const createError = require('http-errors');
 const { Project, TaskStatusesAssociation, TaskTypesAssociation, UserEmailAssociation, User, JiraSyncStatus } = models;
 const request = require('./../request');
 const config = require('../../../configs');
-const { SUCCESS, FAILED } = require('./statuses');
+const { FAILED } = require('./statuses');
 
 const saveJiraErrorStatus = async ({simtrackProjectId, projectId, date }) => {
   return JiraSyncStatus.create({
     simtrackProjectId,
     jiraProjectId: projectId,
     date,
-    FAILED
+    status: FAILED
   });
 };
 
@@ -62,7 +62,8 @@ exports.jiraSync = async function (headers, data, socketIO) {
 
   try {
 
-    const { date, status } = data;
+    const { status } = data;
+    const date = new Date();
 
     // Подготовка проекта
     const [{ projectId }] = data.batch;
@@ -449,7 +450,7 @@ exports.setJiraSyncStatus = async function (simtrackProjectId, jiraProjectId, da
     await JiraSyncStatus.create({
       simtrackProjectId,
       jiraProjectId,
-      date,
+      date: new Date(),
       status
     });
   } catch (e) {
