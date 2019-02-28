@@ -55,6 +55,6 @@ module.exports = {
   emailForDevOpsNotify: 'devops-support@simbirsoft.com',
   ldapUrl:
     process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
-  ttiUrl: process.env.TTI_HOST || 'http://simtrack-tti-dev.docker.simbirsoft',
+  ttiUrl: 'https://simtrack-tti-dev.docker.simbirsoft',
   metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881
 };
