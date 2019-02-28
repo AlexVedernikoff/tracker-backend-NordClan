@@ -19,5 +19,7 @@ COPY --from=dependencies /tmp/build/node_modules ./node_modules
 RUN npm rebuild
 RUN mv ci/entrypoint.sh /entrypoint.sh && \
     chmod 755 /entrypoint.sh
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["pm2-runtime", "start", "processes.json"]
