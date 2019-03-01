@@ -196,14 +196,7 @@ const removeProjectMember = async function (projectId, memberId) {
   ).then(reply => {
     return reply.data;
   })
-    .catch(e => {
-      //если пользователь уже удален, то все нормально
-      if (e.response.status !== 404) {
-        throw e.response
-          ? createError(e.response.status || 500, e.response.data.message)
-          : e;
-      }
-    });
+    .catch(e => {});
 };
 
 /**
