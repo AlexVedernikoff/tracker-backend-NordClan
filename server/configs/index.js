@@ -30,8 +30,16 @@ module.exports = {
     password: process.env.SYSTEMUSER_PASSWORD || '5REhSX',
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
+  keycloak: {
+    realm: process.env.KEYCLOAK_REALM || 'simbirsoft-dev',
+    'bearer-only': true,
+    'auth-server-url': process.env.KEYCLOAK_URL || 'http://sso.simbirsoft:8080/auth',
+    'ssl-required': 'external',
+    resource: 'local-simtrack-bearer-only',
+    'confidential-port': 0
+  },
   email: {
-    enabled: process.env.EMAIL_ENABLED === 'true',
+    enabled: process.env.EMAIL_ENABLED === 'true' || process.env.email_enabled === 'true',
     service: 'Yandex',
     login: 'sim-track@simbirsoft.com',
     password: 'AP2y2CHU',
@@ -47,6 +55,6 @@ module.exports = {
   emailForDevOpsNotify: 'devops-support@simbirsoft.com',
   ldapUrl:
     process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
-  ttiUrl: process.env.TTI_HOST || 'http://docker-web.simbirsoft:5000',
+  ttiUrl: process.env.TTI_HOST || 'https://simtrack-tti-dev.docker.simbirsoft',
   metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881
 };

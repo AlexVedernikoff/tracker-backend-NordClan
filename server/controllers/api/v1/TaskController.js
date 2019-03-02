@@ -150,7 +150,7 @@ exports.updateAllByAttribute = async function (req, res, next) {
 };
 
 function isErrorReqUpdateAll (req) {
-  return !req.body.taskIds || !req.body.taskIds.length || !req.body.sprintId || req.body.taskIds.some(id => isNaN(id));
+  return !req.body.taskIds || !req.body.taskIds.length || isNaN(req.body.sprintId) || req.body.taskIds.some(id => isNaN(id));
 }
 
 function sendUpdates (io, userId, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData) {

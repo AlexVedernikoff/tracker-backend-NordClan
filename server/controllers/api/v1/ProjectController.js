@@ -3,13 +3,13 @@ const moment = require('moment');
 const _ = require('underscore');
 const Sequelize = require('sequelize');
 const models = require('../../../models');
-const { Project, Tag, ItemTag, Portfolio, Sprint, Task } = models;
+const { Project, Tag, ItemTag, Portfolio, Sprint } = models;
 const queries = require('../../../models/queries');
 const ProjectsChannel = require('../../../channels/Projects');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 const gitLabService = require('../../../services/gitLab');
 
-exports.create = function (req, res, next) {
+exports.create = function(req, res, next) {
   if (req.body.tags) {
     req.body.tags
       .split(',')
@@ -61,7 +61,7 @@ exports.create = function (req, res, next) {
     });
 };
 
-exports.read = function (req, res, next) {
+exports.read = function(req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canReadProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
@@ -122,6 +122,10 @@ exports.read = function (req, res, next) {
           {
             as: 'roles',
             model: models.ProjectUsersRoles
+          },
+          {
+            as: 'gitlabRoles',
+            model: models.GitlabUserRoles
           }
         ],
         order: [['id', 'DESC']]
@@ -186,7 +190,8 @@ exports.read = function (req, res, next) {
             firstNameEn: projectUser.user.firstNameEn,
             lastNameRu: projectUser.user.lastNameRu,
             lastNameEn: projectUser.user.lastNameEn,
-            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles)
+            roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles),
+            gitlabRoles: projectUser.gitlabRoles
           });
         });
       }
@@ -214,7 +219,7 @@ exports.read = function (req, res, next) {
     });
 };
 
-exports.update = async function (req, res, next) {
+exports.update = async function(req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canUpdateProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
@@ -225,7 +230,7 @@ exports.update = async function (req, res, next) {
     .concat(['id', 'portfolioId', 'statusId']);
 
   let portfolioIdOld;
-
+  let removedGitlabProjectIds = [];
   const gitlabProjectIdsOld = [];
   const gitlabProjectIdsNew = [];
   let gitlabProjectsOld = [];
@@ -253,12 +258,21 @@ exports.update = async function (req, res, next) {
           const firstError = gitlabProjectsNew.find(p => p.error);
           if (firstError) {
             await transaction.rollback();
-            return next(createError(
-              firstError.status || 500,
-              firstError.error === '404 Project Not Found'
-                ? 'GITLAB_ERROR_PROJECT_NOT_FOUND'
-                : firstError.error
-            ));
+            return next(
+              createError(
+                firstError.status || 500,
+                firstError.error === '404 Project Not Found' ? 'GITLAB_ERROR_PROJECT_NOT_FOUND' : firstError.error
+              )
+            );
+          }
+        }
+        if (project.gitlabProjectIds && project.gitlabProjectIds.length) {
+          if (req.body.gitlabProjectIds && req.body.gitlabProjectIds.length) {
+            removedGitlabProjectIds = project.gitlabProjectIds.filter(
+              id => req.body.gitlabProjectIds.indexOf(id) === -1
+            );
+          } else {
+            removedGitlabProjectIds = project.gitlabProjectIds;
           }
         }
 
@@ -281,36 +295,52 @@ exports.update = async function (req, res, next) {
           req.body.portfolioId = portfolio.id;
         }
 
-        return project.updateAttributes(req.body, { transaction, historyAuthorId: req.user.id }).then(async () => {
-          // Запускаю проверку портфеля на пустоту и его удаление
-          if (portfolioIdOld) {
-            queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
-          }
-
-          // Отсылаю ответ модель с проектом
-          return Project.findByPrimary(req.params.id, {
-            attributes: Project.defaultSelect,
-            include: [
-              {
-                as: 'portfolio',
-                model: Portfolio,
-                attributes: ['id', 'name'],
-                required: false
-              }
-            ],
-            transaction
-          }).then(async model => {
-            const updatedParams = { ...req.body, id: model.id };
-            ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
-
-            if (req.body.gitlabProjectIds) {
-              gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
-              model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
+        return project.updateAttributes(req.body, { transaction, historyAuthorId: req.user.id }).then(
+          async () => {
+            // Запускаю проверку портфеля на пустоту и его удаление
+            if (portfolioIdOld) {
+              queries.portfolio.checkEmptyAndDelete(portfolioIdOld);
             }
-            await transaction.commit();
-            res.json(model);
-          });
-        });
+
+            // Отсылаю ответ модель с проектом
+            return Project.findByPrimary(req.params.id, {
+              attributes: Project.defaultSelect,
+              include: [
+                {
+                  as: 'portfolio',
+                  model: Portfolio,
+                  attributes: ['id', 'name'],
+                  required: false
+                }
+              ],
+              transaction
+            }).then(async model => {
+              const updatedParams = { ...req.body, id: model.id };
+              ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
+
+              if (req.body.gitlabProjectIds) {
+                gitlabProjectsOld = await gitLabService.projects.getProjects(gitlabProjectIdsOld);
+                model.dataValues.gitlabProjects = [...gitlabProjectsOld, ...gitlabProjectsNew];
+              }
+              if (removedGitlabProjectIds.length) {
+                await Promise.all(
+                  removedGitlabProjectIds.map(gitlabProjectId =>
+                    gitLabService.projects.removeAllProjectUsersFromGitlab(model.id, gitlabProjectId)
+                  )
+                );
+              }
+              await transaction.commit();
+              res.json(model);
+            });
+          },
+          async err => {
+            if (transaction) {
+              await transaction.rollback();
+            }
+
+            next(err);
+          }
+        );
       }
     );
   } catch (err) {
@@ -321,7 +351,7 @@ exports.update = async function (req, res, next) {
   }
 };
 
-exports.delete = function (req, res, next) {
+exports.delete = function(req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Project.findByPrimary(req.params.id, { attributes: ['id'] })
@@ -339,7 +369,7 @@ exports.delete = function (req, res, next) {
     });
 };
 
-function getTagByProjectList (projects) {
+function getTagByProjectList(projects) {
   const allTags = [];
   projects.forEach(project => {
     project.itemTagSelect.forEach(tagSelect => allTags.push({ name: tagSelect.dataValues.tag.dataValues.name }));
@@ -347,7 +377,7 @@ function getTagByProjectList (projects) {
   return allTags;
 }
 
-exports.list = function (req, res, next) {
+exports.list = function(req, res, next) {
   if (req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return next(createError(400, 'date must be in YYYY-MM-DD format'));
   }
@@ -374,15 +404,18 @@ exports.list = function (req, res, next) {
 
   if (req.query.onlyUserInProject) {
     //  Get projects where users only createor without any role
-    const onlyAuthorIds = req.user.authorsProjects.filter((authorsProject) =>
-      !req.user.usersProjects.find((usersProject) =>
-        usersProject.dataValues.projectId === authorsProject.dataValues.id))
-      .map((el) => el.dataValues.id);
+    const onlyAuthorIds = req.user.authorsProjects
+      .filter(
+        authorsProject =>
+          !req.user.usersProjects.find(
+            usersProject => usersProject.dataValues.projectId === authorsProject.dataValues.id
+          )
+      )
+      .map(el => el.dataValues.id);
 
-    where.id = req.user.dataValues.projects.filter((projectId) => {
+    where.id = req.user.dataValues.projects.filter(projectId => {
       return onlyAuthorIds.indexOf(projectId) === -1;
     });
-
   } else if (req.query.userIsParticipant || (!req.user.isGlobalAdmin && !req.user.isVisor)) {
     where.id = req.user.dataValues.projects;
   }
@@ -580,22 +613,22 @@ exports.list = function (req, res, next) {
       'dateFinishLastSprint'
     ] // Дата завершения последнего спринта у проекта
   ];
-  const attributes
-    = userRole !== models.User.EXTERNAL_USER_ROLE
+  const attributes =
+    userRole !== models.User.EXTERNAL_USER_ROLE
       ? Project.defaultSelect.concat(additinalAttr)
       : [
-        'id',
-        'name',
-        'description',
-        'prefix',
-        'statusId',
-        'typeId',
-        'notbillable',
-        'portfolioId',
-        'authorId',
-        'completedAt',
-        'createdAt'
-      ].concat(additinalAttr);
+          'id',
+          'name',
+          'description',
+          'prefix',
+          'statusId',
+          'typeId',
+          'notbillable',
+          'portfolioId',
+          'authorId',
+          'completedAt',
+          'createdAt'
+        ].concat(additinalAttr);
 
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
@@ -693,37 +726,43 @@ exports.list = function (req, res, next) {
     .catch(err => next(err));
 };
 
-exports.addGitlabProject = async function (req, res, next) {
+exports.addGitlabProject = async function(req, res, next) {
   try {
     const { projectId, path } = req.body;
-    const gitlabProject = await gitLabService.projects.addProjectByPath(projectId, path);
-    res.json(gitlabProject);
+    const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.addProjectByPath(projectId, path);
+    const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json({ gitlabProject, projectUsers, notProcessedGitlabUsers: _.flatten(notProcessedGitlabUsers) });
   } catch (e) {
     next(e);
   }
 };
 
-exports.getGitlabNamespaces = async function (req, res, next) {
+exports.getGitlabNamespaces = async function(req, res, next) {
   try {
-    const namespaces = await gitLabService.projects.getNamespacesList();
+    const namespaces = await gitLabService.projects.getNamespacesList(req.query.search);
     res.json(namespaces);
   } catch (e) {
     next(e);
   }
 };
 
-exports.createGitlabProject = async function (req, res, next) {
+exports.createGitlabProject = async function(req, res, next) {
   try {
     const { name, namespace_id } = req.body;
     const projectId = req.params.id;
-    const project = await gitLabService.projects.createProject(name, namespace_id, projectId);
-    res.json(project);
+    const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.createProject(
+      name,
+      namespace_id,
+      projectId
+    );
+    const projectUsers = await queries.projectUsers.getUsersByProject(projectId, false, ['userId', 'rolesIds']);
+    res.json({ gitlabProject, projectUsers, notProcessedGitlabUsers: _.flatten(notProcessedGitlabUsers) });
   } catch (e) {
     next(e);
   }
 };
 
-exports.getProjects = async function (req, res, next) {
+exports.getProjects = async function(req, res, next) {
   try {
     const { id } = req.params;
     const project = await Project.find({ where: { id } });

@@ -10,6 +10,9 @@ const {
   setAssociateWithJiraProject,
   clearProjectAssociate,
   getJiraProjectById,
+  getJiraProjectUsers,
+  setJiraSyncStatus,
+  getJiraSyncStatuses
 } = require('./jira');
 
 module.exports = {
@@ -24,4 +27,7 @@ module.exports = {
   setAssociateWithJiraProject,
   clearProjectAssociate,
   getJiraProjectById,
+  getJiraProjectUsers,
+  setJiraSyncStatus,
+  getJiraSyncStatuses
 };

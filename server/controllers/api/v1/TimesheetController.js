@@ -7,7 +7,7 @@ const models = require('../../../models');
 
 exports.create = async (req, res, next) => {
   const userId = req.body.userId || req.user.id; // Todo: validate user rights
-
+  const { taskId } = req.body;
   const timesheetParams = {
     ...req.body,
     userId,
@@ -23,6 +23,14 @@ exports.create = async (req, res, next) => {
     .then(createdTimesheet => {
       TimesheetsChannel.sendAction('create', createdTimesheet, res.io, userId);
       res.json(createdTimesheet);
+      if (taskId) {
+        TasksService
+          .read(taskId, req.user).then(task => {
+            if (task) {
+              TaskChannel.sendAction('update', task, res.io, task.projectId);
+            }
+          });
+      }
     })
     .catch(e => {
       return next(createError(e));
@@ -163,6 +171,13 @@ exports.delete = async (req, res, next) => {
     .then(timesheets => {
       timesheets.forEach(deletedTimesheet => {
         TimesheetsChannel.sendAction('destroy', deletedTimesheet, res.io, req.user.id);
+        if (deletedTimesheet.taskId) {
+          TasksService.read(deletedTimesheet.taskId, req.user).then(task => {
+            if (task) {
+              TaskChannel.sendAction('update', task, res.io, task.projectId);
+            }
+          });
+        }
       });
       res.end();
     })

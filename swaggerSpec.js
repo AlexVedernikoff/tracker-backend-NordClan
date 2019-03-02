@@ -292,6 +292,26 @@ module.exports = {
                   type: 'string',
                   example: 'string',
                   description: 'можно разделять через ",". Смотри словарь ролей. Новое значение затерет предыдушие роли пользователя'
+                },
+                gitlabRoles: {
+                  type: 'array',
+                  example: '[]',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      accessLevel: {
+                        type: 'integer',
+                        required: true
+                      },
+                      gitlabProjectId: {
+                        type: 'integer',
+                        required: true
+                      },
+                      expiredDate: {
+                        type: 'string'
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -513,6 +533,142 @@ module.exports = {
           }
         ],
         responses: responsesCodes
+      }
+    },
+    '/project/{projectId}/history': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить историю сущности в контексте проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'pageSize',
+            type: 'integer',
+            in: 'query'
+          },
+          {
+            name: 'currentPage',
+            type: 'integer',
+            in: 'query'
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/project/:projectId/addGitlabProject': {
+      post: {
+        tags: ['Projects'],
+        summary: 'Привязать существующий gitlab репозиторий',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'project',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                path: {
+                  type: 'string',
+                  required: true,
+                  example: 'front-end/gitlab-local-test'
+                }
+              }
+            }
+          }
+        ],
+        responses: {
+          ...responsesCodes,
+          '200': {
+            ...responsesCodes['200'],
+            schema: {
+              type: 'object',
+              properties: {
+                gitlabProject: {
+                  type: 'object',
+                  example: '{}'
+                },
+                projectUsers: {
+                  type: 'array',
+                  required: true,
+                  example: '[]'
+                },
+                notProcessedGitlabUsers: {
+                  type: 'array',
+                  example: '[]'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/project/:projectId/createGitlabProject': {
+      post: {
+        tags: ['Projects'],
+        summary: 'Создать gitlab репозиторий и привязать к проекту',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'project',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                name: {
+                  type: 'string',
+                  required: true,
+                  example: 'some repo name'
+                },
+                namespace_id: {
+                  type: 'integer',
+                  required: true,
+                  example: '1'
+                }
+              }
+            }
+          }
+        ],
+        responses: {
+          ...responsesCodes,
+          '200': {
+            ...responsesCodes['200'],
+            schema: {
+              type: 'object',
+              properties: {
+                gitlabProject: {
+                  type: 'object',
+                  example: '{}'
+                },
+                projectUsers: {
+                  type: 'array',
+                  required: true,
+                  example: '[]'
+                },
+                notProcessedGitlabUsers: {
+                  type: 'array',
+                  example: '[]'
+                }
+              }
+            }
+          }
+        }
       }
     },
 
@@ -803,6 +959,13 @@ module.exports = {
             description: '0 если без исполнителя',
             type: 'integer',
             in: 'query'
+          },
+          {
+            name: 'isDevOps',
+            description: 'true false или пусто, при пустом все задачи вернуться',
+            type: 'boolean',
+            in: 'query',
+            example: null
           },
           {
             name: 'tags',
@@ -1252,31 +1415,6 @@ module.exports = {
         parameters: [
           {
             name: 'taskId',
-            type: 'integer',
-            in: 'path',
-            required: true
-          },
-          {
-            name: 'pageSize',
-            type: 'integer',
-            in: 'query'
-          },
-          {
-            name: 'currentPage',
-            type: 'integer',
-            in: 'query'
-          }
-        ],
-        responses: responsesCodes
-      }
-    },
-    '/project/{projectId}/history': {
-      get: {
-        tags: ['Projects'],
-        summary: 'Получить историю сущности в контексте проекта',
-        parameters: [
-          {
-            name: 'projectId',
             type: 'integer',
             in: 'path',
             required: true
@@ -1970,6 +2108,235 @@ module.exports = {
           }
         ],
         responses: responsesCodes
+      }
+    },
+    '/jira/auth': {
+      post: {
+        tags: ['Jira'],
+        summary: 'Авторизация в Jira',
+        parameters: [
+          {
+            in: 'body',
+            name: 'credentials',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                server: {
+                  type: 'string',
+                  example: 'http://jira-test.simbirsoft:8080'
+                },
+                username: {
+                  type: 'string',
+                  example: 'admin'
+                },
+                password: {
+                  type: 'string',
+                  example: 'admin'
+                },
+                email: {
+                  type: 'string',
+                  example: 'test@example.org'
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    '/jira/project': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить проекты из Jira',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          }
+        ]
+      }
+    },
+    '/jira/getActiveProjects': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить все заинтегрированные проекты с Jira (нужно для TTI)'
+      }
+    },
+    '/jira/synchronize': {
+      post: {
+        tags: ['Jira'],
+        summary: 'На этот адрес TTI присылает данные с Jira',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'body',
+            description: 'неизвестность',
+            schema: {
+              type: 'object'
+            },
+            required: true
+          }
+        ]
+      }
+    },
+    '/jira/project/{jiraProjectId}/info': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить информацию из Jira (status_type и issue_type, users)',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            name: 'jiraProjectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
+    '/jira/project/{jiraProjectId}/handleSync': {
+      post: {
+        tags: ['Jira'],
+        summary: 'Вручную запустить команду на синхронизацию с JIRA, далее TTI пришлет данные по другому роуту',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            name: 'jiraProjectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
+    '/project/{projectId}/jira/association/': {
+      get: {
+        tags: ['Jira'],
+        summary: 'Получить существующие ассоциации проекта с Jira',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      },
+      post: {
+        tags: ['Jira'],
+        summary: 'Привязать проект Jira к проекту в simtrack',
+        parameters: [
+          {
+            in: 'header',
+            name: 'X-Jira-Auth',
+            description: 'Token',
+            schema: {
+              type: 'string'
+            },
+            required: true
+          },
+          {
+            in: 'body',
+            name: '',
+            description: '',
+            schema: {
+              type: 'object',
+              required: [],
+              properties: {
+                jiraProjectId: {
+                  type: 'integer',
+                  example: 1000
+                },
+                jiraHostName: {
+                  type: 'string',
+                  example: 'http://jira-test.simbirsoft:8080'
+                },
+                issueTypesAssociation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: [],
+                    properties: {
+                      internalTaskTypeId: {
+                        type: 'integer',
+                        example: 1
+                      },
+                      externalTaskTypeId: {
+                        type: 'integer',
+                        example: 5
+                      }
+                    }
+                  }
+                },
+                statusesAssociation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: [],
+                    properties: {
+                      internalStatusId: {
+                        type: 'integer',
+                        example: 1
+                      },
+                      externalStatusId: {
+                        type: 'integer',
+                        example: 5
+                      }
+                    }
+                  }
+                },
+                userEmailAssociation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: [],
+                    properties: {
+                      internalUserEmail: {
+                        type: 'string',
+                        example: 'abs@simbirsoft.com'
+                      },
+                      externalUserEmail: {
+                        type: 'string',
+                        example: 'abs@simbirsoft.com'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     },
     '/healthcheck': {

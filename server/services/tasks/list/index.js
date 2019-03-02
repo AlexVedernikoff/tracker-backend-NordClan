@@ -8,11 +8,9 @@ const layoutAgnostic = require('../../layoutAgnostic');
 const { NOTAG } = require('../../../components/utils');
 
 function getTagsByTaskList (tasks) {
-  const allTags = _.unionBy(
-    ...tasks.map(task => task.tags.map(o => o.dataValues)),
-    o => o.name
-  )
-    .map(tag => ({name: tag.name}));
+  const allTags = _.unionBy(...tasks.map(task => task.tags.map(o => o.dataValues)), o => o.name).map(tag => ({
+    name: tag.name
+  }));
   return allTags;
 }
 
@@ -35,7 +33,10 @@ exports.list = async function (req) {
 
   const userRole = req.user.dataValues.globalRole;
 
-  let tags = typeof req.query.tags === 'string' ? req.query.tags.split(',') : req.query.tags;
+  let tags = null;
+  if (req.query.tags) {
+    tags = typeof req.query.tags === 'string' ? req.query.tags.split(',') : req.query.tags;
+  }
 
   // Поиск тасок без тега
   const selectWithoutTags = Array.isArray(tags) && tags.length === 1 && NOTAG.indexOf(tags[0].toLowerCase()) !== -1;
@@ -103,7 +104,7 @@ exports.list = async function (req) {
     pageSize: req.query.pageSize ? req.query.pageSize : projectCount,
     rowsCountAll: projectCount,
     rowsCountOnCurrentPage: tasks.length,
-    data: req.query.pageSize ? tasks.slice(offset, offset + (+req.query.pageSize)) : tasks,
+    data: req.query.pageSize ? tasks.slice(offset, offset + +req.query.pageSize) : tasks,
     allTags: allTags,
     queryId: req.query.queryId
   };
@@ -126,16 +127,28 @@ function createWhereForRequest (req, selectWithoutTags) {
     where.performerId = req.query.performerId;
   }
 
+  if (+req.query.performerId === 0 && req.query.isDevOps && (req.user.isDevOps || req.user.isGlobalAdmin)) {
+    delete where.performerId;
+  }
+
   if (req.query.name) {
     if (+req.query.name > 0) {
-      where.id = req.query.name;
+      const searchTemplate = `%${req.query.name}%`;
+
+      where.$or = [
+        {
+          name: { $iLike: searchTemplate }
+        },
+        models.sequelize.where(models.sequelize.cast(models.sequelize.col('Task.id'), 'varchar'), {
+          $iLike: searchTemplate
+        })
+      ];
     } else {
       where.name = {
         $iLike: layoutAgnostic(req.query.name)
       };
     }
   }
-
   // Если +req.query.statusId === 0 или указан спринт вывожу все статусы, если указаны конкретные вывожу их.
   if (req.query.statusId && +req.query.statusId !== 0) {
     where.statusId = {
@@ -205,17 +218,17 @@ function createWhereForRequest (req, selectWithoutTags) {
       const ind = sprints.findIndex(e => e === '0');
       if (~ind) {
         sprints.splice(ind, 1);
-        where.$or = [
-          { sprintId: { $eq: null } },
-          {
-            sprintId: {
+        where.sprintId = {
+          $or: [
+            { $eq: null },
+            {
               in: sprints
                 .toString()
                 .split(',')
                 .map(el => el.trim())
             }
-          }
-        ];
+          ]
+        };
       } else {
         where.sprintId = {
           in: req.query.sprintId
@@ -249,6 +262,9 @@ function createWhereForRequest (req, selectWithoutTags) {
     where['$"tags.ItemTag"."tag_id"$'] = {
       $is: null
     };
+  }
+  if (req.query.isDevOps) {
+    where.isDevOps = req.query.isDevOps;
   }
 
   if (req.user.isDevOps && !req.user.isUserOfProject(+req.query.projectId)) {
@@ -294,13 +310,13 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeParentTask = {
     as: 'parentTask',
     model: models.Task,
-    attributes: ['id', 'name']
+    attributes: ['id', 'name', 'statusId']
   };
 
   const includeSubTasks = {
     as: 'subTasks',
     model: models.Task,
-    attributes: ['id', 'name'],
+    attributes: ['id', 'name', 'statusId'],
     where: {
       statusId: {
         $notIn: [9] // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
@@ -312,7 +328,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeLLnkedTasks = {
     as: 'linkedTasks',
     model: models.Task,
-    attributes: ['id', 'name'],
+    attributes: ['id', 'name', 'statusId'],
     through: {
       model: models.TaskTasks,
       attributes: []
