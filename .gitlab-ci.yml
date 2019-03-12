@@ -66,7 +66,7 @@ deploy_test:
   extends: .deploy_ansible
 
 deploy_to_prod:
-  image: dr.simbirsoft1.com/library/ansible:2.4
+  image: dr.simbirsoft1.com/library/ansible:2.7.1
   stage: deploy
   variables:
     CURRENT_DEPLOYMENT_KEY: "$PROD_DEPLOYMENT_KEY"
