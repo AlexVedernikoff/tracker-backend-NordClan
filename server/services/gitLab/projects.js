@@ -291,7 +291,7 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   let gitlabUserId = user.gitlabUserId;
   const notProcessedGitlabUsers = [];
   //Находим или создаем пользователя в гитлабе и сохраняем ссылку в базе
-  if (!gitlabUserId) {
+  if (!gitlabUserId && user.dataValues.globalRole !== 'EXTERNAL_USER') {
     const gitlabUser = await findOrCreateUser(user);
     gitlabUserId = gitlabUser.id;
     await User.update({ gitlabUserId: gitlabUser.id }, {
