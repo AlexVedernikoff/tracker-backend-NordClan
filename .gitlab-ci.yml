@@ -5,7 +5,7 @@ stages:
   - deploy
 
 before_script:
-  - mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
+  # - mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
   - export TAG="${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA:0:8}"
   - export CI_SHORT_REF_NAME=$CI_COMMIT_REF_SLUG
   - export DOCKER_REGISTRY_IMAGE=$DOCKER_REGISTRY_PREFIX/be
