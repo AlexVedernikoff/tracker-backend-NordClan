@@ -1,7 +1,7 @@
 const ldap = require('ldapjs');
 const moment = require('moment');
 const User = require('../../server/models').User;
-const ldapUrl = 'ldap://auth.simbirsoft:389/dc=simbirsoft';
+const ldapUrl = 'ldap://ldap.nordclan:389/dc=nordclan';
 
 // Синхронизация пользователей
 module.exports = function() {
@@ -22,7 +22,7 @@ module.exports = function() {
     .then(()=>{
       return new Promise(function(resolve, reject) {
 
-        client.search('cn=People,dc=simbirsoft', opts, function(err, search) {
+        client.search('cn=users,dc=nordclan', opts, function(err, search) {
           if (err) reject();
 
           search.on('searchEntry', function(entry) {

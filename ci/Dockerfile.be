@@ -1,4 +1,4 @@
-FROM node:8.6 AS base
+FROM node:10.16 AS base
 WORKDIR /tmp/build
 RUN apt-get update && \
     apt-get install -yq graphicsmagick python3 python3-pip && \

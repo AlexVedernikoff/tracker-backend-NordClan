@@ -41,6 +41,7 @@ exports.login = function (req, res, next) {
     attributes: [ ...User.defaultSelect, 'ldapLogin', 'password', 'isTest']
   })
     .then(user => {
+      console.log(user);
       if (!user) return next(createError(404, 'Invalid Login or Password'));
 
       queries.token.deleteExpiredTokens(user);
@@ -56,11 +57,13 @@ exports.login = function (req, res, next) {
     });
 
   function authLdap (user, password) {
+    console.log(config);
     const client = ldap.createClient({
       url: config.ldapUrl
     });
 
-    client.bind('cn=' + user.ldapLogin + ',cn=People,dc=simbirsoft', password, function (err) {
+    client.bind('uid=' + user.ldapLogin + ',dc=nordclan', password, function (err) {
+      console.log(err);
       if (err) {
         client.unbind();
         return next(createError(err));

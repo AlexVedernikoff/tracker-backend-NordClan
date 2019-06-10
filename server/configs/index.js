@@ -11,15 +11,8 @@ module.exports = {
       password: process.env.DATABASE_PASSWORD || '123456'
     }
   },
-  ps: {
-    host: 'portaltest.simbirsoft',
-    port: 8080,
-    path: '/default/rest/',
-    username: 'serviceman',
-    password: 'FdKg&$b*)FeA{'
-  },
   gitLab: {
-    host: process.env.GITLAB_HOST || 'gitlab-test.simbirsoft',
+    host: process.env.GITLAB_HOST || 'gitlab-test.nordclan',
     token: process.env.GITLAB_TOKEN || 'DBx1nxkqSEEpwhbAT4K5'
   },
   auth: {
@@ -31,9 +24,9 @@ module.exports = {
     accessTokenLifetime: 60 * 60 * 24 * 365 * 10
   },
   keycloak: {
-    realm: process.env.KEYCLOAK_REALM || 'simbirsoft-dev',
+    realm: process.env.KEYCLOAK_REALM || 'nordclan-dev',
     'bearer-only': true,
-    'auth-server-url': process.env.KEYCLOAK_URL || 'http://sso.simbirsoft:8080/auth',
+    'auth-server-url': process.env.KEYCLOAK_URL || 'http://sso.nordlcan:8080/auth',
     'ssl-required': 'external',
     resource: 'local-simtrack-bearer-only',
     'confidential-port': 0
@@ -41,18 +34,16 @@ module.exports = {
   email: {
     enabled: process.env.EMAIL_ENABLED === 'true' || process.env.email_enabled === 'true',
     service: 'Yandex',
-    login: 'sim-track@simbirsoft.com',
+    login: 'admin@nordclan.com',
     password: 'AP2y2CHU',
-    title: 'SimTrack',
-    templateBaseUrl: 'http://sim-track.simbirsoft1.com'
+    title: 'NordClan',
+    templateBaseUrl: 'http://track.docker.nordclan'
   },
   emailsToSendErrorsByMetrics: [
-    'tatyana.babich@simbirsoft.com',
-    'victor.sychev@simbirsoft.com',
-    'anastasiya.karaseva@simbirsoft.com',
-    'maxim.baranov@simbirsoft.com'
+    'tatyana.babich@nordclan.com',
+    'andrei.frenkel@nordclan.com',
   ],
-  emailForDevOpsNotify: 'devops-support@simbirsoft.com',
+  emailForDevOpsNotify: 'andrei.frenkel@nordclan.com',
   ldapUrl:
     process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
   ttiUrl: process.env.TTI_HOST || 'https://simtrack-tti-dev.docker.simbirsoft',
