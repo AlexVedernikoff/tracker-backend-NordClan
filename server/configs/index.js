@@ -34,8 +34,8 @@ module.exports = {
   email: {
     enabled: process.env.EMAIL_ENABLED === 'true' || process.env.email_enabled === 'true',
     service: 'Yandex',
-    login: 'admin@nordclan.com',
-    password: 'AP2y2CHU',
+    login: 'track@nordclan.com',
+    password: 'e78Ke@7TQ!v3',
     title: 'NordClan',
     templateBaseUrl: 'http://track.docker.nordclan'
   },
