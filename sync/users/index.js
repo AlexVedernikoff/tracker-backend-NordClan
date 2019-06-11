@@ -1,5 +1,4 @@
 const ldap = require('./ldap');
-const ps = require('./ps');
 
 /*
 * crontab

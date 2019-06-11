@@ -22,7 +22,7 @@ module.exports = function() {
     .then(()=>{
       return new Promise(function(resolve, reject) {
 
-        client.search('cn=users,dc=nordclan', opts, function(err, search) {
+        client.search('dc=nordclan', opts, function(err, search) {
           if (err) reject();
 
           search.on('searchEntry', function(entry) {
