@@ -75,7 +75,7 @@ deploy_to_prod:
     - mkdir -p ~/.ssh/
     - echo -e "Host *\n\rStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - echo "$CURRENT_DEPLOYMENT_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-    - cat ~/.ssh/id_rsa
+    - ssh -Tv git@gitlab.nordclan
     - chmod 600 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
