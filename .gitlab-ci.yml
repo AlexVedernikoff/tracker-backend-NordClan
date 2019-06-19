@@ -50,7 +50,7 @@ deploy_dev:
     - develop
   environment:
     name: $CURRENT_ENV
-    url: http://tracker-dev.docker.nordclan/
+    url: http://track-dev.docker.nordclan/
   extends: .deploy_ansible
 
 deploy_test:
@@ -62,7 +62,7 @@ deploy_test:
   when: manual
   environment:
     name: $CURRENT_ENV
-    url: http://tracker-test.docker.nordclan/
+    url: http://track-test.docker.nordclan/
   extends: .deploy_ansible
 
 deploy_to_prod:
@@ -89,4 +89,4 @@ deploy_to_prod:
   when: manual
   environment:
     name: prod
-    url: https://tracker.nordclan/
+    url: https://track.nordclan/
