@@ -1,9 +1,11 @@
 const userSubscriptionEvents = require('../userSubscriptionEvents');
 
-process.on('message', ({ eventId, input, user}) => {
+process.on('message', async ({ eventId, input, user}) => {
   try {
-    userSubscriptionEvents(eventId, input, user);
+    await userSubscriptionEvents(eventId, input, user);
+    process.exit(0);
   } catch (e) {
+    process.exit(1);
     console.error(e);
   }
 });

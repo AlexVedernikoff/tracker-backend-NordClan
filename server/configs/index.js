@@ -6,7 +6,7 @@ module.exports = {
       host: process.env.DATABASE_HOST || 'localhost',
       port: process.env.DATABASE_PORT || 5432,
       dialect: 'postgres',
-      name: process.env.DATABASE_NAME || 'sim-track',
+      name: process.env.DATABASE_NAME || 'track',
       username: process.env.DATABASE_USERNAME || 'postgres',
       password: process.env.DATABASE_PASSWORD || '123456'
     }
@@ -26,26 +26,25 @@ module.exports = {
   keycloak: {
     realm: process.env.KEYCLOAK_REALM || 'nordclan-dev',
     'bearer-only': true,
-    'auth-server-url': process.env.KEYCLOAK_URL || 'http://sso.nordlcan:8080/auth',
+    'auth-server-url': process.env.KEYCLOAK_URL,
     'ssl-required': 'external',
     resource: 'local-simtrack-bearer-only',
     'confidential-port': 0
   },
   email: {
     enabled: process.env.EMAIL_ENABLED === 'true' || process.env.email_enabled === 'true',
-    service: 'Yandex',
-    login: 'track@nordclan.com',
-    password: 'e78Ke@7TQ!v3',
-    title: 'NordClan',
-    templateBaseUrl: 'http://track.docker.nordclan'
+    service: process.env.EMAIL_SERVICE,
+    login: process.env.EMAIL_LOGIN,
+    password: process.env.EMAIL_PASSWORD,
+    title: process.env.EMAIL_TITLE,
+    templateBaseUrl: process.env.EMAIL_TEMPLATE_BASE_URL
   },
   emailsToSendErrorsByMetrics: [
     'tatyana.babich@nordclan.com',
     'andrei.frenkel@nordclan.com',
   ],
   emailForDevOpsNotify: 'andrei.frenkel@nordclan.com',
-  ldapUrl:
-    process.env.LDAP_URL || 'ldap://auth-copy.simbirsoft:389/dc=simbirsoft',
-  ttiUrl: process.env.TTI_HOST || 'https://simtrack-tti-dev.docker.simbirsoft',
+  ldapUrl: process.env.LDAP_URL,
+  ttiUrl: process.env.TTI_HOST,
   metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881
 };
