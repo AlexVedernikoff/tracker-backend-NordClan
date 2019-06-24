@@ -36,7 +36,7 @@ build_docker_be:
     - chmod 600 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
-    - git clone --depth 1 -b feature/improve-deploy $DEPLOYMENT_REPO ~/deploy
+    - git clone $DEPLOYMENT_REPO ~/deploy
     - cd ~/deploy
     - ansible-playbook -i environments/${CURRENT_ENV}/inventory deploy.yaml --tags=be
   tags:
@@ -78,7 +78,6 @@ deploy_to_prod:
     - chmod 600 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
-    - ssh -Tv git@gitlab.nordclan
     - git clone $DEPLOYMENT_REPO ~/deploy
     - cd ~/deploy 
     - echo $ANSIBLE_VAULT_PASSWORD > vault.key
