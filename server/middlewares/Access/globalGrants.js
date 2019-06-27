@@ -67,6 +67,10 @@ const USER = {
     'list': true,
     'trackAll': true
   },
+  companyReports: {
+    'export': true,
+    'read': true
+  },
   metrics: {
     'list': true
   }
@@ -103,6 +107,9 @@ module.exports = {
       'updateExternal': true,
       'refreshTokenExternal': true,
       'updateTestUser': true
+    },
+    companyReports: {
+      ...USER.companyReports
     }
   },
   SYSTEM_USER: {

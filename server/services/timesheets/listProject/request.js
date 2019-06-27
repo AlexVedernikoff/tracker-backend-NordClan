@@ -1,9 +1,11 @@
 const models = require('../../../models');
 
 module.exports = function (dateBegin, dateEnd, projectId, isSystemUser) {
-  const where = {
-    projectId
-  };
+  const where = { };
+
+  if (projectId) {
+    where.projectId = projectId;
+  }
 
   if (dateBegin && dateEnd) {
     where.onDate = {
@@ -21,11 +23,11 @@ module.exports = function (dateBegin, dateEnd, projectId, isSystemUser) {
   }
 
   return {
-    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId'],
+    attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId'],
     where,
     include: getInclude(),
     order: [
-      ['createdAt', 'ASC']
+      ['onDate', 'ASC']
     ]
   };
 };
@@ -37,7 +39,7 @@ function getInclude () {
       as: 'task',
       model: models.Task,
       required: false,
-      attributes: ['id', 'name'],
+      attributes: ['id', 'name', 'typeId'],
       paranoid: false,
       include: [
         {

@@ -38,6 +38,7 @@ router.get(
   UserController.autocompleteExternal
 );
 router.get('/users/devops', GlobalAccess.can('projectUsers', 'list'), UserController.devOpsUsers);
+router.get('/users/all', GlobalAccess.can('companyReports', 'read'), UserController.getAllUsers);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.put(
   '/user/external/:id/refresh',
@@ -134,6 +135,8 @@ router.get('/task/:id/getGitlabBranchesByRepoId/', TaskController.getGitlabBranc
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
+router.get('/company-timesheets/', GlobalAccess.can('companyReports', 'read'), TimesheetController.listAllProjects);
+router.get('/company-timesheets/reports/period', GlobalAccess.can('companyReports', 'export'), ReportsController.companyByPeriod);
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
 router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);
 router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);
