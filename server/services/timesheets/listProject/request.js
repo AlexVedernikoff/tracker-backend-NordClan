@@ -76,7 +76,7 @@ function getInclude () {
       as: 'user',
       model: models.User,
       required: false,
-      attributes: ['id', 'firstNameRu', 'lastNameRu'],
+      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn'],
       paranoid: false
     }
   ];

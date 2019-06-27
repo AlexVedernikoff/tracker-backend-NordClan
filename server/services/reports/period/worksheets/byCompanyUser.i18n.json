@@ -17,7 +17,8 @@
     "PERIOD": "Период",
     "PROJECT": "Проект",
     "MAGIC": "Прочая активность",
-    "PERSON": "ФИО"
+    "PERSON": "ФИО",
+    "BUSY": "Занятость:"
   },
   "en": {
     "OTHER_TASKS": "Other Tasks",
@@ -37,6 +38,7 @@
     "PERIOD": "Period",
     "PROJECT": "Project",
     "MAGIC": "Another activity",
-    "PERSON": "Person"
+    "PERSON": "Person",
+    "BUSY": "Busy:"
   }
 }

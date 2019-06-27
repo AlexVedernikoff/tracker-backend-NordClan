@@ -33,7 +33,9 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   _writeSummary (startAt, endAt) {
+    const index = this._tableColumns.findIndex(v => v.isSummary);
     const locale = i18n[this.lang];
+    const self = this;
     const formulas = [
       {
         label: locale.TOTAL_BILLABLE,
@@ -46,15 +48,23 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       {
         label: locale.TOTAL_AMOUNT,
         formula: `SUBTOTAL(9,H${startAt}:H${endAt})+SUBTOTAL(9,I${startAt}:I${endAt})`
+      },
+      {
+        label: locale.BUSY,
+        numFmt: '00.00%',
+        get formula () { return `${self._columns[index + 1]}${self._lastIndexRow - 3} / ${self._columns[index + 1]}${self._lastIndexRow - 1}`; }
       }
     ];
-    const index = this._tableColumns.findIndex(v => v.isSummary);
     if (~index) {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         this._lastIndexRow++;
         const totalLabelCell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
         const totalCell = this._worksheet.getCell(this._columns[index + 1] + this._lastIndexRow);
         totalCell.alignment = this._tableColumns[index].alignment || {};
+        const format = formulas[i].numFmt;
+        if (format){
+          totalCell.numFmt = format;
+        }
         totalLabelCell.width = 14;
         totalLabelCell.alignment = this._tableColumns[index].alignment || {};
         totalLabelCell.value = formulas[i].label;
@@ -74,7 +84,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       this._writeUserTimesheets(userElement);
     });
     const endAt = this._lastIndexRow;
-    this._drawBorder(startAt, this._lastIndexRow + 1);
+    this._drawBorder();
     this._writeSummary(startAt, endAt);
   }
 
@@ -95,15 +105,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     this._worksheet.autoFilter = `${this._columns[0]}${this._lastIndexRow}:${this._columns[this._columns.length - 1]}${this._lastIndexRow}`;
   }
 
-  _drawBorder (startAt, endAt) {
-    for (let i = startAt; i < endAt; i++) {
-      this._worksheet.getCell(`${this._columns[0]}${i}`).border = {
-        left: { style: 'medium' }
-      };
-      this._worksheet.getCell(`${this._columns[this._columns.length - 1]}${i}`).border = {
-        right: { style: 'medium' }
-      };
-    }
+  _drawBorder () {
     this._lastIndexRow++;
     this._worksheet
       .mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[this._columns.length - 1] + this._lastIndexRow}`);
