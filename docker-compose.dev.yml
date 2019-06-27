@@ -32,9 +32,9 @@ services:
       EOF'
 
   web:
-    build: ./../sim-track
+    build: ./../track-front
     volumes:
-      - ./../sim-track:/app
+      - ./../track-front:/app
     ports:
       - 8080:8080
     env_file:

@@ -130,6 +130,27 @@ exports.autocomplete = function (req, res, next) {
     .catch(err => next(createError(err)));
 };
 
+exports.getAllUsers = async function (req, res, next) {
+  try {
+    const usersList = await models.User.findAll({
+      attributes: [
+        'id',
+        'firstNameRu',
+        'lastNameRu',
+        'firstNameEn',
+        'lastNameEn',
+        'photo',
+        'skype',
+        'emailPrimary',
+        'mobile'
+      ]
+    });
+    res.json(usersList);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.devOpsUsers = async function (req, res, next) {
   try {
     const devOpsList = await models.User.findAll({

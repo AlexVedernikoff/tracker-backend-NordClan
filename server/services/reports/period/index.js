@@ -3,7 +3,8 @@ const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, Proje
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
-const {ByTaskWorkSheet, ByUserWorkSheet} = require('./worksheets');
+const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
+const { listProject } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
 
 exports.getReport = async function (projectId, criteria, options) {
@@ -168,11 +169,105 @@ exports.getReport = async function (projectId, criteria, options) {
   };
 };
 
+exports.getCompanyReport = async function (criteria, options) {
+  const {lang = 'en'} = options || {};
+  let startDate;
+  let endDate;
+  const locale = i18n[lang];
+
+  const timesheetTypes = await TimesheetTypesDictionary.findAll();
+  if (criteria) {
+    const validCriteria = validateCriteria(criteria);
+    startDate = validCriteria.startDate;
+    endDate = validCriteria.endDate;
+  }
+
+  const timeSheetsDbData = await listProject(startDate, endDate);
+  // Подгрузка словарей из БД
+  const projectRolesValues = await ProjectRolesDictionary.findAll();
+  const taskTypesValues = await TaskTypesDictionary.findAll();
+
+  const timeSheets = timeSheetsDbData.map(timeSheet => {
+    const data = timeSheet.dataValues;
+    Object.assign(data, {user: data.user.dataValues});
+    if (!data.taskId) {
+      const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
+      Object.assign(data, {
+        taskId: -type.id,
+        task: {
+          name: type.name,
+          id: type.id,
+          isMagic: type.isMagicActivity
+        }
+      });
+    } else {
+      Object.assign(data, {task: data.task.dataValues});
+    }
+
+    const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
+    const rolesIds = currentProjectRoles
+      .map(role => role.projectRoleId)
+      .sort((role1, role2) => role1 - role2);
+    const userRolesNames = rolesIds
+      .map(roleId => getProjectRoleName(roleId, projectRolesValues, lang))
+      .join(', ');
+    delete data.user.usersProjects;
+    data.user.userRolesNames = userRolesNames;
+
+    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues, lang) : null;
+    return data;
+  });
+
+  const data = {
+    info: { range: {startDate, endDate} },
+    companyByUser: transformToUserList(timeSheets, lang)
+  };
+
+  return {
+    workbook: generateCompanyReportExcellDocument(data, {lang}),
+    options: {
+      fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
+    }
+  };
+};
+
+function transformToUserList (timeSheets, lang) {
+  const groupedByUser = _.groupBy(timeSheets, timeSheet => timeSheet.userId);
+  const suffix = lang.replace(/^[a-zA-Z]{1}/, symbol => symbol.toUpperCase());
+  return Object.keys(groupedByUser)
+    .map(userId => ({
+      user: ((groupedByUser[userId] || [])[0] || {}).user,
+      timeSheets: groupedByUser[userId]
+    }))
+    .sort(({ user: prev }, { user: next}) => {
+      if (prev[`lastName${suffix}`] < next[`lastName${suffix}`]) { return -1; }
+      if (prev[`lastName${suffix}`] > next[`lastName${suffix}`]) { return 1; }
+      return 0;
+    });
+}
+
+function generateCompanyReportExcellDocument (data, options) {
+  const {lang} = options;
+  const workbook = getWorkBook();
+  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang);
+  byCompanyUserSheet.init();
+  return workbook;
+}
+
 function generateExcellDocument (data, options) {
   const {lang} = options;
+  const workbook = getWorkBook();
+  const byUserSheet = new ByUserWorkSheet(workbook, data, lang);
+  const byTaskSheet = new ByTaskWorkSheet(workbook, data, lang);
+  byUserSheet.init();
+  byTaskSheet.init();
+  return workbook;
+}
+
+function getWorkBook () {
   const workbook = new Excel.Workbook();
-  workbook.creator = 'SimTrack';
-  workbook.lastModifiedBy = 'SimTrack';
+  workbook.creator = 'Track';
+  workbook.lastModifiedBy = 'Track';
   workbook.created = new Date();
   workbook.modified = new Date();
   workbook.lastPrinted = new Date();
@@ -187,10 +282,6 @@ function generateExcellDocument (data, options) {
       visibility: 'visible'
     }
   ];
-  const byUserSheet = new ByUserWorkSheet(workbook, data, lang);
-  const byTaskSheet = new ByTaskWorkSheet(workbook, data, lang);
-  byUserSheet.init();
-  byTaskSheet.init();
   return workbook;
 }
 
