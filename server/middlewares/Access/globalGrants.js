@@ -123,7 +123,11 @@ module.exports = {
     }
   },
   VISOR: {
-    ...USER
+    ...USER,
+    companyReports: {
+      'export': true,
+      'read': true
+    }
   },
   EXTERNAL_USER: {
     user: {
