@@ -4,7 +4,7 @@ const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
 const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
-const { listProject } = require('../../timesheets/listProject/index.js');
+const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
 
 exports.getReport = async function (projectId, criteria, options) {
@@ -182,7 +182,7 @@ exports.getCompanyReport = async function (criteria, options) {
     endDate = validCriteria.endDate;
   }
 
-  const timeSheetsDbData = await listProject(startDate, endDate);
+  const timeSheetsDbData = await listProjectByTimeSheets(startDate, endDate);
   // Подгрузка словарей из БД
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();

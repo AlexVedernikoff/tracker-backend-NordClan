@@ -1,8 +1,14 @@
-const timesheetRequest = require('./request');
-const { Timesheet } = require('../../../models');
+const { listByUser, listByTimeSheets } = require('./request');
+const { Timesheet, User } = require('../../../models');
 
 exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
-  const request = timesheetRequest(dateBegin, dateEnd, projectId, isSystemUser);
+  const request = listByUser(dateBegin, dateEnd, projectId, isSystemUser);
+  const timesheets = await User.findAll(request);
+  return createResponse(timesheets);
+};
+
+exports.listProjectByTimeSheets = async (dateBegin, dateEnd, projectId, isSystemUser) => {
+  const request = listByTimeSheets(dateBegin, dateEnd, projectId, isSystemUser);
   const timesheets = await Timesheet.findAll(request);
   return createResponse(timesheets);
 };

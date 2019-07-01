@@ -250,7 +250,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    User.hasOne(models.Timesheet, {
+    User.hasMany(models.Timesheet, {
       as: 'timesheet',
       foreignKey: {
         name: 'userId',

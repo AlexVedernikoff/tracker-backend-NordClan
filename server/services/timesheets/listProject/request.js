@@ -1,6 +1,50 @@
 const models = require('../../../models');
 
-module.exports = function (dateBegin, dateEnd, projectId, isSystemUser) {
+exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
+  const where = { };
+
+  if (projectId) {
+    where.projectId = projectId;
+  }
+
+  if (dateBegin && dateEnd) {
+    where.onDate = {
+      $and: {
+        $gte: dateBegin,
+        $lte: dateEnd
+      }
+    };
+  }
+
+  if (isSystemUser) {
+    where.spentTime = {
+      gt: 0
+    };
+  }
+
+  return {
+    attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn'],
+    include: [
+      {
+        model: models.Timesheet,
+        as: 'timesheet',
+        required: !!projectId,
+        paranoid: false,
+        attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId'],
+        where,
+        include: getInclude(),
+        order: [
+          ['onDate', 'ASC']
+        ]
+      }
+    ],
+    order: [
+      ['lastNameRu', 'ASC']
+    ]
+  };
+};
+
+exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) {
   const where = { };
 
   if (projectId) {
