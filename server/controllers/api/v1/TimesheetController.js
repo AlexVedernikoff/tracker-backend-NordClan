@@ -229,3 +229,57 @@ exports.updateDraft = async function (req, res, next) {
     })
     .catch(e => next(createError(e)));
 };
+
+exports.submit = async function (req, res, next) {
+  const userId = req.body.userId || req.user.id;
+  req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+  return TimesheetService.submit(userId, req.body.dateBegin, req.body.dateEnd)
+    .then(result => {
+      result.forEach(
+        sheet => TimesheetsChannel.sendAction('update', sheet, res.io, userId)
+      );
+      res.json(result);
+    })
+    .catch(error => next(createError(400, error)));
+};
+
+exports.approve = async function (req, res, next) {
+  req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkBody('userId', 'userId must be int').isInt();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+  return TimesheetService.approve(req.body.userId, req.body.dateBegin, req.body.dateEnd)
+    .then(result => {
+      result.forEach(
+        sheet => TimesheetsChannel.sendAction('update', sheet, res.io, req.body.userId)
+      );
+      res.json(result);
+    })
+    .catch(error => next(createError(400, error)));
+};
+
+exports.reject = async function (req, res, next) {
+  req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkBody('userId', 'userId must be int').isInt();
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+  return TimesheetService.reject(req.body.userId, req.body.dateBegin, req.body.dateEnd)
+    .then(result => {
+      result.forEach(
+        sheet => TimesheetsChannel.sendAction('update', sheet, res.io, req.body.userId)
+      );
+      res.json(result);
+    })
+    .catch(error => next(createError(400, error)));
+};
