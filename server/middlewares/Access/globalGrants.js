@@ -110,6 +110,11 @@ module.exports = {
     },
     companyReports: {
       ...USER.companyReports
+    },
+    timesheet: {
+      ...USER.timesheet,
+      'approve': true,
+      'reject': true
     }
   },
   SYSTEM_USER: {
@@ -127,6 +132,11 @@ module.exports = {
     companyReports: {
       'export': true,
       'read': true
+    },
+    timesheet: {
+      ...USER.timesheet,
+      'approve': true,
+      'reject': true
     }
   },
   EXTERNAL_USER: {

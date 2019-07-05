@@ -134,6 +134,9 @@ router.get('/task/:id/getGitlabBranchesByRepoId/', TaskController.getGitlabBranc
 
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
+router.put('/timesheet/submit', GlobalAccess.can('timesheet', 'update'), TimesheetController.submit);
+router.put('/timesheet/approve', GlobalAccess.can('timesheet', 'approve'), TimesheetController.approve);
+router.put('/timesheet/reject', GlobalAccess.can('timesheet', 'reject'), TimesheetController.reject);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/company-timesheets/', GlobalAccess.can('companyReports', 'read'), TimesheetController.listAllProjects);
 router.get('/company-timesheets/reports/period', GlobalAccess.can('companyReports', 'export'), ReportsController.companyByPeriod);

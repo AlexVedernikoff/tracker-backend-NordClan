@@ -9,6 +9,7 @@ const { getTaskSpent } = require('./spent');
 const { update } = require('./update');
 const { updateDraft } = require('./updateDraft');
 const { isNeedCreateDraft } = require('./utils');
+const { submit, approve, reject } = require('./changeStatus');
 
 module.exports = {
   create,
@@ -21,5 +22,8 @@ module.exports = {
   update,
   updateDraft,
   isNeedCreateDraft,
-  getDraft
+  getDraft,
+  submit,
+  approve,
+  reject
 };
