@@ -18,7 +18,8 @@
     "PROJECT": "Проект",
     "MAGIC": "Прочая активность",
     "PERSON": "ФИО",
-    "BUSY": "Занятость:"
+    "BUSY": "Занятость:",
+    "AVERAGE_NUMBER_OF_EMPLOYEES": "Среднесписочная численность работников"
   },
   "en": {
     "OTHER_TASKS": "Other Tasks",
@@ -39,6 +40,7 @@
     "PROJECT": "Project",
     "MAGIC": "Another activity",
     "PERSON": "Person",
-    "BUSY": "Busy:"
+    "BUSY": "Busy:",
+    "AVERAGE_NUMBER_OF_EMPLOYEES": "Average number of employees"
   }
 }

@@ -182,6 +182,43 @@ exports.getCompanyReport = async function (criteria, options) {
     endDate = validCriteria.endDate;
   }
 
+  const users = await User.findAll({
+    attributes: [
+      'dateOfEmployment',
+      'dateOfDismissal'
+    ]
+  });
+
+  const momentStartDate = moment(startDate);
+  const momentEndDate = moment(endDate);
+  const totalDaysForPeriod = momentEndDate.diff(momentStartDate, 'days');
+  const sumOfEmployees = users.reduce((accumulator, { dateOfEmployment, dateOfDismissal }) => {
+    const momentDateOfEmployment = moment(dateOfEmployment);
+
+    const totalFromEnd = (() => {
+      if (dateOfDismissal !== null && typeof dateOfDismissal === 'string') {
+        const momentDateOfDismissal = moment(dateOfDismissal);
+        if (momentDateOfDismissal.isBetween(momentStartDate, momentEndDate)) {
+          return -Math.abs(momentDateOfDismissal.diff(momentEndDate, 'days'));
+        }
+      }
+      return 0;
+    })();
+
+    const totalSinceStart = (() => {
+      if (momentDateOfEmployment.isBetween(momentStartDate, momentEndDate)) {
+        return Math.abs(momentDateOfEmployment.diff(momentStartDate, 'days')) - totalDaysForPeriod;
+      }
+
+      return totalDaysForPeriod;
+    })();
+
+    return accumulator + totalSinceStart + totalFromEnd;
+
+  }, 0);
+
+  const averageNumberOfEmployees = (sumOfEmployees / totalDaysForPeriod).toFixed(1);
+
   const timeSheetsDbData = await listProjectByTimeSheets(startDate, endDate);
   // Подгрузка словарей из БД
   const projectRolesValues = await ProjectRolesDictionary.findAll();
@@ -224,7 +261,7 @@ exports.getCompanyReport = async function (criteria, options) {
   };
 
   return {
-    workbook: generateCompanyReportExcellDocument(data, {lang}),
+    workbook: generateCompanyReportExcellDocument(data, { lang, averageNumberOfEmployees }),
     options: {
       fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
     }
@@ -247,9 +284,9 @@ function transformToUserList (timeSheets, lang) {
 }
 
 function generateCompanyReportExcellDocument (data, options) {
-  const {lang} = options;
+  const { lang, averageNumberOfEmployees } = options;
   const workbook = getWorkBook();
-  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang);
+  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang, averageNumberOfEmployees);
   byCompanyUserSheet.init();
   return workbook;
 }

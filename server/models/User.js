@@ -190,7 +190,9 @@ module.exports = function (sequelize, DataTypes) {
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
+      dateOfEmployment: { type: DataTypes.DATE, field: 'date_of_employment' },
+      dateOfDismissal: { type: DataTypes.DATE, field: 'date_of_dismissal' }
     },
     {
       indexes: [

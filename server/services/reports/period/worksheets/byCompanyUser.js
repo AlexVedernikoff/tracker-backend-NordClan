@@ -8,9 +8,10 @@ const getFullName = (user, suffix) => {
 };
 
 class ByCompanyUserWorkSheet extends WorkSheetTemplate {
-  constructor (workbook, data, lang) {
+  constructor (workbook, data, lang, averageNumberOfEmployees) {
     super(workbook, data, lang);
     this._lastIndexRow = 0;
+    this._averageNumberOfEmployees = averageNumberOfEmployees;
   }
 
   _writeUserTimesheets (userElement) {
@@ -53,10 +54,14 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         label: locale.BUSY,
         numFmt: '00.00%',
         get formula () { return `${self._columns[index + 1]}${self._lastIndexRow - 3} / ${self._columns[index + 1]}${self._lastIndexRow - 1}`; }
+      },
+      {
+        label: locale.AVERAGE_NUMBER_OF_EMPLOYEES,
+        formula: this._averageNumberOfEmployees
       }
     ];
     if (~index) {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < formulas.length; i++) {
         this._lastIndexRow++;
         const totalLabelCell = this._worksheet.getCell(this._columns[index] + this._lastIndexRow);
         const totalCell = this._worksheet.getCell(this._columns[index + 1] + this._lastIndexRow);
