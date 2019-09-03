@@ -23,7 +23,7 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
   }
 
   return {
-    attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'createdAt'],
+    attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'employmentDate', 'dismissalDate'],
     include: [
       {
         model: models.Timesheet,

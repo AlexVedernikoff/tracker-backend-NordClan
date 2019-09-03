@@ -1,11 +1,23 @@
-const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, ProjectUsersRoles,
-  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint, sequelize} = require('../../../models');
+const {
+  Timesheet,
+  Task,
+  TaskTypesDictionary,
+  User,
+  Project,
+  ProjectUsers,
+  ProjectUsersRoles,
+  ProjectRolesDictionary,
+  TimesheetTypesDictionary,
+  Sprint,
+  sequelize
+} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
 const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
 const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
+const { getAverageNumberOfEmployees } = require('../utils');
 
 exports.getReport = async function (projectId, criteria, options) {
   const {lang = 'en'} = options || {};
@@ -223,8 +235,19 @@ exports.getCompanyReport = async function (criteria, options) {
     companyByUser: transformToUserList(timeSheets, lang)
   };
 
+  const averageNumberOfEmployees = await getAverageNumberOfEmployees(
+    startDate,
+    endDate,
+    {
+      precision: 1
+    }
+  );
+
   return {
-    workbook: generateCompanyReportExcellDocument(data, {lang}),
+    workbook: generateCompanyReportExcellDocument(data, {
+      lang,
+      averageNumberOfEmployees
+    }),
     options: {
       fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
     }
@@ -247,9 +270,9 @@ function transformToUserList (timeSheets, lang) {
 }
 
 function generateCompanyReportExcellDocument (data, options) {
-  const {lang} = options;
+  const { lang, averageNumberOfEmployees } = options;
   const workbook = getWorkBook();
-  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang);
+  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang, averageNumberOfEmployees);
   byCompanyUserSheet.init();
   return workbook;
 }
