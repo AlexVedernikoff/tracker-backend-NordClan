@@ -139,6 +139,11 @@ router.put('/timesheet/approve', GlobalAccess.can('timesheet', 'approve'), Times
 router.put('/timesheet/reject', GlobalAccess.can('timesheet', 'reject'), TimesheetController.reject);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/company-timesheets/', GlobalAccess.can('companyReports', 'read'), TimesheetController.listAllProjects);
+router.get(
+  '/company-timesheets/average-employees',
+  GlobalAccess.can('companyReports', 'read'),
+  TimesheetController.getAverageNumberOfEmployees
+);
 router.get('/company-timesheets/reports/period', GlobalAccess.can('companyReports', 'export'), ReportsController.companyByPeriod);
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
 router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);

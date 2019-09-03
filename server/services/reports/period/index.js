@@ -1,11 +1,23 @@
-const { Timesheet, Task, TaskTypesDictionary, User, Project, ProjectUsers, ProjectUsersRoles,
-  ProjectRolesDictionary, TimesheetTypesDictionary, Sprint, sequelize} = require('../../../models');
+const {
+  Timesheet,
+  Task,
+  TaskTypesDictionary,
+  User,
+  Project,
+  ProjectUsers,
+  ProjectUsersRoles,
+  ProjectRolesDictionary,
+  TimesheetTypesDictionary,
+  Sprint,
+  sequelize
+} = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
 const Excel = require('exceljs');
 const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
 const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
+const { getAverageNumberOfEmployees } = require('../utils');
 
 exports.getReport = async function (projectId, criteria, options) {
   const {lang = 'en'} = options || {};
@@ -182,43 +194,6 @@ exports.getCompanyReport = async function (criteria, options) {
     endDate = validCriteria.endDate;
   }
 
-  const users = await User.findAll({
-    attributes: [
-      'dateOfEmployment',
-      'dateOfDismissal'
-    ]
-  });
-
-  const momentStartDate = moment(startDate);
-  const momentEndDate = moment(endDate);
-  const totalDaysForPeriod = momentEndDate.diff(momentStartDate, 'days');
-  const sumOfEmployees = users.reduce((accumulator, { dateOfEmployment, dateOfDismissal }) => {
-    const momentDateOfEmployment = moment(dateOfEmployment);
-
-    const totalFromEnd = (() => {
-      if (dateOfDismissal !== null && typeof dateOfDismissal === 'string') {
-        const momentDateOfDismissal = moment(dateOfDismissal);
-        if (momentDateOfDismissal.isBetween(momentStartDate, momentEndDate)) {
-          return -Math.abs(momentDateOfDismissal.diff(momentEndDate, 'days'));
-        }
-      }
-      return 0;
-    })();
-
-    const totalSinceStart = (() => {
-      if (momentDateOfEmployment.isBetween(momentStartDate, momentEndDate)) {
-        return Math.abs(momentDateOfEmployment.diff(momentStartDate, 'days')) - totalDaysForPeriod;
-      }
-
-      return totalDaysForPeriod;
-    })();
-
-    return accumulator + totalSinceStart + totalFromEnd;
-
-  }, 0);
-
-  const averageNumberOfEmployees = (sumOfEmployees / totalDaysForPeriod).toFixed(1);
-
   const timeSheetsDbData = await listProjectByTimeSheets(startDate, endDate);
   // Подгрузка словарей из БД
   const projectRolesValues = await ProjectRolesDictionary.findAll();
@@ -260,8 +235,19 @@ exports.getCompanyReport = async function (criteria, options) {
     companyByUser: transformToUserList(timeSheets, lang)
   };
 
+  const averageNumberOfEmployees = await getAverageNumberOfEmployees(
+    startDate,
+    endDate,
+    {
+      precision: 1
+    }
+  );
+
   return {
-    workbook: generateCompanyReportExcellDocument(data, { lang, averageNumberOfEmployees }),
+    workbook: generateCompanyReportExcellDocument(data, {
+      lang,
+      averageNumberOfEmployees
+    }),
     options: {
       fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
     }
