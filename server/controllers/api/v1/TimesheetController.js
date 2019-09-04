@@ -4,6 +4,9 @@ const TasksService = require('../../../services/tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TaskChannel = require('../../../channels/Tasks');
 const models = require('../../../models');
+const {
+  getAverageNumberOfEmployees: _getAverageNumberOfEmployees
+} = require('../../../services/reports/utils');
 
 exports.create = async (req, res, next) => {
   const userId = req.body.userId || req.user.id; // Todo: validate user rights
@@ -52,6 +55,28 @@ exports.getTracksAll = async (req, res, next) => {
       res.json(tracks);
     })
     .catch(e => next(createError(e)));
+};
+
+exports.getAverageNumberOfEmployees = async function (req, res, next) {
+  req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+  req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const { dateBegin, dateEnd } = req.query;
+
+  const averageNumberOfEmployees = await _getAverageNumberOfEmployees(
+    dateBegin,
+    dateEnd,
+    {
+      precision: 1
+    }
+  );
+
+  res.json({ total: averageNumberOfEmployees });
 };
 
 exports.list = async function (req, res, next) {
