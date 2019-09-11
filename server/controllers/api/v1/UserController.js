@@ -38,7 +38,7 @@ exports.read = async function (req, res, next) {
           model: models.Department,
           as: 'department',
           required: false,
-          attributes: ['name'],
+          attributes: ['name', 'id'],
           through: {
             model: models.UserDepartments,
             attributes: []
@@ -50,6 +50,7 @@ exports.read = async function (req, res, next) {
     if (!user) return next(createError(404, 'User not found'));
 
     if (user.dataValues.department[0]) {
+      user.dataValues.departmentList = user.dataValues.department;
       user.dataValues.department = user.dataValues.department[0].name;
     }
 
@@ -243,6 +244,56 @@ exports.updateUserRole = async function (req, res, next) {
       lastNameEn: updatedModel.lastNameEn
     });
 
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
+};
+
+exports.updateCurrentUserProfile = async function (req, res, next) {
+  const { id } = req.body.user;
+  const user = req.user;
+  console.log('-----> USER', user);
+
+  let transaction;
+
+  try {
+    // transaction = await models.sequelize.transaction();
+    // const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    // if (!model) {
+    //   await transaction.rollback();
+    //   return next(createError(404));
+    // }
+
+    res.json({ok: true});
+
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
+};
+
+exports.updateUserProfile = async function (req, res, next) {
+  const user = req.body;
+  console.log('-----> USER', user);
+  delete user.departmentList;
+
+  let transaction;
+
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(user.id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    res.sendStatus(200);
 
   } catch (err) {
     if (err) {

@@ -31,6 +31,7 @@ router.delete('/auth/logout', AuthController.logout);
 
 // User
 router.put('/user', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
+router.put('/user/update-profile', GlobalAccess.can('user', 'updateUserProfile'), UserController.updateCurrentUserProfile);
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get(
   '/user/autocompleter/external',
@@ -39,6 +40,7 @@ router.get(
 );
 router.get('/users/devops', GlobalAccess.can('projectUsers', 'list'), UserController.devOpsUsers);
 router.get('/users/all', GlobalAccess.can('companyReports', 'read'), UserController.getAllUsers);
+router.put('/users/update', GlobalAccess.can('user', 'updateUsersProfile'), UserController.updateUserProfile);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.put(
   '/user/external/:id/refresh',
@@ -167,6 +169,7 @@ router.get('/project/roles/dictionary', DictionaryController.projectRoles); // D
 router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
+router.get('/dictionary/departments', DictionaryController.departments);
 
 // Attachments
 router.post(
