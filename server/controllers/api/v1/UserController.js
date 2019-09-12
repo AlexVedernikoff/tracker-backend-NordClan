@@ -48,11 +48,15 @@ exports.read = async function (req, res, next) {
       ]
     });
 
-    if (!user) return next(createError(404, 'User not found'));
+    if (!user) {
+      return next(createError(404, 'User not found'));
+    }
+    user.dataValues.departmentList = user.dataValues.department;
 
     if (user.dataValues.department[0]) {
-      user.dataValues.departmentList = user.dataValues.department;
       user.dataValues.department = user.dataValues.department[0].name;
+    } else {
+      user.dataValues.department = '';
     }
 
     res.json(user);
@@ -284,8 +288,6 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
 exports.updateUserProfile = async function (req, res, next) {
   const { id } = req.body;
   const user = req.body;
-  console.log('-----> USER', user);
-  delete user.id;
 
   let transaction;
 
@@ -296,19 +298,19 @@ exports.updateUserProfile = async function (req, res, next) {
       await transaction.rollback();
       return next(createError(404));
     }
-    // { name: '*Клиентская служба', id: 16 }
+
+    // TODO: Сделать обновление без запроса всего справочника
     const departList = await Department.findAll();
+
     const newDepartList = departList.filter(el => {
       for (const i in user.departmentList) {
         if (el.id === user.departmentList[i]) {
-          console.log('----Depart', el.id, user.departmentList[i]);
           return el;
         }
       }
     });
-    delete user.departmentList;
-    user.department = newDepartList;
-    console.log('---->newDepartList', user);
+
+    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
 
 
     const updatedModel = await model.updateAttributes(user, { transaction });
@@ -321,8 +323,8 @@ exports.updateUserProfile = async function (req, res, next) {
 
   } catch (err) {
     if (err) {
+      await transaction.rollback();
       return next(createError(500));
-      // await transaction.rollback();
     }
     next(err);
   }
