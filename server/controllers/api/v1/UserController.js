@@ -1,7 +1,8 @@
 const createError = require('http-errors');
 const models = require('../../../models');
+
 const bcrypt = require('bcrypt-nodejs');
-const { User } = models;
+const { User, Department } = models;
 const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
@@ -146,6 +147,7 @@ exports.getAllUsers = async function (req, res, next) {
         'mobile'
       ]
     });
+
     res.json(usersList);
   } catch (err) {
     next(err);
@@ -280,27 +282,93 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
 };
 
 exports.updateUserProfile = async function (req, res, next) {
+  const { id } = req.body;
   const user = req.body;
   console.log('-----> USER', user);
-  delete user.departmentList;
+  delete user.id;
 
   let transaction;
 
   try {
     transaction = await models.sequelize.transaction();
-    const model = await User.findByPrimary(user.id, { transaction, lock: 'UPDATE' });
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
     if (!model) {
       await transaction.rollback();
       return next(createError(404));
     }
+    // { name: '*Клиентская служба', id: 16 }
+    const departList = await Department.findAll();
+    const newDepartList = departList.filter(el => {
+      for (const i in user.departmentList) {
+        if (el.id === user.departmentList[i]) {
+          console.log('----Depart', el.id, user.departmentList[i]);
+          return { name: el.name, id: el.id };
+        }
+      }
+    });
+    delete user.departmentList;
+    user.department = newDepartList;
+    console.log('---->newDepartList', user);
+
+
+    const updatedModel = await model.updateAttributes(user, { transaction });
+    if (!updatedModel) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    await transaction.commit();
     res.sendStatus(200);
 
   } catch (err) {
     if (err) {
-      await transaction.rollback();
+      return next(createError(500));
+      // await transaction.rollback();
     }
     next(err);
   }
+};
+
+exports.createUser = async function (req, res, next) {
+  res.sendStatus(200);
+  // req.checkBody('login', 'login must be email').isEmail();
+
+  // const validationResult = await req.getValidationResult();
+  // if (!validationResult.isEmpty()) {
+  //   return next(createError(400, validationResult));
+  // }
+
+  // const buf = crypto.randomBytes(20);
+  // const setPasswordToken = buf.toString('hex');
+  // const setPasswordExpired = new Date(moment().add(1, 'days'));
+  // const expiredDate = new Date(moment(req.body.expiredDate).millisecond(999).second(59).minute(59).hour(23));
+  // const params = {
+  //   active: 1,
+  //   isActive: 0,
+  //   globalRole: 'EXTERNAL_USER',
+  //   ldapLogin: req.body.login,
+  //   createdAt: new Date(),
+  //   updatedAt: new Date(),
+  //   setPasswordToken,
+  //   setPasswordExpired,
+  //   ...req.body,
+  //   expiredDate
+  // };
+
+  // User.create(params)
+  //   .then(model => {
+  //     const template = emailService.template('activateExternalUser', {
+  //       token: setPasswordToken
+  //     });
+  //     emailService.send({
+  //       receiver: req.body.login,
+  //       subject: template.subject,
+  //       html: template.body
+  //     });
+  //     res.json(model);
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 };
 
 exports.createExternal = async function (req, res, next) {

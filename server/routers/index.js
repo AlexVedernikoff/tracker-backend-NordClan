@@ -41,6 +41,7 @@ router.get(
 router.get('/users/devops', GlobalAccess.can('projectUsers', 'list'), UserController.devOpsUsers);
 router.get('/users/all', GlobalAccess.can('companyReports', 'read'), UserController.getAllUsers);
 router.put('/users/update', GlobalAccess.can('user', 'updateUsersProfile'), UserController.updateUserProfile);
+router.post('/users/create', GlobalAccess.can('user', 'createUser'), UserController.createUser);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
 router.put(
   '/user/external/:id/refresh',

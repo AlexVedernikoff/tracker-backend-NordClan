@@ -108,7 +108,8 @@ module.exports = {
       'updateExternal': true,
       'refreshTokenExternal': true,
       'updateTestUser': true,
-      'updateUsersProfile': true
+      'updateUsersProfile': true,
+      'createUser': true
     },
     companyReports: {
       ...USER.companyReports
