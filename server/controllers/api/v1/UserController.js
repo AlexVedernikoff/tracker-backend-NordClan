@@ -302,7 +302,7 @@ exports.updateUserProfile = async function (req, res, next) {
       for (const i in user.departmentList) {
         if (el.id === user.departmentList[i]) {
           console.log('----Depart', el.id, user.departmentList[i]);
-          return { name: el.name, id: el.id };
+          return el;
         }
       }
     });
@@ -329,6 +329,13 @@ exports.updateUserProfile = async function (req, res, next) {
 };
 
 exports.createUser = async function (req, res, next) {
+  req.checkBody('login', 'login must be email').isEmail();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    console.log('---->validationResult', validationResult);
+    return next(createError(400, validationResult));
+  }
   res.sendStatus(200);
   // req.checkBody('login', 'login must be email').isEmail();
 
