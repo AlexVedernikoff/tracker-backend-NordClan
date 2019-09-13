@@ -260,22 +260,38 @@ exports.updateUserRole = async function (req, res, next) {
 };
 
 exports.updateCurrentUserProfile = async function (req, res, next) {
-  // const { id } = req.body.user;
-  const user = req.user;
-  console.log('-----> USER', user);
-
+  const { id } = req.body;
+  const user = req.body;
   let transaction;
 
   try {
-    // transaction = await models.sequelize.transaction();
-    // const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
-    // if (!model) {
-    //   await transaction.rollback();
-    //   return next(createError(404));
-    // }
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
 
-    res.json({ok: true});
+    // TODO: Сделать обновление без запроса всего справочника
+    const departList = await Department.findAll();
 
+    const newDepartList = departList.filter(el => {
+      for (const i in user.departmentList) {
+        if (el.id === user.departmentList[i]) {
+          return el;
+        }
+      }
+    });
+
+    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+
+    const updatedModel = await model.updateAttributes(user, { transaction });
+    if (!updatedModel) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    await transaction.commit();
+    res.sendStatus(200);
 
   } catch (err) {
     if (err) {
@@ -311,7 +327,6 @@ exports.updateUserProfile = async function (req, res, next) {
     });
 
     await model.setDepartment(newDepartList, { transaction }).catch(console.log);
-
 
     const updatedModel = await model.updateAttributes(user, { transaction });
     if (!updatedModel) {
