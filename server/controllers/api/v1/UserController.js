@@ -260,7 +260,7 @@ exports.updateUserRole = async function (req, res, next) {
 };
 
 exports.updateCurrentUserProfile = async function (req, res, next) {
-  const { id } = req.body.user;
+  // const { id } = req.body.user;
   const user = req.user;
   console.log('-----> USER', user);
 
@@ -331,53 +331,72 @@ exports.updateUserProfile = async function (req, res, next) {
 };
 
 exports.createUser = async function (req, res, next) {
+  let transaction;
+  req.body.login = req.body.emailPrimary;
   req.checkBody('login', 'login must be email').isEmail();
-
   const validationResult = await req.getValidationResult();
+
   if (!validationResult.isEmpty()) {
-    console.log('---->validationResult', validationResult);
-    return next(createError(400, validationResult));
+    return next(createError(400, validationResult.array()));
   }
-  res.sendStatus(200);
-  // req.checkBody('login', 'login must be email').isEmail();
 
-  // const validationResult = await req.getValidationResult();
-  // if (!validationResult.isEmpty()) {
-  //   return next(createError(400, validationResult));
-  // }
+  try {
+    transaction = await models.sequelize.transaction();
+    const params = {
+      active: 1,
+      isActive: 0,
+      ldapLogin: req.body.login,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...req.body
+    };
+    for (const name in params) {
+      if (params[name] === '') {
+        delete params[name];
+      }
+    }
 
-  // const buf = crypto.randomBytes(20);
-  // const setPasswordToken = buf.toString('hex');
-  // const setPasswordExpired = new Date(moment().add(1, 'days'));
-  // const expiredDate = new Date(moment(req.body.expiredDate).millisecond(999).second(59).minute(59).hour(23));
-  // const params = {
-  //   active: 1,
-  //   isActive: 0,
-  //   globalRole: 'EXTERNAL_USER',
-  //   ldapLogin: req.body.login,
-  //   createdAt: new Date(),
-  //   updatedAt: new Date(),
-  //   setPasswordToken,
-  //   setPasswordExpired,
-  //   ...req.body,
-  //   expiredDate
-  // };
+    console.log(params);
+    User.create(params)
+      .then(async (model) => {
+        // TODO: Сделать обновление без запроса всего справочника
+        const departList = await Department.findAll();
 
-  // User.create(params)
-  //   .then(model => {
-  //     const template = emailService.template('activateExternalUser', {
-  //       token: setPasswordToken
-  //     });
-  //     emailService.send({
-  //       receiver: req.body.login,
-  //       subject: template.subject,
-  //       html: template.body
-  //     });
-  //     res.json(model);
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
+        const newDepartList = departList.filter(el => {
+          for (const i in req.body.departmentList) {
+            if (el.id === req.body.departmentList[i]) {
+              return el;
+            }
+          }
+        });
+
+        await model.setDepartment(newDepartList, { transaction })
+          .catch(err => {
+            transaction.rollback();
+            return next(err);
+          });
+
+        await transaction.commit();
+        res.json(model);
+      })
+      .catch(err => {
+        if (err.SequelizeBaseError) {
+          return next(createError(400));
+        }
+        transaction.rollback();
+        next(err);
+      });
+
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+      return next(createError(500));
+    }
+    next(err);
+  }
+
+
 };
 
 exports.createExternal = async function (req, res, next) {
