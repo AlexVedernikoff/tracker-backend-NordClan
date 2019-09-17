@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const models = require('../../../models');
+const LDAP = require('../../../services/ldap/index');
 
 const bcrypt = require('bcrypt-nodejs');
 const { User, Department } = models;
@@ -360,7 +361,7 @@ exports.createUser = async function (req, res, next) {
     const params = {
       active: 1,
       isActive: 0,
-      ldapLogin: req.body.login,
+      // ldapLogin: req.body.login,
       createdAt: new Date(),
       updatedAt: new Date(),
       ...req.body
@@ -372,6 +373,13 @@ exports.createUser = async function (req, res, next) {
     }
 
     console.log(params);
+    const userLdap = await LDAP.create(params);
+    console.log('----> userLdap', userLdap);
+    if (!userLdap) {
+      transaction.rollback();
+      return next(createError(500));
+    }
+
     User.create(params)
       .then(async (model) => {
         // TODO: Сделать обновление без запроса всего справочника
