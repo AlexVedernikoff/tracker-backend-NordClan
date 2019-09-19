@@ -349,6 +349,7 @@ exports.updateUserProfile = async function (req, res, next) {
 exports.createUser = async function (req, res, next) {
   let transaction;
   req.body.login = req.body.emailPrimary;
+  req.body.ldapLogin = `${req.body.firstNameEn.toLowerCase()}.${req.body.lastNameEn.toLowerCase()}`;
   req.checkBody('login', 'login must be email').isEmail();
   const validationResult = await req.getValidationResult();
 
@@ -361,7 +362,6 @@ exports.createUser = async function (req, res, next) {
     const params = {
       active: 1,
       isActive: 0,
-      // ldapLogin: req.body.login,
       createdAt: new Date(),
       updatedAt: new Date(),
       ...req.body
@@ -372,19 +372,17 @@ exports.createUser = async function (req, res, next) {
       }
     }
 
-    console.log(params);
-    const userLdap = await LDAP.create(params);
-    console.log('----> userLdap', userLdap);
-    if (!userLdap) {
-      transaction.rollback();
-      return next(createError(500));
-    }
-
     User.create(params)
       .then(async (model) => {
         // TODO: Сделать обновление без запроса всего справочника
-        const departList = await Department.findAll();
+        params.uidNumber = +model.id;
+        const userLdap = await LDAP.create(params);
+        if (!userLdap) {
+          transaction.rollback();
+          return next(createError(500));
+        }
 
+        const departList = await Department.findAll();
         const newDepartList = departList.filter(el => {
           for (const i in req.body.departmentList) {
             if (el.id === req.body.departmentList[i]) {
@@ -412,6 +410,8 @@ exports.createUser = async function (req, res, next) {
 
 
   } catch (err) {
+    console.log('-----> create user ERR', err);
+
     if (err) {
       await transaction.rollback();
       return next(createError(500));

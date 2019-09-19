@@ -1,5 +1,6 @@
 const ldap = require('ldapjs');
-const URL = process.env.LDAP_URL_DEV;
+const URL = 'ldap://ldap-test.nordclan:389/dc=nordclan';
+// const URL = process.env.LDAP_URL_DEV;
 const LOGIN = process.env.LDAP_LOGIN;
 const PASSW = process.env.LDAP_PASSW;
 const client = ldap.createClient({ url: URL });
@@ -28,11 +29,11 @@ const defaulteUser = {
   sn: '',	//Роман Хмуренко
   telephoneNumber:	'', //000000
   uid: '', 	// roman.khmurenko
-  uidNumber: 1021,	//1021
+  uidNumber: '',	//1021
   userPassword: ''	//{crypt}IJ5chaaEYDNLk
 };
 
-client.bind(`${'ou=root'}`, PASSW, (err) => {
+client.bind(`${'cn=admin,dc=nordclan'}`, '123123', (err) => {
   if (err) {
     console.log('Error Client bind LDAP', err);
   }
@@ -58,6 +59,7 @@ module.exports = {
       user.lastNameEn = data.lastNameEn;
       user.jpegPhoto = photo;
       user.givenName = data.lastNameRu;
+      user.uidNumber = data.uidNumber;
       user.homeDirectory = `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
       user.uid = uid;
       user.userPassword = data.password || 'qwe123';
@@ -66,15 +68,12 @@ module.exports = {
       delete user.shadowLastChange;
       delete user.skype;
       delete user.telephoneNumber;
-      console.log('----> user', user);
-      const str = `uid=${uid},dc=nordclan`;
-      client.add(str, user, (err, result) => {
+      client.add(`uid=${uid},dc=nordclan`, user, (err) => {
         if (err) {
           console.log('Error user Add LDAP', err);
-          reject(err);
+          reject(null);
         } else {
-          console.log('result add ldap', result);
-          resolve(result);
+          resolve(true);
         }
       });
     });
