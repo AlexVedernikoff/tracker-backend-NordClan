@@ -1,39 +1,37 @@
 const ldap = require('ldapjs');
-const URL = 'ldap://ldap-test.nordclan:389/dc=nordclan';
-// const URL = process.env.LDAP_URL_DEV;
+const URL = process.env.LDAP_URL_DEV;
 const LOGIN = process.env.LDAP_LOGIN;
 const PASSW = process.env.LDAP_PASSW;
 const client = ldap.createClient({ url: URL });
 
 const defaulteUser = {
-  // dc: 'nordclan',
   active:	true,
   birthday: '',
   city: 'Ульяновск',
-  cn: '',	//Роман Хмуренко
-  emailPrimary: '', //roman.khmurenko@nordclan.com
-  emailSecondary: '', //paraplanru@gmail.com
-  firstNameEn: '',	//Роман
+  cn: '',
+  emailPrimary: '',
+  emailSecondary: '',
+  firstNameEn: '',
   gecos: '',
-  gidNumber: 100, //100
-  givenName: '',	//Роман
-  homeDirectory: '',	// /home/roman.khmurenko
-  jpegPhoto: '',	// http://nas.nordclan:8080/roman.khmurenko.jpg
-  lastNameEn: '',	//Khmurenko
-  loginShell: '/bin/sh', //	/bin/sh
-  mail: '',	//roman.khmurenko@nordclan.com
-  mobile: '',	// +79994623272
+  gidNumber: 100,
+  givenName: '',
+  homeDirectory: '',
+  jpegPhoto: '',
+  lastNameEn: '',
+  loginShell: '/bin/sh',
+  mail: '',
+  mobile: '',
   objectClass: ['posixAccount', 'shadowAccount', 'person', 'inetOrgPerson', 'nordclanClass'],
-  shadowLastChange: '',	//18155
+  shadowLastChange: '',
   skype:	'',
-  sn: '',	//Роман Хмуренко
-  telephoneNumber:	'', //000000
-  uid: '', 	// roman.khmurenko
-  uidNumber: '',	//1021
-  userPassword: ''	//{crypt}IJ5chaaEYDNLk
+  sn: '',
+  telephoneNumber:	'',
+  uid: '',
+  uidNumber: '',
+  userPassword: ''
 };
 
-client.bind(`${'cn=admin,dc=nordclan'}`, '123123', (err) => {
+client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
   if (err) {
     console.log('Error Client bind LDAP', err);
   }
@@ -60,6 +58,7 @@ module.exports = {
       user.jpegPhoto = photo;
       user.givenName = data.lastNameRu;
       user.uidNumber = data.uidNumber;
+      user.city = data.city;
       user.homeDirectory = `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
       user.uid = uid;
       user.userPassword = data.password || 'qwe123';
@@ -78,6 +77,8 @@ module.exports = {
       });
     });
   },
+
+  //TODO: NOT USED
   compare (data) {
     return new Promise((resolve, reject) => {
       client.compare('cn=foo, o=example', 'sn', 'bar', (err, matched) => {
@@ -91,6 +92,7 @@ module.exports = {
       });
     });
   },
+  //TODO: NOT USED
   delete (data) {
     return new Promise((resolve, reject) => {
       client.del('cn=foo, o=example', (err) => {
