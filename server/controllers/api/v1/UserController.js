@@ -361,7 +361,7 @@ exports.createUser = async function (req, res, next) {
     transaction = await models.sequelize.transaction();
     const params = {
       active: 1,
-      isActive: 0,
+      isActive: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
       ...req.body
@@ -376,11 +376,7 @@ exports.createUser = async function (req, res, next) {
       .then(async (model) => {
         // TODO: Сделать обновление без запроса всего справочника
         params.uidNumber = +model.id;
-        const userLdap = await LDAP.create(params);
-        if (!userLdap) {
-          transaction.rollback();
-          return next(createError(500));
-        }
+        req.body.uidNumber = +model.id;
 
         const departList = await Department.findAll();
         const newDepartList = departList.filter(el => {
@@ -397,21 +393,28 @@ exports.createUser = async function (req, res, next) {
             return next(err);
           });
 
+        const userLdap = await LDAP.create(req.body);
+        if (!userLdap) {
+          transaction.rollback();
+          return next(createError(500));
+        }
+
         await transaction.commit();
-        res.json(model);
+        res.sendStatus(200);
       })
       .catch(err => {
+        console.log('catch userController', err);
+
         if (err.SequelizeBaseError) {
+          transaction.rollback();
           return next(createError(400));
         }
         transaction.rollback();
-        next(err);
+        next(createError(500));
       });
-
 
   } catch (err) {
     console.log('-----> create user ERR', err);
-
     if (err) {
       await transaction.rollback();
       return next(createError(500));
