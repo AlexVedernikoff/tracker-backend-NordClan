@@ -23,7 +23,9 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   _writeUserRow (timesheet) {
+    console.log('_)_)', this._lastIndexRow);
     this._lastIndexRow++;
+    console.log('+_+_+__', this._lastIndexRow);
     this._tableColumns.forEach((v, i) => {
       const cell = this._worksheet.getCell(this._columns[i] + this._lastIndexRow);
       cell
@@ -144,6 +146,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const locale = i18n[this.lang];
     return [
       {calculate: d => getFullName(d.user, this.lang), width: 24, text: locale.PERSON},
+      // {calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 24, text: 'date'},
       {calculate: d => d.task.isMagic ? '' : `${d.project.prefix}-${d.task.id}`, text: '#'},
       {calculate: d => d.project ? d.project.name : '', text: locale.PROJECT, width: 24, alignment: {wrapText: true}},
       {calculate: d => d.task.name, text: locale.TASK, width: 50, alignment: {wrapText: true}},
