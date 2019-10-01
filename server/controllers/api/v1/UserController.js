@@ -349,7 +349,6 @@ exports.updateUserProfile = async function (req, res, next) {
 exports.createUser = async function (req, res, next) {
   let transaction;
   const uid = `${req.body.firstNameEn.toLowerCase()}.${req.body.lastNameEn.toLowerCase()}`;
-  req.checkBody('login', 'login must be email').isEmail();
   const validationResult = await req.getValidationResult();
 
   if (!validationResult.isEmpty()) {
