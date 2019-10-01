@@ -348,8 +348,7 @@ exports.updateUserProfile = async function (req, res, next) {
 
 exports.createUser = async function (req, res, next) {
   let transaction;
-  req.body.login = req.body.emailPrimary;
-  req.body.ldapLogin = `${req.body.firstNameEn.toLowerCase()}.${req.body.lastNameEn.toLowerCase()}`;
+  const uid = `${req.body.firstNameEn.toLowerCase()}.${req.body.lastNameEn.toLowerCase()}`;
   req.checkBody('login', 'login must be email').isEmail();
   const validationResult = await req.getValidationResult();
 
@@ -364,6 +363,8 @@ exports.createUser = async function (req, res, next) {
       isActive: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
+      login: uid,
+      ldapLogin: uid,
       ...req.body
     };
     for (const name in params) {
