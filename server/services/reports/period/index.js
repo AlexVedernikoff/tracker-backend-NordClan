@@ -202,6 +202,7 @@ exports.getCompanyReport = async function (criteria, options) {
   const timeSheets = timeSheetsDbData.map(timeSheet => {
     const data = timeSheet.dataValues;
     Object.assign(data, {user: data.user.dataValues});
+
     if (!data.taskId) {
       const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
       Object.assign(data, {
@@ -225,7 +226,7 @@ exports.getCompanyReport = async function (criteria, options) {
       .join(', ');
     delete data.user.usersProjects;
     data.user.userRolesNames = userRolesNames;
-
+    data.user.employment_date = formatDate(data.user.employment_date);
     data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues, lang) : null;
     return data;
   });
@@ -242,6 +243,7 @@ exports.getCompanyReport = async function (criteria, options) {
       precision: 1
     }
   );
+  // employment_date
 
   return {
     workbook: generateCompanyReportExcellDocument(data, {
