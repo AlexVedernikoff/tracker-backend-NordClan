@@ -1,5 +1,5 @@
 const ldap = require('ldapjs');
-const URL = process.env.LDAP_URL_DEV;
+const URL = process.env.LDAP_URL;
 const LOGIN = process.env.LDAP_LOGIN;
 const PASSW = process.env.LDAP_PASSW;
 const client = ldap.createClient({ url: URL });
