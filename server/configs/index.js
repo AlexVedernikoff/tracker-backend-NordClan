@@ -12,8 +12,8 @@ module.exports = {
     }
   },
   gitLab: {
-    host: process.env.GITLAB_HOST || 'gitlab-test.nordclan',
-    token: process.env.GITLAB_TOKEN || 'DBx1nxkqSEEpwhbAT4K5'
+    host: process.env.GITLAB_HOST,
+    token: process.env.GITLAB_TOKEN
   },
   auth: {
     accessTokenLifetime: 60 * 60 * 24 * 7
@@ -41,7 +41,7 @@ module.exports = {
   },
   emailsToSendErrorsByMetrics: [
     'tatyana.babich@nordclan.com',
-    'andrei.frenkel@nordclan.com',
+    'andrei.frenkel@nordclan.com'
   ],
   emailForDevOpsNotify: 'andrei.frenkel@nordclan.com',
   ldapUrl: process.env.LDAP_URL,
