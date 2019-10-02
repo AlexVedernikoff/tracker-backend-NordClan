@@ -2,10 +2,12 @@ const createError = require('http-errors');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const gitLabService = require('../../../services/gitLab');
+const config = require('../../../configs/index');
 const _ = require('underscore');
 require('request').debug = true;
 
 exports.create = async function (req, res, next){
+  const isGitlabEnabled = !!config.gitLab.host;
   let transaction;
   try {
     if (!(Number.isInteger(+req.params.projectId) && +req.params.projectId > 0)) {
@@ -25,7 +27,7 @@ exports.create = async function (req, res, next){
     }
 
     let gitlabRoles = req.body.gitlabRoles;
-    if (!models.GitlabUserRoles.isRolesValid(gitlabRoles)) {
+    if (isGitlabEnabled && !models.GitlabUserRoles.isRolesValid(gitlabRoles)) {
       return next(createError(400, 'gitlabRoles is invalid, see gitlab api'));
     }
 
@@ -89,15 +91,16 @@ exports.create = async function (req, res, next){
         await models.ProjectUsersRoles.bulkCreate(createRoles, { transaction });
       }
 
-      if (!gitlabRoles || !gitlabRoles.length) {
+      if (isGitlabEnabled && (!gitlabRoles || !gitlabRoles.length)) {
         const project = await models.Project.findOne({ where: { id: projectId }});
         if (project.gitlabProjectIds) {
           gitlabRoles = models.GitlabUserRoles.fromProjectUserRole(allActiveRoles, project.gitlabProjectIds);
         }
       }
     }
-
-    await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
+    if (isGitlabEnabled) {
+      await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
+    }
 
     if (created) {
       const projectEvents = await models.ProjectEventsDictionary.findAll({
