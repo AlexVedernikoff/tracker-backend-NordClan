@@ -76,10 +76,10 @@ module.exports = function (templateName, input){
                 background-color: ghostwhite
               ">
                 <span style="font-weight: bold;">
-                  SimbirSoft
+                  Nord Clan
                 </span>
                 <br>
-                Это письмо отправлено из <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">SimTrack</a>
+                Это письмо отправлено из <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">[Object]</a>
               </td>
             </tr>
           </table>
@@ -293,7 +293,7 @@ module.exports = function (templateName, input){
     break;
 
   case ('activateExternalUser'):
-    subject = 'Активация аккаунта в SimTrack';
+    subject = 'Активация аккаунта';
 
     body = `
       ${mailHeader}
@@ -367,7 +367,7 @@ module.exports = function (templateName, input){
                 <br>
                 Это письмо отправлено из
                 <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
-                  SimTrack
+                  [Object]
                 </a>
               </td>
             </tr>
