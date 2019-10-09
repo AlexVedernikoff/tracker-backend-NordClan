@@ -56,7 +56,7 @@ module.exports = function (templateName, input){
                 color: white;
                 font-size: 18px;
               ">
-                <span style="color: #ff7800">Sim</span>Track
+                [Epic]
               </td>
             </tr>
             <tr><td style="padding-top: 24px"></td></tr>
@@ -76,10 +76,10 @@ module.exports = function (templateName, input){
                 background-color: ghostwhite
               ">
                 <span style="font-weight: bold;">
-                  SimbirSoft
+                  Nord Clan
                 </span>
                 <br>
-                Это письмо отправлено из <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">SimTrack</a>
+                Это письмо отправлено из <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">[Epic]</a>
               </td>
             </tr>
           </table>
@@ -293,7 +293,7 @@ module.exports = function (templateName, input){
     break;
 
   case ('activateExternalUser'):
-    subject = 'Активация аккаунта в SimTrack';
+    subject = 'Активация аккаунта';
 
     body = `
       ${mailHeader}
@@ -363,11 +363,11 @@ module.exports = function (templateName, input){
             <tr><td style="padding: 10px;"></td></tr>
             <tr>
               <td style="font-weight: normal;line-height: 19px; color: #999999; font-size: 12px;">
-                <span style="font-weight: bold; font-style: italic;">SimbirSoft</span>
+                <span style="font-weight: bold; font-style: italic;">Nord Clan</span>
                 <br>
                 Это письмо отправлено из
                 <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
-                  SimTrack
+                  [Epic]
                 </a>
               </td>
             </tr>
