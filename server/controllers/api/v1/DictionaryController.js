@@ -42,3 +42,10 @@ exports.milestoneTypes = function (req, res){
     })
     .then(data => res.json(data));
 };
+
+exports.departments = function (req, res){
+  return models.Department
+    .findAll()
+    .then(data => res.json(data));
+};
+

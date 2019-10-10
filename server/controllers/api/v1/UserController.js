@@ -1,7 +1,9 @@
 const createError = require('http-errors');
 const models = require('../../../models');
+const LDAP = require('../../../services/ldap/index');
+
 const bcrypt = require('bcrypt-nodejs');
-const { User } = models;
+const { User, Department } = models;
 const moment = require('moment');
 const crypto = require('crypto');
 const emailService = require('../../../services/email');
@@ -38,7 +40,7 @@ exports.read = async function (req, res, next) {
           model: models.Department,
           as: 'department',
           required: false,
-          attributes: ['name'],
+          attributes: ['name', 'id'],
           through: {
             model: models.UserDepartments,
             attributes: []
@@ -47,10 +49,15 @@ exports.read = async function (req, res, next) {
       ]
     });
 
-    if (!user) return next(createError(404, 'User not found'));
+    if (!user) {
+      return next(createError(404, 'User not found'));
+    }
+    user.dataValues.departmentList = user.dataValues.department;
 
     if (user.dataValues.department[0]) {
       user.dataValues.department = user.dataValues.department[0].name;
+    } else {
+      user.dataValues.department = '';
     }
 
     res.json(user);
@@ -145,6 +152,7 @@ exports.getAllUsers = async function (req, res, next) {
         'mobile'
       ]
     });
+
     res.json(usersList);
   } catch (err) {
     next(err);
@@ -250,6 +258,171 @@ exports.updateUserRole = async function (req, res, next) {
     }
     next(err);
   }
+};
+
+exports.updateCurrentUserProfile = async function (req, res, next) {
+  const { id } = req.body;
+  const user = req.body;
+  let transaction;
+
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+
+    // TODO: Сделать обновление без запроса всего справочника
+    const departList = await Department.findAll();
+
+    const newDepartList = departList.filter(el => {
+      for (const i in user.departmentList) {
+        if (el.id === user.departmentList[i]) {
+          return el;
+        }
+      }
+    });
+
+    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+
+    const updatedModel = await model.updateAttributes(user, { transaction });
+    if (!updatedModel) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    await transaction.commit();
+    res.sendStatus(200);
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
+};
+
+exports.updateUserProfile = async function (req, res, next) {
+  const { id } = req.body;
+  const user = req.body;
+
+  let transaction;
+
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+
+    // TODO: Сделать обновление без запроса всего справочника
+    const departList = await Department.findAll();
+
+    const newDepartList = departList.filter(el => {
+      for (const i in user.departmentList) {
+        if (el.id === user.departmentList[i]) {
+          return el;
+        }
+      }
+    });
+
+    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+
+    const updatedModel = await model.updateAttributes(user, { transaction });
+    if (!updatedModel) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    await transaction.commit();
+    res.sendStatus(200);
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+      return next(createError(500));
+    }
+    next(err);
+  }
+};
+
+exports.createUser = async function (req, res, next) {
+  let transaction;
+  const uid = `${req.body.firstNameEn.toLowerCase()}.${req.body.lastNameEn.toLowerCase()}`;
+  const validationResult = await req.getValidationResult();
+
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult.array()));
+  }
+
+  try {
+    transaction = await models.sequelize.transaction();
+    const params = {
+      active: 1,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      login: uid,
+      ldapLogin: uid,
+      ...req.body
+    };
+    for (const name in params) {
+      if (params[name] === '') {
+        delete params[name];
+      }
+    }
+
+    User.create(params)
+      .then(async (model) => {
+        // TODO: Сделать обновление без запроса всего справочника
+        params.uidNumber = +model.id;
+        req.body.uidNumber = +model.id;
+
+        const departList = await Department.findAll();
+        const newDepartList = departList.filter(el => {
+          for (const i in req.body.departmentList) {
+            if (el.id === req.body.departmentList[i]) {
+              return el;
+            }
+          }
+        });
+
+        await model.setDepartment(newDepartList, { transaction })
+          .catch(err => {
+            transaction.rollback();
+            return next(err);
+          });
+
+        const userLdap = await LDAP.create(req.body);
+        if (!userLdap) {
+          transaction.rollback();
+          return next(createError(500));
+        }
+
+        await transaction.commit();
+        res.sendStatus(200);
+      })
+      .catch(err => {
+        console.log('catch userController', err);
+
+        if (err.SequelizeBaseError) {
+          transaction.rollback();
+          return next(createError(400));
+        }
+        transaction.rollback();
+        next(createError(500));
+      });
+
+  } catch (err) {
+    console.log('-----> create user ERR', err);
+    if (err) {
+      await transaction.rollback();
+      return next(createError(500));
+    }
+    next(err);
+  }
+
+
 };
 
 exports.createExternal = async function (req, res, next) {

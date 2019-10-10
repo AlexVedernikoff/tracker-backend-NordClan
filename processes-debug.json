@@ -3,6 +3,7 @@
     {
       "name": "sim-track",
       "script": "server.js",
+      "node_args": ["--inspect"],
       "instances": "1",
       "exec_mode": "fork",
       "env": {

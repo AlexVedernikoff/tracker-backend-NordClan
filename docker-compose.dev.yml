@@ -19,7 +19,7 @@ services:
       - .:/app
     ports:
       - 8000:8080
-      - 9230:9230
+      - 9229:9229
     depends_on:
       - db
     env_file:

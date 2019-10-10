@@ -144,6 +144,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const locale = i18n[this.lang];
     return [
       {calculate: d => getFullName(d.user, this.lang), width: 24, text: locale.PERSON},
+      {calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 16, text: locale.EMPLOYMENT_DATE},
       {calculate: d => d.task.isMagic ? '' : `${d.project.prefix}-${d.task.id}`, text: '#'},
       {calculate: d => d.project ? d.project.name : '', text: locale.PROJECT, width: 24, alignment: {wrapText: true}},
       {calculate: d => d.task.name, text: locale.TASK, width: 50, alignment: {wrapText: true}},
@@ -186,7 +187,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   get _columns () {
-    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
   }
 }
 
