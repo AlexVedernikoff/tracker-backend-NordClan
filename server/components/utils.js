@@ -40,7 +40,6 @@ exports.bcryptPromise = {
           return reject(error);
         }
         resolve(result);
-
       });
     });
   },
