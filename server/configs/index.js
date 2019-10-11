@@ -1,5 +1,5 @@
 module.exports = {
-  appName: 'SimTrack',
+  appName: 'Epic',
   port: process.env.PORT || 8080,
   db: {
     postgres: {
