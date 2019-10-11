@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const emailService = require('../../../services/email');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 const { bcryptPromise } = require('../../../components/utils');
+const { email: { templateExternalUrl } } = require('../../../configs');
 
 exports.me = function (req, res, next) {
   try {
@@ -454,7 +455,7 @@ exports.createExternal = async function (req, res, next) {
     .then(model => {
       const template = emailService.template('activateExternalUser', {
         token: setPasswordToken
-      });
+      }, templateExternalUrl);
       emailService.send({
         receiver: req.body.login,
         subject: template.subject,
@@ -492,7 +493,7 @@ exports.refreshTokenExternal = async function (req, res, next) {
     });
     const template = emailService.template('activateExternalUser', {
       token: setPasswordToken
-    });
+    }, templateExternalUrl);
     emailService.send({
       receiver: req.body.login,
       subject: template.subject,
