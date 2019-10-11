@@ -181,11 +181,13 @@ const updateTimesheet = async (req, res) => {
 };
 
 exports.update = async (req, res, next) => {
+
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
   }
   if (Array.isArray(req.body.sheetId)) {
     const requests = req.body.sheetId.map(id => {
+
       const singleReq = {
         ...req,
         body: {

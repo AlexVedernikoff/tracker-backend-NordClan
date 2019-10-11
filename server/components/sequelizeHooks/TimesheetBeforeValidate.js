@@ -32,7 +32,6 @@ exports.index = async (instance, options) => {
     });
     /** Получаем список ролей для заполнения метрик*/
     const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
-    instance.isBillable = isBillable(JSON.parse(rolesIds), models.ProjectRolesDictionary.UNBILLABLE_ID);
     instance.userRoleId = rolesIds;/** сохраняем для метрик*/
     return;
   }
@@ -60,7 +59,6 @@ exports.index = async (instance, options) => {
     });
     /** Получаем список ролей для заполнения метрик*/
     const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
-    instance.isBillable = isBillable(JSON.parse(rolesIds), models.ProjectRolesDictionary.UNBILLABLE_ID);
     instance.userRoleId = rolesIds;/** сохраняем для метрик*/
   }
 
@@ -78,11 +76,4 @@ function isImplementation (instance) {
   return instance.taskId;
 }
 
-
-function isBillable (rolesIds, UNBILLABLE_ID) {
-  if (rolesIds && rolesIds.length) {
-    return !rolesIds.find(id => id === UNBILLABLE_ID);
-  }
-  return true;
-}
 
