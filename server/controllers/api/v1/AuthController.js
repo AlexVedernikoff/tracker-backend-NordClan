@@ -120,8 +120,6 @@ exports.login = function (req, res, next) {
       return next(createError(404, 'Invalid Login or Password'));
     }
 
-    console.log('kaef');
-
     const token = Auth.createJwtToken({
       login: req.body.login
     });
