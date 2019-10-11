@@ -38,10 +38,9 @@ exports.login = function (req, res, next) {
         ]
       }
     ],
-    attributes: [ ...User.defaultSelect, 'ldapLogin', 'password', 'isTest']
+    attributes: [...User.defaultSelect, 'ldapLogin', 'password', 'isTest']
   })
     .then(user => {
-      console.log(user);
       if (!user) return next(createError(404, 'Invalid Login or Password'));
 
       queries.token.deleteExpiredTokens(user);
@@ -98,15 +97,22 @@ exports.login = function (req, res, next) {
 
   async function authExternalUser (user, password) {
     if (user.isActive === 0) return next(createError(400, 'Expired Access Timeout'));
+
     if (moment().isAfter(user.expiredDate)) return next(createError(400, 'Expired Access Timeout'));
 
     const validPassword = await new Promise((resolve, reject) => {
-      bcrypt.compare(password, user.password, (error, result) => {
+      bcrypt.hash(password, null, null, (error, result) => {
         if (error) {
-          return reject(error);
+          reject(error);
         }
-        resolve(result);
+        const hash = result;
 
+        bcrypt.compare(hash, user.password, (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(true);
+        });
       });
     });
 
@@ -139,7 +145,7 @@ exports.login = function (req, res, next) {
   }
 
   function authSystemUser (user, password) {
-    if (user !== config.systemAuth.login || password !== config.systemAuth.password) {return next(createError(404, 'Invalid Login or Password'));}
+    if (user !== config.systemAuth.login || password !== config.systemAuth.password) { return next(createError(404, 'Invalid Login or Password')); }
 
     const token = SystemAuth.createJwtToken(req.body.login);
 
