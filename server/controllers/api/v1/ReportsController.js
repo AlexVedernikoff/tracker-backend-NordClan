@@ -38,11 +38,14 @@ exports.byPeriod = async (req, res, next) => {
 
 exports.companyByPeriod = async (req, res, next) => {
   try {
+    console.log('hello');
+    console.log(req);
     const {startDate, endDate, lang} = req.query;
     const sprintId = req.query.sprintId ? req.query.sprintId : null;
     const label = req.query.label ? req.query.label : '';
 
     if (lang && !(/^(en|ru)$/).test(lang)) {
+      console.log('hello1');
       return next(createError(400, 'Unsupported language: ' + lang));
     }
 
@@ -50,6 +53,8 @@ exports.companyByPeriod = async (req, res, next) => {
       .getCompanyReport(startDate && endDate && {
         startDate, endDate, label, sprintId
       }, {lang});
+
+    console.log('hello2');
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
     await workbook.xlsx.write(res);
