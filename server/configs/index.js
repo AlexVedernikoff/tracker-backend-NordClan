@@ -37,7 +37,8 @@ module.exports = {
     login: process.env.EMAIL_LOGIN,
     password: process.env.EMAIL_PASSWORD,
     title: process.env.EMAIL_TITLE,
-    templateBaseUrl: process.env.EMAIL_TEMPLATE_BASE_URL
+    templateBaseUrl: process.env.EMAIL_TEMPLATE_BASE_URL,
+    templateExternalUrl: process.env.EXTERNAL_URL
   },
   emailsToSendErrorsByMetrics: [
     'tatyana.babich@nordclan.com',

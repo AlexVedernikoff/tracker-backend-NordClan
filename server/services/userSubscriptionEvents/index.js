@@ -2,7 +2,7 @@ const email = require('../email');
 const _ = require('underscore');
 const { Sequelize, Comment, User, Project, ProjectUsers, ProjectUsersSubscriptions, ProjectUsersRoles, Task, Sprint, TaskStatusesDictionary, TaskTypesDictionary, ProjectRolesDictionary } = require('../../models');
 const { getMentions, replaceMention } = require('../../services/comment');
-const { emailForDevOpsNotify } = require('../../configs');
+const { emailForDevOpsNotify, email: { templateBaseUrl, templateExternalUrl } } = require('../../configs');
 
 module.exports = async function (eventId, input, user){
   const emails = [];
@@ -52,7 +52,8 @@ module.exports = async function (eventId, input, user){
     receivers.forEach(function (projectUser){
       if (!isUserSubscribed(eventId, projectUser.get({ plain: true }))) return;
       if (user.id === projectUser.user.id) return;
-      const emailTemplate = email.template('newTaskForQAPM', { task });
+      const baseUrl = projectUser.user.dataValues.globalRole === 'EXTERNAL_USER' ? templateExternalUrl : templateBaseUrl;
+      const emailTemplate = email.template('newTaskForQAPM', { task }, baseUrl);
       emails.push({
         'receiver': projectUser.user.emailPrimary,
         'subject': emailTemplate.subject,
@@ -61,7 +62,7 @@ module.exports = async function (eventId, input, user){
     });
 
     if (task.dataValues.isDevOps) {
-      const emailTemplate = email.template('newTaskForQAPM', { task });
+      const emailTemplate = email.template('newTaskForQAPM', { task }, templateBaseUrl);
       emails.push({
         'receiver': emailForDevOpsNotify,
         'subject': emailTemplate.subject,
@@ -99,7 +100,8 @@ module.exports = async function (eventId, input, user){
     receivers.forEach(function (performer) {
       if (!isUserSubscribed(eventId, performer.usersProjects[0])) return;
       if (user.id === performer.dataValues.id) return;
-      const emailTemplate = email.template('newTaskForPerformer', { task });
+      const baseUrl = performer.dataValues.globalRole === 'EXTERNAL_USER' ? templateExternalUrl : templateBaseUrl;
+      const emailTemplate = email.template('newTaskForPerformer', { task }, baseUrl);
       emails.push({
         'receiver': performer.emailPrimary,
         'subject': emailTemplate.subject,
@@ -165,7 +167,8 @@ module.exports = async function (eventId, input, user){
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
       if (user.id === receiver.dataValues.id) return;
-      const emailTemplate = mentions.includes(receiver.id) ? email.template('newTaskCommentMention', { task, comment }) : email.template('newTaskComment', { task, comment });
+      const baseUrl = receiver.dataValues.globalRole === 'EXTERNAL_USER' ? templateExternalUrl : templateBaseUrl;
+      const emailTemplate = mentions.includes(receiver.id) ? email.template('newTaskCommentMention', { task, comment }, baseUrl) : email.template('newTaskComment', { task, comment }, baseUrl);
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
@@ -213,7 +216,8 @@ module.exports = async function (eventId, input, user){
 
     receivers.forEach(function (receiver){
       if (!receiver.usersProjects || receiver.usersProjects.length === 0 || !isUserSubscribed(eventId, receiver.usersProjects[0])) return;
-      const emailTemplate = email.template('taskCompleted', { task });
+      const baseUrl = receiver.user.dataValues.globalRole === 'EXTERNAL_USER' ? templateExternalUrl : templateBaseUrl;
+      const emailTemplate = email.template('taskCompleted', { task }, baseUrl);
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
@@ -291,7 +295,8 @@ module.exports = async function (eventId, input, user){
     receivers.forEach(receiver => {
       if (!isUserSubscribed(eventId, receiver.usersProjects[0])) return; // if user subscribed to this event
       if (user.id === comment.author.dataValues.id) return; // if user mentioned himself
-      const emailTemplate = email.template('newTaskCommentMention', { task, comment });
+      const baseUrl = comment.author.dataValues.globalRole === 'EXTERNAL_USER' ? templateExternalUrl : templateBaseUrl;
+      const emailTemplate = email.template('newTaskCommentMention', { task, comment }, baseUrl);
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
@@ -305,7 +310,7 @@ module.exports = async function (eventId, input, user){
     // event description : error when calculating metrics
     project = await Project.findById(input.projectId);
     if (input.recipients && project) {
-      const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user });
+      const emailTemplate = email.template('metricsProcessFailed', { error: input.error, project: project, user: user }, templateBaseUrl);
       input.recipients.forEach(emailRecipient => {
         emails.push({
           'receiver': emailRecipient,
