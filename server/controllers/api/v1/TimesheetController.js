@@ -162,7 +162,7 @@ exports.listAllProjects = async function (req, res, next) {
 
 
 const updateTimesheet = async (req, res) => {
-  const taskId = req.body;//eslint-disable-line
+  const {taskId} = req.body;//eslint-disable-line
   await TimesheetService
     .update(req)
     .then(sheet => Promise.all([
