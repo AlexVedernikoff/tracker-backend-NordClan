@@ -162,7 +162,7 @@ exports.listAllProjects = async function (req, res, next) {
 
 
 const updateTimesheet = async (req, res) => {
-  const {taskId} = req.body;//eslint-disable-line
+  const taskId = req.body;//eslint-disable-line
   await TimesheetService
     .update(req)
     .then(sheet => Promise.all([
@@ -181,11 +181,13 @@ const updateTimesheet = async (req, res) => {
 };
 
 exports.update = async (req, res, next) => {
+
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
   }
   if (Array.isArray(req.body.sheetId)) {
     const requests = req.body.sheetId.map(id => {
+
       const singleReq = {
         ...req,
         body: {
