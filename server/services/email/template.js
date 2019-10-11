@@ -1,6 +1,4 @@
-const config = require('../../configs').email;
-
-module.exports = function (templateName, input){
+module.exports = function (templateName, input, templateBaseUrl){
 
   let subject, body, lastComment, appointment;
   const i = input;
@@ -79,7 +77,7 @@ module.exports = function (templateName, input){
                   Nord Clan
                 </span>
                 <br>
-                Это письмо отправлено из <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">[Epic]</a>
+                Это письмо отправлено из <a href="${templateBaseUrl}" style="color: #999999;" target="_blank">[Epic]</a>
               </td>
             </tr>
           </table>
@@ -99,7 +97,7 @@ module.exports = function (templateName, input){
         В проект
         ${createLink(
     i.task.project.name,
-    `${config.templateBaseUrl}/projects/${i.task.project.id}`
+    `${templateBaseUrl}/projects/${i.task.project.id}`
   )}
         добавлена новая задача:
       `)}
@@ -107,7 +105,7 @@ module.exports = function (templateName, input){
       ${createBlock(
     createLink(
       `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
-      `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
+      `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
     )
   )}
 
@@ -179,14 +177,14 @@ module.exports = function (templateName, input){
 
       ${createBlock(`
         В проекте 
-        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        ${createLink(i.task.project.name, `${templateBaseUrl}/projects/${i.task.project.id}`)}
         ${appointment}:
       `)}
 
       ${createBlock(
     createLink(
       `${i.task.project.prefix}-${i.task.id} | ${i.task.name}`,
-      `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
+      `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`
     )
   )}
 
@@ -211,7 +209,7 @@ module.exports = function (templateName, input){
             <br>
             ${createLink(
     getTaskLastComment(i.task).text,
-    `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
+    `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
   )}
           `)
     : ''
@@ -230,18 +228,18 @@ module.exports = function (templateName, input){
 
       ${createBlock(`
         В проекте 
-        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        ${createLink(i.task.project.name, `${templateBaseUrl}/projects/${i.task.project.id}`)}
         оставлен новый комментарий к задаче:
       `)}
 
       ${createBlock(
-    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
   )}
 
       ${createBlock(`
         <span style="font-weight: bold">${i.comment.author.fullNameRu}:</span>
         <br>
-        ${createLink(i.comment.text, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}`)}
+        ${createLink(i.comment.text, `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}`)}
       `)}
 
       ${mailFooter}
@@ -256,11 +254,11 @@ module.exports = function (templateName, input){
       ${mailHeader}
       ${createBlock(`
         В проекте 
-        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        ${createLink(i.task.project.name, `${templateBaseUrl}/projects/${i.task.project.id}`)}
         готова задача:
       `)}
       ${createBlock(
-    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
   )}
       ${
   i.task.description
@@ -282,7 +280,7 @@ module.exports = function (templateName, input){
             <br>
             ${createLink(
     getTaskLastComment(i.task).text,
-    `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
+    `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${getTaskLastComment(i.task).id}`
   )}
           `)
     : ''
@@ -298,7 +296,7 @@ module.exports = function (templateName, input){
     body = `
       ${mailHeader}
       ${createBlock(`
-        ${createLink('Активировать аккаунт', `${config.templateBaseUrl}/externalUserActivate/${i.token}`)}
+        ${createLink('Активировать аккаунт', `${templateBaseUrl}/externalUserActivate/${i.token}`)}
       `)}
       ${mailFooter}
     `;
@@ -312,18 +310,18 @@ module.exports = function (templateName, input){
 
       ${createBlock(`
         В проекте 
-        ${createLink(i.task.project.name, `${config.templateBaseUrl}/projects/${i.task.project.id}`)}
+        ${createLink(i.task.project.name, `${templateBaseUrl}/projects/${i.task.project.id}`)}
         вас упомянули в комментарии к задаче:
       `)}
 
       ${createBlock(
-    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
+    createLink(`${i.task.project.prefix}-${i.task.id} | ${i.task.name}`, `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}`)
   )}
 
       ${createBlock(`
         <span style="font-weight: bold">${i.comment.author.fullNameRu}:</span>
         <br>
-        ${createLink(i.comment.text, `${config.templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}`)}
+        ${createLink(i.comment.text, `${templateBaseUrl}/projects/${i.task.project.id}/tasks/${i.task.id}#comment-${i.comment.id}`)}
       `)}
 
       ${mailFooter}
@@ -342,7 +340,7 @@ module.exports = function (templateName, input){
               <td>
                 <span style="font-size: 13px;">
                   В проекте 
-                  <a href="${config.templateBaseUrl}/projects/${i.project.dataValues.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
+                  <a href="${templateBaseUrl}/projects/${i.project.dataValues.id}" style="font-weight: bold; font-style: italic; color: #2d4154; line-height: 19px;" target="_blank">
                   ${i.project.dataValues.name}</a> произошла ошибка в процессе пересчёта метрик. Процесс пересчёта метрик был инициирован пользователем: ${i.user}
                   </span>
               </td>
@@ -366,7 +364,7 @@ module.exports = function (templateName, input){
                 <span style="font-weight: bold; font-style: italic;">Nord Clan</span>
                 <br>
                 Это письмо отправлено из
-                <a href="${config.templateBaseUrl}" style="color: #999999;" target="_blank">
+                <a href="${templateBaseUrl}" style="color: #999999;" target="_blank">
                   [Epic]
                 </a>
               </td>
