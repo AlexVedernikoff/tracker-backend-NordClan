@@ -40,15 +40,15 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const formulas = [
       {
         label: locale.TOTAL_BILLABLE,
-        formula: `=SUBTOTAL(9,H${startAt}:H${endAt})`
+        formula: `=SUBTOTAL(9,I${startAt}:I${endAt})`
       },
       {
         label: locale.TOTAL_NOT_BILLABLE,
-        formula: `SUBTOTAL(9,I${startAt}:I${endAt})`
+        formula: `SUBTOTAL(9,J${startAt}:J${endAt})`
       },
       {
         label: locale.TOTAL_AMOUNT,
-        formula: `SUBTOTAL(9,H${startAt}:H${endAt})+SUBTOTAL(9,I${startAt}:I${endAt})`
+        formula: `SUBTOTAL(9,I${startAt}:I${endAt})+SUBTOTAL(9,J${startAt}:J${endAt})`
       },
       {
         label: locale.BUSY,
@@ -147,9 +147,9 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       { calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 16, text: locale.EMPLOYMENT_DATE },
       {
         calculate: d => {
-          console.log('hey!!!!');
-          console.log(d);
           if (d.task.isMagic) return '';
+          if (d.project === null) return '';
+
           return `${d.project.prefix}-${d.task.id}`;
         },
         text: '#'
