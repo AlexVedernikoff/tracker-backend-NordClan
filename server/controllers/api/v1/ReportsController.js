@@ -50,6 +50,7 @@ exports.companyByPeriod = async (req, res, next) => {
       .getCompanyReport(startDate && endDate && {
         startDate, endDate, label, sprintId
       }, {lang});
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
     await workbook.xlsx.write(res);
