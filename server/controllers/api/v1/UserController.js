@@ -411,7 +411,7 @@ exports.createUser = async function (req, res, next) {
           return next(createError(400));
         }
         transaction.rollback();
-        next(createError(500));
+        next(createError(400, 'user is already exist'));
       });
 
   } catch (err) {
