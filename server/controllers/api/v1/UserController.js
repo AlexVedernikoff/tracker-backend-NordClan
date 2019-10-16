@@ -356,7 +356,19 @@ exports.createUser = async function (req, res, next) {
     return next(createError(400, validationResult.array()));
   }
 
+
   try {
+    const userModel = await models.User.findOne({
+      where: {
+        login: uid
+      },
+      attributes: models.User.defaultSelect
+    });
+
+    if (userModel !== null) {
+      return next(createError(400, 'user is already exist'));
+    }
+
     transaction = await models.sequelize.transaction();
     const params = {
       active: 1,
@@ -408,7 +420,7 @@ exports.createUser = async function (req, res, next) {
 
         if (err.SequelizeBaseError) {
           transaction.rollback();
-          return next(createError(400));
+          next(err);
         }
         transaction.rollback();
         next(createError(500));
