@@ -135,6 +135,33 @@ exports.isNeedCreateTimesheet = async function (options) {
   return true;
 };
 
+exports.isBillableFlag = async function (options) {
+  const {userId, projectId} = options;
+  const projectUsers = await models.ProjectUsers.findOne({
+    where: {
+      projectId: projectId,
+      userId: userId
+    },
+    attributes: ['rolesIds'],
+    include: [/** обязательно для формирования виртуального свойства roleIds*/
+      {
+        as: 'roles',
+        model: models.ProjectUsersRoles
+      }
+    ]
+  });
+  /** Получаем список ролей для заполнения метрик*/
+  const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
+  return isBillable(JSON.parse(rolesIds), models.ProjectRolesDictionary.UNBILLABLE_ID);
+};
+
+function isBillable (rolesIds, UNBILLABLE_ID) {
+  if (rolesIds && rolesIds.length) {
+    return !rolesIds.find(id => id === UNBILLABLE_ID);
+  }
+  return true;
+}
+
 exports.all = async function (conditions) {
   return await models.Timesheet.findAll({
     where: conditions,
