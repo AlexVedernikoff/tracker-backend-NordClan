@@ -377,6 +377,8 @@ exports.createUser = async function (req, res, next) {
       updatedAt: new Date(),
       login: uid,
       ldapLogin: uid,
+      fullNameRu: [req.body.firstNameRu, req.body.lastNameRu].filter(i => i).join(' '),
+      fullNameEn: [req.body.firstNameEn, req.body.lastNameEn].filter(i => i).join(' '),
       ...req.body
     };
     for (const name in params) {
