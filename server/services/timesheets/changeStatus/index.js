@@ -17,11 +17,12 @@ const validate = (userId, dateBegin, dateEnd, status) => {
   }
 };
 
-const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId) => {
+const updateStatusForProject = async (userId, dateBegin, dateEnd, status, id) => {
   validate(userId, dateBegin, dateEnd, status);
 
-  let id = projectId;
-  if (id === 0) id = null;
+  let projectId = id;
+  if (projectId === 0) projectId = null;
+
   const where = {
     userId,
     onDate: {
@@ -30,7 +31,7 @@ const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projec
         $lte: dateEnd
       }
     },
-    id
+    projectId
   };
   const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
   return timesheets[1];
