@@ -17,11 +17,8 @@ const validate = (userId, dateBegin, dateEnd, status) => {
   }
 };
 
-const updateStatusForProject = async (userId, dateBegin, dateEnd, status, id) => {
+const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId) => {
   validate(userId, dateBegin, dateEnd, status);
-
-  let projectId = id;
-  if (projectId === 0) projectId = null;
 
   const where = {
     userId,
