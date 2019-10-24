@@ -29,6 +29,9 @@ function getWhere (req) {
     where.userId = userId;
   }
 
+  console.log('where');
+  console.log(where);
+
   return where;
 }
 
