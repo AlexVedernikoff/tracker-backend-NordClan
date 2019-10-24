@@ -17,13 +17,14 @@ const validate = (userId, dateBegin, dateEnd, status) => {
   }
 };
 
-const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId) => {
+const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId, justRejected) => {
   validate(userId, dateBegin, dateEnd, status);
 
   let statusId = [1, 2, 3, 4];
-  if (status === 3){
+  if (justRejected && status.dataValues.id === 3){
     statusId = [1, 2];
   }
+
   const where = {
     userId,
     onDate: {
@@ -39,11 +40,14 @@ const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projec
   return timesheets[1];
 };
 
-const updateStatus = async (userId, dateBegin, dateEnd, status) => {
+const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected) => {
   validate(userId, dateBegin, dateEnd, status);
-
-  console.log('here');
   const statusExpected = 1;
+
+  let statusId = [1, 2, 3, 4];
+  if (justRejected && status.dataValues.id === 3){
+    statusId = [1, 2];
+  }
 
   const where = {
     userId,
@@ -52,20 +56,21 @@ const updateStatus = async (userId, dateBegin, dateEnd, status) => {
         $gte: dateBegin,
         $lte: dateEnd
       }
-    }
+    },
+    statusId
   };
   const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
   return timesheets[1];
 };
 
-exports.submit = async (userId, dateBegin, dateEnd, projectId) => {
+exports.submit = async (userId, dateBegin, dateEnd, projectId, justRejected) => {
   const status = await TimesheetStatusesDictionary.findOne({
     where: { name: { $eq: 'submitted' } }
   });
   if (projectId || projectId === 0) {
-    return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId);
+    return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId, justRejected);
   }
-  return updateStatus(userId, dateBegin, dateEnd, status);
+  return updateStatus(userId, dateBegin, dateEnd, status, justRejected);
 };
 
 exports.approve = async (userId, dateBegin, dateEnd, projectId) => {
