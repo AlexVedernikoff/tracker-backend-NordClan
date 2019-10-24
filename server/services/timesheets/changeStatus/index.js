@@ -20,9 +20,9 @@ const validate = (userId, dateBegin, dateEnd, status) => {
 const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId, justRejected) => {
   validate(userId, dateBegin, dateEnd, status);
 
-  let statusId = [1, 2, 3, 4];
+  let statusId = TimesheetStatusesDictionary.ALL_IDS;
   if (justRejected && status.dataValues.id === 3){
-    statusId = [1, 2];
+    statusId = TimesheetStatusesDictionary.NON_BLOCKED_IDS;
   }
 
   const where = {
@@ -42,11 +42,10 @@ const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projec
 
 const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected) => {
   validate(userId, dateBegin, dateEnd, status);
-  const statusExpected = 1;
 
-  let statusId = [1, 2, 3, 4];
+  let statusId = TimesheetStatusesDictionary.ALL_IDS;
   if (justRejected && status.dataValues.id === 3){
-    statusId = [1, 2];
+    statusId = TimesheetStatusesDictionary.NON_BLOCKED_IDS;
   }
 
   const where = {
@@ -59,6 +58,7 @@ const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected) =>
     },
     statusId
   };
+
   const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
   return timesheets[1];
 };
