@@ -28,10 +28,6 @@ function getWhere (req) {
   if (!req.isSystemUser) {
     where.userId = userId;
   }
-
-  console.log('where');
-  console.log(where);
-
   return where;
 }
 
