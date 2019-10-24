@@ -267,7 +267,8 @@ exports.submit = async function (req, res, next) {
   if (!validationResult.isEmpty()) {
     return next(createError(400, validationResult));
   }
-  return TimesheetService.submit(userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId)
+
+  return TimesheetService.submit(userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId, req.body.justRejected)
     .then(result => {
       result.forEach(
         sheet => TimesheetsChannel.sendAction('update', sheet, res.io, userId)

@@ -17,8 +17,17 @@ const validate = (userId, dateBegin, dateEnd, status) => {
   }
 };
 
-const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId) => {
+const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId, justRejected) => {
   validate(userId, dateBegin, dateEnd, status);
+
+  const submittedStatus = await TimesheetStatusesDictionary.findOne({
+    where: { name: { $eq: 'submitted' } }
+  });
+
+  let statusId = TimesheetStatusesDictionary.ALL_IDS;
+  if (justRejected && status.dataValues.id === submittedStatus.id){
+    statusId = TimesheetStatusesDictionary.NON_BLOCKED_IDS;
+  }
 
   const where = {
     userId,
@@ -28,14 +37,33 @@ const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projec
         $lte: dateEnd
       }
     },
+    statusId,
     projectId
   };
+
+  if (projectId === 0){
+    where.projectId = { $or: [
+      0, null
+    ]
+    };
+  }
+
   const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
   return timesheets[1];
 };
 
-const updateStatus = async (userId, dateBegin, dateEnd, status) => {
+const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected) => {
   validate(userId, dateBegin, dateEnd, status);
+
+  const submittedStatus = await TimesheetStatusesDictionary.findOne({
+    where: { name: { $eq: 'submitted' } }
+  });
+
+  let statusId = TimesheetStatusesDictionary.ALL_IDS;
+  if (justRejected && status.dataValues.id === submittedStatus.id){
+    statusId = TimesheetStatusesDictionary.NON_BLOCKED_IDS;
+  }
+
   const where = {
     userId,
     onDate: {
@@ -43,27 +71,28 @@ const updateStatus = async (userId, dateBegin, dateEnd, status) => {
         $gte: dateBegin,
         $lte: dateEnd
       }
-    }
+    },
+    statusId
   };
   const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
   return timesheets[1];
 };
 
-exports.submit = async (userId, dateBegin, dateEnd, projectId) => {
+exports.submit = async (userId, dateBegin, dateEnd, projectId, justRejected) => {
   const status = await TimesheetStatusesDictionary.findOne({
-    where: { name: { $eq: 'submitted' }}
+    where: { name: { $eq: 'submitted' } }
   });
-  if (projectId || projectId === 0){
-    return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId);
+  if (projectId || projectId === 0) {
+    return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId, justRejected);
   }
-  return updateStatus(userId, dateBegin, dateEnd, status);
+  return updateStatus(userId, dateBegin, dateEnd, status, justRejected);
 };
 
 exports.approve = async (userId, dateBegin, dateEnd, projectId) => {
   const status = await TimesheetStatusesDictionary.findOne({
-    where: { name: { $eq: 'approved' }}
+    where: { name: { $eq: 'approved' } }
   });
-  if (projectId || projectId === 0){
+  if (projectId || projectId === 0) {
     return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId);
   }
   return updateStatus(userId, dateBegin, dateEnd, status);
@@ -71,9 +100,9 @@ exports.approve = async (userId, dateBegin, dateEnd, projectId) => {
 
 exports.reject = async (userId, dateBegin, dateEnd, projectId) => {
   const status = await TimesheetStatusesDictionary.findOne({
-    where: { name: { $eq: 'rejected' }}
+    where: { name: { $eq: 'rejected' } }
   });
-  if (projectId || projectId === 0){
+  if (projectId || projectId === 0) {
     return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId);
   }
   return updateStatus(userId, dateBegin, dateEnd, status);
