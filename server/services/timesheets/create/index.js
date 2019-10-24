@@ -11,7 +11,12 @@ exports.create = async (params) => {
     await models.TimesheetDraft.destroy({ where: { id: draftToDestroy.id } });
   }
 
-  const isBill = await queries.timesheet.isBillableFlag({userId: params.userId, projectId: params.projectId});
+  let isBill = false;
+
+  if (params.projectId !== null && params.projectId !== 0){
+    isBill = await queries.timesheet.isBillableFlag({userId: params.userId, projectId: params.projectId});
+  }
+
   const object = {...params, isBillable: isBill};
 
   const { id } = await models.Timesheet.create(object);
