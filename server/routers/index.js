@@ -55,6 +55,8 @@ router.put('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), Use
 router.put('/user/password/:token', UserController.setPassword);
 router.put('/user/test/:id', GlobalAccess.can('user', 'updateTestUser'), UserController.updateTestUser);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
+router.post('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.uploadAvatar);
+router.delete('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.deleteAvatar);
 
 // Tags
 router.get('/project/:projectId/tags', GlobalAccess.can('project', 'read'), TagController.listByProject);

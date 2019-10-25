@@ -3,7 +3,8 @@ const USER = {
     'autocomplete': true,
     'autocompleteExternal': true,
     'me': true,
-    'read': true
+    'read': true,
+    'changeAvatar': true
   },
   tag: {
     'autocompliter': true,

@@ -8,6 +8,7 @@ tmp
 package-lock.json
 
 /public/uploads*
+/public/avatars*
 /pg_db/*.sql
 /pg_db/dumps/*.sql
 /pg_db/*.old
