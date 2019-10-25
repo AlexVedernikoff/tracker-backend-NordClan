@@ -3,7 +3,9 @@ const formidable = require('formidable');
 const gm = require('gm');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const mkdirp = require('mkdirp');
+const { imagesSalt } = require('../../../configs');
 const models = require('../../../models');
 const queries = require('../../../models/queries');
 const stringHelper = require('../../../components/StringHelper');
@@ -11,6 +13,80 @@ const { unlink } = require('../../../services/comment');
 
 const maxFieldsSize = 1024 * 1024 * 1024; // 1gb
 const maxFields = 10;
+
+exports.deleteAvatar = async function (req, res, next) {
+  if (!req.params.id) return createError(422, 'User is required');
+
+  const id = parseInt(req.params.id, 10);
+  const isSelfEdit = id === req.user.dataValues.id;
+  const isAdminEditing = id !== req.user.dataValues.id && req.user.dataValues.globalRole === 'ADMIN';
+  if (!isSelfEdit && !isAdminEditing) return createError(403, 'Access denied');
+
+  const userToEdit = await models.User.find({ where: { id } });
+  if (!userToEdit) return createError(422, 'Invalid user');
+
+  const fileNameHash = genHashName(userToEdit.dataValues.id);
+  const absoluteUploadDir = path.dirname(require.main.filename) + '/public/avatars';
+  const filePath = `${absoluteUploadDir}/${fileNameHash}.jpg`;
+
+  fs.unlink(filePath, function (error) {
+    if (error) return next(createError(error));
+    res.status(200).send('OK');
+  });
+};
+
+exports.uploadAvatar = async function (req, res, next) {
+  if (!req.params.id) return createError(422, 'User is required');
+
+  const id = parseInt(req.params.id, 10);
+  const isSelfEdit = id === req.user.dataValues.id;
+  const isAdminEditing = id !== req.user.dataValues.id && req.user.dataValues.globalRole === 'ADMIN';
+  if (!isSelfEdit && !isAdminEditing) return createError(403, 'Access denied');
+
+  const userToEdit = await models.User.find({ where: { id } });
+  if (!userToEdit) return createError(422, 'Invalid user');
+
+  const fileNameHash = genHashName(userToEdit.dataValues.id);
+  const absoluteUploadDir = path.dirname(require.main.filename) + '/public/avatars';
+  const absoluteFilePath = `${absoluteUploadDir}/${fileNameHash}.jpg`;
+  const relativeFilePath = `/avatars/${fileNameHash}.jpg`;
+
+  mkdirp(absoluteUploadDir, (err) => {
+    if (err) return createError(err);
+    const form = new formidable.IncomingForm();
+    form.multiples = false;
+    form.maxFieldsSize = 20 * 1024 * 1024; //20mb
+    form.uploadDir = absoluteUploadDir;
+    const files = [];
+
+    form.on('end', function (error) {
+      if (error) return next(createError(error));
+      const [file] = files;
+
+      const SIZE = 200;
+      return cropSquareImage(file, SIZE)
+        .then(cropError => {
+          if (cropError) return next(createError(cropError));
+          fs.rename(file.path, absoluteFilePath, () => res.json({ photo: relativeFilePath }));
+        })
+        .catch(cropError => {
+          fs.unlink(file.path, function () {
+            return next(createError(cropError));
+          });
+        });
+    });
+
+    // Загружен 1 файл
+    form.on('file', function (field, file) {
+      files.push(file);
+    });
+
+    form.parse(req, function (e) {
+      if (e) return next(createError(e));
+    });
+  });
+};
+
 
 exports.delete = async function (req, res, next) {
   req.sanitize('entity').trim();
@@ -178,6 +254,11 @@ exports.upload = function (req, res, next) {
     });
 };
 
+function genHashName (name) {
+  const hashedName = name + imagesSalt;
+  return crypto.createHash('md5').update(hashedName).digest('hex');
+}
+
 function classicRandom (n){
   let result = '';
   const abd = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -186,6 +267,44 @@ function classicRandom (n){
     result += abd[Math.random() * aL | 0];
   }
   return result;
+}
+
+function cropSquareImage (file, sideSize) {
+  return new Promise((resolve, reject) => {
+    gm(file.path)
+      .noProfile()
+      .size({}, function (error, size) {
+        if (error) return reject(error);
+        const isVertical = size.width < size.height;
+        const isHorizontal = size.width > size.height;
+        const isWithCrop = isVertical || isHorizontal;
+
+        const resizeArgs = isVertical
+          ? [sideSize, null]
+          : isHorizontal
+            ? [null, sideSize]
+            : [sideSize, sideSize];
+
+        let cropArgs = [];
+        if (isWithCrop) {
+          const widthAfterResize = isVertical ? sideSize : (size.width / size.height * sideSize);
+          const heightAfterResize = isHorizontal ? sideSize : (size.height / size.width * sideSize);
+          const x = isVertical ? 0 : (widthAfterResize - sideSize) / 2;
+          const y = isHorizontal ? 0 : (heightAfterResize - sideSize) / 2;
+          cropArgs = [sideSize, sideSize, Math.round(x), Math.round(y)];
+        }
+
+        return (
+          isWithCrop
+            ? this.resize(...resizeArgs).crop(...cropArgs)
+            : this.resize(...resizeArgs)
+        )
+          .write(file.path, function (writeError) {
+            if (writeError) return reject(writeError);
+            resolve();
+          });
+      });
+  });
 }
 
 function cropImage (file, uploadDir, newPath, hash) {

@@ -47,5 +47,6 @@ module.exports = {
   emailForDevOpsNotify: 'andrei.frenkel@nordclan.com',
   ldapUrl: process.env.LDAP_URL,
   ttiUrl: process.env.TTI_HOST,
-  metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881
+  metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881,
+  imagesSalt: process.env.IMAGES_SALT || 'someSaltForImagesHere'
 };
