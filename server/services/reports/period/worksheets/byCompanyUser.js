@@ -40,15 +40,15 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const formulas = [
       {
         label: locale.TOTAL_BILLABLE,
-        formula: `=SUBTOTAL(9,H${startAt}:H${endAt})`
+        formula: `=SUBTOTAL(9,I${startAt}:I${endAt})`
       },
       {
         label: locale.TOTAL_NOT_BILLABLE,
-        formula: `SUBTOTAL(9,I${startAt}:I${endAt})`
+        formula: `SUBTOTAL(9,J${startAt}:J${endAt})`
       },
       {
         label: locale.TOTAL_AMOUNT,
-        formula: `SUBTOTAL(9,H${startAt}:H${endAt})+SUBTOTAL(9,I${startAt}:I${endAt})`
+        formula: `SUBTOTAL(9,I${startAt}:I${endAt})+SUBTOTAL(9,J${startAt}:J${endAt})`
       },
       {
         label: locale.BUSY,
@@ -67,7 +67,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         const totalCell = this._worksheet.getCell(this._columns[index + 1] + this._lastIndexRow);
         totalCell.alignment = this._tableColumns[index].alignment || {};
         const format = formulas[i].numFmt;
-        if (format){
+        if (format) {
           totalCell.numFmt = format;
         }
         totalLabelCell.width = 14;
@@ -125,31 +125,39 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const locale = i18n[this.lang];
     const dateFrom = info.range.startDate && moment(info.range.startDate).locale(this.lang).format('DD MMMM YYYY');
     const dateTo = info.range.endDate && moment(info.range.endDate).locale(this.lang).format('DD MMMM YYYY');
-    const font = {name: 'Calibri', color: {argb: 'F44546A'}, bold: true};
-    const border = {bottom: {style: 'medium'}};
+    const font = { name: 'Calibri', color: { argb: 'F44546A' }, bold: true };
+    const border = { bottom: { style: 'medium' } };
 
     sheet.mergeCells(`${this._columns[0]}1:${this._columns[this._tableColumns.length - 1]}1`);
     const report = sheet.getCell('A1');
     report.value = locale.SHEET_TITLE;
-    report.font = {size: 15, ...font};
+    report.font = { size: 15, ...font };
 
     sheet.mergeCells(`${this._columns[0]}2:${this._columns[this._tableColumns.length - 1]}2`);
     const period = sheet.getCell('A2');
     period.value = `${locale.PERIOD}:  ${dateFrom}  -  ${dateTo}`;
-    period.font = {size: 13, ...font};
-    period.border = {...border};
+    period.font = { size: 13, ...font };
+    period.border = { ...border };
   }
 
   get _tableColumns () {
     const locale = i18n[this.lang];
     return [
-      {calculate: d => getFullName(d.user, this.lang), width: 24, text: locale.PERSON},
-      {calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 16, text: locale.EMPLOYMENT_DATE},
-      {calculate: d => d.task.isMagic ? '' : `${d.project.prefix}-${d.task.id}`, text: '#'},
-      {calculate: d => d.project ? d.project.name : '', text: locale.PROJECT, width: 24, alignment: {wrapText: true}},
-      {calculate: d => d.task.name, text: locale.TASK, width: 50, alignment: {wrapText: true}},
-      {calculate: d => d.task.typeName || locale.MAGIC, text: locale.TYPE, width: 16, alignment: {wrapText: true}},
-      {calculate: d => d.comment, text: locale.DESCRIPTION, width: 50, alignment: {wrapText: true}},
+      { calculate: d => getFullName(d.user, this.lang), width: 24, text: locale.PERSON },
+      { calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 16, text: locale.EMPLOYMENT_DATE },
+      {
+        calculate: d => {
+          if (d.task.isMagic) return '';
+          if (d.project === null) return '';
+
+          return `${d.project.prefix}-${d.task.id}`;
+        },
+        text: '#'
+      },
+      { calculate: d => d.project ? d.project.name : '', text: locale.PROJECT, width: 24, alignment: { wrapText: true } },
+      { calculate: d => d.task.name, text: locale.TASK, width: 50, alignment: { wrapText: true } },
+      { calculate: d => d.task.typeName || locale.MAGIC, text: locale.TYPE, width: 16, alignment: { wrapText: true } },
+      { calculate: d => d.comment, text: locale.DESCRIPTION, width: 50, alignment: { wrapText: true } },
       {
         calculate: d => moment(d.onDate).format('DD.MM.YYYY'),
         text: locale.DATE,
@@ -164,7 +172,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         text: locale.HOURS_BILLABLE,
         numFmt: '0.00',
         width: 15,
-        alignment: {horizontal: 'right'},
+        alignment: { horizontal: 'right' },
         isSummary: true
       },
       {
@@ -176,7 +184,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         text: locale.HOURS_NOT_BILLABLE,
         numFmt: '0.00',
         width: 15,
-        alignment: {horizontal: 'right'}
+        alignment: { horizontal: 'right' }
       }
     ];
   }

@@ -156,7 +156,9 @@ exports.listAllProjects = async function (req, res, next) {
 
   TimesheetService
     .listProject(dateBegin, dateEnd, undefined, req.isSystemUser)
-    .then(timesheets => res.json(timesheets))
+    .then(timesheets => {
+      res.json(timesheets);
+    })
     .catch(error => next(createError(error)));
 };
 
@@ -181,11 +183,13 @@ const updateTimesheet = async (req, res) => {
 };
 
 exports.update = async (req, res, next) => {
+
   if (req.body.spentTime && req.body.spentTime < 0) {
     return next(createError(400, 'spentTime wrong'));
   }
   if (Array.isArray(req.body.sheetId)) {
     const requests = req.body.sheetId.map(id => {
+
       const singleReq = {
         ...req,
         body: {
@@ -263,7 +267,8 @@ exports.submit = async function (req, res, next) {
   if (!validationResult.isEmpty()) {
     return next(createError(400, validationResult));
   }
-  return TimesheetService.submit(userId, req.body.dateBegin, req.body.dateEnd)
+
+  return TimesheetService.submit(userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId, req.body.justRejected)
     .then(result => {
       result.forEach(
         sheet => TimesheetsChannel.sendAction('update', sheet, res.io, userId)
@@ -277,11 +282,14 @@ exports.approve = async function (req, res, next) {
   req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('userId', 'userId must be int').isInt();
+
   const validationResult = await req.getValidationResult();
+
   if (!validationResult.isEmpty()) {
     return next(createError(400, validationResult));
   }
-  return TimesheetService.approve(req.body.userId, req.body.dateBegin, req.body.dateEnd)
+
+  return TimesheetService.approve(req.body.userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId)
     .then(result => {
       result.forEach(
         sheet => TimesheetsChannel.sendAction('update', sheet, res.io, req.body.userId)
@@ -299,7 +307,7 @@ exports.reject = async function (req, res, next) {
   if (!validationResult.isEmpty()) {
     return next(createError(400, validationResult));
   }
-  return TimesheetService.reject(req.body.userId, req.body.dateBegin, req.body.dateEnd)
+  return TimesheetService.reject(req.body.userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId)
     .then(result => {
       result.forEach(
         sheet => TimesheetsChannel.sendAction('update', sheet, res.io, req.body.userId)
