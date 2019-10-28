@@ -2,6 +2,7 @@ const USER = {
   user: {
     'autocomplete': true,
     'autocompleteExternal': true,
+    'updateUserProfile': true,
     'me': true,
     'read': true,
     'changeAvatar': true
