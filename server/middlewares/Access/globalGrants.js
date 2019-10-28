@@ -104,7 +104,6 @@ module.exports = {
       ...USER.user,
       'usersRoles': true,
       'updateRole': true,
-      'updateUserProfile': true,
       'createExternal': true,
       'getExternalUsers': true,
       'updateExternal': true,
