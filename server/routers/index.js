@@ -31,7 +31,11 @@ router.delete('/auth/logout', AuthController.logout);
 
 // User
 router.put('/user', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
-router.put('/user/update-profile', GlobalAccess.can('user', 'updateUserProfile'), UserController.updateCurrentUserProfile);
+router.put(
+  '/user/update-profile',
+  GlobalAccess.can('user', 'updateUserProfile'),
+  UserController.updateCurrentUserProfile
+);
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get(
   '/user/autocompleter/external',
@@ -149,7 +153,11 @@ router.get(
   GlobalAccess.can('companyReports', 'read'),
   TimesheetController.getAverageNumberOfEmployees
 );
-router.get('/company-timesheets/reports/period', GlobalAccess.can('companyReports', 'export'), ReportsController.companyByPeriod);
+router.get(
+  '/company-timesheets/reports/period',
+  GlobalAccess.can('companyReports', 'export'),
+  ReportsController.companyByPeriod
+);
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
 router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);
 router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);
