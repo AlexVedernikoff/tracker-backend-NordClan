@@ -139,9 +139,8 @@ exports.listAllProjects = async function (req, res, next) {
 
   const dateBegin = req.query.dateBegin;
   const dateEnd = req.query.dateEnd;
-  const projectId = req.query.projectId;
 
-  TimesheetService.listProject(dateBegin, dateEnd, projectId, req.isSystemUser)
+  TimesheetService.listProject(dateBegin, dateEnd, undefined, req.isSystemUser)
     .then(timesheets => {
       res.json(timesheets);
     })
