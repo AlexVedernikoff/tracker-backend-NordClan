@@ -200,7 +200,7 @@ exports.getCompanyReport = async function (criteria, options) {
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
   const timeSheets = timeSheetsDbData
-    .filter(timeSheet => timeSheet.dataValues.user.dataValues.isActive === 1)
+    .filter(timeSheet => timeSheet.dataValues.user.dataValues.active === 1)
     .map(timeSheet => {
       const data = timeSheet.dataValues;
       Object.assign(data, {user: data.user.dataValues});

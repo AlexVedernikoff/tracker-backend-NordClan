@@ -39,7 +39,7 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
       }
     ],
     where: {
-      isActive: 1
+      active: 1
     },
     order: [
       ['lastNameRu', 'ASC']
@@ -123,7 +123,7 @@ function getInclude () {
       as: 'user',
       model: models.User,
       required: false,
-      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'isActive', 'employment_date'],
+      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'active', 'employment_date'],
       paranoid: false
     }
   ];
