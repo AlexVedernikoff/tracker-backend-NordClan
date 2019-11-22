@@ -1,7 +1,8 @@
 module.exports = {
   appName: 'Epic',
-  port: process.env.PORT || 8080,
-  db: {
+  port: process.env.PORT || 8000,
+  db:
+  {
     postgres: {
       host: process.env.DATABASE_HOST || 'localhost',
       port: process.env.DATABASE_PORT || 5432,

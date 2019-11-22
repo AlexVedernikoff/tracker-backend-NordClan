@@ -88,6 +88,7 @@ module.exports = function (sequelize, DataTypes) {
         }
       },
       active: {
+        field: 'active',
         type: DataTypes.INTEGER,
         allowNull: true,
         validate: {
@@ -154,6 +155,14 @@ module.exports = function (sequelize, DataTypes) {
       },
       birthDate: {
         field: 'birth_date',
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+        validate: {
+          isDate: true
+        }
+      },
+      deleteDate: {
+        field: 'delete_date',
         type: DataTypes.DATEONLY,
         allowNull: true,
         validate: {
@@ -283,7 +292,9 @@ module.exports = function (sequelize, DataTypes) {
     'deletedAt',
     'globalRole',
     'expiredDate',
-    'isActive'
+    'isActive',
+    'active',
+    'deleteDate'
   ];
 
   User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';
