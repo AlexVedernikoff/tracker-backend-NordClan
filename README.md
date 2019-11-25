@@ -2,8 +2,8 @@
 
 ### Запуск проекта в докере
 
->> docker-compose -f docker-compose.dev.yml  build 
->> docker-compose -f docker-compose.dev.yml  up
+$ docker-compose -f docker-compose.dev.yml  build 
+$ docker-compose -f docker-compose.dev.yml  up
 
 ### Настройки 
 
@@ -12,8 +12,7 @@
 ~/projects/track-back
 ~/projects/track-front
 
-По-умолчанию соединение с удаленным хостом track-dev.docker.nordclan.
-#### Для изменения настроек отредактируйте:
+#### Для изменения настроек сервера и подключения к базе отредактируйте:
 ./.docker-compose-dev.env
 
 ### Заметки
