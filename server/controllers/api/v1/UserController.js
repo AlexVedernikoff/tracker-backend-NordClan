@@ -264,6 +264,12 @@ exports.updateUserRole = async function (req, res, next) {
 exports.updateCurrentUserProfile = async function (req, res, next) {
   const { id } = req.body;
   const user = req.body;
+
+  const userAuth = req.user;
+  if (userAuth.id !== id) {
+    return next(createError(401));
+  }
+
   let transaction;
 
   try {
