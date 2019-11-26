@@ -204,7 +204,6 @@ exports.getCompanyReport = async function (criteria, options) {
     .map(timeSheet => {
       const data = timeSheet.dataValues;
       Object.assign(data, {user: data.user.dataValues});
-      console.log(data.user);
 
       if (!data.taskId) {
         const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
