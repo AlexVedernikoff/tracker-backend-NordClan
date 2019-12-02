@@ -28,12 +28,11 @@ exports.read = async function (req, res, next) {
       .isInt();
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
 
     const user = await models.User.findOne({
       where: {
-        id: req.params.id,
-        active: 1
+        id: req.params.id
       },
       attributes: models.User.defaultSelect,
       include: [
@@ -73,7 +72,7 @@ exports.autocomplete = function (req, res, next) {
   req
     .getValidationResult()
     .then(validationResult => {
-      if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+      if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
       const result = [];
       const userName = req.query.userName;
       const userNameArray = userName.trim().split(/\s+/);
@@ -127,7 +126,7 @@ exports.autocomplete = function (req, res, next) {
         })
         .then((users) => {
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
+            result.push({ fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id });
           });
           res.end(JSON.stringify(result));
         })
@@ -188,9 +187,14 @@ exports.devOpsUsers = async function (req, res, next) {
 
 exports.getUsersRoles = async function (req, res, next) {
   try {
+
+    const stat = (req.query.status !== null && req.query.status !== undefined)
+      ? req.query.status
+      : true;
+
     const users = await models.User.findAll({
       where: {
-        active: 1,
+        active: stat === 'true' ? 1 : 0,
         globalRole: { $not: 'EXTERNAL_USER' }
       },
       order: [['last_name_ru']],
@@ -565,7 +569,7 @@ exports.setPassword = async function (req, res, next) {
       .isLength({ min: 8 });
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
 
     const user = await models.User.findOne({
       where: {
@@ -665,7 +669,7 @@ exports.autocompleteExternal = function (req, res, next) {
   req
     .getValidationResult()
     .then(validationResult => {
-      if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+      if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
 
       const result = [];
       const userName = req.query.userName.trim();
@@ -701,7 +705,7 @@ exports.autocompleteExternal = function (req, res, next) {
         })
         .then((users) => {
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id});
+            result.push({ fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id });
           });
           res.end(JSON.stringify(result));
         })
