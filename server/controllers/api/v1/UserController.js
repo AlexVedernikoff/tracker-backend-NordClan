@@ -32,8 +32,7 @@ exports.read = async function (req, res, next) {
 
     const user = await models.User.findOne({
       where: {
-        id: req.params.id,
-        active: 1
+        id: req.params.id
       },
       attributes: models.User.defaultSelect,
       include: [
