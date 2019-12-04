@@ -265,6 +265,64 @@ exports.updateUserRole = async function (req, res, next) {
   }
 };
 
+
+exports.updateCurrentUserProfileByParams = async function (req, res, next) {
+  const { id } = req.body;
+  const user = req.body;
+
+  const userAuth = req.user;
+  if (!userAuth || userAuth.id !== id) {
+    return next(createError(401));
+  }
+
+  let transaction;
+
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+
+    // TODO: Сделать обновление без запроса всего справочника
+    const departList = await Department.findAll();
+
+    const newDepartList = departList.filter(el => {
+      for (const i in user.departmentList) {
+        if (el.id === user.departmentList[i]) {
+          return el;
+        }
+      }
+    });
+
+    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+
+    const newUser = {};
+
+    newUser.mobile = user.mobile;
+    newUser.phone = user.phone;
+    newUser.birthDate = user.birthDate;
+    newUser.skype = user.skype;
+    newUser.photo = user.photo;
+
+
+    const updatedModel = await model.updateAttributes(newUser, { transaction });
+    if (!updatedModel) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    await transaction.commit();
+    res.sendStatus(200);
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
+};
+
 exports.updateCurrentUserProfile = async function (req, res, next) {
   const { id } = req.body;
   const user = req.body;

@@ -36,6 +36,11 @@ router.put(
   GlobalAccess.can('user', 'updateUserProfile'),
   UserController.updateCurrentUserProfile
 );
+router.patch(
+  '/user/update-profile',
+  GlobalAccess.can('user', 'updateUserProfile'),
+  UserController.updateCurrentUserProfileByParams
+);
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get(
   '/user/autocompleter/external',
