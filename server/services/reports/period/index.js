@@ -199,37 +199,39 @@ exports.getCompanyReport = async function (criteria, options) {
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
-  const timeSheets = timeSheetsDbData.map(timeSheet => {
-    const data = timeSheet.dataValues;
-    Object.assign(data, {user: data.user.dataValues});
+  const timeSheets = timeSheetsDbData
+    .filter(timeSheet => timeSheet.dataValues.user.dataValues.active === 1)
+    .map(timeSheet => {
+      const data = timeSheet.dataValues;
+      Object.assign(data, {user: data.user.dataValues});
 
-    if (!data.taskId) {
-      const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
-      Object.assign(data, {
-        taskId: -type.id,
-        task: {
-          name: type.name,
-          id: type.id,
-          isMagic: type.isMagicActivity
-        }
-      });
-    } else {
-      Object.assign(data, {task: data.task.dataValues});
-    }
+      if (!data.taskId) {
+        const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
+        Object.assign(data, {
+          taskId: -type.id,
+          task: {
+            name: type.name,
+            id: type.id,
+            isMagic: type.isMagicActivity
+          }
+        });
+      } else {
+        Object.assign(data, {task: data.task.dataValues});
+      }
 
-    const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
-    const rolesIds = currentProjectRoles
-      .map(role => role.projectRoleId)
-      .sort((role1, role2) => role1 - role2);
-    const userRolesNames = rolesIds
-      .map(roleId => getProjectRoleName(roleId, projectRolesValues, lang))
-      .join(', ');
-    delete data.user.usersProjects;
-    data.user.userRolesNames = userRolesNames;
-    data.user.employment_date = formatDate(data.user.employment_date);
-    data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues, lang) : null;
-    return data;
-  });
+      const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
+      const rolesIds = currentProjectRoles
+        .map(role => role.projectRoleId)
+        .sort((role1, role2) => role1 - role2);
+      const userRolesNames = rolesIds
+        .map(roleId => getProjectRoleName(roleId, projectRolesValues, lang))
+        .join(', ');
+      delete data.user.usersProjects;
+      data.user.userRolesNames = userRolesNames;
+      data.user.employment_date = formatDate(data.user.employment_date);
+      data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues, lang) : null;
+      return data;
+    });
 
   const data = {
     info: { range: {startDate, endDate} },
