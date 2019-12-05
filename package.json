@@ -59,6 +59,7 @@
     "sequelize-replace-enum-postgres": "1.4.0",
     "sequelize-transforms": "1.0.2",
     "socket.io": "^2.0.4",
+    "ssha": "^1.0.1",
     "swagger-express": "^1.0.5",
     "winston": "^3.0.0-rc1",
     "xml2json": "^0.11.0"
