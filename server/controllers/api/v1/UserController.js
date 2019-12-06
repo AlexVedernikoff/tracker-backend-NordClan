@@ -403,6 +403,14 @@ exports.updateUserProfile = async function (req, res, next) {
       await transaction.rollback();
       return next(createError(404));
     }
+
+    const userLdap = await LDAP.modify(req.body, model.dataValues.ldapLogin);
+    if (!userLdap) {
+      transaction.rollback();
+      return next(createError(500));
+    }
+
+
     await transaction.commit();
     res.sendStatus(200);
 

@@ -108,6 +108,74 @@ module.exports = {
         }
       });
     });
+  },
+
+  modify (data, oldUid) {
+    return new Promise((resolve, reject) => {
+      try {
+        const changeCity = new ldap.Change({
+          operation: 'replace',
+          modification: {
+            city: data.city
+          }
+        });
+
+        const changeLastNameEn = new ldap.Change({
+          operation: 'replace',
+          modification: {
+            lastNameEn: data.lastNameEn
+          }
+        });
+
+        const changeFirstNameEn = new ldap.Change({
+          operation: 'replace',
+          modification: {
+            firstNameEn: data.firstNameEn
+          }
+        });
+
+        const changeGivenName = new ldap.Change({
+          operation: 'replace',
+          modification: {
+            givenName: data.lastNameRu
+          }
+        });
+
+        const changeSn = new ldap.Change({
+          operation: 'replace',
+          modification: {
+            sn: `${data.firstNameRu} ${data.lastNameRu}`
+          }
+        });
+
+        const changeСn = new ldap.Change({
+          operation: 'replace',
+          modification: {
+            cn: `${data.firstNameRu} ${data.lastNameRu}`
+          }
+        });
+
+        client.modify(`uid=${oldUid},dc=nordclan`,
+          [ changeLastNameEn,
+            changeFirstNameEn,
+            changeGivenName,
+            changeСn,
+            changeSn,
+            changeCity
+          ], function (err) {
+            if (err) {
+              console.log('Error user Add LDAP', err);
+              reject(err);
+            } else {
+              resolve(true);
+            }
+          });
+
+      } catch (error) {
+        console.log('catch err Ldap ====>', error);
+        reject(null);
+      }
+    });
   }
 };
 
