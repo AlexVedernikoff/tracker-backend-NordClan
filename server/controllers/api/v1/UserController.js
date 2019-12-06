@@ -10,6 +10,7 @@ const emailService = require('../../../services/email');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 const { bcryptPromise } = require('../../../components/utils');
 const { email: { templateExternalUrl } } = require('../../../configs');
+const ssha = require('ssha');
 
 exports.me = function (req, res, next) {
   try {
@@ -462,6 +463,9 @@ exports.createUser = async function (req, res, next) {
         delete params[name];
       }
     }
+
+    const crpt = ssha.create(params.password);
+    params.password = crpt;
 
     User.create(params)
       .then(async (model) => {
