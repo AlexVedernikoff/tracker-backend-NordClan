@@ -20,7 +20,7 @@ const i18n = require('./i18n.json');
 const { getAverageNumberOfEmployees } = require('../utils');
 
 exports.getReport = async function (projectId, criteria, options) {
-  const {lang = 'en'} = options || {};
+  const { lang = 'en' } = options || {};
   let startDate;
   let endDate;
   const { label, sprintId } = criteria;
@@ -33,10 +33,10 @@ exports.getReport = async function (projectId, criteria, options) {
     endDate = validCriteria.endDate;
   }
   const queryParams = {
-    projectId: {$eq: projectId},
+    projectId: { $eq: projectId },
     ...(criteria ? (
       {
-        onDate: {$between: [startDate, endDate]}
+        onDate: { $between: [startDate, endDate] }
       }
     ) : null),
     spentTime: {
@@ -56,7 +56,7 @@ exports.getReport = async function (projectId, criteria, options) {
   }
 
   const project = await Project.findOne({
-    where: {id: {$eq: projectId}},
+    where: { id: { $eq: projectId } },
     attributes: ['id', 'name', 'prefix', 'createdAt', 'completedAt'],
     include: [
       {
@@ -117,8 +117,8 @@ exports.getReport = async function (projectId, criteria, options) {
       }
     ],
     order: [
-      [ { model: User, as: 'user' }, withSuffix('full_name', lang), 'ASC' ],
-      [ 'onDate', 'ASC' ]
+      [{ model: User, as: 'user' }, withSuffix('full_name', lang), 'ASC'],
+      ['onDate', 'ASC']
     ]
   });
   // Подгрузка словарей из БД
@@ -127,7 +127,7 @@ exports.getReport = async function (projectId, criteria, options) {
 
   const timeSheets = timeSheetsDbData.map(timeSheet => {
     const data = timeSheet.dataValues;
-    Object.assign(data, {user: data.user.dataValues});
+    Object.assign(data, { user: data.user.dataValues });
     if (!data.taskId) {
       const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
       Object.assign(data, {
@@ -139,7 +139,7 @@ exports.getReport = async function (projectId, criteria, options) {
         }
       });
     } else {
-      Object.assign(data, {task: data.task.dataValues});
+      Object.assign(data, { task: data.task.dataValues });
     }
 
     const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
@@ -157,7 +157,7 @@ exports.getReport = async function (projectId, criteria, options) {
   });
 
   const data = {
-    info: { project, range: {startDate, endDate}, label },
+    info: { project, range: { startDate, endDate }, label },
     byTasks: _(timeSheets)
       .groupBy('taskId')
       .map(timeSheet => _.transform(timeSheet, (resultObject, user) => {
@@ -174,7 +174,7 @@ exports.getReport = async function (projectId, criteria, options) {
   };
 
   return {
-    workbook: generateExcellDocument(data, {lang}),
+    workbook: generateExcellDocument(data, { lang }),
     options: {
       fileName: `${project.name} - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
     }
@@ -182,7 +182,7 @@ exports.getReport = async function (projectId, criteria, options) {
 };
 
 exports.getCompanyReport = async function (criteria, options) {
-  const {lang = 'en'} = options || {};
+  const { lang = 'en' } = options || {};
   let startDate;
   let endDate;
   const locale = i18n[lang];
@@ -199,11 +199,15 @@ exports.getCompanyReport = async function (criteria, options) {
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
+  const withUserDeleteDate = timeSheetsDbData
+    .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date !== null);
   const timeSheets = timeSheetsDbData
-    .filter(timeSheet => timeSheet.dataValues.user.dataValues.active === 1)
+    .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date === null
+      || new Date(timeSheet.dataValues.onDate) <= timeSheet.dataValues.user.dataValues.delete_date)
     .map(timeSheet => {
+
       const data = timeSheet.dataValues;
-      Object.assign(data, {user: data.user.dataValues});
+      Object.assign(data, { user: data.user.dataValues });
 
       if (!data.taskId) {
         const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
@@ -216,7 +220,7 @@ exports.getCompanyReport = async function (criteria, options) {
           }
         });
       } else {
-        Object.assign(data, {task: data.task.dataValues});
+        Object.assign(data, { task: data.task.dataValues });
       }
 
       const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
@@ -234,7 +238,7 @@ exports.getCompanyReport = async function (criteria, options) {
     });
 
   const data = {
-    info: { range: {startDate, endDate} },
+    info: { range: { startDate, endDate } },
     companyByUser: transformToUserList(timeSheets, lang)
   };
 
@@ -266,7 +270,7 @@ function transformToUserList (timeSheets, lang) {
       user: ((groupedByUser[userId] || [])[0] || {}).user,
       timeSheets: groupedByUser[userId]
     }))
-    .sort(({ user: prev }, { user: next}) => {
+    .sort(({ user: prev }, { user: next }) => {
       if (prev[`lastName${suffix}`] < next[`lastName${suffix}`]) { return -1; }
       if (prev[`lastName${suffix}`] > next[`lastName${suffix}`]) { return 1; }
       return 0;
@@ -282,7 +286,7 @@ function generateCompanyReportExcellDocument (data, options) {
 }
 
 function generateExcellDocument (data, options) {
-  const {lang} = options;
+  const { lang } = options;
   const workbook = getWorkBook();
   const byUserSheet = new ByUserWorkSheet(workbook, data, lang);
   const byTaskSheet = new ByTaskWorkSheet(workbook, data, lang);
