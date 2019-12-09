@@ -126,7 +126,7 @@ module.exports = {
         const changeFirstNameEn = updateData({firstNameEn: data.firstNameEn || ' '});
         const changeGivenName = updateData({givenName: data.lastNameRu || ' '});
         const changeSn = updateData({sn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
-        const changeСn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
+        const changeCn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
         const emailPrimary = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
         const mail = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
         const jpegPhoto = updateData({jpegPhoto: `http://nas.nordclan:8080/${oldUid}.jpg`});
@@ -137,7 +137,7 @@ module.exports = {
           [ changeLastNameEn,
             changeFirstNameEn,
             changeGivenName,
-            changeСn,
+            changeCn,
             changeSn,
             changeCity,
             emailPrimary,
