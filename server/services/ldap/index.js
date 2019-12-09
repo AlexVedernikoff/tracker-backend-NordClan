@@ -132,7 +132,6 @@ module.exports = {
         const jpegPhoto = updateData({jpegPhoto: `http://nas.nordclan:8080/${oldUid}.jpg`});
         const uidNumber = updateData({uidNumber: `${data.id || ''}`});
         const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
-        const uid = updateData({uid: `${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
 
         client.modify(`uid=${oldUid},dc=nordclan`,
           [ changeLastNameEn,
@@ -145,8 +144,7 @@ module.exports = {
             mail,
             jpegPhoto,
             uidNumber,
-            homeDirectory,
-            uid
+            homeDirectory
           ], function (err) {
             if (err) {
               console.log('Error user Add LDAP', err);
