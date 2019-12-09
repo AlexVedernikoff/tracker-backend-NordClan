@@ -121,14 +121,14 @@ module.exports = {
 
     return new Promise((resolve, reject) => {
       try {
-        const changeCity = updateData({city: data.city});
-        const changeLastNameEn = updateData({lastNameEn: data.lastNameEn});
-        const changeFirstNameEn = updateData({firstNameEn: data.firstNameEn});
-        const changeGivenName = updateData({givenName: data.lastNameRu});
-        const changeSn = updateData({sn: `${data.firstNameRu} ${data.lastNameRu}`});
-        const changeСn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu}`});
-        const emailPrimary = updateData({emailPrimary: `${data.emailPrimary}`});
-        const mail = updateData({emailPrimary: `${data.emailPrimary}`});
+        const changeCity = updateData({city: data.city || ' '});
+        const changeLastNameEn = updateData({lastNameEn: data.lastNameEnc || ' '});
+        const changeFirstNameEn = updateData({firstNameEn: data.firstNameEn || ' '});
+        const changeGivenName = updateData({givenName: data.lastNameRu || ' '});
+        const changeSn = updateData({sn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
+        const changeСn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
+        const emailPrimary = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
+        const mail = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
         const jpegPhoto = updateData({jpegPhoto: `http://nas.nordclan:8080/${oldUid}.jpg`});
         const uidNumber = updateData({uidNumber: `${data.id || ''}`});
         const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
