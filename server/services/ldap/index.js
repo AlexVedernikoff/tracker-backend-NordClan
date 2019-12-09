@@ -111,49 +111,28 @@ module.exports = {
   },
 
   modify (data, oldUid) {
+
+    function updateData (fileld) {
+      return new ldap.Change({
+        operation: 'replace',
+        modification: fileld
+      });
+    }
+
     return new Promise((resolve, reject) => {
       try {
-        const changeCity = new ldap.Change({
-          operation: 'replace',
-          modification: {
-            city: data.city
-          }
-        });
-
-        const changeLastNameEn = new ldap.Change({
-          operation: 'replace',
-          modification: {
-            lastNameEn: data.lastNameEn
-          }
-        });
-
-        const changeFirstNameEn = new ldap.Change({
-          operation: 'replace',
-          modification: {
-            firstNameEn: data.firstNameEn
-          }
-        });
-
-        const changeGivenName = new ldap.Change({
-          operation: 'replace',
-          modification: {
-            givenName: data.lastNameRu
-          }
-        });
-
-        const changeSn = new ldap.Change({
-          operation: 'replace',
-          modification: {
-            sn: `${data.firstNameRu} ${data.lastNameRu}`
-          }
-        });
-
-        const changeСn = new ldap.Change({
-          operation: 'replace',
-          modification: {
-            cn: `${data.firstNameRu} ${data.lastNameRu}`
-          }
-        });
+        const changeCity = updateData({city: data.city});
+        const changeLastNameEn = updateData({lastNameEn: data.lastNameEn});
+        const changeFirstNameEn = updateData({firstNameEn: data.firstNameEn});
+        const changeGivenName = updateData({givenName: data.lastNameRu});
+        const changeSn = updateData({sn: `${data.firstNameRu} ${data.lastNameRu}`});
+        const changeСn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu}`});
+        const emailPrimary = updateData({emailPrimary: `${data.emailPrimary}`});
+        const mail = updateData({emailPrimary: `${data.emailPrimary}`});
+        const jpegPhoto = updateData({jpegPhoto: `http://nas.nordclan:8080/${oldUid}.jpg`});
+        const uidNumber = updateData({uidNumber: `${data.id || ''}`});
+        const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
+        const uid = updateData({uid: `${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
 
         client.modify(`uid=${oldUid},dc=nordclan`,
           [ changeLastNameEn,
@@ -161,7 +140,13 @@ module.exports = {
             changeGivenName,
             changeСn,
             changeSn,
-            changeCity
+            changeCity,
+            emailPrimary,
+            mail,
+            jpegPhoto,
+            uidNumber,
+            homeDirectory,
+            uid
           ], function (err) {
             if (err) {
               console.log('Error user Add LDAP', err);
