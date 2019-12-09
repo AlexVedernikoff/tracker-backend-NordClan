@@ -488,7 +488,10 @@ exports.createUser = async function (req, res, next) {
             return next(err);
           });
 
-        const userLdap = await LDAP.create(params);
+        const objClone = Object.assign(req.body);
+        objClone.password = params.password;
+        const userLdap = await LDAP.create(objClone);
+
         if (!userLdap) {
           transaction.rollback();
           return next(createError(500));
