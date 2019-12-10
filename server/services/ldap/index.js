@@ -122,7 +122,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         const changeCity = updateData({city: data.city || ' '});
-        const changeLastNameEn = updateData({lastNameEn: data.lastNameEnc || ' '});
+        const changeLastNameEn = updateData({lastNameEn: data.lastNameEn || ' '});
         const changeFirstNameEn = updateData({firstNameEn: data.firstNameEn || ' '});
         const changeGivenName = updateData({givenName: data.lastNameRu || ' '});
         const changeSn = updateData({sn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
