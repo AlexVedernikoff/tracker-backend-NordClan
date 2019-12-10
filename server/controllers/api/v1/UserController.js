@@ -411,12 +411,6 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
 
   const userAuth = req.user;
 
-  console.log('!!!!');
-  console.log(userAuth.instance);
-  console.log(userAuth.dataValues);
-  console.log(userAuth.globalRole);
-  console.log(id);
-
   if (!userAuth || userAuth.id !== id) {
     return next(createError(401));
   }
