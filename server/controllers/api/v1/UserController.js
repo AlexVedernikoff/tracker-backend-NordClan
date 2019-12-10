@@ -352,6 +352,11 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
     return next(createError(401));
   }
 
+
+  if (userAuth.globalRole !== 'ADMIN') {
+    return next(createError(401));
+  }
+
   let transaction;
 
   try {
@@ -405,6 +410,13 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
   const user = req.body;
 
   const userAuth = req.user;
+
+  console.log('!!!!');
+  console.log(userAuth.instance);
+  console.log(userAuth.dataValues);
+  console.log(userAuth.globalRole);
+  console.log(id);
+
   if (!userAuth || userAuth.id !== id) {
     return next(createError(401));
   }
