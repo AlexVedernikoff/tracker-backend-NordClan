@@ -388,7 +388,6 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
     newUser.skype = user.skype;
     newUser.photo = user.photo;
 
-
     const updatedModel = await model.updateAttributes(newUser, { transaction });
     if (!updatedModel) {
       await transaction.rollback();
