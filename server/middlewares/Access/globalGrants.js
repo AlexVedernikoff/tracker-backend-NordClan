@@ -2,8 +2,10 @@ const USER = {
   user: {
     'autocomplete': true,
     'autocompleteExternal': true,
+    'updateUserProfile': true,
     'me': true,
-    'read': true
+    'read': true,
+    'changeAvatar': true
   },
   tag: {
     'autocompliter': true,
@@ -102,7 +104,6 @@ module.exports = {
       ...USER.user,
       'usersRoles': true,
       'updateRole': true,
-      'updateUserProfile': true,
       'createExternal': true,
       'getExternalUsers': true,
       'updateExternal': true,

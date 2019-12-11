@@ -23,7 +23,7 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
   }
 
   return {
-    attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'employmentDate', 'dismissalDate'],
+    attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'employmentDate', 'dismissalDate', 'global_role'],
     include: [
       {
         model: models.Timesheet,
@@ -38,6 +38,9 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
         ]
       }
     ],
+    where: {
+      active: 1
+    },
     order: [
       ['lastNameRu', 'ASC']
     ]
@@ -120,7 +123,7 @@ function getInclude () {
       as: 'user',
       model: models.User,
       required: false,
-      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'employment_date'],
+      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'active', 'employment_date', 'delete_date'],
       paranoid: false
     }
   ];

@@ -6,9 +6,11 @@ exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) 
       select avg(usersdate.total) from (select count(u.id) as total
       from (select generate_series(min(?)::date, max(?)::date, interval '1 day') as dte
           from users
-        ) d left join
+         ) as d left join
         users u
-        on d.dte >= u.employment_date and (d.dte <= u.dismissal_date or u.dismissal_date is null)
+        on  u.employment_date is not null 
+        and (d.dte >= u.employment_date) 
+        and (d.dte <= u.delete_date or u.delete_date is null)
       group by d.dte
       order by d.dte) as usersdate
     `,

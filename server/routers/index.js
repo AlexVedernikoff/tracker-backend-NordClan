@@ -31,7 +31,16 @@ router.delete('/auth/logout', AuthController.logout);
 
 // User
 router.put('/user', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
-router.put('/user/update-profile', GlobalAccess.can('user', 'updateUserProfile'), UserController.updateCurrentUserProfile);
+router.put(
+  '/user/update-profile',
+  GlobalAccess.can('user', 'updateUserProfile'),
+  UserController.updateCurrentUserProfile
+);
+router.patch(
+  '/user/update-profile',
+  GlobalAccess.can('user', 'updateUserProfile'),
+  UserController.updateCurrentUserProfileByParams
+);
 router.get('/user/autocompleter', GlobalAccess.can('user', 'autocomplete'), UserController.autocomplete);
 router.get(
   '/user/autocompleter/external',
@@ -55,6 +64,8 @@ router.put('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), Use
 router.put('/user/password/:token', UserController.setPassword);
 router.put('/user/test/:id', GlobalAccess.can('user', 'updateTestUser'), UserController.updateTestUser);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
+router.post('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.uploadAvatar);
+router.delete('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.deleteAvatar);
 
 // Tags
 router.get('/project/:projectId/tags', GlobalAccess.can('project', 'read'), TagController.listByProject);
@@ -147,7 +158,11 @@ router.get(
   GlobalAccess.can('companyReports', 'read'),
   TimesheetController.getAverageNumberOfEmployees
 );
-router.get('/company-timesheets/reports/period', GlobalAccess.can('companyReports', 'export'), ReportsController.companyByPeriod);
+router.get(
+  '/company-timesheets/reports/period',
+  GlobalAccess.can('companyReports', 'export'),
+  ReportsController.companyByPeriod
+);
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
 router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);
 router.delete('/timesheet/:timesheetId', GlobalAccess.can('timesheet', 'delete'), TimesheetController.delete);

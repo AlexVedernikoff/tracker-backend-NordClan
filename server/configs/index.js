@@ -1,7 +1,8 @@
 module.exports = {
   appName: 'Epic',
   port: process.env.PORT || 8080,
-  db: {
+  db:
+  {
     postgres: {
       host: process.env.DATABASE_HOST || 'localhost',
       port: process.env.DATABASE_PORT || 5432,
@@ -47,5 +48,6 @@ module.exports = {
   emailForDevOpsNotify: 'andrei.frenkel@nordclan.com',
   ldapUrl: process.env.LDAP_URL,
   ttiUrl: process.env.TTI_HOST,
-  metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881
+  metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881,
+  imagesSalt: process.env.IMAGES_SALT || 'someSaltForImagesHere'
 };

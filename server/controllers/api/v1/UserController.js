@@ -10,6 +10,7 @@ const emailService = require('../../../services/email');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 const { bcryptPromise } = require('../../../components/utils');
 const { email: { templateExternalUrl } } = require('../../../configs');
+const ssha = require('ssha');
 
 exports.me = function (req, res, next) {
   try {
@@ -28,12 +29,11 @@ exports.read = async function (req, res, next) {
       .isInt();
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
 
     const user = await models.User.findOne({
       where: {
-        id: req.params.id,
-        active: 1
+        id: req.params.id
       },
       attributes: models.User.defaultSelect,
       include: [
@@ -73,7 +73,7 @@ exports.autocomplete = function (req, res, next) {
   req
     .getValidationResult()
     .then(validationResult => {
-      if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+      if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
       const result = [];
       const userName = req.query.userName;
       const userNameArray = userName.trim().split(/\s+/);
@@ -127,7 +127,7 @@ exports.autocomplete = function (req, res, next) {
         })
         .then((users) => {
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id});
+            result.push({ fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id });
           });
           res.end(JSON.stringify(result));
         })
@@ -188,9 +188,14 @@ exports.devOpsUsers = async function (req, res, next) {
 
 exports.getUsersRoles = async function (req, res, next) {
   try {
+
+    const stat = (req.query.status !== null && req.query.status !== undefined)
+      ? req.query.status
+      : true;
+
     const users = await models.User.findAll({
       where: {
-        active: 1,
+        active: stat === 'true' ? 1 : 0,
         globalRole: { $not: 'EXTERNAL_USER' }
       },
       order: [['last_name_ru']],
@@ -261,9 +266,73 @@ exports.updateUserRole = async function (req, res, next) {
   }
 };
 
+
+exports.updateCurrentUserProfileByParams = async function (req, res, next) {
+  const { id } = req.body;
+  const user = req.body;
+
+  const userAuth = req.user;
+  if (!userAuth || userAuth.id !== id) {
+    return next(createError(401));
+  }
+
+  let transaction;
+
+  try {
+    transaction = await models.sequelize.transaction();
+    const model = await User.findByPrimary(id, { transaction, lock: 'UPDATE' });
+    if (!model) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+
+    // TODO: Сделать обновление без запроса всего справочника
+    const departList = await Department.findAll();
+
+    const newDepartList = departList.filter(el => {
+      for (const i in user.departmentList) {
+        if (el.id === user.departmentList[i]) {
+          return el;
+        }
+      }
+    });
+
+    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+
+    const newUser = {};
+
+    newUser.mobile = user.mobile;
+    newUser.phone = user.phone;
+    newUser.birthDate = user.birthDate;
+    newUser.skype = user.skype;
+    newUser.photo = user.photo;
+
+
+    const updatedModel = await model.updateAttributes(newUser, { transaction });
+    if (!updatedModel) {
+      await transaction.rollback();
+      return next(createError(404));
+    }
+    await transaction.commit();
+    res.sendStatus(200);
+
+  } catch (err) {
+    if (err) {
+      await transaction.rollback();
+    }
+    next(err);
+  }
+};
+
 exports.updateCurrentUserProfile = async function (req, res, next) {
   const { id } = req.body;
   const user = req.body;
+
+  const userAuth = req.user;
+  if (!userAuth || userAuth.id !== id) {
+    return next(createError(401));
+  }
+
   let transaction;
 
   try {
@@ -335,6 +404,14 @@ exports.updateUserProfile = async function (req, res, next) {
       await transaction.rollback();
       return next(createError(404));
     }
+
+    const userLdap = await LDAP.modify(req.body, model.dataValues.ldapLogin);
+    if (!userLdap) {
+      transaction.rollback();
+      return next(createError(500));
+    }
+
+
     await transaction.commit();
     res.sendStatus(200);
 
@@ -387,6 +464,9 @@ exports.createUser = async function (req, res, next) {
       }
     }
 
+    const crpt = ssha.create(params.password);
+    params.password = crpt;
+
     User.create(params)
       .then(async (model) => {
         // TODO: Сделать обновление без запроса всего справочника
@@ -408,7 +488,10 @@ exports.createUser = async function (req, res, next) {
             return next(err);
           });
 
-        const userLdap = await LDAP.create(req.body);
+        const objClone = Object.assign(req.body);
+        objClone.password = params.password;
+        const userLdap = await LDAP.create(objClone);
+
         if (!userLdap) {
           transaction.rollback();
           return next(createError(500));
@@ -565,7 +648,7 @@ exports.setPassword = async function (req, res, next) {
       .isLength({ min: 8 });
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
 
     const user = await models.User.findOne({
       where: {
@@ -665,7 +748,7 @@ exports.autocompleteExternal = function (req, res, next) {
   req
     .getValidationResult()
     .then(validationResult => {
-      if (!validationResult.isEmpty()) {return next(createError(400, validationResult));}
+      if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
 
       const result = [];
       const userName = req.query.userName.trim();
@@ -701,7 +784,7 @@ exports.autocompleteExternal = function (req, res, next) {
         })
         .then((users) => {
           users.forEach((user) => {
-            result.push({fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id});
+            result.push({ fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id });
           });
           res.end(JSON.stringify(result));
         })

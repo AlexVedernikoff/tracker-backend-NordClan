@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 9.6.15
--- Dumped by pg_dump version 9.6.15
+-- Dumped by pg_dump version 12.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -15,20 +15,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
 
 --
 -- Name: global_role_type; Type: TYPE; Schema: public; Owner: track
@@ -59,8 +45,6 @@ CREATE TYPE public.goal_status AS ENUM (
 ALTER TYPE public.goal_status OWNER TO track;
 
 SET default_tablespace = '';
-
-SET default_with_oids = false;
 
 --
 -- Name: Milestones; Type: TABLE; Schema: public; Owner: track
@@ -112,6 +96,142 @@ CREATE TABLE public."SequelizeMeta" (
 
 
 ALTER TABLE public."SequelizeMeta" OWNER TO track;
+
+--
+-- Name: bot_notification; Type: TABLE; Schema: public; Owner: track
+--
+
+CREATE TABLE public.bot_notification (
+    id bigint NOT NULL,
+    active boolean,
+    start_date_time timestamp without time zone NOT NULL,
+    repeat_days integer,
+    repeat_months integer,
+    repeat_years integer,
+    message character varying
+);
+
+
+ALTER TABLE public.bot_notification OWNER TO track;
+
+--
+-- Name: bot_notification_seq; Type: SEQUENCE; Schema: public; Owner: track
+--
+
+CREATE SEQUENCE public.bot_notification_seq
+    START WITH 99
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.bot_notification_seq OWNER TO track;
+
+--
+-- Name: bot_notification_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: track
+--
+
+ALTER SEQUENCE public.bot_notification_seq OWNED BY public.bot_notification.id;
+
+
+--
+-- Name: bot_notification_users; Type: TABLE; Schema: public; Owner: track
+--
+
+CREATE TABLE public.bot_notification_users (
+    bot_notification_id bigint,
+    users_id integer
+);
+
+
+ALTER TABLE public.bot_notification_users OWNER TO track;
+
+--
+-- Name: bot_reply; Type: TABLE; Schema: public; Owner: track
+--
+
+CREATE TABLE public.bot_reply (
+    id bigint NOT NULL,
+    name character varying,
+    value character varying
+);
+
+
+ALTER TABLE public.bot_reply OWNER TO track;
+
+--
+-- Name: bot_reply_seq; Type: SEQUENCE; Schema: public; Owner: track
+--
+
+CREATE SEQUENCE public.bot_reply_seq
+    START WITH 99
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.bot_reply_seq OWNER TO track;
+
+--
+-- Name: bot_reply_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: track
+--
+
+ALTER SEQUENCE public.bot_reply_seq OWNED BY public.bot_reply.id;
+
+
+--
+-- Name: bot_settings; Type: TABLE; Schema: public; Owner: track
+--
+
+CREATE TABLE public.bot_settings (
+    bot_name character varying NOT NULL,
+    bot_enabled boolean NOT NULL,
+    calendar_enabled boolean,
+    holidays character varying,
+    user_notification_hour integer,
+    supervisor_notification_hour integer,
+    supervisor_second_notification_hour integer,
+    newbies_notification_hour integer,
+    id bigint NOT NULL
+);
+
+
+ALTER TABLE public.bot_settings OWNER TO track;
+
+--
+-- Name: bot_settings_seq; Type: SEQUENCE; Schema: public; Owner: track
+--
+
+CREATE SEQUENCE public.bot_settings_seq
+    START WITH 99
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.bot_settings_seq OWNER TO track;
+
+--
+-- Name: bot_settings_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: track
+--
+
+ALTER SEQUENCE public.bot_settings_seq OWNED BY public.bot_settings.id;
+
+
+--
+-- Name: bot_settings_users; Type: TABLE; Schema: public; Owner: track
+--
+
+CREATE TABLE public.bot_settings_users (
+    bot_settings_id bigint,
+    users_id integer
+);
+
+
+ALTER TABLE public.bot_settings_users OWNER TO track;
 
 --
 -- Name: comments; Type: TABLE; Schema: public; Owner: track
@@ -189,6 +309,26 @@ ALTER TABLE public.departments_id_seq OWNER TO track;
 
 ALTER SEQUENCE public.departments_id_seq OWNED BY public.departments.id;
 
+
+--
+-- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: track
+--
+
+CREATE TABLE public.flyway_schema_history (
+    installed_rank integer NOT NULL,
+    version character varying(50),
+    description character varying(200) NOT NULL,
+    type character varying(20) NOT NULL,
+    script character varying(1000) NOT NULL,
+    checksum integer,
+    installed_by character varying(100) NOT NULL,
+    installed_on timestamp without time zone DEFAULT now() NOT NULL,
+    execution_time integer NOT NULL,
+    success boolean NOT NULL
+);
+
+
+ALTER TABLE public.flyway_schema_history OWNER TO track;
 
 --
 -- Name: gitlab_user_roles; Type: TABLE; Schema: public; Owner: track
@@ -1583,7 +1723,10 @@ CREATE TABLE public.users (
     is_test boolean DEFAULT false NOT NULL,
     gitlab_user_id integer,
     employment_date timestamp with time zone,
-    dismissal_date timestamp with time zone
+    dismissal_date timestamp with time zone,
+    telegram_chat_id bigint,
+    telegram_user_name character varying(100),
+    telegram_reg_date timestamp without time zone
 );
 
 
@@ -1863,18 +2006,21 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
+-- Name: 296264; Type: BLOB; Schema: -; Owner: track
+--
+
+SELECT pg_catalog.lo_create('296264');
+
+
+ALTER LARGE OBJECT 296264 OWNER TO track;
+
+--
 -- Data for Name: Milestones; Type: TABLE DATA; Schema: public; Owner: track
 --
 
 COPY public."Milestones" (id, name, date, done, "projectId", "typeId", "updatedAt", "deletedAt", "createdAt") FROM stdin;
+224	Milestone test	2019-10-01	f	472	1	2019-10-29 06:43:09.345+00	\N	2019-10-29 06:43:09.345+00
 \.
-
-
---
--- Name: Milestones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public."Milestones_id_seq"', 223, true);
 
 
 --
@@ -1940,6 +2086,99 @@ COPY public."SequelizeMeta" (name) FROM stdin;
 20181224070443-create-goals.js
 201904171400-add-task-history-decimal-value.js
 20190903105131-add_firing_and_hiring_date.js
+\.
+
+
+--
+-- Data for Name: bot_notification; Type: TABLE DATA; Schema: public; Owner: track
+--
+
+COPY public.bot_notification (id, active, start_date_time, repeat_days, repeat_months, repeat_years, message) FROM stdin;
+123	f	2019-10-29 12:43:27.802	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+124	f	2019-10-29 12:55:30.187	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+102	f	2019-10-23 18:00:00.026	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+103	f	2019-10-24 18:00:00.026	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+104	f	2019-10-25 18:00:00.037	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+105	f	2019-10-26 18:00:00.028	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+106	f	2019-10-27 18:00:00.004	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+107	f	2019-10-28 18:00:00.012	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+111	f	2019-10-29 12:12:07.013	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+113	f	2019-10-29 12:21:46.53	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+115	f	2019-10-29 12:24:03.718	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+117	f	2019-10-29 12:34:30.962	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+118	f	2019-10-29 12:36:35.897	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+119	f	2019-10-29 12:36:58.334	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+120	f	2019-10-29 12:39:33.314	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+121	f	2019-10-29 12:40:47.868	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+122	f	2019-10-29 12:42:37.961	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+125	f	2019-10-29 12:55:54.968	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+126	f	2019-10-29 12:58:27.112	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+127	f	2019-10-29 12:59:31.469	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+128	f	2019-10-29 12:59:56.212	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+129	f	2019-10-29 13:02:40.422	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+130	f	2019-10-29 13:03:04.436	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+131	f	2019-10-29 13:04:25.604	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+132	f	2019-10-29 13:17:22.796	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+133	f	2019-10-29 14:00:00.081	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+134	f	2019-10-29 14:02:44.797	\N	\N	\N	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+135	f	2019-10-29 14:04:40.032	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+136	f	2019-10-29 14:06:26.175	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+137	f	2019-10-29 14:08:38.211	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+139	f	2019-10-29 14:10:10.3	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+138	f	2019-10-29 14:09:01.465	\N	\N	\N	Следующие сотрудники не заполнили отчет по времени за прошлую неделю:Людмила Клюева\nВиктор Сычев\nДжульетта Егорова\nАлександр Краснов\nАндрей Френкель\nАнастасия Горшкова\nДенис Смородин\nАлександр Носков\nАлексей Артамонов\nАндрей Юдин\nРоман Хмуренко\nНовый Пользователь\nНовый Пользователь\nПервый Тестировщик\nТест-администратора Фамилия тест-администратора\nПётр Петров\nРадик Хисметов @\nИлья Каштанкин\ntest test\nПетров Петр\nДмитрий Медведев\nuser usage\nN1 Ф1\nВася Иванов\nяков яковлич\nВлад Степанов @v555574\nusing usage\nused use\nused user\nll ll\nused used\nInna Shutova\nТатьяна Бабич @\nnull null @\nАлексей Хнырёв @\nused using\nused newuser\nКекарь5 Тестовый\nНю Ню\nused1 used1\nPavel Volya\nIwnna Swhutova\nВася2 Иванов2\nВася22 Иванов22\nТест Внешнего Пользователя null\nФёдор Фёдоров\nТестовый Пользователь\nКекарь Тестовый\nКекарь2 Тестовый\nКекарь3 Тестовый\nКекарь4 Тестовый\nawd awd\nКекарь6 Тестовый\nПроверка Полей\nPav Vol\nпроверка2 полей\nПроверка2 Полей2\nКекарь7 Тестовый\nКекарь8 Тестовый\nКекарь11 Тестовый\nкекарь9 тестовый\nКекарь10 Тестовый\nПроверка3 Полей3\nАватар Аватаров\nadministrator administratorov\nИлья Филинин @\nАндрей Золотов @\nАлексей Стратонов @\n
+140	f	2019-10-29 14:10:26.257	\N	\N	\N	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+141	f	2019-10-29 14:11:01.4	\N	\N	\N	Следующие сотрудники не заполнили отчет по времени за прошлую неделю:Людмила Клюева\nВиктор Сычев\nДжульетта Егорова\nАлександр Краснов\nАндрей Френкель\nАнастасия Горшкова\nДенис Смородин\nАлександр Носков\nАлексей Артамонов\nАндрей Юдин\nРоман Хмуренко\nНовый Пользователь\nНовый Пользователь\nПервый Тестировщик\nТест-администратора Фамилия тест-администратора\nПётр Петров\nРадик Хисметов @\nИлья Каштанкин\ntest test\nПетров Петр\nДмитрий Медведев\nuser usage\nN1 Ф1\nВася Иванов\nяков яковлич\nВлад Степанов @v555574\nusing usage\nused use\nused user\nll ll\nused used\nInna Shutova\nТатьяна Бабич @\nnull null @\nАлексей Хнырёв @\nused using\nused newuser\nКекарь5 Тестовый\nНю Ню\nused1 used1\nPavel Volya\nIwnna Swhutova\nВася2 Иванов2\nВася22 Иванов22\nТест Внешнего Пользователя null\nФёдор Фёдоров\nТестовый Пользователь\nКекарь Тестовый\nКекарь2 Тестовый\nКекарь3 Тестовый\nКекарь4 Тестовый\nawd awd\nКекарь6 Тестовый\nПроверка Полей\nPav Vol\nпроверка2 полей\nПроверка2 Полей2\nКекарь7 Тестовый\nКекарь8 Тестовый\nКекарь11 Тестовый\nкекарь9 тестовый\nКекарь10 Тестовый\nПроверка3 Полей3\nАватар Аватаров\nadministrator administratorov\nИлья Филинин @\nАндрей Золотов @\nАлексей Стратонов @\n
+\.
+
+
+--
+-- Data for Name: bot_notification_users; Type: TABLE DATA; Schema: public; Owner: track
+--
+
+COPY public.bot_notification_users (bot_notification_id, users_id) FROM stdin;
+139	2710
+140	2710
+141	2710
+\.
+
+
+--
+-- Data for Name: bot_reply; Type: TABLE DATA; Schema: public; Owner: track
+--
+
+COPY public.bot_reply (id, name, value) FROM stdin;
+1	defaultSuccess	Команда выполнена успешно
+2	defaultFailed	Команда не выполнена
+3	unauthorizedMessage	У вас нет прав на выполнение данной операции
+4	greeting	Поприветствуем нового сотрудника!
+5	greeting	У нас в компании новый сотрудник, поприветствуем его!
+7	startFailed	Извините, вас нет в базе сотрудников
+14	listSuccess	Список сотрудников, подписанных на мои сообщения:
+15	listFailed	На меня никто не подписан
+16	timesheetNotFilled	Пожалуйста, заполните отчет по времени!\r\nhttp://track.nordclan/timereports
+17	timesheetNotSubmitted	Пожалуйста, подтвердите отчет по времени!\r\nhttp://track.nordclan/timereports
+18	notifySupervisors	Следующие сотрудники не заполнили отчет по времени за прошлую неделю:
+21	helpGuestSuccess	Регистрация: /start логин_в_track
+6	startSuccess	Поздравляю! Вы успешно зарегистрированы и будете иногда получать от меня сообщения\r\nЗдесь вы найдете информацию для начала работы в компании:\r\nhttp://xwiki.nordclan/bin/view/Main/Внутренние%20сервисы/Новичку/\r\nПрисоединяйтесь к нашей группе в Telegram:\r\nhttps://t.me/joinchat/???\r\nНаберите /help для списка команд
+\.
+
+
+--
+-- Data for Name: bot_settings; Type: TABLE DATA; Schema: public; Owner: track
+--
+
+COPY public.bot_settings (bot_name, bot_enabled, calendar_enabled, holidays, user_notification_hour, supervisor_notification_hour, supervisor_second_notification_hour, newbies_notification_hour, id) FROM stdin;
+nordclanBot	t	f		12	15	17	18	1
+nordclanTestBot	t	f		12	14	17	18	2
+\.
+
+
+--
+-- Data for Name: bot_settings_users; Type: TABLE DATA; Schema: public; Owner: track
+--
+
+COPY public.bot_settings_users (bot_settings_id, users_id) FROM stdin;
+1	102
 \.
 
 
@@ -2018,14 +2257,11 @@ COPY public.comments (id, task_id, parent_id, author_id, text, created_at, updat
 955	3207	\N	35	нужны картинки к текстам	2019-06-19 11:31:34.005+00	2019-06-19 11:31:34.005+00	2019-06-19 11:34:45.809+00	\N
 956	3168	\N	266	Сделано. Влито на тестовый и боевой	2019-06-19 14:09:36.595+00	2019-06-19 14:09:36.595+00	\N	\N
 957	3163	\N	102	19.06 Собеседование с клиентом, Френкель+Краснов. Итог в понедельник.<br>Предварительно - Андрей подходит. Требуется согласование с ЛПР(поскольку есть аппрув только на найм в штат, на подряд - требуется дополнительно) <br>Заинтересовались в QA экспертизе, договорились выслать предложения по обеспечению качества и нашей экспертизой	2019-06-19 14:43:13.94+00	2019-06-19 14:43:13.94+00	\N	\N
+958	3227	\N	2717	cmt	2019-10-03 12:04:45.033+00	2019-10-03 12:04:45.033+00	\N	\N
+959	3324	\N	2728	тест аватарки	2019-10-25 08:38:08.993+00	2019-10-25 08:38:08.993+00	\N	\N
+960	3324	\N	2728	тест аватарки	2019-10-25 08:45:56.358+00	2019-10-25 08:45:56.358+00	\N	\N
+961	3408	\N	2728	тестим коменты при смене статусов	2019-10-28 13:13:03.095+00	2019-10-28 13:13:03.095+00	\N	\N
 \.
-
-
---
--- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.comments_id_seq', 957, true);
 
 
 --
@@ -2033,7 +2269,6 @@ SELECT pg_catalog.setval('public.comments_id_seq', 957, true);
 --
 
 COPY public.departments (id, name, ps_id, created_at, updated_at, deleted_at) FROM stdin;
-2	*Направление Java	o2k187g0000lh58rbh10000000	2017-06-30 10:33:23.164+00	2017-06-30 10:33:23.164+00	\N
 3	*Направление Аналитики	o2k007g0000jjksd9m30000000	2017-06-30 10:33:23.164+00	2017-06-30 10:33:23.164+00	\N
 4	*Направление PHP	o2k187g0000lgoe7gos0000000	2017-06-30 10:33:23.164+00	2017-06-30 10:33:23.164+00	\N
 11	*Направление C++	o2k007g0000jcktnngp0000000	2017-06-30 10:33:23.194+00	2017-06-30 10:33:23.194+00	\N
@@ -2049,14 +2284,18 @@ COPY public.departments (id, name, ps_id, created_at, updated_at, deleted_at) FR
 15	*Топ меннеджмент	14	2017-06-30 10:33:23.178+00	2017-06-30 10:33:23.178+00	\N
 16	*Клиентская служба	15	2017-06-30 10:33:23.178+00	2017-06-30 10:33:23.178+00	\N
 17	*Отдел продаж	16	2017-06-30 10:33:23.178+00	2017-06-30 10:33:23.178+00	\N
+2	*Направление Java	2	2019-10-01 15:47:38.555+00	2019-10-01 15:47:41.529+00	\N
 \.
 
 
 --
--- Name: departments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+-- Data for Name: flyway_schema_history; Type: TABLE DATA; Schema: public; Owner: track
 --
 
-SELECT pg_catalog.setval('public.departments_id_seq', 17, true);
+COPY public.flyway_schema_history (installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time, success) FROM stdin;
+1	1.2	Init	SQL	V1.2__Init.sql	-1721205709	track	2019-10-11 05:37:04.694305	34	t
+2	1.3	Init	SQL	V1.3__Init.sql	-856500843	track	2019-10-29 14:11:58.781002	156	t
+\.
 
 
 --
@@ -2065,13 +2304,6 @@ SELECT pg_catalog.setval('public.departments_id_seq', 17, true);
 
 COPY public.gitlab_user_roles (id, access_level, expires_at, project_user_id, gitlab_project_id, created_at, updated_at, deleted_at) FROM stdin;
 \.
-
-
---
--- Name: gitlab_user_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.gitlab_user_roles_id_seq', 1175, true);
 
 
 --
@@ -2103,14 +2335,10 @@ COPY public.goals (id, name, description, visible, planned_execution_time, statu
 --
 
 COPY public.item_tags (id, tag_id, taggable, taggable_id, deleted_at) FROM stdin;
+849	382	project	472	\N
+850	383	project	472	\N
+851	384	project	510	\N
 \.
-
-
---
--- Name: item_tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.item_tags_id_seq', 848, true);
 
 
 --
@@ -2119,13 +2347,6 @@ SELECT pg_catalog.setval('public.item_tags_id_seq', 848, true);
 
 COPY public.jira_sync_status (id, simtrack_project_id, jira_project_id, date, status) FROM stdin;
 \.
-
-
---
--- Name: jira_sync_status_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.jira_sync_status_id_seq', 1, false);
 
 
 --
@@ -2197,13 +2418,6 @@ COPY public.metrics (id, type_id, value, created_at, project_id, sprint_id, user
 
 
 --
--- Name: metrics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.metrics_id_seq', 194173, true);
-
-
---
 -- Data for Name: milestone_types_dictionary; Type: TABLE DATA; Schema: public; Owner: track
 --
 
@@ -2216,20 +2430,6 @@ COPY public.milestone_types_dictionary (id, name, code_name, name_en) FROM stdin
 
 
 --
--- Name: milestone_types_dictionary_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.milestone_types_dictionary_id_seq', 4, true);
-
-
---
--- Name: model_histories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.model_histories_id_seq', 24791, true);
-
-
---
 -- Data for Name: portfolios; Type: TABLE DATA; Schema: public; Owner: track
 --
 
@@ -2238,25 +2438,11 @@ COPY public.portfolios (id, name, author_id, created_at, updated_at, deleted_at)
 
 
 --
--- Name: portfolios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.portfolios_id_seq', 12, true);
-
-
---
 -- Data for Name: project_attachments; Type: TABLE DATA; Schema: public; Owner: track
 --
 
 COPY public.project_attachments (id, project_id, file_name, path, "previewPath", author_id, size, type, created_at, deleted_at) FROM stdin;
 \.
-
-
---
--- Name: project_attachments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.project_attachments_id_seq', 71, true);
 
 
 --
@@ -2339,14 +2525,197 @@ COPY public.project_histories (id, entity, entity_id, project_id, field, prev_va
 5265	ProjectUser	797	470	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-06-19 11:32:24.407+00	35
 5266	Project	474	474	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-07-04 15:43:20.682+00	186
 5267	Project	474	474	deleted_at	\N	\N	\N	\N	\N	2019-07-04 15:50:36.045+00	\N	\N	\N	\N	update	2019-07-04 15:50:36.057+00	186
+5268	ProjectUser	799	473	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:42:36.444+00	2698
+5269	ProjectUser	800	473	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:43:10.95+00	2698
+5270	Project	475	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:44:07.34+00	2698
+5271	ProjectUser	801	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:44:47.804+00	2698
+5272	ProjectUser	802	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:50:09.782+00	2698
+5273	Project	475	475	statusId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-09-25 08:51:26.155+00	2698
+5274	Project	475	475	statusId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-09-25 08:51:29.069+00	2698
+5275	Project	475	475	statusId	\N	\N	3	1	\N	\N	\N	\N	\N	\N	update	2019-09-25 08:51:30.524+00	2698
+5276	ProjectUser	803	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:59:57.987+00	2698
+5277	Project	477	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-01 14:53:17.867+00	2726
+5278	Project	478	478	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:27:18.978+00	2698
+5279	ProjectUser	804	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:36:11.408+00	2698
+5280	ProjectUser	805	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:36:41.987+00	2698
+5281	ProjectUser	806	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:51:44.183+00	2717
+5282	ProjectUser	807	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:51:58.782+00	2717
+5283	ProjectUser	808	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 06:04:30.032+00	2717
+5284	ProjectUser	809	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 06:41:01.073+00	2717
+5285	ProjectUser	810	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 07:13:28.138+00	2717
+5286	ProjectUser	811	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 07:15:57.587+00	2717
+5287	ProjectUser	811	477	deleted_at	\N	\N	\N	\N	\N	2019-10-02 07:53:55.958+00	\N	\N	\N	\N	update	2019-10-02 07:53:55.961+00	2717
+5288	ProjectUser	812	477	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 07:54:20.643+00	2717
+5289	Project	479	479	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 08:56:36.4+00	2727
+5290	Project	480	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 08:59:19.932+00	2728
+5291	ProjectUser	813	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 09:12:15.195+00	2728
+5292	Project	481	481	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 11:15:01.974+00	212
+5293	Project	482	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 11:19:32.191+00	2697
+5294	ProjectUser	814	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 11:20:54.6+00	2697
+5295	Project	484	484	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 09:00:29.998+00	2717
+5296	Project	485	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 09:03:25.624+00	2717
+5297	Project	486	486	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 10:16:31.367+00	2717
+5298	Project	487	487	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-04 06:15:29.424+00	2717
+5299	ProjectUser	815	481	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-04 08:01:37.301+00	2725
+5300	Project	488	488	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-07 06:13:56.459+00	2728
+5301	ProjectUser	816	488	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-07 06:14:34.049+00	2728
+5302	ProjectUser	817	488	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-07 06:15:05.811+00	2728
+5303	Project	489	489	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:12:19.855+00	2717
+5304	ProjectUser	818	489	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:14:39.515+00	2717
+5305	ProjectUser	819	489	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:14:56.133+00	2717
+5306	ProjectUser	820	489	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:15:18.541+00	2717
+5307	ProjectUser	818	489	deleted_at	\N	\N	\N	\N	\N	2019-10-08 06:15:37.529+00	\N	\N	\N	\N	update	2019-10-08 06:15:37.656+00	2717
+5308	ProjectUser	821	489	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:16:03.313+00	2717
+5309	Project	490	490	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:35:10.589+00	2717
+5310	Project	491	491	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 08:51:22.295+00	2717
+5311	Project	492	492	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 09:42:40.1+00	2717
+5312	Project	493	493	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 14:36:44.075+00	2717
+5313	Project	495	495	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 08:21:35.155+00	2717
+5314	Project	495	495	typeId	\N	\N	4	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:24:21.156+00	2717
+5315	Project	495	495	typeId	\N	\N	3	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:24:33.113+00	2717
+5316	Project	495	495	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:24:39.031+00	2717
+5317	Project	495	495	typeId	\N	\N	3	1	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:25:02.793+00	2717
+5318	Project	495	495	typeId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:25:12.529+00	2717
+5319	Project	495	495	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:25:17.839+00	2717
+5320	Project	495	495	typeId	\N	\N	3	4	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:25:27.397+00	2717
+5321	Project	481	481	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:33:16.716+00	2717
+5322	Project	481	481	typeId	\N	\N	3	4	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:33:44.232+00	2717
+5323	Project	481	481	typeId	\N	\N	4	1	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:50:56.94+00	2717
+5324	Project	481	481	typeId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:50:59.042+00	2717
+5325	Project	481	481	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 08:51:51.143+00	2717
+5326	Project	475	475	typeId	\N	\N	1	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 09:41:06.622+00	2717
+5327	Project	493	493	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 09:41:35.556+00	2717
+5328	Project	496	496	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 09:42:24.283+00	2717
+5329	Project	497	497	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 11:40:25.202+00	2717
+5330	Project	489	489	typeId	\N	\N	2	4	\N	\N	\N	\N	\N	\N	update	2019-10-09 11:46:37.066+00	2717
+5363	Project	498	498	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 12:41:37.712+00	2759
+5364	Project	500	500	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 12:45:14.274+00	2761
+5365	Project	481	481	typeId	\N	\N	3	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:15:37.658+00	2717
+5366	Project	481	481	typeId	\N	\N	2	1	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:15:44.541+00	2717
+5367	Project	481	481	typeId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:15:47.938+00	2717
+5368	Project	481	481	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:15:50.46+00	2717
+5369	Project	481	481	typeId	\N	\N	3	4	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:15:58.84+00	2717
+5370	Project	481	481	typeId	\N	\N	4	1	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:16:06.797+00	2717
+5371	Project	481	481	typeId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:16:20.186+00	2717
+5372	Project	481	481	typeId	\N	\N	2	4	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:16:28.289+00	2717
+5373	Project	470	470	typeId	\N	\N	4	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:26:36.843+00	2717
+5374	Project	470	470	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:26:56.574+00	2717
+5375	Project	470	470	typeId	\N	\N	3	2	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:27:17.553+00	2717
+5376	Project	470	470	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 13:27:55.672+00	2717
+5377	Project	482	482	typeId	\N	\N	2	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 15:08:27.839+00	2717
+5378	ProjectUser	822	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:11:47.754+00	2717
+5379	ProjectUser	823	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:13:27.547+00	2717
+5380	ProjectUser	823	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:13:42.241+00	\N	\N	\N	\N	update	2019-10-09 15:13:42.243+00	2717
+5381	ProjectUser	822	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:13:46.53+00	\N	\N	\N	\N	update	2019-10-09 15:13:46.532+00	2717
+5382	ProjectUser	824	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:13:56.235+00	2717
+5383	ProjectUser	825	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:14:16.301+00	2717
+5384	ProjectUser	825	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:14:30.58+00	\N	\N	\N	\N	update	2019-10-09 15:14:30.582+00	2717
+5385	ProjectUser	824	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:14:33.599+00	\N	\N	\N	\N	update	2019-10-09 15:14:33.601+00	2717
+5386	ProjectUser	826	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:14:38.755+00	2717
+5387	ProjectUser	826	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:15:20.868+00	\N	\N	\N	\N	update	2019-10-09 15:15:20.87+00	2717
+5388	ProjectUser	827	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:15:27.881+00	2717
+5389	Project	485	485	typeId	\N	\N	1	3	\N	\N	\N	\N	\N	\N	update	2019-10-09 15:15:35.674+00	2717
+5390	ProjectUser	827	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:15:39.655+00	\N	\N	\N	\N	update	2019-10-09 15:15:39.657+00	2717
+5391	ProjectUser	828	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:15:45.343+00	2717
+5392	ProjectUser	829	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:16:00.872+00	2717
+5393	Project	485	485	typeId	\N	\N	3	4	\N	\N	\N	\N	\N	\N	update	2019-10-09 15:16:06.328+00	2717
+5394	ProjectUser	828	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:17:17.086+00	\N	\N	\N	\N	update	2019-10-09 15:17:17.088+00	2717
+5395	ProjectUser	829	485	deleted_at	\N	\N	\N	\N	\N	2019-10-09 15:17:19.759+00	\N	\N	\N	\N	update	2019-10-09 15:17:19.761+00	2717
+5396	ProjectUser	830	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:17:24.662+00	2717
+5397	ProjectUser	831	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:17:33.587+00	2717
+5398	ProjectUser	832	485	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 15:19:56.696+00	2717
+5399	ProjectUser	833	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 05:50:44.183+00	2717
+5400	ProjectUser	833	482	deleted_at	\N	\N	\N	\N	\N	2019-10-10 05:56:55.031+00	\N	\N	\N	\N	update	2019-10-10 05:56:55.033+00	2717
+5401	ProjectUser	834	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 05:57:00.254+00	2717
+5402	ProjectUser	834	482	deleted_at	\N	\N	\N	\N	\N	2019-10-10 05:57:06.994+00	\N	\N	\N	\N	update	2019-10-10 05:57:06.995+00	2717
+5403	ProjectUser	835	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 06:00:02.915+00	2717
+5404	ProjectUser	836	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 06:00:22.07+00	2717
+5405	ProjectUser	837	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 07:33:49.643+00	2717
+5406	ProjectUser	838	495	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 08:23:31.891+00	2717
+5407	ProjectUser	839	495	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 08:23:55.236+00	2717
+5408	ProjectUser	840	498	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 11:03:04.205+00	2759
+5409	ProjectUser	841	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 11:47:03.381+00	2717
+5410	ProjectUser	841	482	deleted_at	\N	\N	\N	\N	\N	2019-10-10 11:47:14.667+00	\N	\N	\N	\N	update	2019-10-10 11:47:14.669+00	2717
+5411	ProjectUser	836	482	deleted_at	\N	\N	\N	\N	\N	2019-10-10 11:47:18.005+00	\N	\N	\N	\N	update	2019-10-10 11:47:18.007+00	2717
+5412	Project	482	482	typeId	\N	\N	3	4	\N	\N	\N	\N	\N	\N	update	2019-10-10 11:47:23.548+00	2717
+5413	ProjectUser	842	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 11:47:38.642+00	2717
+5414	ProjectUser	843	482	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 11:48:04.508+00	2717
+5415	ProjectUser	844	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 12:24:16.077+00	2717
+5416	ProjectUser	845	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 12:24:31.04+00	2717
+5417	Sprint	426	472	statusId	\N	\N	2	1	\N	\N	\N	\N	\N	\N	update	2019-10-11 06:44:43.727+00	2717
+5418	Sprint	426	472	statusId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-10-11 06:44:44.733+00	2717
+5419	Sprint	429	472	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 06:45:48.189+00	2717
+5420	Sprint	429	472	statusId	\N	\N	1	2	\N	\N	\N	\N	\N	\N	update	2019-10-11 06:45:50.723+00	2717
+5421	Sprint	426	472	statusId	\N	\N	2	1	\N	\N	\N	\N	\N	\N	update	2019-10-11 07:02:00.804+00	2717
+5422	Sprint	429	472	statusId	\N	\N	2	1	\N	\N	\N	\N	\N	\N	update	2019-10-11 07:02:07.558+00	2717
+5423	Project	501	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:05:29.888+00	2728
+5424	ProjectUser	846	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:07:13.399+00	2728
+5425	ProjectUser	847	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:10:35.18+00	2728
+5426	ProjectUser	848	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:10:51.129+00	2728
+5427	ProjectUser	848	501	deleted_at	\N	\N	\N	\N	\N	2019-10-11 07:11:05.219+00	\N	\N	\N	\N	update	2019-10-11 07:11:05.221+00	2728
+5428	ProjectUser	847	501	deleted_at	\N	\N	\N	\N	\N	2019-10-11 07:11:07.349+00	\N	\N	\N	\N	update	2019-10-11 07:11:07.35+00	2728
+5429	ProjectUser	846	501	deleted_at	\N	\N	\N	\N	\N	2019-10-11 07:11:09.416+00	\N	\N	\N	\N	update	2019-10-11 07:11:09.417+00	2728
+5430	ProjectUser	849	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:11:18.046+00	2728
+5431	ProjectUser	850	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:11:38.894+00	2728
+5432	ProjectUser	851	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:11:49.614+00	2728
+5433	ProjectUser	852	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:12:03.547+00	2728
+5434	ProjectUser	853	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:12:30.787+00	2728
+5435	ProjectUser	854	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:12:41.618+00	2728
+5436	ProjectUser	855	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:12:59.124+00	2728
+5437	ProjectUser	856	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:13:11.418+00	2728
+5438	ProjectUser	857	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:13:21.76+00	2728
+5439	ProjectUser	858	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:13:57.479+00	2728
+5440	ProjectUser	859	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:14:10.338+00	2728
+5441	ProjectUser	860	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:14:22.138+00	2728
+5442	Project	502	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:17:01.219+00	2728
+5443	ProjectUser	861	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:19:49.763+00	2728
+5444	ProjectUser	862	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:20:04.51+00	2728
+5445	ProjectUser	863	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:20:15.807+00	2728
+5446	ProjectUser	864	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:20:23.727+00	2728
+5447	ProjectUser	865	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:20:39.577+00	2728
+5448	ProjectUser	865	502	deleted_at	\N	\N	\N	\N	\N	2019-10-11 07:20:47.49+00	\N	\N	\N	\N	update	2019-10-11 07:20:47.491+00	2728
+5449	ProjectUser	866	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:20:56.363+00	2728
+5450	ProjectUser	867	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:21:21.225+00	2728
+5451	ProjectUser	868	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:22:08.88+00	2728
+5452	ProjectUser	869	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:22:20.76+00	2728
+5453	ProjectUser	870	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:22:41.251+00	2728
+5454	ProjectUser	871	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:22:54.156+00	2728
+5455	ProjectUser	872	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:23:13.136+00	2728
+5456	ProjectUser	873	502	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:23:27.672+00	2728
+5457	ProjectUser	874	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:28:45.317+00	2717
+5458	Sprint	430	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:38:08.404+00	2728
+5459	Sprint	431	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:40:21.404+00	2728
+5460	Sprint	430	501	deleted_at	\N	\N	\N	\N	\N	2019-10-11 07:49:50.459+00	\N	\N	\N	\N	update	2019-10-11 07:49:50.475+00	2728
+5461	Sprint	431	501	deleted_at	\N	\N	\N	\N	\N	2019-10-11 07:49:52.859+00	\N	\N	\N	\N	update	2019-10-11 07:49:52.874+00	2728
+5462	Sprint	432	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:50:53.062+00	2728
+5463	Sprint	433	501	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:51:55.551+00	2728
+5464	Sprint	434	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:53:44.436+00	2717
+5465	Sprint	435	475	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:54:43.257+00	2717
+5466	Project	498	498	name	ммими	тест	\N	\N	\N	\N	\N	\N	\N	\N	update	2019-10-11 08:00:59.77+00	2759
+5467	ProjectUser	875	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:03:33.828+00	2717
+5468	Sprint	436	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:19:22.354+00	2717
+5469	Sprint	437	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:20:44.09+00	2717
+5470	ProjectUser	876	481	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-12 08:49:26.649+00	2717
+5471	Sprint	438	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:13:03.182+00	2717
+5472	Sprint	439	480	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:58:09.209+00	2717
+5473	Project	503	503	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-17 15:59:45.742+00	2717
+5474	Project	505	505	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 14:27:37.863+00	2718
+5475	ProjectUser	877	505	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 14:28:59.176+00	2718
+5476	Project	507	507	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 12:56:23.062+00	2759
+5477	ProjectUser	878	507	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 12:58:02.21+00	2759
+5478	Project	508	508	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 13:07:22.26+00	2728
+5479	ProjectUser	879	508	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 13:11:36.893+00	2728
+5480	Project	509	509	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 13:37:32.164+00	2717
+5481	Project	509	509	riskBudget	\N	\N	\N	\N	\N	\N	\N	2	\N	\N	update	2019-10-28 13:40:47.895+00	2717
+5482	Project	510	510	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-29 06:49:07.176+00	2717
+5483	ProjectUser	880	510	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-29 06:53:57.691+00	2717
+5484	Project	510	510	typeId	\N	\N	4	3	\N	\N	\N	\N	\N	\N	update	2019-10-29 07:02:11.029+00	2717
+5485	Project	511	511	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-06 13:46:23.217+00	2941
+5486	ProjectUser	881	511	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-06 13:47:15.058+00	2941
+5487	Project	512	512	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-07 07:17:22.41+00	2728
+5488	ProjectUser	882	512	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-07 07:20:43.325+00	2728
+5489	ProjectUser	883	512	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-07 07:21:01.949+00	2728
 \.
-
-
---
--- Name: project_histories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.project_histories_id_seq', 5267, true);
 
 
 --
@@ -2395,13 +2764,6 @@ COPY public.project_types (id, name, code_name, name_en) FROM stdin;
 
 
 --
--- Name: project_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.project_types_id_seq', 4, true);
-
-
---
 -- Data for Name: project_users; Type: TABLE DATA; Schema: public; Owner: track
 --
 
@@ -2435,14 +2797,81 @@ COPY public.project_users (id, project_id, user_id, author_id, deleted_at, creat
 795	470	2696	102	\N	2019-06-19 07:41:50.727+00
 796	471	102	102	\N	2019-06-19 10:29:17.07+00
 797	470	35	35	\N	2019-06-19 11:32:24.376+00
+810	477	2718	2717	\N	2019-10-02 07:13:28.057+00
+811	477	2711	2717	2019-10-02 07:53:55.958+00	2019-10-02 07:15:57.583+00
+812	477	2727	2717	\N	2019-10-02 07:54:20.638+00
+813	480	2728	2728	\N	2019-10-02 09:12:15.191+00
+814	482	2697	2697	\N	2019-10-02 11:20:54.595+00
+815	481	2725	2725	\N	2019-10-04 08:01:37.002+00
+816	488	2728	2728	\N	2019-10-07 06:14:33.507+00
+817	488	2729	2728	\N	2019-10-07 06:15:05.806+00
+819	489	2698	2717	\N	2019-10-08 06:14:56.123+00
+820	489	2697	2717	\N	2019-10-08 06:15:18.533+00
+818	489	2732	2717	2019-10-08 06:15:37.529+00	2019-10-08 06:14:37.798+00
+821	489	2729	2717	\N	2019-10-08 06:16:03.263+00
+823	485	2717	2717	2019-10-09 15:13:42.241+00	2019-10-09 15:13:27.543+00
+822	485	2725	2717	2019-10-09 15:13:46.53+00	2019-10-09 15:11:47.085+00
+825	485	2725	2717	2019-10-09 15:14:30.58+00	2019-10-09 15:14:16.296+00
+824	485	2717	2717	2019-10-09 15:14:33.599+00	2019-10-09 15:13:56.231+00
+826	485	2717	2717	2019-10-09 15:15:20.868+00	2019-10-09 15:14:38.75+00
+827	485	2717	2717	2019-10-09 15:15:39.655+00	2019-10-09 15:15:27.878+00
+828	485	2717	2717	2019-10-09 15:17:17.086+00	2019-10-09 15:15:45.338+00
+829	485	35	2717	2019-10-09 15:17:19.759+00	2019-10-09 15:16:00.867+00
+830	485	2717	2717	\N	2019-10-09 15:17:24.659+00
+831	485	2725	2717	\N	2019-10-09 15:17:33.583+00
+832	485	35	2717	\N	2019-10-09 15:19:56.692+00
+833	482	2717	2717	2019-10-10 05:56:55.031+00	2019-10-10 05:50:44.143+00
+834	482	2717	2717	2019-10-10 05:57:06.994+00	2019-10-10 05:57:00.232+00
+835	482	2717	2717	\N	2019-10-10 06:00:02.909+00
+837	480	2765	2717	\N	2019-10-10 07:33:49.637+00
+838	495	2717	2717	\N	2019-10-10 08:23:31.871+00
+839	495	2725	2717	\N	2019-10-10 08:23:55.228+00
+840	498	2759	2759	\N	2019-10-10 11:03:04.2+00
+841	482	266	2717	2019-10-10 11:47:14.667+00	2019-10-10 11:47:03.371+00
+836	482	2725	2717	2019-10-10 11:47:18.005+00	2019-10-10 06:00:22.066+00
+842	482	2725	2717	\N	2019-10-10 11:47:38.636+00
+843	482	266	2717	\N	2019-10-10 11:48:04.506+00
+844	475	2728	2717	\N	2019-10-10 12:24:16.069+00
+845	475	2729	2717	\N	2019-10-10 12:24:31.035+00
+848	501	2733	2728	2019-10-11 07:11:05.219+00	2019-10-11 07:10:51.117+00
+847	501	2726	2728	2019-10-11 07:11:07.349+00	2019-10-11 07:10:35.116+00
+846	501	2729	2728	2019-10-11 07:11:09.416+00	2019-10-11 07:07:10.649+00
+849	501	2729	2728	\N	2019-10-11 07:11:18.042+00
+850	501	2726	2728	\N	2019-10-11 07:11:38.89+00
+851	501	2733	2728	\N	2019-10-11 07:11:49.61+00
+852	501	45	2728	\N	2019-10-11 07:12:03.543+00
+853	501	2732	2728	\N	2019-10-11 07:12:30.782+00
+854	501	186	2728	\N	2019-10-11 07:12:41.615+00
+855	501	344	2728	\N	2019-10-11 07:12:59.12+00
+856	501	2696	2728	\N	2019-10-11 07:13:11.415+00
+857	501	357	2728	\N	2019-10-11 07:13:21.757+00
+858	501	2711	2728	\N	2019-10-11 07:13:57.477+00
+859	501	2716	2728	\N	2019-10-11 07:14:10.335+00
+860	501	183	2728	\N	2019-10-11 07:14:22.136+00
+861	502	2729	2728	\N	2019-10-11 07:19:49.759+00
+862	502	2732	2728	\N	2019-10-11 07:20:04.506+00
+863	502	186	2728	\N	2019-10-11 07:20:15.803+00
+864	502	344	2728	\N	2019-10-11 07:20:23.723+00
+865	502	2696	2728	2019-10-11 07:20:47.49+00	2019-10-11 07:20:39.574+00
+866	502	2696	2728	\N	2019-10-11 07:20:56.337+00
+867	502	357	2728	\N	2019-10-11 07:21:21.221+00
+868	502	2789	2728	\N	2019-10-11 07:22:08.876+00
+869	502	2716	2728	\N	2019-10-11 07:22:20.757+00
+870	502	2777	2728	\N	2019-10-11 07:22:41.249+00
+871	502	2711	2728	\N	2019-10-11 07:22:54.153+00
+872	502	183	2728	\N	2019-10-11 07:23:13.131+00
+873	502	336	2728	\N	2019-10-11 07:23:27.668+00
+874	475	2717	2717	\N	2019-10-11 07:28:45.312+00
+875	480	2759	2717	\N	2019-10-11 08:03:33.824+00
+876	481	2717	2717	\N	2019-10-12 08:49:25.853+00
+877	505	2718	2718	\N	2019-10-21 14:28:58.936+00
+878	507	2759	2759	\N	2019-10-28 12:58:01.618+00
+879	508	2728	2728	\N	2019-10-28 13:11:36.889+00
+880	510	2717	2717	\N	2019-10-29 06:53:57.633+00
+881	511	2941	2941	\N	2019-11-06 13:47:14.378+00
+882	512	2728	2728	\N	2019-11-07 07:20:43.32+00
+883	512	2852	2728	\N	2019-11-07 07:21:01.945+00
 \.
-
-
---
--- Name: project_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.project_users_id_seq', 798, true);
 
 
 --
@@ -2464,29 +2893,129 @@ COPY public.project_users_roles (id, project_user_id, project_role_id) FROM stdi
 4439	782	2
 4440	783	6
 4443	784	3
-4444	781	5
-4445	785	4
-4446	786	9
-4447	787	9
-4448	788	5
+4680	872	10
+4681	872	13
+4682	873	10
+4683	873	14
+4684	874	1
 4449	774	6
 4450	789	1
 4451	790	6
 4452	791	6
 4453	792	4
-4454	793	3
-4455	794	3
-4456	795	3
+4685	874	10
+4686	875	5
 4457	796	2
-4458	797	3
+4689	797	10
+4690	876	1
+4691	815	10
+4692	877	5
+4693	878	5
+4694	879	5
+4470	810	6
+4472	812	2
+4701	880	1
+4474	814	8
+4475	814	2
+4476	815	2
+4477	816	5
+4478	817	6
+4702	880	10
+4480	819	6
+4481	820	5
+4482	821	9
+4484	781	5
+4704	880	2
+4705	880	4
+4706	880	8
+4707	880	14
+4708	881	2
+4709	881	5
+4710	882	2
+4711	883	11
+4494	788	9
+4496	785	9
+4500	787	9
+4501	786	9
+4506	797	1
+4507	795	2
+4508	794	2
+4510	793	3
+4515	788	10
+4516	787	10
+4517	785	10
+4518	786	10
+4519	781	10
+4520	774	10
+4521	779	10
+4522	765	10
+4523	766	10
+4524	764	10
+4586	794	10
+4587	793	10
+4593	795	10
+4598	830	10
+4599	831	10
+4600	832	1
+4601	832	4
+4602	832	8
+4603	832	10
+4607	835	6
+4610	837	11
+4611	838	1
+4612	838	10
+4614	839	1
+4615	839	10
+4616	840	5
+4619	842	2
+4622	843	2
+4623	842	9
+4625	813	2
+4626	844	2
+4627	845	6
+4633	849	2
+4634	849	10
+4635	850	3
+4636	850	10
+4637	851	4
+4638	851	10
+4639	852	5
+4640	852	10
+4641	853	6
+4642	853	10
+4643	854	7
+4644	854	10
+4645	855	8
+4646	855	10
+4647	856	9
+4649	857	10
+4651	858	12
+4653	859	13
+4654	860	10
+4655	860	14
+4656	856	10
+4657	858	10
+4658	859	10
+4659	861	2
+4660	861	10
+4661	862	9
+4662	862	10
+4663	863	3
+4664	863	10
+4665	864	4
+4666	864	10
+4669	866	5
+4670	866	10
+4671	867	6
+4672	867	10
+4673	868	7
+4674	868	10
+4675	869	8
+4676	869	10
+4677	870	10
+4678	871	10
+4679	871	12
 \.
-
-
---
--- Name: project_users_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.project_users_roles_id_seq', 4458, true);
 
 
 --
@@ -2639,14 +3168,287 @@ COPY public.project_users_subscriptions (id, project_user_id, project_event_id) 
 3548	797	3
 3549	797	4
 3550	797	5
+3551	810	1
+3552	810	2
+3553	810	3
+3554	810	4
+3555	810	5
+3561	812	1
+3562	812	2
+3563	812	3
+3564	812	4
+3565	812	5
+3566	813	1
+3567	813	2
+3568	813	3
+3569	813	4
+3570	813	5
+3571	814	1
+3572	814	2
+3573	814	3
+3574	814	4
+3575	814	5
+3576	815	1
+3577	815	2
+3578	815	3
+3579	815	4
+3580	815	5
+3581	816	1
+3582	816	2
+3583	816	3
+3584	816	4
+3585	816	5
+3586	817	1
+3587	817	2
+3588	817	3
+3589	817	4
+3590	817	5
+3596	819	1
+3597	819	2
+3598	819	3
+3599	819	4
+3600	819	5
+3601	820	1
+3602	820	2
+3603	820	3
+3604	820	4
+3605	820	5
+3606	821	1
+3607	821	2
+3608	821	3
+3609	821	4
+3610	821	5
+3651	830	1
+3652	830	2
+3653	830	3
+3654	830	4
+3655	830	5
+3656	831	1
+3657	831	2
+3658	831	3
+3659	831	4
+3660	831	5
+3661	832	1
+3662	832	2
+3663	832	3
+3664	832	4
+3665	832	5
+3676	835	1
+3677	835	2
+3678	835	3
+3679	835	4
+3680	835	5
+3686	837	1
+3687	837	2
+3688	837	3
+3689	837	4
+3690	837	5
+3691	838	1
+3692	838	2
+3693	838	3
+3694	838	4
+3695	838	5
+3696	839	1
+3697	839	2
+3698	839	3
+3699	839	4
+3700	839	5
+3701	840	1
+3702	840	2
+3703	840	3
+3704	840	4
+3705	840	5
+3711	842	1
+3712	842	2
+3713	842	3
+3714	842	4
+3715	842	5
+3716	843	1
+3717	843	2
+3718	843	3
+3719	843	4
+3720	843	5
+3721	844	1
+3722	844	2
+3723	844	3
+3724	844	4
+3725	844	5
+3726	845	1
+3727	845	2
+3728	845	3
+3729	845	4
+3730	845	5
+3746	849	1
+3747	849	2
+3748	849	3
+3749	849	4
+3750	849	5
+3751	850	1
+3752	850	2
+3753	850	3
+3754	850	4
+3755	850	5
+3756	851	1
+3757	851	2
+3758	851	3
+3759	851	4
+3760	851	5
+3761	852	1
+3762	852	2
+3763	852	3
+3764	852	4
+3765	852	5
+3766	853	1
+3767	853	2
+3768	853	3
+3769	853	4
+3770	853	5
+3771	854	1
+3772	854	2
+3773	854	3
+3774	854	4
+3775	854	5
+3776	855	1
+3777	855	2
+3778	855	3
+3779	855	4
+3780	855	5
+3781	856	1
+3782	856	2
+3783	856	3
+3784	856	4
+3785	856	5
+3786	857	1
+3787	857	2
+3788	857	3
+3789	857	4
+3790	857	5
+3791	858	1
+3792	858	2
+3793	858	3
+3794	858	4
+3795	858	5
+3796	859	1
+3797	859	2
+3798	859	3
+3799	859	4
+3800	859	5
+3801	860	1
+3802	860	2
+3803	860	3
+3804	860	4
+3805	860	5
+3806	861	1
+3807	861	2
+3808	861	3
+3809	861	4
+3810	861	5
+3811	862	1
+3812	862	2
+3813	862	3
+3814	862	4
+3815	862	5
+3816	863	1
+3817	863	2
+3818	863	3
+3819	863	4
+3820	863	5
+3821	864	1
+3822	864	2
+3823	864	3
+3824	864	4
+3825	864	5
+3831	866	1
+3832	866	2
+3833	866	3
+3834	866	4
+3835	866	5
+3836	867	1
+3837	867	2
+3838	867	3
+3839	867	4
+3840	867	5
+3841	868	1
+3842	868	2
+3843	868	3
+3844	868	4
+3845	868	5
+3846	869	1
+3847	869	2
+3848	869	3
+3849	869	4
+3850	869	5
+3851	870	1
+3852	870	2
+3853	870	3
+3854	870	4
+3855	870	5
+3856	871	1
+3857	871	2
+3858	871	3
+3859	871	4
+3860	871	5
+3861	872	1
+3862	872	2
+3863	872	3
+3864	872	4
+3865	872	5
+3866	873	1
+3867	873	2
+3868	873	3
+3869	873	4
+3870	873	5
+3871	874	1
+3872	874	2
+3873	874	3
+3874	874	4
+3875	874	5
+3876	875	1
+3877	875	2
+3878	875	3
+3879	875	4
+3880	875	5
+3881	876	1
+3882	876	2
+3883	876	3
+3884	876	4
+3885	876	5
+3886	877	1
+3887	877	2
+3888	877	3
+3889	877	4
+3890	877	5
+3891	878	1
+3892	878	2
+3893	878	3
+3894	878	4
+3895	878	5
+3896	879	1
+3897	879	2
+3898	879	3
+3899	879	4
+3900	879	5
+3901	880	1
+3902	880	2
+3903	880	3
+3904	880	4
+3905	880	5
+3906	881	1
+3907	881	2
+3908	881	3
+3909	881	4
+3910	881	5
+3911	882	1
+3912	882	2
+3913	882	3
+3914	882	4
+3915	882	5
+3916	883	1
+3917	883	2
+3918	883	3
+3919	883	4
+3920	883	5
 \.
-
-
---
--- Name: project_users_subscriptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.project_users_subscriptions_id_seq', 3550, true);
 
 
 --
@@ -2656,17 +3458,42 @@ SELECT pg_catalog.setval('public.project_users_subscriptions_id_seq', 3550, true
 COPY public.projects (id, name, description, prefix, status_id, notbillable, budget, risk_budget, attaches, portfolio_id, author_id, finished_at, created_at, updated_at, deleted_at, completed_at, created_by_system_user, gitlab_project_ids, type_id, qa_percent, jira_hostname, external_id, jira_project_name, jira_token) FROM stdin;
 471	Site NC	\N	SNC	1	1	\N	\N	\N	\N	102	\N	2019-06-11 08:05:18.27+00	2019-06-11 08:05:18.27+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
 472	Leads NC	\N	LNC	1	1	\N	\N	\N	\N	102	\N	2019-06-13 14:58:18.073+00	2019-06-13 14:58:18.073+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
-470	NordClan	\N	NC	1	1	\N	\N	\N	\N	183	\N	2019-06-10 20:53:23.37+00	2019-06-18 08:03:26.902+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
 473	ГорПарковки	\N	GP	1	1	\N	\N	\N	\N	102	\N	2019-06-18 08:11:22.566+00	2019-06-18 08:11:22.566+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
 474	test	\N	test	1	1	\N	\N	\N	\N	186	\N	2019-07-04 15:43:20.549+00	2019-07-04 15:43:20.549+00	2019-07-04 15:50:36.045+00	\N	f	{}	1	30	\N	\N	\N	\N
+502	Проект с типом "Внутренний"	\N	внт	1	1	\N	\N	\N	\N	2728	\N	2019-10-11 07:17:01.204+00	2019-10-11 07:17:01.204+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+498	тест	\N	им	1	1	\N	\N	\N	\N	2759	\N	2019-10-09 12:41:37.692+00	2019-10-11 08:00:59.768+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+503	KekarProject	\N	Kekar	1	1	\N	\N	\N	\N	2717	\N	2019-10-17 15:59:44.931+00	2019-10-17 15:59:44.931+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+477	Тестовый проект	\N	test01	1	1	\N	\N	\N	\N	2726	\N	2019-10-01 14:53:17.763+00	2019-10-01 14:53:17.763+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+478	Тестовый порджек	\N	ТеПр	1	1	\N	\N	\N	\N	2698	\N	2019-10-02 05:27:18.963+00	2019-10-02 05:27:18.963+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+479	ПроектТестировщика	\N	ПрТ	1	1	\N	\N	\N	\N	2727	\N	2019-10-02 08:56:36.386+00	2019-10-02 08:56:36.386+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+480	ПроектСемёна	\N	ПрС	1	1	\N	\N	\N	\N	2728	\N	2019-10-02 08:59:19.886+00	2019-10-02 08:59:19.886+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+484	test project	\N	testnow	1	1	\N	\N	\N	\N	2717	\N	2019-10-03 09:00:29.985+00	2019-10-03 09:00:29.985+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+486	testo	\N	testff	1	1	\N	\N	\N	\N	2717	\N	2019-10-03 10:16:31.35+00	2019-10-03 10:16:31.35+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+487	testcom	\N	bugy	1	1	\N	\N	\N	\N	2717	\N	2019-10-04 06:15:29.406+00	2019-10-04 06:15:29.406+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+488	Тест роли Unbillible	\N	test02	1	1	\N	\N	\N	\N	2728	\N	2019-10-07 06:13:56.373+00	2019-10-07 06:13:56.373+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
+490	unbi	\N	un	1	1	\N	\N	\N	\N	2717	\N	2019-10-08 06:35:10.571+00	2019-10-08 06:35:10.571+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
+491	hghgt	\N	ggg	1	1	\N	\N	\N	\N	2717	\N	2019-10-08 08:51:22.159+00	2019-10-08 08:51:22.159+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+492	testo	\N	wdee	1	1	\N	\N	\N	\N	2717	\N	2019-10-08 09:42:40.075+00	2019-10-08 09:42:40.075+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+505	Проект для тест Процес ТШ	\N	птш	1	1	\N	\N	\N	\N	2718	\N	2019-10-21 14:27:37.78+00	2019-10-21 14:27:37.78+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+507	парапр	\N	gfh	1	1	\N	\N	\N	\N	2759	\N	2019-10-28 12:56:23.005+00	2019-10-28 12:56:23.005+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+508	500й код ошибки при добавлении комментария к активности	\N	5дк	1	1	\N	\N	\N	\N	2728	\N	2019-10-28 13:07:22.243+00	2019-10-28 13:07:22.243+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+495	testf	\N	testff0	1	1	\N	\N	\N	\N	2717	\N	2019-10-09 08:21:35.134+00	2019-10-09 08:25:27.395+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+509	NARITAI	\N	NAR	1	1	\N	2	\N	\N	2717	\N	2019-10-28 13:37:32.09+00	2019-10-28 13:40:47.842+00	\N	2019-10-31 09:00:00	f	{}	1	30	\N	\N	\N	\N
+510	test timesheets	\N	TIMESH	1	1	\N	\N	\N	\N	2717	\N	2019-10-29 06:49:07.098+00	2019-10-29 07:02:10.976+00	\N	2020-03-05 09:00:00	f	{}	3	30	\N	\N	\N	\N
+475	Test	\N	TE	1	1	\N	\N	\N	\N	2698	\N	2019-09-25 08:44:07.275+00	2019-10-09 09:41:06.619+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
+493	mitoo	\N	last	1	1	\N	\N	\N	\N	2717	\N	2019-10-08 14:36:43.928+00	2019-10-09 09:41:35.554+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
+496	scfrghy	\N	eddc	1	1	\N	\N	\N	\N	2717	\N	2019-10-09 09:42:24.262+00	2019-10-09 09:42:24.262+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
+497	парапр	\N	апп	1	1	\N	\N	\N	\N	2717	\N	2019-10-09 11:40:25.181+00	2019-10-09 11:40:25.181+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+489	project for tasks/3767	\N	reprod	1	1	\N	\N	\N	\N	2717	\N	2019-10-08 06:12:19.502+00	2019-10-09 11:46:37.059+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+500	trun	\N	trtr	1	1	\N	\N	\N	\N	2761	\N	2019-10-09 12:45:14.258+00	2019-10-09 12:45:14.258+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+511	автотест	\N	ат	1	1	\N	\N	\N	\N	2941	\N	2019-11-06 13:46:23.147+00	2019-11-06 13:46:23.147+00	\N	\N	f	{}	2	30	\N	\N	\N	\N
+512	Проект с внешним пользователем	\N	ПВП02	1	1	\N	\N	\N	\N	2728	\N	2019-11-07 07:17:22.377+00	2019-11-07 07:17:22.377+00	\N	\N	f	{}	1	30	\N	\N	\N	\N
+481	Test	\N	TST	1	1	\N	\N	\N	\N	212	\N	2019-10-02 11:15:01.96+00	2019-10-09 13:16:28.287+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+470	NordClan	\N	NC	1	1	\N	\N	\N	\N	183	\N	2019-06-10 20:53:23.37+00	2019-10-09 13:27:55.67+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
+485	testf	\N	testf	1	1	\N	\N	\N	\N	2717	\N	2019-10-03 09:03:25.6+00	2019-10-09 15:16:06.326+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+482	TESTING	\N	TSTNG	1	1	\N	\N	\N	\N	2697	\N	2019-10-02 11:19:32.172+00	2019-10-10 11:47:23.545+00	\N	\N	f	{}	4	30	\N	\N	\N	\N
+501	Проект с типом "Стажировка"	\N	Саж	1	1	\N	\N	\N	\N	2728	\N	2019-10-11 07:05:29.828+00	2019-10-11 07:05:29.828+00	\N	\N	f	{}	3	30	\N	\N	\N	\N
 \.
-
-
---
--- Name: projects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.projects_id_seq', 474, true);
 
 
 --
@@ -2680,30 +3507,27 @@ COPY public.sprint_statuses (id, name, name_en) FROM stdin;
 
 
 --
--- Name: sprint_statuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.sprint_statuses_id_seq', 1, false);
-
-
---
 -- Data for Name: sprints; Type: TABLE DATA; Schema: public; Owner: track
 --
 
 COPY public.sprints (id, name, status_id, fact_start_date, fact_finish_date, allotted_time, author_id, created_at, updated_at, deleted_at, project_id, budget, risk_budget, qa_percent, external_id, entities_last_update, metric_last_update) FROM stdin;
 425	Выпуск сайта	1	2019-06-10	2019-06-14	\N	102	2019-06-11 08:40:58.605+00	2019-06-19 09:16:29.505+00	\N	471	0.00	0.00	30	\N	2019-06-19 09:16:29.505+00	\N
-424	Спринт 1	2	2019-06-10	2019-06-26	\N	183	2019-06-11 08:27:14.694+00	2019-07-02 11:36:19.179+00	\N	470	0.00	0.00	30	\N	2019-07-02 11:36:19.179+00	\N
-427	Релиз 2	2	2019-06-18	2019-06-28	\N	102	2019-06-17 09:17:42.216+00	2019-07-02 11:36:20.83+00	\N	471	0.00	0.00	30	\N	2019-07-02 11:36:20.83+00	\N
-428	Доработки внутр.проектов	2	2019-06-10	2019-06-30	\N	102	2019-06-18 08:13:09.182+00	2019-07-10 08:14:39.124+00	\N	470	0.00	0.00	30	\N	2019-07-10 08:14:39.124+00	\N
-426	Июнь	2	2019-06-01	2019-06-30	\N	102	2019-06-13 14:58:52.381+00	2019-07-02 07:32:19.324+00	\N	472	0.00	0.00	30	\N	2019-07-02 07:32:19.324+00	\N
+430	спринт для проверки драг&дроп	1	2019-10-11	2019-10-18	\N	2728	2019-10-11 07:38:08.387+00	2019-10-11 07:49:50.477+00	2019-10-11 07:49:50.459+00	501	1000.00	1000.00	30	\N	2019-10-11 07:49:50.477+00	\N
+431	Второй спринт для проверки драг&энд дроп	1	2019-10-21	2019-11-01	\N	2728	2019-10-11 07:40:21.387+00	2019-10-11 07:49:52.876+00	2019-10-11 07:49:52.859+00	501	2000.00	2000.00	30	\N	2019-10-11 07:49:52.875+00	\N
+427	Релиз 2	2	2019-06-18	2019-06-28	\N	102	2019-06-17 09:17:42.216+00	2019-10-28 13:41:38.89+00	\N	471	0.00	0.00	30	\N	2019-10-28 13:41:38.89+00	\N
+424	Спринт 1	2	2019-06-10	2019-06-26	\N	183	2019-06-11 08:27:14.694+00	2019-10-29 08:05:44.278+00	\N	470	0.00	0.00	30	\N	2019-10-29 08:05:44.275+00	\N
+434	Спринт для проверки драг&дроп	1	2019-10-11	2019-10-20	\N	2717	2019-10-11 07:53:44.413+00	2019-10-25 06:10:16.057+00	\N	475	1000.00	1000.00	30	\N	2019-10-25 06:10:16.057+00	\N
+428	Доработки внутр.проектов	2	2019-06-10	2019-06-30	\N	102	2019-06-18 08:13:09.182+00	2019-10-29 08:08:56.741+00	\N	470	0.00	0.00	30	\N	2019-10-29 08:08:56.741+00	\N
+436	Первый спринт для теста драг&дроп	1	2019-10-11	2019-10-20	\N	2717	2019-10-11 08:19:22.334+00	2019-10-31 11:15:01.342+00	\N	480	1000.00	1000.00	30	\N	2019-10-31 11:15:01.342+00	\N
+432	первый спринт для проверки драг&дроп	1	2019-10-11	2019-10-20	\N	2728	2019-10-11 07:50:53.052+00	2019-10-11 07:57:28.425+00	\N	501	1000.00	1000.00	30	\N	2019-10-11 07:57:28.425+00	\N
+433	второй спринт для проверки драг&дроп	1	2019-10-25	2019-11-30	\N	2728	2019-10-11 07:51:55.533+00	2019-10-11 07:57:44.397+00	\N	501	2000.00	2000.00	30	\N	2019-10-11 07:57:44.397+00	\N
+438	newtestsprint	1	2019-10-01	2019-10-10	\N	2717	2019-10-14 11:13:03.056+00	2019-10-24 14:29:03.911+00	\N	480	10.00	100.00	30	\N	2019-10-24 14:29:03.911+00	\N
+429	ааааа	1	2019-10-01	2019-10-06	\N	2717	2019-10-11 06:45:48.114+00	2019-10-11 12:20:56.452+00	\N	472	200.00	300.00	30	\N	2019-10-11 12:20:56.451+00	\N
+437	Второй спринт для теста драг&дроп	1	2019-10-11	2019-10-20	\N	2717	2019-10-11 08:20:44.072+00	2019-10-25 08:16:18.511+00	\N	480	1000.00	1000.00	30	\N	2019-10-25 08:16:18.511+00	\N
+439	test	1	2019-10-02	2019-10-04	\N	2717	2019-10-14 12:58:09.078+00	2019-10-15 08:32:31.165+00	\N	480	100.00	110.00	30	\N	2019-10-15 08:32:31.164+00	\N
+426	Июнь	1	2019-06-01	2019-06-30	\N	102	2019-06-13 14:58:52.381+00	2019-10-11 13:01:56.226+00	\N	472	0.00	0.00	30	\N	2019-10-11 13:01:56.225+00	\N
+435	второй спринт для проверки драг&дроп	1	2019-10-21	2019-10-31	\N	2717	2019-10-11 07:54:43.247+00	2019-10-16 07:32:28.67+00	\N	475	2000.00	2000.00	30	\N	2019-10-16 07:32:28.667+00	\N
 \.
-
-
---
--- Name: sprints_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.sprints_id_seq', 428, true);
 
 
 --
@@ -2749,25 +3573,14 @@ COPY public.system_tokens (id, token, expires) FROM stdin;
 
 
 --
--- Name: system_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.system_tokens_id_seq', 34, true);
-
-
---
 -- Data for Name: tags; Type: TABLE DATA; Schema: public; Owner: track
 --
 
 COPY public.tags (id, name) FROM stdin;
+382	testtag
+383	tagtest
+384	mile
 \.
-
-
---
--- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.tags_id_seq', 381, true);
 
 
 --
@@ -2804,14 +3617,11 @@ COPY public.task_attachments (id, task_id, file_name, path, "previewPath", autho
 1740	3195	Снимок экрана 2019-06-18 в 16.24.59.png	uploads/tasksAttachments/3195/6VR/Снимок экрана 2019-06-18 в 16.24.59-1560860728021.png	uploads/tasksAttachments/3195/6VR/200-Снимок экрана 2019-06-18 в 16.24.59-1560860728021.png	183	103378	image/png	2019-06-18 12:25:31.178+00	\N
 1741	3194	photo_2019-06-19_13-12-39.jpg	uploads/tasksAttachments/3194/JU9/photo_2019-06-19_13-12-39-1560935481086.jpg	uploads/tasksAttachments/3194/JU9/200-photo_2019-06-19_13-12-39-1560935481086.jpg	266	43112	image/jpeg	2019-06-19 09:11:21.385+00	\N
 1742	3168	2019-06-19_18-09-32.png	uploads/tasksAttachments/3168/44P/2019-06-19_18-09-32-1560953307631.png	uploads/tasksAttachments/3168/44P/200-2019-06-19_18-09-32-1560953307631.png	266	22161	image/png	2019-06-19 14:08:28.812+00	\N
+1744	3403	inosuke.jpg	uploads/tasksAttachments/3403/CPS/inosuke-1571666295180.jpg	uploads/tasksAttachments/3403/CPS/200-inosuke-1571666295180.jpg	2717	19498	image/jpeg	2019-10-21 13:58:15.256+00	\N
+1743	3403	inosuke2.jpg	uploads/tasksAttachments/3403/6O0/inosuke2-1571328639906.jpg	uploads/tasksAttachments/3403/6O0/200-inosuke2-1571328639906.jpg	2717	6374	image/jpeg	2019-10-17 16:10:39.998+00	2019-10-21 13:58:20.346+00
+1745	3403	tanjiro.jpg	uploads/tasksAttachments/3403/IOT/tanjiro-1571666323621.jpg	uploads/tasksAttachments/3403/IOT/200-tanjiro-1571666323621.jpg	2717	20879	image/jpeg	2019-10-21 13:58:43.661+00	2019-10-21 13:58:48.536+00
+1746	3179	Снимок экрана 2019-10-21 в 21.38.12.png	uploads/tasksAttachments/3179/XD0/Снимок экрана 2019-10-21 в 21.38.12-1571990861021.png	uploads/tasksAttachments/3179/XD0/200-Снимок экрана 2019-10-21 в 21.38.12-1571990861021.png	183	918769	image/png	2019-10-25 08:07:41.205+00	\N
 \.
-
-
---
--- Name: task_attachments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.task_attachments_id_seq', 1742, true);
 
 
 --
@@ -3565,6 +4375,577 @@ COPY public.task_histories (id, entity, entity_id, task_id, field, prev_value_st
 24789	Task	3211	3211	statusId	\N	\N	3	7	\N	\N	\N	\N	update	2019-07-10 08:09:46.176+00	266	\N	\N	\N	\N	\N	\N
 24790	Task	3211	3211	performerId	\N	\N	266	212	\N	\N	\N	\N	update	2019-07-10 08:09:46.176+00	266	\N	\N	\N	\N	\N	\N
 24791	Task	3211	3211	statusId	\N	\N	7	8	\N	\N	\N	\N	update	2019-07-10 08:11:47.178+00	212	\N	\N	\N	\N	\N	\N
+24792	Task	3213	3213	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:41:24.194+00	2698	\N	\N	\N	\N	\N	\N
+24793	Task	3214	3214	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:44:36.685+00	2698	\N	\N	\N	\N	\N	\N
+24794	Task	3215	3215	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-09-25 08:48:57.29+00	2698	\N	\N	\N	\N	\N	\N
+24795	Task	3214	3214	isTaskByClient	\N	\N	\N	\N	\N	\N	\N	\N	update	2019-09-25 08:49:47.865+00	2698	\N	\N	t	f	\N	\N
+24796	Task	3216	3216	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:33:16.638+00	2698	\N	\N	\N	\N	\N	\N
+24797	Task	3217	3217	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:42:56.475+00	2698	\N	\N	\N	\N	\N	\N
+24798	Task	3218	3218	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 05:44:02.572+00	2717	\N	\N	\N	\N	\N	\N
+24799	Task	3218	3218	statusId	\N	\N	1	10	\N	\N	\N	\N	update	2019-10-02 05:44:39.36+00	2717	\N	\N	\N	\N	\N	\N
+24800	Task	3218	3218	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-02 05:45:26.123+00	2717	\N	\N	\N	\N	\N	\N
+24801	Task	3218	3218	isDevOps	\N	\N	\N	\N	\N	\N	\N	\N	update	2019-10-02 05:54:54.519+00	2717	\N	\N	f	t	\N	\N
+24802	Task	3219	3219	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 09:10:12.617+00	2728	\N	\N	\N	\N	\N	\N
+24803	Task	3219	3219	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-02 09:10:47.264+00	2728	\N	\N	\N	\N	\N	\N
+24804	Task	3219	3219	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-02 09:10:49.389+00	2728	\N	\N	\N	\N	\N	\N
+24805	Task	3219	3219	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-02 09:11:01.005+00	2728	\N	\N	\N	\N	\N	\N
+24806	Task	3219	3219	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-02 09:12:27.324+00	2728	\N	\N	\N	\N	\N	\N
+24807	Task	3219	3219	performerId	\N	\N	\N	2728	\N	\N	\N	\N	update	2019-10-02 09:12:27.324+00	2728	\N	\N	\N	\N	\N	\N
+24808	Task	3220	3220	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 11:15:08.799+00	212	\N	\N	\N	\N	\N	\N
+24809	Task	3221	3221	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-02 11:19:37.291+00	2697	\N	\N	\N	\N	\N	\N
+24810	Task	3221	3221	performerId	\N	\N	\N	2697	\N	\N	\N	\N	update	2019-10-02 11:21:07.684+00	2697	\N	\N	\N	\N	\N	\N
+24811	Task	3222	3222	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 09:00:54.255+00	2717	\N	\N	\N	\N	\N	\N
+24812	Task	3222	3222	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 09:04:56.915+00	2717	\N	\N	\N	\N	\N	\N
+24813	Task	3222	3222	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-03 09:46:59.217+00	2717	\N	\N	\N	\N	\N	\N
+24814	Task	3223	3223	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 09:48:57.459+00	2717	\N	\N	\N	\N	\N	\N
+24815	Task	3224	3224	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 10:17:02.89+00	2717	\N	\N	\N	\N	\N	\N
+24816	Task	3224	3224	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 10:17:14.321+00	2717	\N	\N	\N	\N	\N	\N
+24817	Task	3222	3222	statusId	\N	\N	2	1	\N	\N	\N	\N	update	2019-10-03 10:39:01.222+00	2717	\N	\N	\N	\N	\N	\N
+24818	Task	3222	3222	typeId	\N	\N	1	2	\N	\N	\N	\N	update	2019-10-03 10:39:14.713+00	2717	\N	\N	\N	\N	\N	\N
+24819	Task	3222	3222	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 10:39:45.369+00	2717	\N	\N	\N	\N	\N	\N
+24820	Task	3225	3225	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 11:05:25.309+00	2717	\N	\N	\N	\N	\N	\N
+24821	Task	3225	3225	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 11:05:39.475+00	2717	\N	\N	\N	\N	\N	\N
+24822	Task	3225	3225	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-03 11:05:41.467+00	2717	\N	\N	\N	\N	\N	\N
+24823	Task	3222	3222	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-03 11:10:39.339+00	2717	\N	\N	\N	\N	\N	\N
+24824	Task	3222	3222	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-03 11:10:44.696+00	2717	\N	\N	\N	\N	\N	\N
+24825	Task	3222	3222	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 11:10:49.08+00	2717	\N	\N	\N	\N	\N	\N
+24826	Task	3222	3222	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-03 11:10:50.563+00	2717	\N	\N	\N	\N	\N	\N
+24827	Task	3226	3226	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 11:19:44.528+00	2717	\N	\N	\N	\N	\N	\N
+24828	Task	3226	3226	statusId	\N	\N	1	10	\N	\N	\N	\N	update	2019-10-03 11:19:48.894+00	2717	\N	\N	\N	\N	\N	\N
+24829	Task	3226	3226	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-03 11:19:51.469+00	2717	\N	\N	\N	\N	\N	\N
+24830	Task	3226	3226	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 11:19:54.585+00	2717	\N	\N	\N	\N	\N	\N
+24831	Task	3226	3226	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-03 11:19:56.01+00	2717	\N	\N	\N	\N	\N	\N
+24832	Task	3227	3227	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-03 11:30:40.169+00	2717	\N	\N	\N	\N	\N	\N
+24833	Task	3227	3227	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-03 11:30:45.634+00	2717	\N	\N	\N	\N	\N	\N
+24834	Task	3227	3227	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-03 11:30:46.65+00	2717	\N	\N	\N	\N	\N	\N
+24835	Task	3228	3228	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:13:04.929+00	2717	\N	\N	\N	\N	\N	\N
+24836	Task	3229	3229	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:13:40.743+00	2717	\N	\N	\N	\N	\N	\N
+24837	Task	3230	3230	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 06:36:17.735+00	2717	\N	\N	\N	\N	\N	\N
+24838	Task	3230	3230	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 06:37:31.313+00	2717	\N	\N	\N	\N	\N	\N
+24839	Task	3230	3230	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-08 06:37:33.738+00	2717	\N	\N	\N	\N	\N	\N
+24840	Task	3224	3224	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-08 08:51:37.477+00	2717	\N	\N	\N	\N	\N	\N
+24841	Task	3231	3231	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 09:42:48.593+00	2717	\N	\N	\N	\N	\N	\N
+24842	Task	3231	3231	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 09:42:55.425+00	2717	\N	\N	\N	\N	\N	\N
+24843	Task	3231	3231	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-08 09:42:57.089+00	2717	\N	\N	\N	\N	\N	\N
+24844	Task	3231	3231	statusId	\N	\N	2	1	\N	\N	\N	\N	update	2019-10-08 09:43:31.587+00	2717	\N	\N	\N	\N	\N	\N
+24845	Task	3231	3231	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 09:43:36.377+00	2717	\N	\N	\N	\N	\N	\N
+24846	Task	3231	3231	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-08 09:43:37.595+00	2717	\N	\N	\N	\N	\N	\N
+24847	Task	3224	3224	statusId	\N	\N	2	10	\N	\N	\N	\N	update	2019-10-08 12:51:11.68+00	2717	\N	\N	\N	\N	\N	\N
+24848	Task	3224	3224	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-08 12:51:13.638+00	2717	\N	\N	\N	\N	\N	\N
+24849	Task	3224	3224	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 12:51:16.138+00	2717	\N	\N	\N	\N	\N	\N
+24850	Task	3224	3224	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-08 12:51:17.936+00	2717	\N	\N	\N	\N	\N	\N
+24851	Task	3224	3224	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-08 12:52:57.131+00	2717	\N	\N	\N	\N	\N	\N
+24852	Task	3224	3224	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 12:53:02.197+00	2717	\N	\N	\N	\N	\N	\N
+24853	Task	3224	3224	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-08 12:53:05.572+00	2717	\N	\N	\N	\N	\N	\N
+24854	Task	3224	3224	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-08 12:53:13.211+00	2717	\N	\N	\N	\N	\N	\N
+24855	Task	3224	3224	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 12:53:25.554+00	2717	\N	\N	\N	\N	\N	\N
+24856	Task	3224	3224	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-08 12:53:28.753+00	2717	\N	\N	\N	\N	\N	\N
+24857	Task	3232	3232	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-08 14:37:20.662+00	2717	\N	\N	\N	\N	\N	\N
+24858	Task	3232	3232	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-08 14:37:31.787+00	2717	\N	\N	\N	\N	\N	\N
+24859	Task	3232	3232	statusId	\N	\N	3	10	\N	\N	\N	\N	update	2019-10-08 14:37:33.428+00	2717	\N	\N	\N	\N	\N	\N
+24860	Task	3205	3205	performerId	\N	\N	266	\N	\N	\N	\N	\N	update	2019-10-09 11:04:17.79+00	2717	\N	\N	\N	\N	\N	\N
+24893	Task	3205	3205	performerId	\N	\N	\N	183	\N	\N	\N	\N	update	2019-10-09 11:29:56.235+00	2717	\N	\N	\N	\N	\N	\N
+24894	Task	3205	3205	performerId	\N	\N	183	\N	\N	\N	\N	\N	update	2019-10-09 11:30:13.408+00	2717	\N	\N	\N	\N	\N	\N
+24895	Task	3212	3212	statusId	\N	\N	7	3	\N	\N	\N	\N	update	2019-10-09 11:35:35.662+00	2717	\N	\N	\N	\N	\N	\N
+24896	Task	3212	3212	performerId	\N	\N	266	\N	\N	\N	\N	\N	update	2019-10-09 11:35:35.662+00	2717	\N	\N	\N	\N	\N	\N
+24897	Task	3211	3211	statusId	\N	\N	8	3	\N	\N	\N	\N	update	2019-10-09 11:35:46.335+00	2717	\N	\N	\N	\N	\N	\N
+24898	Task	3211	3211	performerId	\N	\N	212	\N	\N	\N	\N	\N	update	2019-10-09 11:35:46.335+00	2717	\N	\N	\N	\N	\N	\N
+24928	Task	3233	3233	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-09 11:41:06.207+00	2717	\N	\N	\N	\N	\N	\N
+24929	Task	3233	3233	performerId	\N	\N	\N	2759	\N	\N	\N	\N	update	2019-10-09 12:16:36.689+00	2717	\N	\N	\N	\N	\N	\N
+24930	Task	3212	3212	performerId	\N	\N	\N	2759	\N	\N	\N	\N	update	2019-10-09 13:11:46.34+00	2759	\N	\N	\N	\N	\N	\N
+24931	Task	3234	3234	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-10 11:00:53.793+00	2759	\N	\N	\N	\N	\N	\N
+24932	Task	3235	3235	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 06:34:44.241+00	2717	\N	\N	\N	\N	\N	\N
+24933	Task	3235	3235	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 06:35:36.388+00	2717	\N	\N	\N	\N	\N	\N
+24934	Task	3235	3235	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 06:38:55.073+00	2717	\N	\N	\N	\N	\N	\N
+24935	Task	3236	3236	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 06:39:42.446+00	2717	\N	\N	\N	\N	\N	\N
+24936	Task	3237	3237	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 06:40:26.526+00	2717	\N	\N	\N	\N	\N	\N
+24937	Task	3237	3237	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 06:40:45.125+00	2717	\N	\N	\N	\N	\N	\N
+24938	Task	3235	3235	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 06:42:50.925+00	2717	\N	\N	\N	\N	\N	\N
+24939	Task	3235	3235	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 06:43:39.805+00	2717	\N	\N	\N	\N	\N	\N
+24940	Task	3235	3235	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 06:43:56.562+00	2717	\N	\N	\N	\N	\N	\N
+24941	Task	3235	3235	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 06:44:50.1+00	2717	\N	\N	\N	\N	\N	\N
+24942	Task	3235	3235	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 06:44:53.025+00	2717	\N	\N	\N	\N	\N	\N
+24943	Task	3235	3235	sprintId	\N	\N	426	429	\N	\N	\N	\N	update	2019-10-11 06:46:02.879+00	2717	\N	\N	\N	\N	\N	\N
+24944	Task	3237	3237	sprintId	\N	\N	426	429	\N	\N	\N	\N	update	2019-10-11 06:47:18.091+00	2717	\N	\N	\N	\N	\N	\N
+24945	Task	3235	3235	sprintId	\N	\N	429	426	\N	\N	\N	\N	update	2019-10-11 06:48:28.687+00	2717	\N	\N	\N	\N	\N	\N
+24946	Task	3235	3235	sprintId	\N	\N	426	429	\N	\N	\N	\N	update	2019-10-11 06:48:44.027+00	2717	\N	\N	\N	\N	\N	\N
+24947	Task	3235	3235	sprintId	\N	\N	429	426	\N	\N	\N	\N	update	2019-10-11 07:01:48.225+00	2717	\N	\N	\N	\N	\N	\N
+24948	Task	3197	3197	sprintId	\N	\N	426	429	\N	\N	\N	\N	update	2019-10-11 07:01:57.784+00	2717	\N	\N	\N	\N	\N	\N
+24949	Task	3237	3237	sprintId	\N	\N	426	429	\N	\N	\N	\N	update	2019-10-11 07:02:04.11+00	2717	\N	\N	\N	\N	\N	\N
+24950	Task	3117	3117	sprintId	\N	\N	426	429	\N	\N	\N	\N	update	2019-10-11 07:02:09.876+00	2717	\N	\N	\N	\N	\N	\N
+24951	Task	3197	3197	sprintId	\N	\N	429	\N	\N	\N	\N	\N	update	2019-10-11 07:02:19.8+00	2717	\N	\N	\N	\N	\N	\N
+24952	Task	3237	3237	sprintId	\N	\N	429	\N	\N	\N	\N	\N	update	2019-10-11 07:02:22.491+00	2717	\N	\N	\N	\N	\N	\N
+24953	Task	3237	3237	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 07:02:26.9+00	2717	\N	\N	\N	\N	\N	\N
+24954	Task	3238	3238	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 07:36:53.258+00	2728	\N	\N	\N	\N	\N	\N
+24955	Task	3238	3238	sprintId	\N	\N	\N	430	\N	\N	\N	\N	update	2019-10-11 07:38:15.103+00	2728	\N	\N	\N	\N	\N	\N
+24956	Task	3238	3238	sprintId	\N	\N	430	\N	\N	\N	\N	\N	update	2019-10-11 07:38:26.886+00	2728	\N	\N	\N	\N	\N	\N
+24957	Task	3238	3238	sprintId	\N	\N	\N	430	\N	\N	\N	\N	update	2019-10-11 07:38:32.252+00	2728	\N	\N	\N	\N	\N	\N
+24958	Task	3238	3238	sprintId	\N	\N	430	431	\N	\N	\N	\N	update	2019-10-11 07:40:30.036+00	2728	\N	\N	\N	\N	\N	\N
+24959	Task	3238	3238	sprintId	\N	\N	431	430	\N	\N	\N	\N	update	2019-10-11 07:40:57.434+00	2728	\N	\N	\N	\N	\N	\N
+24960	Task	3238	3238	sprintId	\N	\N	430	431	\N	\N	\N	\N	update	2019-10-11 07:42:38.277+00	2728	\N	\N	\N	\N	\N	\N
+24961	Task	3238	3238	sprintId	\N	\N	431	430	\N	\N	\N	\N	update	2019-10-11 07:42:43.361+00	2728	\N	\N	\N	\N	\N	\N
+24962	Task	3238	3238	sprintId	\N	\N	431	430	\N	\N	\N	\N	update	2019-10-11 07:45:56.498+00	2728	\N	\N	\N	\N	\N	\N
+24963	Task	3238	3238	sprintId	\N	\N	430	\N	\N	\N	\N	\N	update	2019-10-11 07:46:52.419+00	2728	\N	\N	\N	\N	\N	\N
+24964	Task	3238	3238	sprintId	\N	\N	\N	430	\N	\N	\N	\N	update	2019-10-11 07:46:59.035+00	2728	\N	\N	\N	\N	\N	\N
+24965	Task	3238	3238	sprintId	\N	\N	430	\N	\N	\N	\N	\N	update	2019-10-11 07:47:00.677+00	2728	\N	\N	\N	\N	\N	\N
+24966	Task	3238	3238	sprintId	\N	\N	\N	431	\N	\N	\N	\N	update	2019-10-11 07:47:05.185+00	2728	\N	\N	\N	\N	\N	\N
+24967	Task	3238	3238	sprintId	\N	\N	431	\N	\N	\N	\N	\N	update	2019-10-11 07:47:13.693+00	2728	\N	\N	\N	\N	\N	\N
+24968	Task	3238	3238	sprintId	\N	\N	\N	430	\N	\N	\N	\N	update	2019-10-11 07:47:19.826+00	2728	\N	\N	\N	\N	\N	\N
+24969	Task	3238	3238	sprintId	\N	\N	430	431	\N	\N	\N	\N	update	2019-10-11 07:47:29.109+00	2728	\N	\N	\N	\N	\N	\N
+24970	Task	3238	3238	sprintId	\N	\N	431	430	\N	\N	\N	\N	update	2019-10-11 07:47:48.44+00	2728	\N	\N	\N	\N	\N	\N
+24971	Task	3238	3238	sprintId	\N	\N	430	\N	\N	\N	\N	\N	update	2019-10-11 07:48:11.939+00	2728	\N	\N	\N	\N	\N	\N
+24972	Task	3238	3238	sprintId	\N	\N	\N	430	\N	\N	\N	\N	update	2019-10-11 07:48:31.588+00	2728	\N	\N	\N	\N	\N	\N
+24973	Task	3238	3238	sprintId	\N	\N	430	431	\N	\N	\N	\N	update	2019-10-11 07:48:43.204+00	2728	\N	\N	\N	\N	\N	\N
+24974	Task	3238	3238	sprintId	\N	\N	431	430	\N	\N	\N	\N	update	2019-10-11 07:48:49.536+00	2728	\N	\N	\N	\N	\N	\N
+24975	Task	3238	3238	sprintId	\N	\N	430	\N	\N	\N	\N	\N	update	2019-10-11 07:49:47.284+00	2728	\N	\N	\N	\N	\N	\N
+24976	Task	3238	3238	sprintId	\N	\N	\N	432	\N	\N	\N	\N	update	2019-10-11 07:52:01.492+00	2728	\N	\N	\N	\N	\N	\N
+24980	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 07:53:48.785+00	2717	\N	\N	\N	\N	\N	\N
+24982	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 07:54:48.607+00	2717	\N	\N	\N	\N	\N	\N
+24986	Task	3215	3215	sprintId	\N	\N	435	\N	\N	\N	\N	\N	update	2019-10-11 07:55:23.763+00	2717	\N	\N	\N	\N	\N	\N
+24987	Task	3238	3238	sprintId	\N	\N	433	432	\N	\N	\N	\N	update	2019-10-11 07:56:03.535+00	2728	\N	\N	\N	\N	\N	\N
+24996	Task	3214	3214	sprintId	\N	\N	\N	435	\N	\N	\N	\N	update	2019-10-11 08:02:29.535+00	2717	\N	\N	\N	\N	\N	\N
+24977	Task	3238	3238	sprintId	\N	\N	432	\N	\N	\N	\N	\N	update	2019-10-11 07:52:04.417+00	2728	\N	\N	\N	\N	\N	\N
+24988	Task	3238	3238	sprintId	\N	\N	432	433	\N	\N	\N	\N	update	2019-10-11 07:56:05.485+00	2728	\N	\N	\N	\N	\N	\N
+24998	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:03:00.348+00	2717	\N	\N	\N	\N	\N	\N
+24978	Task	3238	3238	sprintId	\N	\N	\N	432	\N	\N	\N	\N	update	2019-10-11 07:52:07.125+00	2728	\N	\N	\N	\N	\N	\N
+24979	Task	3238	3238	sprintId	\N	\N	432	433	\N	\N	\N	\N	update	2019-10-11 07:52:10.658+00	2728	\N	\N	\N	\N	\N	\N
+24989	Task	3238	3238	sprintId	\N	\N	433	\N	\N	\N	\N	\N	update	2019-10-11 07:57:12.589+00	2728	\N	\N	\N	\N	\N	\N
+24999	Task	3215	3215	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:04:05.213+00	2717	\N	\N	\N	\N	\N	\N
+24981	Task	3215	3215	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 07:53:53.243+00	2717	\N	\N	\N	\N	\N	\N
+24983	Task	3215	3215	sprintId	\N	\N	434	435	\N	\N	\N	\N	update	2019-10-11 07:54:52.315+00	2717	\N	\N	\N	\N	\N	\N
+24991	Task	3238	3238	sprintId	\N	\N	\N	432	\N	\N	\N	\N	update	2019-10-11 07:57:28.422+00	2728	\N	\N	\N	\N	\N	\N
+24992	Task	3238	3238	sprintId	\N	\N	432	\N	\N	\N	\N	\N	update	2019-10-11 07:57:29.921+00	2728	\N	\N	\N	\N	\N	\N
+25001	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:04:19.379+00	2717	\N	\N	\N	\N	\N	\N
+24984	Task	3214	3214	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 07:55:15.763+00	2717	\N	\N	\N	\N	\N	\N
+24985	Task	3214	3214	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 07:55:19.305+00	2717	\N	\N	\N	\N	\N	\N
+24990	Task	3238	3238	sprintId	\N	\N	\N	432	\N	\N	\N	\N	update	2019-10-11 07:57:16.664+00	2728	\N	\N	\N	\N	\N	\N
+25006	Task	3214	3214	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:06:56.435+00	2717	\N	\N	\N	\N	\N	\N
+25007	Task	3215	3215	sprintId	\N	\N	\N	435	\N	\N	\N	\N	update	2019-10-11 08:08:35.529+00	2717	\N	\N	\N	\N	\N	\N
+24993	Task	3238	3238	sprintId	\N	\N	\N	433	\N	\N	\N	\N	update	2019-10-11 07:57:44.395+00	2728	\N	\N	\N	\N	\N	\N
+24994	Task	3238	3238	sprintId	\N	\N	433	\N	\N	\N	\N	\N	update	2019-10-11 07:57:46.104+00	2728	\N	\N	\N	\N	\N	\N
+24995	Task	3215	3215	sprintId	\N	\N	\N	435	\N	\N	\N	\N	update	2019-10-11 08:02:26.411+00	2717	\N	\N	\N	\N	\N	\N
+24997	Task	3215	3215	sprintId	\N	\N	435	\N	\N	\N	\N	\N	update	2019-10-11 08:02:36.768+00	2717	\N	\N	\N	\N	\N	\N
+25000	Task	3214	3214	sprintId	\N	\N	435	\N	\N	\N	\N	\N	update	2019-10-11 08:04:09.879+00	2717	\N	\N	\N	\N	\N	\N
+25005	Task	3215	3215	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:06:54.652+00	2717	\N	\N	\N	\N	\N	\N
+25008	Task	3215	3215	sprintId	\N	\N	435	\N	\N	\N	\N	\N	update	2019-10-11 08:08:37.403+00	2717	\N	\N	\N	\N	\N	\N
+25002	Task	3215	3215	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:04:23.087+00	2717	\N	\N	\N	\N	\N	\N
+25003	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:06:46.886+00	2717	\N	\N	\N	\N	\N	\N
+25004	Task	3214	3214	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:06:50.244+00	2717	\N	\N	\N	\N	\N	\N
+25009	Task	3239	3239	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:14:22.256+00	2717	\N	\N	\N	\N	\N	\N
+25010	Task	3239	3239	sprintId	\N	\N	435	434	\N	\N	\N	\N	update	2019-10-11 08:14:30.514+00	2717	\N	\N	\N	\N	\N	\N
+25011	Task	3239	3239	sprintId	\N	\N	434	435	\N	\N	\N	\N	update	2019-10-11 08:14:45.538+00	2717	\N	\N	\N	\N	\N	\N
+25012	Task	3239	3239	sprintId	\N	\N	435	434	\N	\N	\N	\N	update	2019-10-11 08:14:50.89+00	2717	\N	\N	\N	\N	\N	\N
+25013	Task	3214	3214	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:15:03.728+00	2717	\N	\N	\N	\N	\N	\N
+25014	Task	3215	3215	sprintId	\N	\N	\N	435	\N	\N	\N	\N	update	2019-10-11 08:15:38.275+00	2717	\N	\N	\N	\N	\N	\N
+25015	Task	3215	3215	sprintId	\N	\N	435	\N	\N	\N	\N	\N	update	2019-10-11 08:15:41.101+00	2717	\N	\N	\N	\N	\N	\N
+25016	Task	3214	3214	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:15:45.351+00	2717	\N	\N	\N	\N	\N	\N
+25017	Task	3239	3239	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:15:51.791+00	2717	\N	\N	\N	\N	\N	\N
+25018	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:16:04.965+00	2717	\N	\N	\N	\N	\N	\N
+25019	Task	3214	3214	sprintId	\N	\N	\N	435	\N	\N	\N	\N	update	2019-10-11 08:16:07.849+00	2717	\N	\N	\N	\N	\N	\N
+25020	Task	3214	3214	sprintId	\N	\N	435	\N	\N	\N	\N	\N	update	2019-10-11 08:16:12.949+00	2717	\N	\N	\N	\N	\N	\N
+25021	Task	3215	3215	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:16:29.481+00	2717	\N	\N	\N	\N	\N	\N
+25022	Task	3215	3215	sprintId	\N	\N	\N	434	\N	\N	\N	\N	update	2019-10-11 08:16:56.721+00	2717	\N	\N	\N	\N	\N	\N
+25023	Task	3215	3215	sprintId	\N	\N	434	\N	\N	\N	\N	\N	update	2019-10-11 08:17:25.903+00	2717	\N	\N	\N	\N	\N	\N
+25024	Task	3219	3219	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:19:26.17+00	2717	\N	\N	\N	\N	\N	\N
+25025	Task	3219	3219	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:19:27.887+00	2717	\N	\N	\N	\N	\N	\N
+25026	Task	3240	3240	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:20:01.152+00	2717	\N	\N	\N	\N	\N	\N
+25027	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:20:04.934+00	2717	\N	\N	\N	\N	\N	\N
+25028	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:20:07.126+00	2717	\N	\N	\N	\N	\N	\N
+25029	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:20:49.098+00	2717	\N	\N	\N	\N	\N	\N
+25030	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:20:52.897+00	2717	\N	\N	\N	\N	\N	\N
+25031	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:21:05.206+00	2717	\N	\N	\N	\N	\N	\N
+25032	Task	3219	3219	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:21:07.188+00	2717	\N	\N	\N	\N	\N	\N
+25033	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:21:14.346+00	2717	\N	\N	\N	\N	\N	\N
+25034	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:21:25.079+00	2717	\N	\N	\N	\N	\N	\N
+25035	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:21:28.445+00	2717	\N	\N	\N	\N	\N	\N
+25036	Task	3219	3219	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:21:34.528+00	2717	\N	\N	\N	\N	\N	\N
+25037	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:21:38.545+00	2717	\N	\N	\N	\N	\N	\N
+25038	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:21:44.411+00	2717	\N	\N	\N	\N	\N	\N
+25039	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:21:48.169+00	2717	\N	\N	\N	\N	\N	\N
+25040	Task	3219	3219	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:21:51.161+00	2717	\N	\N	\N	\N	\N	\N
+25041	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:21:56.552+00	2717	\N	\N	\N	\N	\N	\N
+25042	Task	3219	3219	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:22:03.651+00	2717	\N	\N	\N	\N	\N	\N
+25043	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:22:11.185+00	2717	\N	\N	\N	\N	\N	\N
+25044	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:22:22.6+00	2717	\N	\N	\N	\N	\N	\N
+25045	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:22:29.125+00	2717	\N	\N	\N	\N	\N	\N
+25046	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:22:35.866+00	2717	\N	\N	\N	\N	\N	\N
+25047	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:22:38.316+00	2717	\N	\N	\N	\N	\N	\N
+25048	Task	3219	3219	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:22:40.233+00	2717	\N	\N	\N	\N	\N	\N
+25049	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:23:50.445+00	2717	\N	\N	\N	\N	\N	\N
+25050	Task	3219	3219	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:24:02.102+00	2717	\N	\N	\N	\N	\N	\N
+25051	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:24:37.267+00	2717	\N	\N	\N	\N	\N	\N
+25052	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:24:40.008+00	2717	\N	\N	\N	\N	\N	\N
+25053	Task	3219	3219	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:26:10.469+00	2717	\N	\N	\N	\N	\N	\N
+25054	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:26:16.936+00	2717	\N	\N	\N	\N	\N	\N
+25055	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:26:23.311+00	2717	\N	\N	\N	\N	\N	\N
+25056	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:26:58.508+00	2717	\N	\N	\N	\N	\N	\N
+25057	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:27:01.725+00	2717	\N	\N	\N	\N	\N	\N
+25058	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:27:08.324+00	2717	\N	\N	\N	\N	\N	\N
+25059	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:27:10.074+00	2717	\N	\N	\N	\N	\N	\N
+25060	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:27:14.307+00	2717	\N	\N	\N	\N	\N	\N
+25061	Task	3219	3219	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:27:23.74+00	2717	\N	\N	\N	\N	\N	\N
+25062	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:27:33.248+00	2717	\N	\N	\N	\N	\N	\N
+25063	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:27:45.798+00	2717	\N	\N	\N	\N	\N	\N
+25064	Task	3219	3219	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:27:49.322+00	2717	\N	\N	\N	\N	\N	\N
+25065	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:27:53.28+00	2717	\N	\N	\N	\N	\N	\N
+25066	Task	3219	3219	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:27:57.121+00	2717	\N	\N	\N	\N	\N	\N
+25067	Task	3219	3219	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:28:09.712+00	2717	\N	\N	\N	\N	\N	\N
+25068	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:28:37.99+00	2717	\N	\N	\N	\N	\N	\N
+25069	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:28:50.517+00	2717	\N	\N	\N	\N	\N	\N
+25070	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:28:55.076+00	2717	\N	\N	\N	\N	\N	\N
+25071	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:28:55.1+00	2717	\N	\N	\N	\N	\N	\N
+25072	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:29:02.442+00	2717	\N	\N	\N	\N	\N	\N
+25073	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:29:41.089+00	2717	\N	\N	\N	\N	\N	\N
+25074	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:29:47.88+00	2717	\N	\N	\N	\N	\N	\N
+25075	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:29:56.788+00	2717	\N	\N	\N	\N	\N	\N
+25076	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:30:02.788+00	2717	\N	\N	\N	\N	\N	\N
+25077	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:30:08.479+00	2717	\N	\N	\N	\N	\N	\N
+25078	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:30:15.204+00	2717	\N	\N	\N	\N	\N	\N
+25079	Task	3219	3219	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:30:30.644+00	2717	\N	\N	\N	\N	\N	\N
+25080	Task	3219	3219	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:30:33.894+00	2717	\N	\N	\N	\N	\N	\N
+25081	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:31:07.192+00	2717	\N	\N	\N	\N	\N	\N
+25082	Task	3219	3219	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:36:04.924+00	2717	\N	\N	\N	\N	\N	\N
+25083	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:36:14.356+00	2717	\N	\N	\N	\N	\N	\N
+25084	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:36:16.955+00	2717	\N	\N	\N	\N	\N	\N
+25085	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:36:28.905+00	2717	\N	\N	\N	\N	\N	\N
+25086	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:36:36.846+00	2717	\N	\N	\N	\N	\N	\N
+25087	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:36:46.92+00	2717	\N	\N	\N	\N	\N	\N
+25088	Task	3219	3219	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:36:49.67+00	2717	\N	\N	\N	\N	\N	\N
+25089	Task	3240	3240	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:37:06.735+00	2717	\N	\N	\N	\N	\N	\N
+25090	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:37:09.26+00	2717	\N	\N	\N	\N	\N	\N
+25091	Task	3240	3240	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:37:32.342+00	2717	\N	\N	\N	\N	\N	\N
+25092	Task	3219	3219	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:37:34.109+00	2717	\N	\N	\N	\N	\N	\N
+25093	Task	3241	3241	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:38:32.657+00	2717	\N	\N	\N	\N	\N	\N
+25096	Task	3219	3219	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:38:54.371+00	2717	\N	\N	\N	\N	\N	\N
+25097	Task	3241	3241	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:38:59.787+00	2717	\N	\N	\N	\N	\N	\N
+25098	Task	3240	3240	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:39:25.918+00	2717	\N	\N	\N	\N	\N	\N
+25105	Task	3242	3242	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:42:27.008+00	2717	\N	\N	\N	\N	\N	\N
+25106	Task	3241	3241	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:44:11.25+00	2717	\N	\N	\N	\N	\N	\N
+25094	Task	3241	3241	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:38:50.313+00	2717	\N	\N	\N	\N	\N	\N
+25095	Task	3240	3240	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:38:52.887+00	2717	\N	\N	\N	\N	\N	\N
+25108	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:45:08.521+00	2717	\N	\N	\N	\N	\N	\N
+25099	Task	3219	3219	sprintId	\N	\N	436	437	\N	\N	\N	\N	update	2019-10-11 08:39:32.76+00	2717	\N	\N	\N	\N	\N	\N
+25100	Task	3240	3240	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-11 08:39:36.658+00	2717	\N	\N	\N	\N	\N	\N
+25101	Task	3219	3219	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:39:40.267+00	2717	\N	\N	\N	\N	\N	\N
+25102	Task	3241	3241	sprintId	\N	\N	437	436	\N	\N	\N	\N	update	2019-10-11 08:39:53.233+00	2717	\N	\N	\N	\N	\N	\N
+25103	Task	3241	3241	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:41:27.577+00	2717	\N	\N	\N	\N	\N	\N
+25104	Task	3219	3219	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:41:31.694+00	2717	\N	\N	\N	\N	\N	\N
+25107	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-11 08:44:42.064+00	2717	\N	\N	\N	\N	\N	\N
+25109	Task	3241	3241	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-11 08:45:15.795+00	2717	\N	\N	\N	\N	\N	\N
+25110	Task	3243	3243	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 08:47:24.93+00	2717	\N	\N	\N	\N	\N	\N
+25111	Task	3243	3243	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-11 08:47:39.819+00	2717	\N	\N	\N	\N	\N	\N
+25112	Task	3244	3244	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 11:39:43.559+00	2717	\N	\N	\N	\N	\N	\N
+25113	Task	3244	3244	sprintId	\N	\N	\N	429	\N	\N	\N	\N	update	2019-10-11 11:40:08.799+00	2717	\N	\N	\N	\N	\N	\N
+25114	Task	3245	3245	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 11:41:02.86+00	2717	\N	\N	\N	\N	\N	\N
+25115	Task	3245	3245	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 11:41:19.041+00	2717	\N	\N	\N	\N	\N	\N
+25116	Task	3245	3245	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:42:57.268+00	2717	\N	\N	\N	\N	\N	\N
+25117	Task	3236	3236	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:43:06.593+00	2717	\N	\N	\N	\N	\N	\N
+25118	Task	3237	3237	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:43:11.876+00	2717	\N	\N	\N	\N	\N	\N
+25119	Task	3163	3163	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:43:20.509+00	2717	\N	\N	\N	\N	\N	\N
+25120	Task	3244	3244	sprintId	\N	\N	429	\N	\N	\N	\N	\N	update	2019-10-11 11:44:18.828+00	2717	\N	\N	\N	\N	\N	\N
+25121	Task	3235	3235	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:44:36.327+00	2717	\N	\N	\N	\N	\N	\N
+25122	Task	3245	3245	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 11:44:38.345+00	2717	\N	\N	\N	\N	\N	\N
+25123	Task	3245	3245	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:44:39.97+00	2717	\N	\N	\N	\N	\N	\N
+25124	Task	3118	3118	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:44:44.811+00	2717	\N	\N	\N	\N	\N	\N
+25125	Task	3117	3117	sprintId	\N	\N	429	\N	\N	\N	\N	\N	update	2019-10-11 11:44:50.303+00	2717	\N	\N	\N	\N	\N	\N
+25126	Task	3245	3245	sprintId	\N	\N	\N	429	\N	\N	\N	\N	update	2019-10-11 11:44:54.686+00	2717	\N	\N	\N	\N	\N	\N
+25127	Task	3245	3245	sprintId	\N	\N	429	\N	\N	\N	\N	\N	update	2019-10-11 11:44:57.335+00	2717	\N	\N	\N	\N	\N	\N
+25128	Task	3245	3245	sprintId	\N	\N	\N	429	\N	\N	\N	\N	update	2019-10-11 11:44:58.902+00	2717	\N	\N	\N	\N	\N	\N
+25129	Task	3114	3114	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 11:45:03.052+00	2717	\N	\N	\N	\N	\N	\N
+25130	Task	3113	3113	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 12:17:19.467+00	2717	\N	\N	\N	\N	\N	\N
+25131	Task	3114	3114	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:17:34.114+00	2717	\N	\N	\N	\N	\N	\N
+25132	Task	3115	3115	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 12:17:38.214+00	2717	\N	\N	\N	\N	\N	\N
+25133	Task	3113	3113	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:17:40.286+00	2717	\N	\N	\N	\N	\N	\N
+25163	Task	3246	3246	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 12:19:21.472+00	2717	\N	\N	\N	\N	\N	\N
+25164	Task	3244	3244	sprintId	\N	\N	\N	429	\N	\N	\N	\N	update	2019-10-11 12:20:38.821+00	2717	\N	\N	\N	\N	\N	\N
+25165	Task	3197	3197	sprintId	\N	\N	\N	429	\N	\N	\N	\N	update	2019-10-11 12:20:56.444+00	2717	\N	\N	\N	\N	\N	\N
+25196	Task	3235	3235	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:54:02.896+00	2717	\N	\N	\N	\N	\N	\N
+25197	Task	3237	3237	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:54:13.702+00	2717	\N	\N	\N	\N	\N	\N
+25198	Task	3246	3246	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:55:09.468+00	2717	\N	\N	\N	\N	\N	\N
+25199	Task	3236	3236	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:55:30.855+00	2717	\N	\N	\N	\N	\N	\N
+25200	Task	3279	3279	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 12:55:39.2+00	2717	\N	\N	\N	\N	\N	\N
+25201	Task	3279	3279	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:55:49.641+00	2717	\N	\N	\N	\N	\N	\N
+25202	Task	3117	3117	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 12:57:04.607+00	2717	\N	\N	\N	\N	\N	\N
+25203	Task	3163	3163	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 13:00:08.82+00	2717	\N	\N	\N	\N	\N	\N
+25204	Task	3118	3118	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 13:00:37.077+00	2717	\N	\N	\N	\N	\N	\N
+25205	Task	3279	3279	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 13:00:54.635+00	2717	\N	\N	\N	\N	\N	\N
+25206	Task	3279	3279	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 13:01:18.198+00	2717	\N	\N	\N	\N	\N	\N
+25207	Task	3279	3279	sprintId	\N	\N	426	\N	\N	\N	\N	\N	update	2019-10-11 13:01:20.715+00	2717	\N	\N	\N	\N	\N	\N
+25208	Task	3280	3280	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-11 13:01:33.015+00	2717	\N	\N	\N	\N	\N	\N
+25209	Task	3280	3280	sprintId	\N	\N	\N	426	\N	\N	\N	\N	update	2019-10-11 13:01:56.222+00	2717	\N	\N	\N	\N	\N	\N
+25210	Task	3281	3281	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:13:04.109+00	2717	\N	\N	\N	\N	\N	\N
+25211	Task	3282	3282	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:13:32.273+00	2717	\N	\N	\N	\N	\N	\N
+25212	Task	3282	3282	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 06:13:59.198+00	2717	\N	\N	\N	\N	\N	\N
+25213	Task	3241	3241	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:14:30.078+00	2717	\N	\N	\N	\N	\N	\N
+25214	Task	3240	3240	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 06:28:10.008+00	2717	\N	\N	\N	\N	\N	\N
+25215	Task	3283	3283	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:28:33.467+00	2717	\N	\N	\N	\N	\N	\N
+25216	Task	3283	3283	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:28:43.774+00	2717	\N	\N	\N	\N	\N	\N
+25217	Task	3284	3284	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:30:30.467+00	2717	\N	\N	\N	\N	\N	\N
+25218	Task	3284	3284	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:30:40.217+00	2717	\N	\N	\N	\N	\N	\N
+25219	Task	3285	3285	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:31:17.197+00	2717	\N	\N	\N	\N	\N	\N
+25220	Task	3285	3285	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:31:23.932+00	2717	\N	\N	\N	\N	\N	\N
+25221	Task	3286	3286	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:37:46.415+00	2717	\N	\N	\N	\N	\N	\N
+25222	Task	3286	3286	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:37:56.006+00	2717	\N	\N	\N	\N	\N	\N
+25223	Task	3242	3242	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 06:39:15.218+00	2717	\N	\N	\N	\N	\N	\N
+25224	Task	3282	3282	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 06:42:03.162+00	2717	\N	\N	\N	\N	\N	\N
+25225	Task	3282	3282	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 06:42:20.171+00	2717	\N	\N	\N	\N	\N	\N
+25226	Task	3287	3287	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:42:28.887+00	2717	\N	\N	\N	\N	\N	\N
+25227	Task	3287	3287	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:42:35.253+00	2717	\N	\N	\N	\N	\N	\N
+25228	Task	3219	3219	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:43:11.443+00	2717	\N	\N	\N	\N	\N	\N
+25229	Task	3288	3288	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 06:44:28.095+00	2717	\N	\N	\N	\N	\N	\N
+25230	Task	3288	3288	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 06:44:38.001+00	2717	\N	\N	\N	\N	\N	\N
+25231	Task	3287	3287	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-14 06:45:11.734+00	2717	\N	\N	\N	\N	\N	\N
+25232	Task	3281	3281	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-14 06:45:34.349+00	2717	\N	\N	\N	\N	\N	\N
+25233	Task	3289	3289	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 09:34:11.732+00	2717	\N	\N	\N	\N	\N	\N
+25234	Task	3289	3289	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 09:34:21.91+00	2717	\N	\N	\N	\N	\N	\N
+25235	Task	3287	3287	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 09:34:38.993+00	2717	\N	\N	\N	\N	\N	\N
+25236	Task	3281	3281	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 09:34:59.108+00	2717	\N	\N	\N	\N	\N	\N
+25237	Task	3290	3290	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 09:40:02.241+00	2717	\N	\N	\N	\N	\N	\N
+25238	Task	3290	3290	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 09:48:20.317+00	2717	\N	\N	\N	\N	\N	\N
+25239	Task	3289	3289	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 09:48:29.797+00	2717	\N	\N	\N	\N	\N	\N
+25240	Task	3289	3289	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 09:48:39.647+00	2717	\N	\N	\N	\N	\N	\N
+25241	Task	3289	3289	sprintId	\N	\N	436	\N	\N	\N	\N	\N	update	2019-10-14 09:48:46.271+00	2717	\N	\N	\N	\N	\N	\N
+25242	Task	3291	3291	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 09:49:00.124+00	2717	\N	\N	\N	\N	\N	\N
+25243	Task	3291	3291	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 09:49:17.912+00	2717	\N	\N	\N	\N	\N	\N
+25244	Task	3289	3289	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 09:50:06.949+00	2717	\N	\N	\N	\N	\N	\N
+25245	Task	3292	3292	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 09:57:17.981+00	2717	\N	\N	\N	\N	\N	\N
+25246	Task	3292	3292	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 09:57:26.265+00	2717	\N	\N	\N	\N	\N	\N
+25247	Task	3289	3289	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 09:58:52.882+00	2717	\N	\N	\N	\N	\N	\N
+25248	Task	3287	3287	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 09:59:04.348+00	2717	\N	\N	\N	\N	\N	\N
+25249	Task	3289	3289	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 09:59:06.991+00	2717	\N	\N	\N	\N	\N	\N
+25250	Task	3293	3293	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:02:22.087+00	2717	\N	\N	\N	\N	\N	\N
+25251	Task	3294	3294	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:03:38.668+00	2717	\N	\N	\N	\N	\N	\N
+25252	Task	3294	3294	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 10:03:46.572+00	2717	\N	\N	\N	\N	\N	\N
+25253	Task	3287	3287	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 10:07:04.533+00	2717	\N	\N	\N	\N	\N	\N
+25254	Task	3289	3289	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 10:07:06.509+00	2717	\N	\N	\N	\N	\N	\N
+25255	Task	3295	3295	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:07:15.692+00	2717	\N	\N	\N	\N	\N	\N
+25256	Task	3295	3295	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 10:07:22.465+00	2717	\N	\N	\N	\N	\N	\N
+25257	Task	3296	3296	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:08:46.91+00	2717	\N	\N	\N	\N	\N	\N
+25258	Task	3289	3289	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 10:12:29.52+00	2717	\N	\N	\N	\N	\N	\N
+25259	Task	3296	3296	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 10:15:58.267+00	2717	\N	\N	\N	\N	\N	\N
+25260	Task	3297	3297	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:16:05.15+00	2717	\N	\N	\N	\N	\N	\N
+25261	Task	3297	3297	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 10:16:24.056+00	2717	\N	\N	\N	\N	\N	\N
+25262	Task	3298	3298	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:28:12.621+00	2717	\N	\N	\N	\N	\N	\N
+25263	Task	3299	3299	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:29:52.962+00	2717	\N	\N	\N	\N	\N	\N
+25264	Task	3299	3299	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 10:30:14.901+00	2717	\N	\N	\N	\N	\N	\N
+25265	Task	3298	3298	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 10:30:53.257+00	2717	\N	\N	\N	\N	\N	\N
+25266	Task	3300	3300	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:31:37.13+00	2717	\N	\N	\N	\N	\N	\N
+25267	Task	3287	3287	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 10:37:07.816+00	2717	\N	\N	\N	\N	\N	\N
+25268	Task	3301	3301	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:49:17.826+00	2717	\N	\N	\N	\N	\N	\N
+25269	Task	3302	3302	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:50:08.049+00	2717	\N	\N	\N	\N	\N	\N
+25270	Task	3303	3303	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:51:40.25+00	2717	\N	\N	\N	\N	\N	\N
+25271	Task	3304	3304	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:51:59.382+00	2717	\N	\N	\N	\N	\N	\N
+25272	Task	3297	3297	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 10:57:03.285+00	2717	\N	\N	\N	\N	\N	\N
+25273	Task	3287	3287	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 10:57:07.155+00	2717	\N	\N	\N	\N	\N	\N
+25274	Task	3305	3305	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:57:17.111+00	2717	\N	\N	\N	\N	\N	\N
+25275	Task	3305	3305	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 10:57:24.529+00	2717	\N	\N	\N	\N	\N	\N
+25276	Task	3287	3287	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 10:57:39.085+00	2717	\N	\N	\N	\N	\N	\N
+25277	Task	3306	3306	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 10:58:25.609+00	2717	\N	\N	\N	\N	\N	\N
+25278	Task	3306	3306	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 10:58:46.197+00	2717	\N	\N	\N	\N	\N	\N
+25279	Task	3307	3307	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:00:15.388+00	2717	\N	\N	\N	\N	\N	\N
+25280	Task	3307	3307	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 11:00:22.759+00	2717	\N	\N	\N	\N	\N	\N
+25281	Task	3308	3308	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:03:43.479+00	2717	\N	\N	\N	\N	\N	\N
+25282	Task	3308	3308	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 11:03:55.539+00	2717	\N	\N	\N	\N	\N	\N
+25283	Task	3309	3309	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:12:28.118+00	2717	\N	\N	\N	\N	\N	\N
+25284	Task	3309	3309	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 11:12:38.028+00	2717	\N	\N	\N	\N	\N	\N
+25285	Task	3287	3287	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:13:16.765+00	2717	\N	\N	\N	\N	\N	\N
+25286	Task	3310	3310	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:18:40.292+00	2717	\N	\N	\N	\N	\N	\N
+25287	Task	3311	3311	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:18:53.667+00	2717	\N	\N	\N	\N	\N	\N
+25288	Task	3312	3312	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:19:22.123+00	2717	\N	\N	\N	\N	\N	\N
+25289	Task	3313	3313	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:31:11.519+00	2717	\N	\N	\N	\N	\N	\N
+25290	Task	3297	3297	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:31:46.513+00	2717	\N	\N	\N	\N	\N	\N
+25291	Task	3287	3287	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 11:31:48.495+00	2717	\N	\N	\N	\N	\N	\N
+25292	Task	3314	3314	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:33:18.37+00	2717	\N	\N	\N	\N	\N	\N
+25293	Task	3315	3315	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:33:58.712+00	2717	\N	\N	\N	\N	\N	\N
+25294	Task	3315	3315	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:34:18.168+00	2717	\N	\N	\N	\N	\N	\N
+25295	Task	3297	3297	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 11:36:33.801+00	2717	\N	\N	\N	\N	\N	\N
+25296	Task	3316	3316	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:38:51.664+00	2717	\N	\N	\N	\N	\N	\N
+25297	Task	3317	3317	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:43:21.962+00	2717	\N	\N	\N	\N	\N	\N
+25298	Task	3287	3287	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:43:31.811+00	2717	\N	\N	\N	\N	\N	\N
+25299	Task	3287	3287	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 11:44:54.614+00	2717	\N	\N	\N	\N	\N	\N
+25300	Task	3287	3287	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:46:09.267+00	2717	\N	\N	\N	\N	\N	\N
+25301	Task	3318	3318	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:46:30.458+00	2717	\N	\N	\N	\N	\N	\N
+25302	Task	3318	3318	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:46:44.024+00	2717	\N	\N	\N	\N	\N	\N
+25303	Task	3319	3319	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:49:51.491+00	2717	\N	\N	\N	\N	\N	\N
+25304	Task	3314	3314	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:50:01.272+00	2717	\N	\N	\N	\N	\N	\N
+25305	Task	3320	3320	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:50:15.144+00	2717	\N	\N	\N	\N	\N	\N
+25306	Task	3321	3321	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:50:26.055+00	2717	\N	\N	\N	\N	\N	\N
+25307	Task	3297	3297	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 11:50:35.795+00	2717	\N	\N	\N	\N	\N	\N
+25308	Task	3300	3300	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 11:51:49.073+00	2717	\N	\N	\N	\N	\N	\N
+25309	Task	3317	3317	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 11:53:38.366+00	2717	\N	\N	\N	\N	\N	\N
+25310	Task	3313	3313	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 11:53:49.882+00	2717	\N	\N	\N	\N	\N	\N
+25311	Task	3322	3322	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:53:58.371+00	2717	\N	\N	\N	\N	\N	\N
+25312	Task	3323	3323	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:54:30.48+00	2717	\N	\N	\N	\N	\N	\N
+25313	Task	3324	3324	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:55:30.337+00	2717	\N	\N	\N	\N	\N	\N
+25314	Task	3325	3325	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 11:56:14.697+00	2717	\N	\N	\N	\N	\N	\N
+25315	Task	3325	3325	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 12:03:45.005+00	2717	\N	\N	\N	\N	\N	\N
+25316	Task	3326	3326	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:04:39.479+00	2717	\N	\N	\N	\N	\N	\N
+25317	Task	3327	3327	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:12:41.596+00	2717	\N	\N	\N	\N	\N	\N
+25318	Task	3328	3328	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:15:08.832+00	2717	\N	\N	\N	\N	\N	\N
+25319	Task	3329	3329	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:18:06.795+00	2717	\N	\N	\N	\N	\N	\N
+25320	Task	3330	3330	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:18:14.661+00	2717	\N	\N	\N	\N	\N	\N
+25321	Task	3330	3330	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 12:18:21.784+00	2717	\N	\N	\N	\N	\N	\N
+25322	Task	3287	3287	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 12:21:07.124+00	2717	\N	\N	\N	\N	\N	\N
+25323	Task	3317	3317	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 12:26:20.055+00	2717	\N	\N	\N	\N	\N	\N
+25324	Task	3331	3331	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:26:44.157+00	2717	\N	\N	\N	\N	\N	\N
+25325	Task	3328	3328	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 12:26:49.034+00	2717	\N	\N	\N	\N	\N	\N
+25356	Task	3364	3364	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:51:07.876+00	2717	\N	\N	\N	\N	\N	\N
+25357	Task	3297	3297	sprintId	\N	\N	437	438	\N	\N	\N	\N	update	2019-10-14 12:51:17.194+00	2717	\N	\N	\N	\N	\N	\N
+25358	Task	3297	3297	sprintId	\N	\N	438	437	\N	\N	\N	\N	update	2019-10-14 12:51:29.376+00	2717	\N	\N	\N	\N	\N	\N
+25359	Task	3297	3297	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 12:52:17.296+00	2717	\N	\N	\N	\N	\N	\N
+25360	Task	3330	3330	sprintId	\N	\N	438	437	\N	\N	\N	\N	update	2019-10-14 12:52:45.952+00	2717	\N	\N	\N	\N	\N	\N
+25361	Task	3287	3287	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 12:52:54.364+00	2717	\N	\N	\N	\N	\N	\N
+25362	Task	3365	3365	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 12:53:08.497+00	2717	\N	\N	\N	\N	\N	\N
+25363	Task	3366	3366	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:01:02.886+00	2717	\N	\N	\N	\N	\N	\N
+25364	Task	3367	3367	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:01:51.474+00	2717	\N	\N	\N	\N	\N	\N
+25365	Task	3287	3287	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 13:14:01.335+00	2717	\N	\N	\N	\N	\N	\N
+25366	Task	3325	3325	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 13:15:06.262+00	2717	\N	\N	\N	\N	\N	\N
+25367	Task	3311	3311	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 13:21:51.107+00	2717	\N	\N	\N	\N	\N	\N
+25368	Task	3368	3368	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:22:40.156+00	2717	\N	\N	\N	\N	\N	\N
+25369	Task	3369	3369	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:24:32.98+00	2717	\N	\N	\N	\N	\N	\N
+25370	Task	3370	3370	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:28:02.502+00	2717	\N	\N	\N	\N	\N	\N
+25371	Task	3371	3371	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:32:03.31+00	2717	\N	\N	\N	\N	\N	\N
+25372	Task	3372	3372	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:37:21.803+00	2717	\N	\N	\N	\N	\N	\N
+25373	Task	3373	3373	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:45:52.951+00	2717	\N	\N	\N	\N	\N	\N
+25374	Task	3374	3374	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:46:01.321+00	2717	\N	\N	\N	\N	\N	\N
+25375	Task	3375	3375	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:46:23.862+00	2717	\N	\N	\N	\N	\N	\N
+25376	Task	3373	3373	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:48:21.854+00	2717	\N	\N	\N	\N	\N	\N
+25377	Task	3296	3296	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:48:52.144+00	2717	\N	\N	\N	\N	\N	\N
+25378	Task	3310	3310	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:48:59.55+00	2717	\N	\N	\N	\N	\N	\N
+25379	Task	3372	3372	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:49:06.683+00	2717	\N	\N	\N	\N	\N	\N
+25380	Task	3312	3312	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:49:14.72+00	2717	\N	\N	\N	\N	\N	\N
+25381	Task	3331	3331	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:49:20.243+00	2717	\N	\N	\N	\N	\N	\N
+25382	Task	3318	3318	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:49:25.548+00	2717	\N	\N	\N	\N	\N	\N
+25383	Task	3321	3321	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:49:31.719+00	2717	\N	\N	\N	\N	\N	\N
+25384	Task	3365	3365	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-14 13:49:36.706+00	2717	\N	\N	\N	\N	\N	\N
+25385	Task	3376	3376	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:49:57.634+00	2717	\N	\N	\N	\N	\N	\N
+25386	Task	3377	3377	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:51:57.661+00	2717	\N	\N	\N	\N	\N	\N
+25387	Task	3378	3378	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:53:06.865+00	2717	\N	\N	\N	\N	\N	\N
+25388	Task	3376	3376	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 13:56:07.919+00	2717	\N	\N	\N	\N	\N	\N
+25389	Task	3379	3379	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 13:56:17.18+00	2717	\N	\N	\N	\N	\N	\N
+25390	Task	3367	3367	sprintId	\N	\N	439	\N	\N	\N	\N	\N	update	2019-10-14 13:56:22.552+00	2717	\N	\N	\N	\N	\N	\N
+25391	Task	3315	3315	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 14:10:00.634+00	2717	\N	\N	\N	\N	\N	\N
+25392	Task	3322	3322	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 14:13:31.988+00	2717	\N	\N	\N	\N	\N	\N
+25393	Task	3367	3367	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:13:34.963+00	2717	\N	\N	\N	\N	\N	\N
+25394	Task	3380	3380	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:13:47.759+00	2717	\N	\N	\N	\N	\N	\N
+25395	Task	3287	3287	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:13:52.813+00	2717	\N	\N	\N	\N	\N	\N
+25396	Task	3317	3317	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:13:59.07+00	2717	\N	\N	\N	\N	\N	\N
+25397	Task	3328	3328	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 14:16:18.335+00	2717	\N	\N	\N	\N	\N	\N
+25398	Task	3381	3381	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:16:26.045+00	2717	\N	\N	\N	\N	\N	\N
+25399	Task	3325	3325	sprintId	\N	\N	\N	439	\N	\N	\N	\N	update	2019-10-14 14:16:32.484+00	2717	\N	\N	\N	\N	\N	\N
+25400	Task	3311	3311	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:16:35.409+00	2717	\N	\N	\N	\N	\N	\N
+25401	Task	3382	3382	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:16:51.522+00	2717	\N	\N	\N	\N	\N	\N
+25402	Task	3376	3376	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-14 14:16:54.217+00	2717	\N	\N	\N	\N	\N	\N
+25403	Task	3323	3323	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:16:57.749+00	2717	\N	\N	\N	\N	\N	\N
+25404	Task	3383	3383	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:18:06.788+00	2717	\N	\N	\N	\N	\N	\N
+25405	Task	3315	3315	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:18:18.917+00	2717	\N	\N	\N	\N	\N	\N
+25406	Task	3384	3384	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:20:38.812+00	2717	\N	\N	\N	\N	\N	\N
+25407	Task	3367	3367	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 14:28:04.248+00	2717	\N	\N	\N	\N	\N	\N
+25408	Task	3287	3287	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-14 14:39:43.043+00	2717	\N	\N	\N	\N	\N	\N
+25409	Task	3385	3385	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:40:01.486+00	2717	\N	\N	\N	\N	\N	\N
+25410	Task	3367	3367	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:40:16.615+00	2717	\N	\N	\N	\N	\N	\N
+25411	Task	3287	3287	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:40:50.829+00	2717	\N	\N	\N	\N	\N	\N
+25412	Task	3322	3322	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:41:37.626+00	2717	\N	\N	\N	\N	\N	\N
+25413	Task	3386	3386	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:41:44.184+00	2717	\N	\N	\N	\N	\N	\N
+25414	Task	3319	3319	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:41:46.427+00	2717	\N	\N	\N	\N	\N	\N
+25415	Task	3387	3387	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:41:52.742+00	2717	\N	\N	\N	\N	\N	\N
+25416	Task	3301	3301	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:41:56.6+00	2717	\N	\N	\N	\N	\N	\N
+25417	Task	3388	3388	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:42:09.54+00	2717	\N	\N	\N	\N	\N	\N
+25418	Task	3290	3290	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 14:42:13.165+00	2717	\N	\N	\N	\N	\N	\N
+25419	Task	3309	3309	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 14:42:15.159+00	2717	\N	\N	\N	\N	\N	\N
+25420	Task	3309	3309	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 14:42:16.732+00	2717	\N	\N	\N	\N	\N	\N
+25421	Task	3330	3330	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 14:45:55.252+00	2717	\N	\N	\N	\N	\N	\N
+25422	Task	3309	3309	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-14 14:46:24.898+00	2717	\N	\N	\N	\N	\N	\N
+25423	Task	3330	3330	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-14 14:46:29.223+00	2717	\N	\N	\N	\N	\N	\N
+25424	Task	3389	3389	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-14 14:46:35.489+00	2717	\N	\N	\N	\N	\N	\N
+25425	Task	3309	3309	sprintId	\N	\N	\N	437	\N	\N	\N	\N	update	2019-10-14 14:46:39.414+00	2717	\N	\N	\N	\N	\N	\N
+25426	Task	3290	3290	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-15 08:23:55.306+00	2717	\N	\N	\N	\N	\N	\N
+25427	Task	3390	3390	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:24:09.183+00	2717	\N	\N	\N	\N	\N	\N
+25428	Task	3367	3367	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-15 08:25:37.531+00	2717	\N	\N	\N	\N	\N	\N
+25429	Task	3391	3391	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:25:47.775+00	2717	\N	\N	\N	\N	\N	\N
+25430	Task	3392	3392	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:25:48.132+00	2717	\N	\N	\N	\N	\N	\N
+25431	Task	3393	3393	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:25:58.115+00	2717	\N	\N	\N	\N	\N	\N
+25432	Task	3309	3309	sprintId	\N	\N	437	\N	\N	\N	\N	\N	update	2019-10-15 08:26:01.148+00	2717	\N	\N	\N	\N	\N	\N
+25433	Task	3367	3367	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-15 08:26:05.431+00	2717	\N	\N	\N	\N	\N	\N
+25434	Task	3309	3309	sprintId	\N	\N	\N	439	\N	\N	\N	\N	update	2019-10-15 08:26:24.671+00	2717	\N	\N	\N	\N	\N	\N
+25435	Task	3389	3389	sprintId	\N	\N	439	\N	\N	\N	\N	\N	update	2019-10-15 08:26:26.487+00	2717	\N	\N	\N	\N	\N	\N
+25436	Task	3394	3394	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:26:33.687+00	2717	\N	\N	\N	\N	\N	\N
+25437	Task	3325	3325	sprintId	\N	\N	439	\N	\N	\N	\N	\N	update	2019-10-15 08:26:39.886+00	2717	\N	\N	\N	\N	\N	\N
+25438	Task	3395	3395	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:26:46.719+00	2717	\N	\N	\N	\N	\N	\N
+25439	Task	3389	3389	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-15 08:26:50.613+00	2717	\N	\N	\N	\N	\N	\N
+25440	Task	3396	3396	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:31:00.7+00	2717	\N	\N	\N	\N	\N	\N
+25441	Task	3325	3325	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-15 08:31:17.13+00	2717	\N	\N	\N	\N	\N	\N
+25442	Task	3367	3367	sprintId	\N	\N	438	\N	\N	\N	\N	\N	update	2019-10-15 08:31:19.614+00	2717	\N	\N	\N	\N	\N	\N
+25443	Task	3397	3397	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:31:25.656+00	2717	\N	\N	\N	\N	\N	\N
+25444	Task	3389	3389	sprintId	\N	\N	438	439	\N	\N	\N	\N	update	2019-10-15 08:32:31.162+00	2717	\N	\N	\N	\N	\N	\N
+25445	Task	3398	3398	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-15 08:32:38.578+00	2717	\N	\N	\N	\N	\N	\N
+25446	Task	3367	3367	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-16 10:54:55.414+00	2717	\N	\N	\N	\N	\N	\N
+25447	Task	3399	3399	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-16 10:55:28.127+00	2717	\N	\N	\N	\N	\N	\N
+25448	Task	3398	3398	sprintId	\N	\N	\N	438	\N	\N	\N	\N	update	2019-10-16 10:55:36.601+00	2717	\N	\N	\N	\N	\N	\N
+25449	Task	3400	3400	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-16 10:56:26.257+00	2717	\N	\N	\N	\N	\N	\N
+25450	Task	3401	3401	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-16 10:57:03.863+00	2717	\N	\N	\N	\N	\N	\N
+25451	Task	3399	3399	sprintId	\N	\N	\N	436	\N	\N	\N	\N	update	2019-10-16 10:57:22.036+00	2717	\N	\N	\N	\N	\N	\N
+25452	Task	3402	3402	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-16 11:03:56.454+00	2717	\N	\N	\N	\N	\N	\N
+25453	Task	3402	3402	statusId	\N	\N	1	10	\N	\N	\N	\N	update	2019-10-16 11:04:29.711+00	2717	\N	\N	\N	\N	\N	\N
+25454	Task	3402	3402	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-16 11:04:32.943+00	2717	\N	\N	\N	\N	\N	\N
+25455	Task	3402	3402	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-16 11:06:00.097+00	2717	\N	\N	\N	\N	\N	\N
+25456	Task	3402	3402	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-16 11:06:38.086+00	2717	\N	\N	\N	\N	\N	\N
+25457	Task	3403	3403	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-17 16:00:14.534+00	2717	\N	\N	\N	\N	\N	\N
+25458	TaskAttachment	1743	3403	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-17 16:10:40.479+00	2717	\N	\N	\N	\N	\N	\N
+25459	TaskAttachment	1744	3403	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 13:58:15.406+00	2717	\N	\N	\N	\N	\N	\N
+25460	TaskAttachment	1743	3403	deleted_at	\N	\N	\N	\N	\N	2019-10-21 13:58:20.346+00	\N	\N	update	2019-10-21 13:58:20.405+00	2717	\N	\N	\N	\N	\N	\N
+25461	TaskAttachment	1745	3403	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 13:58:43.744+00	2717	\N	\N	\N	\N	\N	\N
+25462	TaskAttachment	1745	3403	deleted_at	\N	\N	\N	\N	\N	2019-10-21 13:58:48.536+00	\N	\N	update	2019-10-21 13:58:48.601+00	2717	\N	\N	\N	\N	\N	\N
+25463	Task	3404	3404	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 14:27:54.313+00	2718	\N	\N	\N	\N	\N	\N
+25464	Task	3405	3405	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 14:31:09.909+00	2718	\N	\N	\N	\N	\N	\N
+25465	Task	3406	3406	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-21 14:31:18.683+00	2718	\N	\N	\N	\N	\N	\N
+25466	Task	3404	3404	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-21 14:31:25.15+00	2718	\N	\N	\N	\N	\N	\N
+25467	Task	3404	3404	performerId	\N	\N	\N	2718	\N	\N	\N	\N	update	2019-10-21 14:31:25.15+00	2718	\N	\N	\N	\N	\N	\N
+25468	Task	3405	3405	statusId	\N	\N	1	5	\N	\N	\N	\N	update	2019-10-21 14:31:32.389+00	2718	\N	\N	\N	\N	\N	\N
+25469	Task	3405	3405	performerId	\N	\N	\N	2718	\N	\N	\N	\N	update	2019-10-21 14:31:32.389+00	2718	\N	\N	\N	\N	\N	\N
+25470	Task	3219	3219	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-22 08:32:42.373+00	2728	\N	\N	\N	\N	\N	\N
+25471	Task	3219	3219	statusId	\N	\N	2	3	\N	\N	\N	\N	update	2019-10-22 08:32:46.716+00	2728	\N	\N	\N	\N	\N	\N
+25472	Task	3219	3219	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-22 08:33:12.524+00	2728	\N	\N	\N	\N	\N	\N
+25473	Task	3219	3219	statusId	\N	\N	2	3	\N	\N	\N	\N	update	2019-10-22 08:33:29.33+00	2728	\N	\N	\N	\N	\N	\N
+25474	Task	3219	3219	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-22 08:33:37.721+00	2728	\N	\N	\N	\N	\N	\N
+25475	Task	3219	3219	statusId	\N	\N	2	3	\N	\N	\N	\N	update	2019-10-22 08:33:43.245+00	2728	\N	\N	\N	\N	\N	\N
+25476	TaskAttachment	1746	3179	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-25 08:07:41.245+00	183	\N	\N	\N	\N	\N	\N
+25477	Task	3407	3407	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 12:57:18.417+00	2759	\N	\N	\N	\N	\N	\N
+25478	Task	3408	3408	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 13:08:11.816+00	2728	\N	\N	\N	\N	\N	\N
+25479	Task	3408	3408	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-28 13:10:44.873+00	2728	\N	\N	\N	\N	\N	\N
+25480	Task	3408	3408	statusId	\N	\N	3	7	\N	\N	\N	\N	update	2019-10-28 13:10:51.672+00	2728	\N	\N	\N	\N	\N	\N
+25481	Task	3408	3408	statusId	\N	\N	7	1	\N	\N	\N	\N	update	2019-10-28 13:11:11.054+00	2728	\N	\N	\N	\N	\N	\N
+25482	Task	3408	3408	performerId	\N	\N	\N	2728	\N	\N	\N	\N	update	2019-10-28 13:12:04.234+00	2728	\N	\N	\N	\N	\N	\N
+25483	Task	3408	3408	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-28 13:12:07.025+00	2728	\N	\N	\N	\N	\N	\N
+25484	Task	3408	3408	statusId	\N	\N	3	5	\N	\N	\N	\N	update	2019-10-28 13:12:19.083+00	2728	\N	\N	\N	\N	\N	\N
+25485	Task	3408	3408	statusId	\N	\N	5	7	\N	\N	\N	\N	update	2019-10-28 13:13:03.122+00	2728	\N	\N	\N	\N	\N	\N
+25486	Task	3408	3408	performerId	\N	\N	2728	\N	\N	\N	\N	\N	update	2019-10-28 13:13:03.122+00	2728	\N	\N	\N	\N	\N	\N
+25487	Task	3408	3408	statusId	\N	\N	7	8	\N	\N	\N	\N	update	2019-10-28 13:13:11.264+00	2728	\N	\N	\N	\N	\N	\N
+25488	Task	3408	3408	performerId	\N	\N	\N	2728	\N	\N	\N	\N	update	2019-10-28 13:13:11.264+00	2728	\N	\N	\N	\N	\N	\N
+25489	Task	3409	3409	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-28 13:39:51.707+00	2717	\N	\N	\N	\N	\N	\N
+25490	Task	3409	3409	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-28 13:40:21.22+00	2717	\N	\N	\N	\N	\N	\N
+25491	Task	3205	3205	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-28 13:41:32.892+00	2717	\N	\N	\N	\N	\N	\N
+25492	Task	3205	3205	statusId	\N	\N	2	3	\N	\N	\N	\N	update	2019-10-28 13:41:38.888+00	2717	\N	\N	\N	\N	\N	\N
+25493	Task	3410	3410	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-29 06:49:55.624+00	2717	\N	\N	\N	\N	\N	\N
+25494	Task	3411	3411	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-29 06:51:01.578+00	2717	\N	\N	\N	\N	\N	\N
+25495	Task	3410	3410	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-29 06:51:10.871+00	2717	\N	\N	\N	\N	\N	\N
+25496	Task	3411	3411	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-29 06:54:35.332+00	2717	\N	\N	\N	\N	\N	\N
+25497	Task	3411	3411	performerId	\N	\N	\N	2717	\N	\N	\N	\N	update	2019-10-29 06:54:35.332+00	2717	\N	\N	\N	\N	\N	\N
+25498	Task	3410	3410	performerId	\N	\N	\N	2717	\N	\N	\N	\N	update	2019-10-29 06:54:52.408+00	2717	\N	\N	\N	\N	\N	\N
+25499	Task	3410	3410	statusId	\N	\N	3	2	\N	\N	\N	\N	update	2019-10-29 06:54:55.734+00	2717	\N	\N	\N	\N	\N	\N
+25500	Task	3412	3412	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-10-29 07:00:58.148+00	2717	\N	\N	\N	\N	\N	\N
+25501	Task	3410	3410	statusId	\N	\N	2	3	\N	\N	\N	\N	update	2019-10-29 07:07:43.472+00	2717	\N	\N	\N	\N	\N	\N
+25502	Task	3083	3083	statusId	\N	\N	1	9	\N	\N	\N	\N	update	2019-10-29 08:07:44.434+00	2717	\N	\N	\N	\N	\N	\N
+25503	Task	3083	3083	statusId	\N	\N	9	10	\N	\N	\N	\N	update	2019-10-29 08:08:07.991+00	2717	\N	\N	\N	\N	\N	\N
+25504	Task	3083	3083	statusId	\N	\N	10	1	\N	\N	\N	\N	update	2019-10-29 08:08:39.521+00	2717	\N	\N	\N	\N	\N	\N
+25505	Task	3083	3083	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-10-29 08:08:56.738+00	2717	\N	\N	\N	\N	\N	\N
+25506	Task	3083	3083	performerId	\N	\N	183	102	\N	\N	\N	\N	update	2019-10-29 08:08:56.738+00	2717	\N	\N	\N	\N	\N	\N
+25507	Task	3413	3413	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-07 07:17:57.132+00	2728	\N	\N	\N	\N	\N	\N
+25508	Task	3414	3414	\N	\N	\N	\N	\N	\N	\N	\N	\N	create	2019-11-07 10:39:51.693+00	2941	\N	\N	\N	\N	\N	\N
+25509	Task	3414	3414	statusId	\N	\N	1	3	\N	\N	\N	\N	update	2019-11-07 10:40:00.997+00	2941	\N	\N	\N	\N	\N	\N
+25510	Task	3414	3414	performerId	\N	\N	\N	2941	\N	\N	\N	\N	update	2019-11-07 10:40:00.997+00	2941	\N	\N	\N	\N	\N	\N
+25511	Task	3221	3221	isDevOps	\N	\N	\N	\N	\N	\N	\N	\N	update	2019-11-22 09:16:32.275+00	2717	\N	\N	t	f	\N	\N
+25512	Task	3221	3221	isDevOps	\N	\N	\N	\N	\N	\N	\N	\N	update	2019-11-22 09:16:33.174+00	2717	\N	\N	f	t	\N	\N
 \.
 
 
@@ -3595,20 +4976,6 @@ COPY public.task_statuses_association (id, project_id, external_status_id, inter
 
 
 --
--- Name: task_statuses_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.task_statuses_association_id_seq', 66, true);
-
-
---
--- Name: task_statuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.task_statuses_id_seq', 1, false);
-
-
---
 -- Data for Name: task_tasks; Type: TABLE DATA; Schema: public; Owner: track
 --
 
@@ -3616,13 +4983,6 @@ COPY public.task_tasks (id, linked_task_id, task_id, deleted_at) FROM stdin;
 352	3106	3083	\N
 353	3083	3106	\N
 \.
-
-
---
--- Name: task_tasks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.task_tasks_id_seq', 353, true);
 
 
 --
@@ -3646,20 +5006,6 @@ COPY public.task_types_association (id, project_id, external_task_type_id, inter
 
 
 --
--- Name: task_types_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.task_types_association_id_seq', 64, true);
-
-
---
--- Name: task_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.task_types_id_seq', 1, false);
-
-
---
 -- Data for Name: tasks; Type: TABLE DATA; Schema: public; Owner: track
 --
 
@@ -3673,13 +5019,10 @@ COPY public.tasks (id, name, type_id, status_id, description, planned_execution_
 3091	Форма смены пароля	1	1	<p><br></p>	0.00	0.00	\N	3	102	2019-06-11 18:30:06.431+00	2019-06-11 18:30:06.431+00	\N	\N	470	\N	\N	f	\N	\N	f
 3111	Фото на сайт	1	8	<p><br></p>	0.00	0.00	\N	3	102	2019-06-13 14:41:26.95+00	2019-06-14 08:02:24.121+00	\N	425	471	\N	212	f	\N	\N	f
 3086	EM. Новая цветовая схема	1	1	<p><br></p>	0.00	0.00	\N	3	102	2019-06-11 17:56:53.466+00	2019-06-18 08:24:28.225+00	\N	428	470	\N	239	f	\N	\N	f
-3083	500 Ошибка на многих страницах ST	1	1	<p>Аватарки, история проекта</p>	0.00	0.00	\N	3	336	2019-06-11 08:35:24.739+00	2019-06-18 08:13:20.96+00	\N	428	470	\N	183	f	\N	\N	f
 3126	Счетчик на главной	1	9	<p>13,4557 лет и каждые 5 секунд добавляет + сколько лет добавилось</p>	0.00	0.00	\N	3	102	2019-06-14 12:59:36.855+00	2019-06-17 09:19:08.836+00	\N	\N	471	\N	239	f	\N	\N	f
 3132	Пункт меню Блог скрыть совсем	1	8	<p><br></p>	0.00	0.00	\N	3	102	2019-06-14 13:09:34.034+00	2019-06-16 07:33:25.999+00	\N	425	471	\N	212	f	\N	\N	f
 3080	test	1	9	<p>test</p>	0.00	0.00	\N	3	183	2019-06-11 07:56:30.688+00	2019-06-18 08:23:35.72+00	\N	\N	470	\N	102	f	\N	\N	f
 3081	test2	1	9	<p>test2</p>	0.00	0.00	\N	3	183	2019-06-11 07:57:47.983+00	2019-06-18 08:23:45.137+00	\N	\N	470	\N	1	f	\N	\N	f
-3117	Артамонов. SkyEng	1	3	<p>Изначально: 1 ставка Unity</p>\n<p>Пресейл с Золотовым</p>\n<p><br></p>	0.00	0.00	\N	3	102	2019-06-14 06:48:17.693+00	2019-06-14 10:58:09.371+00	\N	426	472	\N	102	f	\N	\N	f
-3115	Краснов. PSP Весы - отказ	1	8	<p>Тип: красный</p>\n<p><br></p>\n<p>Концепция: https://docs.google.com/document/d/1NeY0C2zHByAlCXuXE5S7uei_dbQ3O_Sy8tGhoDQN3Jc/edit</p>\n<p>Роудмап: https://docs.google.com/document/d/10iawmR0vP6ycTFUkw_VWHEFQ7Z7kX6B6-Tqve4s10Ow/edit</p>\n<p>Оценка: https://docs.google.com/spreadsheets/d/1mSs74MB4datr2i-MjTyXZSuGBb6yiyAU0En6npE9ECY/edit#gid=902801002</p>\n<p><br></p>	0.00	0.00	\N	3	102	2019-06-13 15:10:16.756+00	2019-06-14 10:57:55.045+00	\N	426	472	\N	102	f	\N	\N	f
 3119	Исправить формирование URL в блоге	2	8	<p>Сейчас URL формируется в формате http://docker.nordclan:8000/2019/06/10/foodtech/<br>\nЛучше сделать в формате http://docker.nordclan:8000/category/projects/foodtech/</p>	0.00	0.00	\N	3	212	2019-06-14 08:13:32.366+00	2019-06-14 11:28:19.591+00	\N	425	471	\N	212	f	\N	\N	f
 3100	Форма обратной связи	1	8	<p>С адресов</p>\n<p><br></p>\n<p>krasnov.aleksandr@nordclan.com</p>\n<p><br></p>\n<p>noskov.aleksandr@nordclan.com</p>\n<p><br></p>\n<p>mailto</p>\n<p><br></p>\n<p><br></p>\n<p>Форма должна отправлять на&nbsp;</p>\n<p><br></p>\n<p>customer@nordclan.com</p>	0.00	0.00	\N	3	102	2019-06-13 09:47:43.392+00	2019-06-14 11:51:27.626+00	\N	425	471	3095	212	f	\N	\N	f
 3082	Придумать название SimTrack	1	1	<p><br></p>	0.00	0.00	\N	3	183	2019-06-11 08:27:41.879+00	2019-06-18 08:24:00.159+00	\N	428	470	\N	102	f	\N	\N	f
@@ -3695,11 +5038,16 @@ COPY public.tasks (id, name, type_id, status_id, description, planned_execution_
 3096	Пункт меню Соискателям скрыть	1	8	<p><br></p>	0.00	0.00	\N	3	102	2019-06-13 08:35:57.756+00	2019-06-13 12:31:38.554+00	\N	425	471	\N	212	f	\N	\N	f
 3097	Блок: Нас выбирают потому что	1	8	<p>- вместо "Почему с нами выгодно" заголовок "Нас выбирают потому что:"</p>\n<p><br></p>\n<p>- будет 3 пункта, самый длинный третий посередине</p>\n<p><br></p>\n<p>1. Вы получаете ровно тот результат, который ожидаете.</p>\n<p>2. С нами удобно.</p>\n<p><br></p>\n<p>3.(по середине)</p>\n<p>Обеспечиваем результат 100% в срок или вернем неустойку за просрочку.</p>\n<p><br></p>\n<p><br></p>\n<p>Шрифт крупнее на 4&nbsp;</p>	0.00	0.00	\N	3	102	2019-06-13 08:56:31.671+00	2019-06-13 13:30:25.404+00	\N	425	471	\N	212	f	\N	\N	f
 3182	XWiki. Заполнение раздела "Управление проекта"	1	1	<p><br></p>	0.00	0.00	\N	3	205	2019-06-18 09:02:29.232+00	2019-06-18 09:02:29.232+00	\N	428	470	\N	205	f	\N	\N	f
+3239	Третий тестовый таск	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 08:14:22.241+00	2019-10-11 08:15:51.776+00	\N	\N	475	\N	\N	f	\N	\N	t
+3244	testtest	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 11:39:43.395+00	2019-10-11 12:20:38.793+00	\N	429	472	\N	\N	f	\N	\N	f
+3246	тестовый тест	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 12:19:21.408+00	2019-10-11 12:55:09.427+00	\N	426	472	\N	\N	f	\N	\N	f
+3288	testing	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:44:28.08+00	2019-10-14 06:44:37.974+00	\N	436	480	\N	\N	f	\N	\N	f
+3281	testAgain	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:13:03.829+00	2019-10-14 09:34:59.092+00	\N	437	480	\N	\N	f	\N	\N	f
+3302	tytytyt	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:50:08.021+00	2019-10-14 10:50:08.021+00	\N	437	480	\N	\N	f	\N	\N	f
 3084	Правка верстки 1	1	8	<p>1. у маяка не видно факел на маленьком мониторе http://joxi.ru/KAgyjZytE7L5Jm</p>\n<p>2. полоска http://joxi.ru/nAyZRnZTgbP9Wr и еще одна http://joxi.ru/E2p0Qz0t7xPvD2</p>\n<p>3. на странице услуги после нажатия на ссылку с якорем скролит оч высоко и перекрывается стики блоком меню http://joxi.ru/J2bnj6nC05Kqn2</p>\n<p>4. рубрика блог/портфолио убрать совсем</p>\n<p>5. Дата в портфолио вида:&nbsp;</p>\n<p>10 Июля 2019(насколько трудоемко сделать с падежами?)</p>\n<p>6. Опубликовано в рубрике Портфолио убрать</p>\n<p><br></p>\n<p>7. http://joxi.ru/Q2Kyv5ytLqxg3r&nbsp;</p>\n<p>уменьшить отступ</p>\n<p>Назад к Портфолио и шрифтом мельче</p>\n<p>Под заголовком дату в формате как на списке кейсов</p>\n<p><br></p>\n<p>8. http://joxi.ru/8AnMjxMtzWPKk2</p>\n<p>убрать ненужные тексты, дату в формате как в портфолио</p>\n<p><br></p>\n<p>9. http://joxi.ru/L218V98tRabDBm убрать read more</p>\n<p><br></p>\n<p>10. Список в Блог и Портфолио в формате - картинка слева + текст</p>\n<p><br></p>\n<p><br></p>\n<p><br></p>\n<p><br></p>\n<p><br></p>\n<p><br></p>	0.00	0.00	\N	3	102	2019-06-11 17:32:43.563+00	2019-06-13 13:40:55.906+00	\N	425	471	\N	212	f	\N	\N	f
 3105	смена ldap пароля	1	8	<p><br></p>	0.00	0.00	\N	3	186	2019-06-13 11:56:58.435+00	2019-06-17 17:58:14.033+00	\N	424	470	\N	186	f	\N	\N	f
 3104	В футере сайта при нажатии на номер телефона не происходит звонок	2	8	<p>В футере сайта при нажатии на номер телефона не происходит звонок, нужн о повесить на него событие.</p>	0.00	0.00	\N	2	212	2019-06-13 10:48:31.052+00	2019-06-13 14:23:28.446+00	\N	425	471	\N	212	f	\N	\N	f
 3206	редизайн бокового меню	1	1	<p>Нужно сделать пафосно.</p>	0.00	0.00	\N	2	35	2019-06-19 10:31:04.06+00	2019-06-19 10:31:04.06+00	\N	427	471	\N	\N	t	\N	\N	f
-3114	Краснов. Леонид Плетнев	1	5	<p>Александр, добрый день! Меня зовут Плетнев Леонид. От Олега Суслова.</p>\n<p><br></p>\n<p>Можете дать бюджетную оценку (плюс минус «трамвайная остановка») разработки решения?&nbsp;</p>\n<p><br></p>\n<p>Пока верхоуровнево задача описана так:</p>\n<p><br></p>\n<p>Платформа для коммуникации с клиентами.</p>\n<p><br></p>\n<p>В текущих реалиях среднего и крупного бизнеса b2c достоверная и своевременная коммуникация с клиентом выходит в наиболее важные приоритеты компании. В современном технологическом мире точки коммуникации с клиентами стали очень разнообразными: компании уже не ограничиваются бывшими стандартами - смс, телефон и почта. На первый план выходят персонализированные коммуникации через push уведомления в телефонах, приложениях и десктопных браузерах; разнообразные мессенджеры, список которых обновляется ежегодно.</p>\n<p>Каждый из каналов общения обладает своими особенностями - скоростью доставки, возможностями форматирования контента сообщений и стоимостью коммуникации. Для того, чтобы не запутаться в каналах, не дублировать бизнес логику и контролировать стоимость коммуникации требуется единая платформа, которая позволит координировать все эти действия.</p>\n<p><br></p>\n<p>Технологическая платформа/система, должна обладать следующим техническим и бизнес функционалом.</p>\n<p>Бизнес функционал:</p>\n<p>Управление балансом стоимости коммуникаций и своевременностью коммуникаций</p>\n<p>Настройка шаблонов коммуникаций под разные каналы и типы сообщений</p>\n<p>Настройка бизнес логики по гарантированной доставке уведомлений на основе бюджета, типа коммуникации и статуса доставки</p>\n<p>Настройка бизнес логики с BPMN совместимыми условиями</p>\n<p>Версионность настроек шаблонов и бизнес логики с возможностью просмотра истории изменений с diffом и возврата к предыдущим версиям</p>\n<p>Возможность тестирования навых настроек логики и шаблонов без изменения production настроек</p>\n<p>Понятный интерфейс для перенастройки логики без участия технического специалиста</p>\n<p>Технический функционал:</p>\n<p>Вся система должна строится по логике максимального числа интеграций и модульного расширения бизнес логики.</p>\n<p>Интеграции:&nbsp;</p>\n<p>источники событий - HTTP requests, kafka messages;&nbsp;</p>\n<p>каналы коммуникаций: email, sms, push iOS, push android, push desktop, HTTP requests (json), kafka messages;&nbsp;</p>\n<p>infrastructure connectors: prometheus (monitoring), active directory (access management), ELK stack (logs), ETL compatible storage (for BI/DataLake)</p>\n<p>дополнительные запросы на обогащение информации в сообщениях: HTTP requests (json)</p>\n<p>Пропусканая способность: 100M сообщений в день (в пиках до 1K rps)</p>\n<p>Интерфесы пользователей и администраторов: Web based UI</p>\n<p>Данные:&nbsp;</p>\n<p>RPO&lt;=1h, RTO&lt;=2h.</p>\n<p>Соответствие закону о хранении и обработке персональных данных</p>	0.00	0.00	\N	3	102	2019-06-13 15:07:03.257+00	2019-06-18 08:48:03.841+00	\N	426	472	\N	102	f	\N	\N	f
 3181	XWiki. Заполнение раздела "Аналитика"	1	1	<p>брифы, ux аудит</p>	0.00	0.00	\N	3	205	2019-06-18 09:02:02.062+00	2019-06-18 09:02:02.062+00	\N	428	470	\N	205	f	\N	\N	f
 3116	413 при загрузке больших изображений	1	8	<p>видимо дело в nginx</p>	0.00	0.00	\N	3	183	2019-06-13 21:56:21.657+00	2019-06-13 21:59:16.848+00	\N	424	470	\N	183	f	\N	\N	f
 3108	заменить домены docker.nordlcan	1	9	<p><br></p>	0.00	0.00	\N	3	186	2019-06-13 11:59:02.958+00	2019-06-13 11:59:42.258+00	\N	424	470	\N	186	f	\N	\N	f
@@ -3719,13 +5067,13 @@ COPY public.tasks (id, name, type_id, status_id, description, planned_execution_
 3122	Изменение формы обратной связи	1	8	<p>Готовы повторить успех наших клиентов?</p>\n<p>Расскажите нам о своей задаче, и мы немедленно возьмем ее в работу:</p>\n<p><br></p>\n<p>"Напишите нам" убираем</p>\n<p><br></p>\n<p>Делаем блок вида - http://joxi.ru/Y2L7v67C78Mw9m</p>	0.00	0.00	\N	3	102	2019-06-14 10:25:58.093+00	2019-06-14 11:41:36.763+00	\N	425	471	\N	212	f	\N	\N	f
 3123	Изменения меню	1	8	<p>1. убиваем страницу http://docker.nordclan:8000/mvp/ и данный пункт меню</p>\n<p>2. Делаем один пункт меню "Разработка ПО и создание MVP"</p>\n<p>ссылка http://docker.nordclan:8000/development/</p>\n<p>Идет первым</p>	0.00	0.00	\N	3	102	2019-06-14 10:32:45.124+00	2019-06-14 11:05:03.329+00	\N	425	471	\N	212	f	\N	\N	f
 3171	В IE едет верстка, пропадают текстуры и прочее	2	1	<p>Версия браузера - 11.765.17134.0</p>	0.00	0.00	\N	3	212	2019-06-17 09:39:00.272+00	2019-06-18 08:27:40.652+00	\N	427	471	\N	239	f	\N	\N	f
+3114	Краснов. Леонид Плетнев	1	5	<p>Александр, добрый день! Меня зовут Плетнев Леонид. От Олега Суслова.</p>\n<p><br></p>\n<p>Можете дать бюджетную оценку (плюс минус «трамвайная остановка») разработки решения?&nbsp;</p>\n<p><br></p>\n<p>Пока верхоуровнево задача описана так:</p>\n<p><br></p>\n<p>Платформа для коммуникации с клиентами.</p>\n<p><br></p>\n<p>В текущих реалиях среднего и крупного бизнеса b2c достоверная и своевременная коммуникация с клиентом выходит в наиболее важные приоритеты компании. В современном технологическом мире точки коммуникации с клиентами стали очень разнообразными: компании уже не ограничиваются бывшими стандартами - смс, телефон и почта. На первый план выходят персонализированные коммуникации через push уведомления в телефонах, приложениях и десктопных браузерах; разнообразные мессенджеры, список которых обновляется ежегодно.</p>\n<p>Каждый из каналов общения обладает своими особенностями - скоростью доставки, возможностями форматирования контента сообщений и стоимостью коммуникации. Для того, чтобы не запутаться в каналах, не дублировать бизнес логику и контролировать стоимость коммуникации требуется единая платформа, которая позволит координировать все эти действия.</p>\n<p><br></p>\n<p>Технологическая платформа/система, должна обладать следующим техническим и бизнес функционалом.</p>\n<p>Бизнес функционал:</p>\n<p>Управление балансом стоимости коммуникаций и своевременностью коммуникаций</p>\n<p>Настройка шаблонов коммуникаций под разные каналы и типы сообщений</p>\n<p>Настройка бизнес логики по гарантированной доставке уведомлений на основе бюджета, типа коммуникации и статуса доставки</p>\n<p>Настройка бизнес логики с BPMN совместимыми условиями</p>\n<p>Версионность настроек шаблонов и бизнес логики с возможностью просмотра истории изменений с diffом и возврата к предыдущим версиям</p>\n<p>Возможность тестирования навых настроек логики и шаблонов без изменения production настроек</p>\n<p>Понятный интерфейс для перенастройки логики без участия технического специалиста</p>\n<p>Технический функционал:</p>\n<p>Вся система должна строится по логике максимального числа интеграций и модульного расширения бизнес логики.</p>\n<p>Интеграции:&nbsp;</p>\n<p>источники событий - HTTP requests, kafka messages;&nbsp;</p>\n<p>каналы коммуникаций: email, sms, push iOS, push android, push desktop, HTTP requests (json), kafka messages;&nbsp;</p>\n<p>infrastructure connectors: prometheus (monitoring), active directory (access management), ELK stack (logs), ETL compatible storage (for BI/DataLake)</p>\n<p>дополнительные запросы на обогащение информации в сообщениях: HTTP requests (json)</p>\n<p>Пропусканая способность: 100M сообщений в день (в пиках до 1K rps)</p>\n<p>Интерфесы пользователей и администраторов: Web based UI</p>\n<p>Данные:&nbsp;</p>\n<p>RPO&lt;=1h, RTO&lt;=2h.</p>\n<p>Соответствие закону о хранении и обработке персональных данных</p>	0.00	0.00	\N	3	102	2019-06-13 15:07:03.257+00	2019-10-11 12:17:34.05+00	\N	426	472	\N	102	f	\N	\N	f
 3203	Подготовить концепцию мобильного тестирования	1	5	<p><br></p>	0.00	0.00	\N	1	212	2019-06-19 09:10:40.309+00	2019-06-28 13:28:50.871+00	\N	428	470	\N	205	f	\N	\N	f
-3113	Носков. Rates.net	1	5	<p>Клиент: Артем Бойко</p>\n<p>Тип: желтый</p>\n<p>Финансист, 16 лет в сфере финансов</p>\n<p><br></p>\n<p>Цель: создать стартап, заменяющий оффлайн работу. маркет-плейс для физ/юр лиц, стоимость инвестиции от 2000$</p>\n<p><br></p>\n<p>Исходников проекта нет, &nbsp;над проектом работали 2 фрилансера.</p>\n<p><br></p>\n<p>Закон о защите персональных данных :&nbsp;</p>\n<p>https://docs.google.com/document/d/1oREA7r4ylyQb2UUQu1ZILN78hLuYeMWcAE66n5wPvqQ/edit</p>\n<p><br></p>\n<p>UCP(для клиента): https://docs.google.com/document/d/17--2hcp7nKtp1oi90jkIXc-IsvuNgUU6UD1MNfIk1cM/edit</p>\n<p>&nbsp;</p>	0.00	0.00	\N	3	102	2019-06-13 14:59:21.005+00	2019-06-14 10:57:38.295+00	\N	426	472	\N	102	f	\N	\N	f
+3291	testing	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 09:49:00.08+00	2019-10-14 09:49:17.887+00	\N	436	480	\N	\N	f	\N	\N	f
 3129	Изменения текстов:	1	8	<p>Текст о нас.&nbsp;</p>\n<p><br></p>\n<p><br></p>\n<p>С кем мы работаем? - заголовком, большой текст</p>\n<p><br></p>\n<p><br></p>\n<p>Отбивка на новую строку и bold - ом</p>\n<p>- Я сделал вывод, что формирование отношений &nbsp;win-win, между исполнителем и заказчиком — это проактивный процесс.</p>\n<p>- Мы бережем время, свое и своих клиентов, поскольку считаем, что это бесценный ресурс.</p>\n<p>- Мы имеем преимущество на рынке за счет фокуса на оказании услуг по разработке программного обеспечения для финтеха, фудтеха, медицины и сельского хозяйства.</p>	0.00	0.00	\N	3	102	2019-06-14 13:02:29.48+00	2019-06-14 13:41:53.492+00	\N	425	471	\N	212	f	\N	\N	f
 3183	Проверить нормочасы в Bucksman	1	1	<p><br></p>	0.00	0.00	\N	3	205	2019-06-18 09:03:21.344+00	2019-06-18 09:03:21.344+00	\N	428	470	\N	205	f	\N	\N	f
 3184	Кейсы для сайта	1	1	<p>Управление<br>\nФича Андрея Золотова</p>	0.00	0.00	\N	3	205	2019-06-18 09:04:32.142+00	2019-06-18 09:04:32.142+00	\N	428	470	\N	205	f	\N	\N	f
 3188	Перенести бекап в nas (машина 1)	1	1	<p><br></p>	0.00	0.00	\N	3	186	2019-06-18 09:58:26.598+00	2019-06-18 09:58:26.598+00	\N	428	470	\N	186	f	\N	\N	f
-3163	Краснов. React native	1	3	<p>Френкель в качестве тимлида комнады на RN для мобильного приложения для sales force</p>	0.00	0.00	\N	3	102	2019-06-17 06:22:09.09+00	2019-06-17 06:22:14.615+00	\N	426	472	\N	102	f	\N	\N	f
 3125	Правки	1	8	<p>1. Блок Услуги</p>\n<p>сменить иконки. http://joxi.ru/5mdxedxt3KqoJm</p>\n<p>В "Нас выбирают, потому что" все картинки оставляем как есть</p>\n<p><br></p>\n<p>2. http://joxi.ru/bmoGjxGS3jOg7m</p>\n<p>Блок заголовка ВЫШЕ фоточек</p>\n<p><br></p>\n<p>3.&nbsp;Страница о нас:</p>\n<p>- фотки выровнять по верху цитаты</p>\n<p>- тексты в кавычках все, которые от людей</p>\n<p>- вертикальная полоса на другой стороне от фото(дубликат)</p>\n<p><br></p>\n<p><br></p>	0.00	0.00	\N	3	102	2019-06-14 12:51:50.729+00	2019-06-16 08:47:17.313+00	\N	425	471	\N	212	f	\N	\N	f
 3159	13) Сделайте подписи "волшебников и стражей " не жирным и сереньким	1	8	<p><br></p>	0.00	0.00	\N	3	266	2019-06-16 18:22:14.719+00	2019-06-17 06:24:24.081+00	\N	425	471	\N	212	f	\N	\N	f
 3121	Правки верстка 4	1	8	<p>1. Убрать адрес Радищева в подвале</p>\n<p>2. В услугах вместо Далее вернем стрелочку, только чтоб она всегда была вида</p>\n<p>3. Нас выбирают потому что - порядок меняем:</p>\n<p><br></p>\n<p>Обеспечиваем результат 100% в срок или вернем неустойку за просрочку</p>\n<p><br></p>\n<p>Вы получаете ровно тот результат, который ожидаете</p>\n<p><br></p>\n<p>С нами удобно</p>\n<p><br></p>\n<p>4. Блок Напишите нам располагаем выше формы обратной связи</p>\n<p><br></p>\n<p>5. http://joxi.ru/VrwLZVLi7544Pm то есть если фотка справа, то полоска слева и наоборот</p>\n<p><br></p>\n<p>6. Добавить маску на email и телефон на форме обратной связи</p>\n<p><br></p>	0.00	0.00	\N	1	102	2019-06-14 08:57:47.54+00	2019-06-16 09:20:46.087+00	\N	425	471	\N	212	f	\N	\N	f
@@ -3738,6 +5086,15 @@ COPY public.tasks (id, name, type_id, status_id, description, planned_execution_
 3136	Тексты. Услуги	1	8	<p>http://joxi.ru/zANNvdNTvV1pXA</p>\n<p>Напишите нам - это первый пункт меню. итого их 5</p>\n<p><br></p>\n<p>http://joxi.ru/eAOJvLJU97vyb2</p>\n<p>от Идеи - заголовок.&nbsp;</p>\n<p>Развить готовую систему - заголовок</p>	0.00	0.00	\N	3	102	2019-06-14 13:16:42.876+00	2019-06-16 08:03:42.963+00	\N	425	471	\N	212	f	\N	\N	f
 3139	404. Тексты	1	8	<p>Заблудился в мире ИТ?&nbsp;</p>\n<p>Звони, спасем! телефон</p>	0.00	0.00	\N	3	102	2019-06-14 13:25:49.207+00	2019-06-16 08:55:27.899+00	\N	425	471	\N	212	f	\N	\N	f
 3107	на 3 машину развернуть FreeNAS	1	5	<p><br></p>	0.00	0.00	\N	3	186	2019-06-13 11:58:28.406+00	2019-06-18 09:54:24.462+00	\N	424	470	\N	186	f	\N	\N	f
+3280	еучееы	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 13:01:32.994+00	2019-10-11 13:01:56.195+00	\N	426	472	\N	\N	f	\N	\N	f
+3313	ooooo	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:31:11.383+00	2019-10-14 11:53:49.86+00	\N	437	480	\N	\N	f	\N	\N	f
+3282	testAgain2	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:13:32.249+00	2019-10-14 06:42:20.145+00	\N	437	480	\N	\N	f	\N	\N	f
+3292	dfdddf	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 09:57:17.953+00	2019-10-14 09:57:26.246+00	\N	436	480	\N	\N	f	\N	\N	f
+3318	jjjjjj	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:46:30.441+00	2019-10-14 13:49:25.529+00	\N	438	480	\N	\N	f	\N	\N	f
+3303	sdsdsd	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:51:40.224+00	2019-10-14 10:51:40.224+00	\N	437	480	\N	\N	f	\N	\N	f
+3304	qwertyuiop	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:51:59.365+00	2019-10-14 10:51:59.365+00	\N	437	480	\N	\N	f	\N	\N	f
+3322	llkjj	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:53:58.342+00	2019-10-14 14:41:37.603+00	\N	438	480	\N	\N	f	\N	\N	f
+3308	дфыедфые	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:03:43.453+00	2019-10-14 11:03:55.5+00	\N	437	480	\N	\N	f	\N	\N	f
 3141	Добавить технологии и особенности - медицина, гостиница	1	10	<p>Необходимо в портфолио добавить технические сведения</p>\n<p>по аналогии &nbsp;с&nbsp;</p>\n<p>Особенности проекта</p>\n<p><br></p>\n<p>Наличие комплекса NDVI (нормализованный относительный индекс растительности).</p>\n<p>Графическая поддержка карт точного земледелия.</p>\n<p>Интеграция с мессенджерами и сервисами погоды.</p>\n<p>Визуализация данных с использованием технологии Canvas для высокой производительности при отрисовке большого количества данных.</p>\n<p>Использование векторной графики при построении карт для детализации изображений без потери качества.</p>\n<p>Стек технологий OpenStreetMap, Java, Spring, React, Postgres.</p>	0.00	0.00	\N	2	102	2019-06-14 13:35:53.929+00	2019-06-19 09:16:14.296+00	\N	425	471	\N	266	f	\N	\N	f
 3178	[Оптимизация] Ускорить загрузку страницы nordclan.com/development/	1	1	<p>https://metrika.yandex.ru/dashboard?group=dekaminute&amp;period=today&amp;id=54093205<br>\nЯндекс метрика</p>\n<p>Скорость по загрузке DOM</p>\n<p>nordclan.com/development/\t05.076</p>\n<p>Скорость по отрисовке</p>\n<p>nordclan.com/development/\t04.502</p>	0.00	0.00	\N	4	266	2019-06-18 07:34:30.728+00	2019-06-18 08:27:11.56+00	\N	427	471	\N	239	f	\N	\N	f
 3185	Регламент по обработке запросов от потенциальных клиентов	1	1	<p><br></p>	0.00	0.00	\N	3	205	2019-06-18 09:05:48.833+00	2019-06-18 09:05:48.833+00	\N	428	470	\N	205	f	\N	\N	f
@@ -3758,7 +5115,9 @@ COPY public.tasks (id, name, type_id, status_id, description, planned_execution_
 3173	В IE при отправке формы обратной связи неправильно подсвечиваются поля	2	1	<p>В IE при отправке формы обратной связи и незаполненном обязательном поле неправильно подсвечиваются поля, которые нужно заполнить. Выделяются абсолютно все поля, даже заполненные корректно.</p>\n<p>Версия браузера - 11.765.17134.0</p>	0.00	0.00	\N	3	212	2019-06-17 10:06:52.472+00	2019-06-18 08:27:45.908+00	\N	427	471	\N	239	f	\N	\N	f
 3165	Добавить Яндекс метрику	1	7	<p><br></p>	0.00	0.00	\N	2	102	2019-06-17 07:32:03.22+00	2019-06-18 08:27:56.525+00	\N	427	471	\N	212	f	\N	\N	f
 3133	Вывести заголовок блока Портфолио	1	8	<p>http://joxi.ru/4AkJjyJUo5jOP2</p>	0.00	0.00	\N	3	102	2019-06-14 13:10:49.262+00	2019-06-16 07:44:37.462+00	\N	425	471	\N	212	f	\N	\N	f
-3118	Краснов. DiaSoft	1	5	<p>https://www.diasoft.ru/</p>\n<p><br></p>\n<p>Будут делать внутренний продукт, mvp. Сейчас в процессе получения аппрува на разработку</p>	0.00	0.00	\N	3	102	2019-06-14 06:51:30.426+00	2019-06-19 06:09:02.959+00	\N	426	472	\N	102	f	\N	\N	f
+3283	тестовыйтаск	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:28:33.441+00	2019-10-14 06:28:43.749+00	\N	436	480	\N	\N	f	\N	\N	f
+3293	edeee	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:02:22.063+00	2019-10-14 10:02:22.063+00	\N	437	480	\N	\N	f	\N	\N	f
+3298	qwerty	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:28:12.598+00	2019-10-14 10:30:53.235+00	\N	437	480	\N	\N	f	\N	\N	f
 3179	SEO Настройка семантического ядра	1	3	<p><br></p>	8.00	0.00	\N	3	266	2019-06-18 07:37:17.356+00	2019-07-02 11:36:13.85+00	\N	427	471	\N	183	f	\N	\N	f
 3210	SEO Настройка поисковой выдачи	1	8	<p><br></p>	4.00	0.00	\N	3	266	2019-06-19 14:40:50.258+00	2019-07-02 11:36:20.812+00	\N	427	471	\N	266	f	\N	\N	f
 3189	Перенос корпоративных сервисов компании (боевых)	1	1	<p>Необходимо перенести боевые сервисы на отдельный сервер, с возможности настройки безопасности (паролей и т.д.) отдельно от тестового окружения</p>	0.00	0.00	\N	1	1	2019-06-18 10:02:01.827+00	2019-06-18 10:02:01.827+00	\N	428	470	\N	186	f	\N	\N	f
@@ -3782,29 +5141,147 @@ COPY public.tasks (id, name, type_id, status_id, description, planned_execution_
 3176	Замечания к контенту	1	8	<p>https://nordclan.com/development/:</p>\n<ul>\n  <li>заменить "Затем мы вместе развивать идею в полноценное приложение." на "Затем мы вместе развиваем идею в полноценное приложение."</li>\n  <li>заменить "Развить готовую систему" на &nbsp;"До развития готовой системы"</li>\n  <li>заменить "Вы получаете видимый результат уже в первые две-три недели после старта работ." на "Вы получаете видимый результат уже в первые 2-3 недели после старта работ."</li>\n</ul>\n<p>https://nordclan.com/engineering/:</p>\n<ul>\n  <li>заменить "Делаем из устаревающей IT-системы современную:" на "Делаем из устаревающей ИТ-системы современную:"</li>\n  <li>заменить "оцениваем что должно остаться." на "оцениваем, что должно остаться."</li>\n</ul>\n<p>https://nordclan.com/contacts/:</p>\n<ul>\n  <li>единообразно регалии нужно оформить</li>\n  <li>&nbsp;убрать запятую - "и нашим клиентам, полностью"&nbsp;</li>\n  <li>убрать точку - "нашей компетенции.и прислушиваться"&nbsp;</li>\n</ul>\n<p>https://nordclan.com/projects/hospitality/, https://nordclan.com/projects/medical/,&nbsp; https://nordclan.com/projects/foodtech/ (только в блоке "Особенности проекта")</p>\n<ul>\n  <li>в списках заменить ";" на "."</li>\n</ul>\n<p>На внутренней странице подменю "услуги" раскрывать при наведении - записала, нужно обсудить</p>\n<p><br>\n</p>	0.00	0.00	\N	3	205	2019-06-18 06:20:04.342+00	2019-06-19 13:40:07.567+00	\N	427	471	\N	212	f	\N	\N	f
 3195	ST: Устранение утечки памяти в процессе sendMail	1	1	<p>два скриншоты демонистрируют на сколько все плохо.&nbsp;</p>\n<p>300 мегабайт утекают за час работы сервера</p>	0.00	0.00	\N	1	183	2019-06-18 12:17:32.392+00	2019-06-18 12:26:22.277+00	\N	428	470	\N	\N	f	\N	\N	f
 3199	Отключить обновление WP	1	8	<p><br></p>	0.00	0.00	\N	1	102	2019-06-19 06:00:03.274+00	2019-06-19 13:40:04.425+00	\N	427	471	\N	212	f	\N	\N	f
+3245	TEST	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 11:41:02.842+00	2019-10-11 11:44:58.889+00	\N	429	472	\N	\N	f	\N	\N	f
 3198	ST: Перенос на отдельную машину	1	10	<p>Настройка новой docker машины</p>\n<p>Создание отдельной базы postgresql, redis</p>\n<p>Настройка ansible deploy</p>	0.00	0.00	\N	3	183	2019-06-19 05:59:15.152+00	2019-07-10 08:07:57.258+00	\N	428	470	\N	266	f	\N	\N	f
 3172	Изображения. Оптимизация изображений на странице	1	8	<p>Некоторые изображения на странице весят много, хотя фактический их размер используемый не большой</p>\n<p><br></p>\n<p>например на странице портфолио некоторые изображения в png весят 800кб</p>\n<p>Это кретично для мобильного интернета</p>\n<p><br></p>\n<p>Желательно использовать оптимизацию изображений + использовать формат jpg вместо png а также уменьшить размер изображений до фактически используемого</p>	0.00	0.00	\N	3	183	2019-06-17 09:44:47.184+00	2019-06-19 06:46:51.53+00	\N	427	471	\N	212	f	\N	\N	f
+3314	poiuyt	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:33:18.03+00	2019-10-14 11:50:01.245+00	\N	438	480	\N	\N	f	\N	\N	f
 3208	ST: Перекрасить UI в корпоративные цвета	1	1	<p><br></p>	3.00	0.00	\N	3	336	2019-06-19 14:03:26.746+00	2019-06-19 14:03:42.883+00	\N	428	470	\N	336	f	\N	\N	f
 3196	Создать группу Facebook	1	3	<p>ориентироваться на группу SS</p>\n<p>Завести на отдельного пользователя и почту.</p>	4.00	0.00	\N	2	102	2019-06-18 13:31:52.565+00	2019-06-19 07:47:25.506+00	\N	428	470	\N	205	f	\N	\N	f
 3202	Найти подходящего поставщика телефонии	1	1	<p>Проверить задарма в первую очередь, по возможности взять триалку.</p>\n<p>требуется</p>\n<p>виртуальный номер</p>\n<p>вирт атс&nbsp;</p>\n<p>софтофоны</p>	0.00	0.00	\N	2	212	2019-06-19 07:47:09.644+00	2019-06-19 08:24:04.883+00	\N	424	470	\N	212	f	\N	\N	f
 3168	Верстка письма формы обратной связи	1	7	<p>Отправитель: Site NordClan</p>\n<p>тема письма: &nbsp;Заявка с сайта</p>\n<p>Имя: тест&nbsp;</p>\n<p>Компания: тест&nbsp;</p>\n<p>Телефон: +7 948 537 63 62&nbsp;</p>\n<p>Email: ilya.kashtankin@nordclan.com&nbsp;</p>\n<p>Описание: dfdvfdfs</p>	0.00	0.00	\N	2	102	2019-06-17 08:42:52.74+00	2019-06-19 14:14:51.89+00	\N	427	471	\N	212	f	\N	\N	f
+3326	qwertyuu	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:04:39.369+00	2019-10-14 12:04:39.369+00	\N	438	480	\N	\N	f	\N	\N	f
+3329	skrapapa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:18:06.77+00	2019-10-14 12:18:06.77+00	\N	437	480	\N	\N	f	\N	\N	f
+3364	zzzzzz	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:51:06.638+00	2019-10-14 12:51:06.638+00	\N	437	480	\N	\N	f	\N	\N	f
+3366	qawqa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:01:02.86+00	2019-10-14 13:01:02.86+00	\N	439	480	\N	\N	f	\N	\N	f
+3368	больно	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:22:40.135+00	2019-10-14 13:22:40.135+00	\N	439	480	\N	\N	f	\N	\N	f
+3369	оченьбольно	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:24:32.932+00	2019-10-14 13:24:32.932+00	\N	438	480	\N	\N	f	\N	\N	f
+3371	sssssssssss	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:32:03.264+00	2019-10-14 13:32:03.264+00	\N	\N	480	\N	\N	f	\N	\N	f
 3204	Подготовить инструменты для ручного мобильного тестирования	1	10	<p><br></p>	4.00	0.00	\N	1	266	2019-06-19 09:35:38.981+00	2019-06-28 13:24:38.885+00	\N	428	470	3203	266	t	\N	\N	f
+3375	qwqwwq	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:46:23.845+00	2019-10-14 13:46:23.845+00	\N	437	480	\N	\N	f	\N	\N	f
+3373	again	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:45:52.915+00	2019-10-14 13:48:21.762+00	\N	438	480	\N	\N	f	\N	\N	f
+3331	gggggggggggggggggg	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:26:44.05+00	2019-10-14 13:49:20.168+00	\N	438	480	\N	\N	f	\N	\N	f
+3378	рудзззз	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:53:06.838+00	2019-10-14 13:53:06.838+00	\N	439	480	\N	\N	f	\N	\N	f
+3113	Носков. Rates.net	1	5	<p>Клиент: Артем Бойко</p>\n<p>Тип: желтый</p>\n<p>Финансист, 16 лет в сфере финансов</p>\n<p><br></p>\n<p>Цель: создать стартап, заменяющий оффлайн работу. маркет-плейс для физ/юр лиц, стоимость инвестиции от 2000$</p>\n<p><br></p>\n<p>Исходников проекта нет, &nbsp;над проектом работали 2 фрилансера.</p>\n<p><br></p>\n<p>Закон о защите персональных данных :&nbsp;</p>\n<p>https://docs.google.com/document/d/1oREA7r4ylyQb2UUQu1ZILN78hLuYeMWcAE66n5wPvqQ/edit</p>\n<p><br></p>\n<p>UCP(для клиента): https://docs.google.com/document/d/17--2hcp7nKtp1oi90jkIXc-IsvuNgUU6UD1MNfIk1cM/edit</p>\n<p>&nbsp;</p>	0.00	0.00	\N	3	102	2019-06-13 14:59:21.005+00	2019-10-11 12:17:40.258+00	\N	426	472	\N	102	f	\N	\N	f
+3163	Краснов. React native	1	3	<p>Френкель в качестве тимлида комнады на RN для мобильного приложения для sales force</p>	0.00	0.00	\N	3	102	2019-06-17 06:22:09.09+00	2019-10-11 13:00:08.795+00	\N	426	472	\N	102	f	\N	\N	f
 3200	Подготовиться к интервью по Java	1	5	<p><br></p>	0.00	0.00	\N	1	212	2019-06-19 07:43:44.631+00	2019-07-02 07:29:21.004+00	\N	424	470	\N	212	f	\N	\N	f
-3205	Заказ звонка	1	3	<p>Фича позволяет заказать звонок клиенту&nbsp;</p>\n<p>Функциональность есть на сайте айтека</p>\n<p><br></p>\n<p>http://joxi.ru/nAyZRnZTgWJwkr</p>\n<p>обязательный только телефон - первым элементом формы</p>\n<p>время - по дефолту "как можно скорее"</p>\n<p>Имя и Сообщение</p>	0.00	0.00	\N	1	35	2019-06-19 10:28:01.688+00	2019-07-02 07:34:14.118+00	\N	427	471	\N	266	t	\N	\N	t
+3241	Третий таск для проверки драг&дроп	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 08:38:32.637+00	2019-10-14 06:14:30.062+00	\N	436	480	\N	\N	f	\N	\N	f
+3240	второй тестовый таск	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 08:20:01.131+00	2019-10-14 06:28:09.989+00	\N	437	480	\N	\N	f	\N	\N	f
+3284	ффыыыы	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:30:30.413+00	2019-10-14 06:30:40.189+00	\N	436	480	\N	\N	f	\N	\N	f
+3285	аааааа	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:31:17.178+00	2019-10-14 06:31:23.908+00	\N	436	480	\N	\N	f	\N	\N	f
+3380	hateandbol	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:13:47.701+00	2019-10-14 14:13:47.701+00	\N	436	480	\N	\N	f	\N	\N	f
+3294	ddfdfdfd	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:03:38.637+00	2019-10-14 10:03:46.548+00	\N	436	480	\N	\N	f	\N	\N	f
+3323	kjhgf	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:54:30.465+00	2019-10-14 14:16:57.715+00	\N	438	480	\N	\N	f	\N	\N	f
+3299	testtesttest	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:29:52.778+00	2019-10-14 10:30:14.86+00	\N	436	480	\N	\N	f	\N	\N	f
+3305	lasthope	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:57:17.092+00	2019-10-14 10:57:24.455+00	\N	436	480	\N	\N	f	\N	\N	f
+3315	lkjhgf	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:33:55.69+00	2019-10-14 14:18:18.868+00	\N	438	480	\N	\N	f	\N	\N	f
 3194	SEO Настроить отображение привьюхи в соц сетях	1	1	<p><br></p>	0.00	0.00	\N	2	266	2019-06-18 12:03:34.296+00	2019-07-02 07:36:46.333+00	\N	427	471	\N	266	f	\N	\N	f
 3209	SEO sitemap	1	1	<p><br></p>	4.00	0.00	\N	3	266	2019-06-19 14:24:14.665+00	2019-07-02 07:36:47.924+00	\N	427	471	\N	266	f	\N	\N	f
 3106	добавить поле photo в ldap	1	7	<p><br></p>	0.00	0.00	\N	2	186	2019-06-13 11:58:01.526+00	2019-07-02 11:36:19.141+00	\N	424	470	\N	266	f	\N	\N	f
-3211	test	1	8	<p><br></p>	13.00	0.00	\N	3	266	2019-07-02 07:25:02.59+00	2019-07-10 08:11:47.165+00	\N	428	470	\N	212	t	\N	\N	t
-3197	Артамонов. Go Wash	1	1	<p>Клиент: не ИТ и никогда не работал с подрядчиками.</p>\n<p>Желание: сделать свою систему на основе системы конкурента.</p>\n<p><br></p>\n<p>Для доступа к сайту mywasher.pro используйте следующие данные:&nbsp;</p>\n<p><br></p>\n<p>Логин: ceo@go-wash.ru</p>\n<p>Пароль: qwerty1234</p>\n<p>&nbsp;</p>\n<p><br></p>\n<p>&nbsp;</p>\n<p>Краткое описание проекта</p>\n<p>&nbsp;</p>\n<p>ERP система для автомойки, детейлинга и шиномонтажа. + элементы CRM и WMS (warehouse management system).</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Создание операций</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Сбор, анализ и визуализация, доходов, расходов и операционной статистики</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Управление запасами и складом</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Управление персоналом и расчет зарплат</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Управление скидками, начислением баллов, создание промо акций</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Блок контроля за подписками и сбора статистики по клиентам</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Синхронизация с внешними сервисами по API</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Интеграция с камерой с определением номера машины в боксе временем въезда и выезда</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Кассовый учет, кассовые операции (фискальный регистратор, либо онлайн касса).</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Система по управлению хранением колес</p>	16.00	0.00	\N	3	102	2019-06-18 14:09:53.222+00	2019-07-02 07:32:19.293+00	\N	426	472	\N	205	f	\N	\N	f
-3212	цуццу	1	7	<p><br></p>	4.00	0.00	\N	2	266	2019-07-02 07:33:53.311+00	2019-07-02 11:35:56.577+00	\N	428	470	\N	266	t	\N	\N	t
+3309	asasasa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:12:28.093+00	2019-10-15 08:26:24.649+00	\N	439	480	\N	\N	f	\N	\N	f
+3211	test	1	3	<p><br></p>	13.00	0.00	\N	3	266	2019-07-02 07:25:02.59+00	2019-10-09 11:35:46.311+00	\N	428	470	\N	\N	t	\N	\N	t
+3320	oootr	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:50:15.04+00	2019-10-14 11:50:15.04+00	\N	437	480	\N	\N	f	\N	\N	f
+3300	драгэнд	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:31:37.112+00	2019-10-14 11:51:49.038+00	\N	437	480	\N	\N	f	\N	\N	f
+3324	qwqwqw	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:55:28.848+00	2019-10-14 11:55:28.848+00	\N	\N	480	\N	\N	f	\N	\N	f
+3327	zzzzzz	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:12:41.574+00	2019-10-14 12:12:41.574+00	\N	438	480	\N	\N	f	\N	\N	f
+3312	eerty	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:19:22.094+00	2019-10-14 13:49:14.456+00	\N	438	480	\N	\N	f	\N	\N	f
+3213	test	1	1	<p><br></p>	0.00	0.00	\N	3	2698	2019-09-25 08:41:24.086+00	2019-09-25 08:41:24.086+00	\N	\N	473	\N	\N	f	\N	\N	f
+3216	Тестовый Таск 01	1	1	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ac ante ut metus accumsan semper. Sed porta, nisi a iaculis pulvinar, ipsum justo mollis dui, quis molestie diam mi tempus est. Donec ac leo a magna luctus efficitur. Donec efficitur felis quis nunc vulputate, sed maximus lectus dapibus. Suspendisse potenti. Sed interdum hendrerit nunc ut feugiat. Pellentesque a odio pretium, interdum diam at, porta velit. Cras lacinia iaculis mi vel dictum. Pellentesque sit amet ante id eros lacinia bibendum. Pellentesque eget interdum leo. Fusce et lectus lobortis, dictum magna nec, auctor felis. Aliquam ornare elit et nibh vestibulum tristique. Suspendisse eget justo odio. Suspendisse sit amet consequat magna. Mauris cursus elit ligula, nec pharetra magna consectetur at. Vestibulum ac pellentesque est.</p>	0.00	0.00	\N	3	2698	2019-10-02 05:33:16.48+00	2019-10-02 05:33:16.48+00	\N	\N	477	\N	\N	f	\N	\N	f
+3217	Тест 02	1	1	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ac ante ut metus accumsan semper. Sed porta, nisi a iaculis pulvinar, ipsum justo mollis dui, quis molestie diam mi tempus est. Donec ac leo a magna luctus efficitur. Donec efficitur felis quis nunc vulputate, sed maximus lectus dapibus. Suspendisse potenti. Sed interdum hendrerit nunc ut feugiat. Pellentesque a odio pretium, interdum diam at, porta velit. Cras lacinia iaculis mi vel dictum. Pellentesque sit amet ante id eros lacinia bibendum. Pellentesque eget interdum leo. Fusce et lectus lobortis, dictum magna nec, auctor felis. Aliquam ornare elit et nibh vestibulum tristique. Suspendisse eget justo odio. Suspendisse sit amet consequat magna. Mauris cursus elit ligula, nec pharetra magna consectetur at. Vestibulum ac pellentesque est.</p>	0.00	0.00	\N	3	2698	2019-10-02 05:42:56.441+00	2019-10-02 05:42:56.441+00	\N	\N	477	\N	\N	f	\N	\N	f
+3219	тестовый таск	1	3	<p><br></p>	0.00	0.00	\N	3	2728	2019-10-02 09:10:12.6+00	2019-10-22 08:33:43.227+00	\N	436	480	\N	2728	f	\N	\N	f
+3218	Тест 03	1	1	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ac ante ut metus accumsan semper. Sed porta, nisi a iaculis pulvinar, ipsum justo mollis dui, quis molestie diam mi tempus est. Donec ac leo a magna luctus efficitur. Donec efficitur felis quis nunc vulputate, sed maximus lectus dapibus. Suspendisse potenti. Sed interdum hendrerit nunc ut feugiat. Pellentesque a odio pretium, interdum diam at, porta velit. Cras lacinia iaculis mi vel dictum. Pellentesque sit amet ante id eros lacinia bibendum. Pellentesque eget interdum leo. Fusce et lectus lobortis, dictum magna nec, auctor felis. Aliquam ornare elit et nibh vestibulum tristique. Suspendisse eget justo odio. Suspendisse sit amet consequat magna. Mauris cursus elit ligula, nec pharetra magna consectetur at. Vestibulum ac pellentesque est.</p>	0.00	0.00	\N	3	2717	2019-10-02 05:44:02.552+00	2019-10-02 05:54:54.499+00	\N	\N	477	\N	\N	f	\N	\N	f
+3221	TESTING	1	1	<p><br></p>	0.00	0.00	\N	3	2697	2019-10-02 11:19:37.277+00	2019-11-22 09:16:33.163+00	\N	\N	482	\N	2697	f	\N	\N	f
+3115	Краснов. PSP Весы - отказ	1	8	<p>Тип: красный</p>\n<p><br></p>\n<p>Концепция: https://docs.google.com/document/d/1NeY0C2zHByAlCXuXE5S7uei_dbQ3O_Sy8tGhoDQN3Jc/edit</p>\n<p>Роудмап: https://docs.google.com/document/d/10iawmR0vP6ycTFUkw_VWHEFQ7Z7kX6B6-Tqve4s10Ow/edit</p>\n<p>Оценка: https://docs.google.com/spreadsheets/d/1mSs74MB4datr2i-MjTyXZSuGBb6yiyAU0En6npE9ECY/edit#gid=902801002</p>\n<p><br></p>	0.00	0.00	\N	3	102	2019-06-13 15:10:16.756+00	2019-10-11 12:17:38.193+00	\N	\N	472	\N	102	f	\N	\N	f
+3235	пппп	1	1	<p><br></p>	9.00	0.00	\N	3	2717	2019-10-11 06:34:44.074+00	2019-10-11 12:54:02.863+00	\N	426	472	\N	102	f	\N	\N	f
+3237	ружждд	1	1	<p><br></p>	1.00	0.00	\N	3	2717	2019-10-11 06:40:26.509+00	2019-10-11 12:54:13.68+00	\N	426	472	\N	\N	f	\N	\N	f
+3236	ыыыцы	1	1	<p><br></p>	5.00	0.00	\N	3	2717	2019-10-11 06:39:42.431+00	2019-10-11 12:55:30.778+00	\N	426	472	\N	\N	f	\N	\N	t
+3220	TEST	1	1	<p><br></p>	0.00	0.00	\N	3	212	2019-10-02 11:15:08.783+00	2019-10-02 11:15:08.783+00	\N	\N	481	\N	\N	f	\N	\N	f
+3118	Краснов. DiaSoft	1	5	<p>https://www.diasoft.ru/</p>\n<p><br></p>\n<p>Будут делать внутренний продукт, mvp. Сейчас в процессе получения аппрува на разработку</p>	0.00	0.00	\N	3	102	2019-06-14 06:51:30.426+00	2019-10-11 13:00:37.05+00	\N	426	472	\N	102	f	\N	\N	f
+3286	тестимтестим	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:37:46.361+00	2019-10-14 06:37:55.995+00	\N	436	480	\N	\N	f	\N	\N	f
+3214	test task	1	1	<p><br></p>	0.00	0.00	\N	3	2698	2019-09-25 08:44:36.666+00	2019-10-11 08:16:12.935+00	\N	\N	475	\N	\N	t	\N	\N	f
+3223	testff	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-03 09:48:57.441+00	2019-10-03 09:48:57.441+00	\N	\N	485	\N	\N	f	\N	\N	f
+3242	четвертый таск для проверки драг&дроп	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 08:42:26.918+00	2019-10-14 06:39:15.18+00	\N	437	480	\N	\N	f	\N	\N	f
+3215	Test task	1	1	<p><br></p>	0.00	0.00	\N	3	2698	2019-09-25 08:48:57.248+00	2019-10-11 08:17:25.88+00	\N	\N	475	\N	\N	f	\N	\N	f
+3225	tesnn	1	10	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-03 11:05:25.261+00	2019-10-03 11:05:41.454+00	\N	\N	484	\N	\N	f	\N	\N	f
+3222	test	2	10	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-03 09:00:54.238+00	2019-10-03 11:10:50.545+00	\N	\N	484	\N	\N	f	\N	\N	f
+3295	testlast	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:07:15.666+00	2019-10-14 10:07:22.444+00	\N	437	480	\N	\N	f	\N	\N	f
+3226	bugs	1	10	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-03 11:19:44.459+00	2019-10-03 11:19:55.996+00	\N	\N	484	\N	\N	f	\N	\N	f
+3289	aaaaaa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 09:34:11.408+00	2019-10-14 10:12:29.49+00	\N	436	480	\N	\N	f	\N	\N	f
+3227	testf	1	10	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-03 11:30:40.074+00	2019-10-03 11:30:46.634+00	\N	\N	484	\N	\N	f	\N	\N	f
+3228	1st tast	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-08 06:13:04.785+00	2019-10-08 06:13:04.785+00	\N	\N	489	\N	\N	f	\N	\N	f
+3229	2nd task	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-08 06:13:40.711+00	2019-10-08 06:13:40.711+00	\N	\N	489	\N	\N	f	\N	\N	f
+3306	urrra	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:58:25.587+00	2019-10-14 10:58:46.173+00	\N	436	480	\N	\N	f	\N	\N	f
+3230	test	1	10	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-08 06:36:17.667+00	2019-10-08 06:37:33.706+00	\N	\N	490	\N	\N	f	\N	\N	f
+3316	qwasdf	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:38:51.642+00	2019-10-14 11:38:51.642+00	\N	437	480	\N	\N	f	\N	\N	f
+3231	deqwewq	1	10	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-08 09:42:48.554+00	2019-10-08 09:43:37.582+00	\N	\N	492	\N	\N	f	\N	\N	f
+3224	bugs	1	2	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-03 10:17:02.828+00	2019-10-08 12:53:28.735+00	\N	\N	486	\N	\N	f	\N	\N	f
+3232	ulya	1	10	<p>task test</p>	10.00	0.00	\N	2	2717	2019-10-08 14:37:20.623+00	2019-10-08 14:37:33.405+00	\N	\N	493	\N	\N	t	\N	\N	f
+3233	test	1	1	<p><br></p>	12.00	0.00	\N	3	2717	2019-10-09 11:41:06.141+00	2019-10-09 12:16:36.668+00	\N	\N	496	\N	2759	f	\N	\N	t
+3212	цуццу	1	3	<p><br></p>	4.00	0.00	\N	2	266	2019-07-02 07:33:53.311+00	2019-10-09 13:11:46.322+00	\N	428	470	\N	2759	t	\N	\N	t
+3234	ффыыфф	2	1	<p><br></p>	0.00	0.00	\N	3	2759	2019-10-10 11:00:53.776+00	2019-10-10 11:00:53.776+00	\N	\N	498	\N	\N	t	\N	\N	f
+3243	Пятый таск для проверки драг&дроп	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 08:47:24.91+00	2019-10-11 08:47:39.8+00	\N	436	480	\N	\N	f	\N	\N	f
+3197	Артамонов. Go Wash	1	1	<p>Клиент: не ИТ и никогда не работал с подрядчиками.</p>\n<p>Желание: сделать свою систему на основе системы конкурента.</p>\n<p><br></p>\n<p>Для доступа к сайту mywasher.pro используйте следующие данные:&nbsp;</p>\n<p><br></p>\n<p>Логин: ceo@go-wash.ru</p>\n<p>Пароль: qwerty1234</p>\n<p>&nbsp;</p>\n<p><br></p>\n<p>&nbsp;</p>\n<p>Краткое описание проекта</p>\n<p>&nbsp;</p>\n<p>ERP система для автомойки, детейлинга и шиномонтажа. + элементы CRM и WMS (warehouse management system).</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Создание операций</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Сбор, анализ и визуализация, доходов, расходов и операционной статистики</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Управление запасами и складом</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Управление персоналом и расчет зарплат</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Управление скидками, начислением баллов, создание промо акций</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Блок контроля за подписками и сбора статистики по клиентам</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Синхронизация с внешними сервисами по API</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Интеграция с камерой с определением номера машины в боксе временем въезда и выезда</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Кассовый учет, кассовые операции (фискальный регистратор, либо онлайн касса).</p>\n<p><br></p>\n<p>· &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Система по управлению хранением колес</p>	16.00	0.00	\N	3	102	2019-06-18 14:09:53.222+00	2019-10-11 12:20:56.369+00	\N	429	472	\N	205	f	\N	\N	f
+3117	Артамонов. SkyEng	1	3	<p>Изначально: 1 ставка Unity</p>\n<p>Пресейл с Золотовым</p>\n<p><br></p>	0.00	0.00	\N	3	102	2019-06-14 06:48:17.693+00	2019-10-11 12:57:04.586+00	\N	426	472	\N	102	f	\N	\N	f
+3297	aaaaaaaaaaaaaaa	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:16:05.119+00	2019-10-14 12:52:16.296+00	\N	437	480	\N	\N	f	\N	\N	f
+3307	aasdd	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:00:14.926+00	2019-10-14 11:00:22.32+00	\N	436	480	\N	\N	f	\N	\N	f
+3370	ййййй	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:28:02.471+00	2019-10-14 13:28:02.471+00	\N	438	480	\N	\N	f	\N	\N	f
+3374	qqqwqwq	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:46:01.215+00	2019-10-14 13:46:01.215+00	\N	439	480	\N	\N	f	\N	\N	f
+3296	aaaasqas	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:08:46.893+00	2019-10-14 13:48:52.124+00	\N	437	480	\N	\N	f	\N	\N	f
+3310	asaswew	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:18:40.269+00	2019-10-14 13:48:59.529+00	\N	438	480	\N	\N	f	\N	\N	f
+3372	asdfg	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:37:21.771+00	2019-10-14 13:49:06.667+00	\N	438	480	\N	\N	f	\N	\N	f
+3321	kjjhhgg	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:50:26.021+00	2019-10-14 13:49:31.694+00	\N	438	480	\N	\N	f	\N	\N	f
+3365	lasttest	1	9	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:53:07.458+00	2019-10-14 13:49:36.666+00	\N	438	480	\N	\N	f	\N	\N	f
+3377	ddddd	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:51:57.572+00	2019-10-14 13:51:57.572+00	\N	439	480	\N	\N	f	\N	\N	f
+3238	Проверка драг & дроп задачи	1	1	<p><br></p>	0.00	0.00	\N	3	2728	2019-10-11 07:36:53.248+00	2019-10-11 07:57:46.087+00	\N	\N	501	\N	2729	f	\N	\N	f
+3379	фффффф	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:56:17.144+00	2019-10-14 13:56:17.144+00	\N	439	480	\N	\N	f	\N	\N	f
+3317	aaaass	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:43:21.938+00	2019-10-14 14:13:59.046+00	\N	438	480	\N	\N	f	\N	\N	f
+3328	addfddf	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:15:08.814+00	2019-10-14 14:16:18.315+00	\N	436	480	\N	\N	f	\N	\N	f
+3381	yyyyy	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:16:26.004+00	2019-10-14 14:16:26.004+00	\N	438	480	\N	\N	f	\N	\N	f
+3311	asasawewqr	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:18:53.641+00	2019-10-14 14:16:35.358+00	\N	438	480	\N	\N	f	\N	\N	f
+3382	poiuyter	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:16:51.495+00	2019-10-14 14:16:51.495+00	\N	436	480	\N	\N	f	\N	\N	f
+3376	helpme	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:49:57.482+00	2019-10-14 14:16:54.173+00	\N	436	480	\N	\N	f	\N	\N	f
+3383	qwwwww	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:18:06.768+00	2019-10-14 14:18:06.768+00	\N	439	480	\N	\N	f	\N	\N	f
+3384	ppppppppppp	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:20:38.776+00	2019-10-14 14:20:38.776+00	\N	439	480	\N	\N	f	\N	\N	f
+3385	helppp	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:40:01.456+00	2019-10-14 14:40:01.456+00	\N	439	480	\N	\N	f	\N	\N	f
+3287	aaaaaaaa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 06:42:28.861+00	2019-10-14 14:40:50.806+00	\N	438	480	\N	\N	f	\N	\N	f
+3386	eerere	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:41:44.114+00	2019-10-14 14:41:44.114+00	\N	438	480	\N	\N	f	\N	\N	f
+3319	poiuyt	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:49:51.461+00	2019-10-14 14:41:46.394+00	\N	438	480	\N	\N	f	\N	\N	f
+3387	ererer	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:41:52.546+00	2019-10-14 14:41:52.546+00	\N	439	480	\N	\N	f	\N	\N	f
+3301	qwertyui	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 10:49:17.804+00	2019-10-14 14:41:56.58+00	\N	438	480	\N	\N	f	\N	\N	f
+3388	workaet?	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:42:09.527+00	2019-10-14 14:42:09.527+00	\N	437	480	\N	\N	f	\N	\N	f
+3330	adsded	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 12:18:14.635+00	2019-10-14 14:46:28.999+00	\N	438	480	\N	\N	f	\N	\N	f
+3290	draganddrops	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 09:40:01.78+00	2019-10-15 08:23:55.252+00	\N	438	480	\N	\N	f	\N	\N	f
+3390	testagain	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:24:08.984+00	2019-10-15 08:24:08.984+00	\N	439	480	\N	\N	f	\N	\N	f
+3391	asasasa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:25:47.759+00	2019-10-15 08:25:47.759+00	\N	439	480	\N	\N	f	\N	\N	f
+3392	asasasa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:25:48.117+00	2019-10-15 08:25:48.117+00	\N	439	480	\N	\N	f	\N	\N	f
+3393	aswww	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:25:58.098+00	2019-10-15 08:25:58.098+00	\N	437	480	\N	\N	f	\N	\N	f
+3394	zswwww	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:26:33.649+00	2019-10-15 08:26:33.649+00	\N	438	480	\N	\N	f	\N	\N	f
+3395	aaaaaaaa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:26:46.701+00	2019-10-15 08:26:46.701+00	\N	436	480	\N	\N	f	\N	\N	f
+3396	sssss	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:31:00.663+00	2019-10-15 08:31:00.663+00	\N	437	480	\N	\N	f	\N	\N	f
+3325	asasas	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 11:56:14.52+00	2019-10-15 08:31:17.108+00	\N	438	480	\N	\N	f	\N	\N	f
+3397	ddfdfdf	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:31:25.62+00	2019-10-15 08:31:25.62+00	\N	439	480	\N	\N	f	\N	\N	f
+3389	aaaaaa	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 14:46:35.47+00	2019-10-15 08:32:31.146+00	\N	439	480	\N	\N	f	\N	\N	f
+3367	123456	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-14 13:01:51.451+00	2019-10-16 10:54:55.308+00	\N	438	480	\N	\N	f	\N	\N	f
+3398	dwwwwe	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-15 08:32:38.557+00	2019-10-16 10:55:36.586+00	\N	438	480	\N	\N	f	\N	\N	f
+3400	тест 2 d&d	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-16 10:56:26.239+00	2019-10-16 10:56:26.239+00	\N	438	480	\N	\N	f	\N	\N	f
+3401	тест 3 d&d	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-16 10:57:03.835+00	2019-10-16 10:57:03.835+00	\N	\N	480	\N	\N	f	\N	\N	t
+3399	тест d&d	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-16 10:55:28.084+00	2019-10-16 10:57:22.008+00	\N	436	480	\N	\N	f	\N	\N	f
+3402	task9	1	2	<p><br></p>	0.00	0.00	\N	2	2717	2019-10-16 11:03:56.439+00	2019-10-16 11:06:38.07+00	\N	\N	484	\N	\N	f	\N	\N	f
+3403	Замутить кекарню	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-17 16:00:13.843+00	2019-10-17 16:00:13.843+00	\N	\N	503	\N	\N	f	\N	\N	f
+3406	таск 03	1	1	<p><br></p>	0.00	0.00	\N	3	2718	2019-10-21 14:31:18.67+00	2019-10-21 14:31:18.67+00	\N	\N	505	\N	\N	f	\N	\N	f
+3404	такст 01	1	3	<p><br></p>	0.00	0.00	\N	3	2718	2019-10-21 14:27:54.146+00	2019-10-21 14:31:25.135+00	\N	\N	505	\N	2718	f	\N	\N	f
+3405	таск 02	1	5	<p><br></p>	0.00	0.00	\N	3	2718	2019-10-21 14:31:09.888+00	2019-10-21 14:31:32.357+00	\N	\N	505	\N	2718	f	\N	\N	f
+3407	testcomment	1	1	<p><br></p>	0.00	0.00	\N	3	2759	2019-10-28 12:57:18.297+00	2019-10-28 12:57:18.297+00	\N	\N	507	\N	\N	f	\N	\N	f
+3408	проверим 500ю в коментариях	1	8	<p>вфывсфсч</p>	0.00	0.00	\N	3	2728	2019-10-28 13:08:11.802+00	2019-10-28 13:13:11.251+00	\N	\N	508	\N	2728	f	\N	\N	f
+3409	New task from Naritai	1	3	<p>awesome task</p>	3.00	0.00	\N	2	2717	2019-10-28 13:39:51.52+00	2019-10-28 13:40:21.019+00	\N	\N	509	\N	2766	t	\N	\N	t
+3205	Заказ звонка	1	3	<p>Фича позволяет заказать звонок клиенту&nbsp;</p>\n<p>Функциональность есть на сайте айтека</p>\n<p><br></p>\n<p>http://joxi.ru/nAyZRnZTgWJwkr</p>\n<p>обязательный только телефон - первым элементом формы</p>\n<p>время - по дефолту "как можно скорее"</p>\n<p>Имя и Сообщение</p>	0.00	0.00	\N	1	35	2019-06-19 10:28:01.688+00	2019-10-28 13:41:38.804+00	\N	427	471	\N	\N	t	\N	\N	t
+3279	ssss	1	1	<p><br></p>	0.00	0.00	\N	3	2717	2019-10-11 12:55:39.165+00	2019-10-29 06:42:35.476+00	\N	426	472	\N	\N	f	\N	\N	f
+3411	implementation2	1	3	<p>implementation2</p>	4.00	0.00	\N	3	2717	2019-10-29 06:51:01.5+00	2019-10-29 06:54:35.264+00	\N	\N	510	\N	2717	t	\N	\N	f
+3412	vacation	1	1	<p>vacation</p>	0.00	0.00	\N	3	2717	2019-10-29 07:00:58.078+00	2019-10-29 07:00:58.078+00	\N	\N	510	\N	\N	f	\N	\N	f
+3410	implementation	1	3	<p>implementation</p>	3.00	0.00	\N	3	2717	2019-10-29 06:49:55.557+00	2019-10-29 07:07:43.386+00	\N	\N	510	\N	2717	t	\N	\N	f
+3083	500 Ошибка на многих страницах ST	1	3	<p>Аватарки, история проекта</p>	0.00	0.00	\N	3	336	2019-06-11 08:35:24.739+00	2019-10-29 08:08:56.673+00	\N	428	470	\N	102	f	\N	\N	f
+3413	Тест времени внешнего пользователя	1	1	<p>фффффффффффффффффф ввввввввввввввввввввввввввв аааааааааааааааааа</p>	0.00	0.00	\N	3	2728	2019-11-07 07:17:56.988+00	2019-11-07 07:17:56.988+00	\N	\N	512	\N	\N	f	\N	\N	f
+3414	Тест ТШ	1	3	<p><br></p>	0.00	0.00	\N	3	2941	2019-11-07 10:39:51.677+00	2019-11-07 10:40:00.979+00	\N	\N	511	\N	2941	f	\N	\N	f
 \.
-
-
---
--- Name: tasks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.tasks_id_seq', 3212, true);
 
 
 --
@@ -3875,7 +5352,31 @@ COPY public.timesheets (id, sprint_id, task_id, user_id, on_date, type_id, spent
 3983	427	3168	266	2019-06-19	1	2.00	\N	t	[9]	3	1	t	2019-06-19 14:14:49.409+00	2019-06-19 14:14:49.409+00	471	\N
 3926	425	3093	266	2019-06-13	1	7.00		t	[9]	1	1	t	2019-06-13 12:58:38.317+00	2019-06-27 12:15:23.647+00	471	\N
 3921	425	3101	266	2019-06-13	1	0.20		t	[9]	3	1	t	2019-06-13 09:58:15.048+00	2019-06-27 12:15:28.265+00	471	\N
+4076	\N	3219	2728	2019-10-03	1	8.00	\N	t	[5]	3	3	t	2019-10-04 07:38:29.84+00	2019-10-04 07:38:33.107+00	480	\N
+4079	\N	3220	2725	2019-10-04	1	8.00	\N	t	[2]	1	2	t	2019-10-04 08:02:14.751+00	2019-10-04 08:05:12.139+00	481	\N
+4081	\N	3229	2698	2019-10-08	1	8.00	тестовый лог	f	[6]	3	3	t	2019-10-08 06:19:21.93+00	2019-10-11 12:33:42.593+00	489	\N
+4097	\N	\N	2759	2019-10-10	8	2.00	дд	f	[5]	2	3	t	2019-10-10 11:05:02.883+00	2019-10-17 14:53:49.372+00	498	\N
 3995	428	3211	266	2019-07-02	1	2.00	\N	t	[9]	3	4	t	2019-07-02 07:25:24.879+00	2019-07-10 07:53:03.346+00	470	\N
+4159	\N	\N	2717	2019-10-15	2	9.00	\N	t	[6]	2	4	t	2019-10-18 10:36:22.022+00	2019-10-24 14:03:37.549+00	482	\N
+4085	\N	\N	2717	2019-10-09	2	8.00		f	\N	2	3	t	2019-10-08 14:17:28.991+00	2019-10-21 07:07:12.175+00	\N	\N
+4094	\N	\N	2759	2019-10-07	3	10.00	ssssssa	t	[5]	2	3	t	2019-10-10 11:03:20.406+00	2019-10-17 14:53:49.372+00	498	\N
+4162	436	3219	2728	2019-10-11	1	1.00	\N	t	[2]	3	4	t	2019-10-21 08:04:46.868+00	2019-10-22 07:45:16.85+00	480	\N
+4088	\N	3229	2698	2019-10-10	1	0.00		t	[6]	3	3	t	2019-10-09 06:19:27.967+00	2019-10-11 08:20:10.144+00	489	\N
+4160	\N	\N	2717	2019-09-30	2	0.00	dddd	f	\N	2	3	t	2019-10-20 10:32:33.907+00	2019-10-29 06:46:42.475+00	0	\N
+4077	\N	3219	2728	2019-10-04	1	8.00	\N	t	[5]	3	3	t	2019-10-04 07:38:31.39+00	2019-10-04 07:38:33.107+00	480	\N
+4028	\N	3219	2728	2019-10-01	1	1.00	\N	t	[5]	3	3	t	2019-10-02 09:14:43.805+00	2019-10-04 07:38:33.107+00	480	\N
+4029	\N	3219	2728	2019-10-02	1	2.00	\N	t	[5]	3	3	t	2019-10-02 09:14:53.784+00	2019-10-04 07:38:33.107+00	480	\N
+4034	\N	3219	2728	2019-10-02	1	0.00	123	t	[5]	7	3	t	2019-10-02 10:13:38.379+00	2019-10-04 07:38:33.107+00	480	\N
+4213	\N	\N	2717	2019-10-25	2	1.00	\N	t	[6]	2	2	t	2019-10-25 08:29:28.877+00	2019-11-24 18:37:09.024+00	482	\N
+4118	438	3287	2759	2019-10-15	1	1.00		f	[5]	5	4	t	2019-10-15 12:20:02.93+00	2019-10-24 13:20:00.511+00	480	\N
+4186	\N	3221	2717	2019-11-01	1	9.00	\N	t	[6]	3	3	t	2019-10-24 09:02:46.932+00	2019-11-25 11:03:28.37+00	482	\N
+4269	\N	3215	2728	2019-10-31	1	5.00	\N	t	[2]	3	3	t	2019-10-31 11:14:58.841+00	2019-11-22 13:06:13.196+00	475	\N
+4246	\N	3221	2717	2019-11-28	1	1.00	\N	t	[6]	5	2	t	2019-10-25 08:35:48.198+00	2019-11-25 09:24:16.474+00	482	\N
+4012	\N	\N	2698	2019-09-09	2	5.00	\N	f	\N	2	3	t	2019-09-24 08:04:39.366+00	2019-09-24 09:45:15.383+00	0	\N
+4013	\N	\N	2698	2019-09-10	2	5.00	\N	f	\N	2	3	t	2019-09-24 08:04:39.565+00	2019-09-24 09:45:15.383+00	0	\N
+4014	\N	\N	2698	2019-09-11	2	5.00	\N	f	\N	2	3	t	2019-09-24 08:04:39.826+00	2019-09-24 09:45:15.383+00	0	\N
+4015	\N	\N	2698	2019-09-12	2	5.00	\N	f	\N	2	3	t	2019-09-24 08:04:40.02+00	2019-09-24 09:45:15.383+00	0	\N
+4016	\N	\N	2698	2019-09-13	2	5.00	\N	f	\N	2	3	t	2019-09-24 08:04:41.255+00	2019-09-24 09:45:15.383+00	0	\N
 3984	428	3204	266	2019-06-28	1	5.00	\N	t	[9]	5	4	t	2019-06-28 13:24:03.557+00	2019-07-10 07:52:10.5+00	470	\N
 3985	427	3194	266	2019-06-25	1	4.00	\N	t	[9]	5	4	t	2019-06-28 13:24:07.32+00	2019-07-10 07:52:10.5+00	471	\N
 3986	427	3210	266	2019-06-28	1	5.00	\N	t	[9]	3	4	t	2019-06-28 13:24:11.972+00	2019-07-10 07:52:10.5+00	471	\N
@@ -3894,9 +5395,142 @@ COPY public.timesheets (id, sprint_id, task_id, user_id, on_date, type_id, spent
 4001	428	3211	266	2019-07-10	1	2.00	1	t	[9]	5	1	t	2019-07-10 07:56:52.419+00	2019-07-10 08:03:25.21+00	470	\N
 4002	428	3198	266	2019-07-10	1	2.00	\N	t	[9]	5	1	t	2019-07-10 08:06:12.54+00	2019-07-10 08:06:12.54+00	470	\N
 4000	428	3198	266	2019-07-10	1	2.00	1	t	[9]	3	1	f	2019-07-10 07:56:24.762+00	2019-07-10 08:08:14.319+00	470	\N
+4009	\N	\N	2698	2019-09-19	2	5.00		f	\N	2	4	t	2019-09-24 08:02:11.348+00	2019-10-07 09:52:56.833+00	\N	\N
 4003	428	3211	212	2019-07-08	1	0.00	\N	t	[9]	7	4	t	2019-07-10 08:11:44.684+00	2019-07-10 08:14:52.778+00	470	\N
 4004	428	3211	212	2019-07-10	1	2.00	\N	t	[9]	7	4	t	2019-07-10 08:11:47.069+00	2019-07-10 08:14:52.778+00	470	\N
 4005	428	3211	212	2019-07-11	1	6.00	\N	t	[9]	7	4	t	2019-07-10 08:14:39.104+00	2019-07-10 08:14:52.778+00	470	\N
+4010	\N	\N	2698	2019-09-20	2	5.00		f	\N	2	4	t	2019-09-24 08:02:11.819+00	2019-10-07 09:52:56.833+00	\N	\N
+4018	\N	\N	2710	2019-09-17	1	50.00	\N	t	[9]	7	1	t	2019-09-27 15:02:04.304+00	2019-09-27 15:02:00.564+00	470	\N
+4036	428	3211	212	2019-10-02	1	8.00	\N	t	[9]	7	3	t	2019-10-02 11:15:54.114+00	2019-10-29 08:06:24.282+00	470	\N
+4166	\N	3216	2718	2019-10-21	1	9.00		f	[6]	3	2	t	2019-10-21 14:09:36.463+00	2019-10-25 09:54:16.738+00	477	\N
+4037	428	3211	212	2019-09-30	1	8.00	\N	t	[9]	7	3	t	2019-10-02 11:18:02.923+00	2019-10-29 08:06:24.282+00	470	\N
+4038	428	3211	212	2019-10-01	1	8.00	\N	t	[9]	7	3	t	2019-10-02 11:18:03.513+00	2019-10-29 08:06:24.282+00	470	\N
+4212	\N	3221	2717	2019-11-12	1	1.00	\N	t	[6]	5	4	t	2019-10-25 08:18:33.54+00	2019-11-25 08:52:19.664+00	482	\N
+4039	428	3211	212	2019-10-03	1	8.00	\N	t	[9]	7	3	t	2019-10-02 11:18:03.964+00	2019-10-29 08:06:24.282+00	470	\N
+4008	\N	\N	2698	2019-09-18	2	5.00		f	\N	2	4	t	2019-09-24 08:02:10.574+00	2019-10-07 09:52:56.833+00	\N	\N
+4007	\N	\N	2698	2019-09-17	2	5.00		f	\N	2	4	t	2019-09-24 08:02:10.372+00	2019-10-07 09:52:56.833+00	\N	\N
+4006	\N	\N	2698	2019-09-16	2	5.00		f	\N	2	4	t	2019-09-24 08:02:10.111+00	2019-10-07 09:52:56.833+00	\N	\N
+4011	\N	\N	2698	2019-09-21	2	5.00		f	\N	2	4	t	2019-09-24 08:02:13.564+00	2019-10-07 09:52:56.833+00	\N	\N
+4086	\N	\N	2717	2019-10-10	2	8.00		f	\N	2	3	t	2019-10-08 14:44:26.373+00	2019-10-21 07:07:12.175+00	\N	\N
+4040	428	3211	212	2019-10-04	1	8.00	\N	t	[9]	7	3	t	2019-10-02 11:18:04.712+00	2019-10-29 08:06:24.282+00	470	\N
+4089	\N	3229	2698	2019-10-11	1	0.00		t	[6]	3	3	t	2019-10-09 06:19:34.055+00	2019-10-11 08:20:10.144+00	489	\N
+4082	\N	\N	2717	2019-10-08	2	10.00	1d	f	\N	2	3	t	2019-10-08 07:05:49.511+00	2019-10-21 07:07:12.175+00	\N	\N
+4041	\N	3221	2697	2019-09-30	1	8.00	\N	t	[8,2]	1	3	t	2019-10-02 11:21:13.622+00	2019-10-02 11:26:01.322+00	482	\N
+4042	\N	3221	2697	2019-10-01	1	8.00	\N	t	[8,2]	1	3	t	2019-10-02 11:21:14.099+00	2019-10-02 11:26:01.322+00	482	\N
+4043	\N	3221	2697	2019-10-02	1	8.00	\N	t	[8,2]	1	3	t	2019-10-02 11:21:14.608+00	2019-10-02 11:26:01.322+00	482	\N
+4044	\N	3221	2697	2019-10-03	1	8.00	\N	t	[8,2]	1	3	t	2019-10-02 11:21:15.051+00	2019-10-02 11:26:01.322+00	482	\N
+4045	\N	3221	2697	2019-10-04	1	8.00	\N	t	[8,2]	1	3	t	2019-10-02 11:21:15.587+00	2019-10-02 11:26:01.322+00	482	\N
+4098	\N	\N	2728	2019-10-10	2	1.00		t	[2]	2	4	t	2019-10-10 12:27:38.985+00	2019-10-22 07:45:16.85+00	480	\N
+4095	\N	\N	2759	2019-10-08	2	12.00	ss	f	[5]	2	3	t	2019-10-10 11:04:28.654+00	2019-10-17 14:53:49.372+00	498	\N
+4109	\N	\N	2728	2019-10-12	2	8.00		f	[2]	2	4	t	2019-10-10 12:32:18.477+00	2019-10-22 07:45:16.85+00	480	\N
+4252	436	3219	2728	2019-10-21	1	8.00	\N	t	[2]	3	4	t	2019-10-25 09:54:36.529+00	2019-10-29 14:20:24.259+00	480	\N
+4193	438	3367	2759	2019-10-17	1	2.00	\N	t	[5]	5	3	t	2019-10-24 14:29:03.88+00	2019-10-24 14:29:06.28+00	480	\N
+4117	\N	3234	2759	2019-10-15	1	1.00	\N	t	[5]	5	3	t	2019-10-15 12:18:07.721+00	2019-10-24 14:29:06.28+00	498	\N
+4119	437	3329	2759	2019-10-16	1	1.00	\N	t	[5]	5	4	t	2019-10-15 12:53:53.346+00	2019-10-24 13:20:00.511+00	480	\N
+4261	\N	3221	2717	2020-01-16	1	6.00	\N	t	[6]	5	3	t	2019-10-28 12:22:16.224+00	2019-10-28 12:22:27.797+00	482	\N
+4161	\N	\N	2717	2019-09-30	2	0.00	cc	f	\N	2	3	t	2019-10-20 10:32:44.002+00	2019-10-29 06:46:42.475+00	0	\N
+4021	\N	\N	2727	2019-10-02	3	1.00	\N	t	[2]	2	2	t	2019-10-02 08:08:58.712+00	2019-10-29 06:57:56.169+00	477	\N
+4022	\N	\N	2727	2019-10-02	5	1.00	\N	f	\N	2	2	t	2019-10-02 08:12:31.711+00	2019-10-29 06:57:56.169+00	0	\N
+4052	\N	\N	2727	2019-09-26	2	5.00	\N	t	[2]	2	1	t	2019-10-02 11:44:59.05+00	2019-10-02 11:44:59.05+00	477	\N
+4048	\N	\N	2727	2019-10-05	2	2.00	\N	f	\N	2	2	t	2019-10-02 11:43:19.043+00	2019-10-29 06:57:56.169+00	0	\N
+4092	\N	\N	2759	2019-10-07	8	2.00		f	\N	2	2	t	2019-10-09 12:47:18.056+00	2019-10-21 12:55:49.422+00	\N	\N
+4049	\N	\N	2727	2019-10-06	2	2.00	\N	f	\N	2	2	t	2019-10-02 11:43:20.427+00	2019-10-29 06:57:56.169+00	0	\N
+4087	\N	\N	2717	2019-10-07	2	8.00		f	\N	2	3	t	2019-10-08 14:44:34.12+00	2019-10-21 07:07:12.175+00	\N	\N
+4084	\N	\N	2717	2019-10-08	1	10.00	1d	f	\N	2	3	t	2019-10-08 14:11:51.067+00	2019-10-21 07:07:12.175+00	\N	\N
+4093	\N	\N	2717	2019-10-13	2	0.00		f	\N	2	3	t	2019-10-10 08:36:29.98+00	2019-10-21 07:07:12.175+00	\N	\N
+4050	\N	\N	2727	2019-10-01	2	2.00	\N	f	\N	2	2	t	2019-10-02 11:43:21.432+00	2019-10-29 06:57:56.169+00	0	\N
+4051	\N	\N	2727	2019-09-30	2	2.00	\N	f	\N	2	2	t	2019-10-02 11:43:23.728+00	2019-10-29 06:57:56.169+00	0	\N
+4059	\N	\N	2710	2019-09-23	2	20.00	\N	t	\N	2	1	t	2019-10-03 11:44:31.721+00	2019-10-03 11:44:34.613+00	\N	\N
+4083	\N	3229	2698	2019-10-09	1	0.00		t	[6]	3	3	t	2019-10-08 08:04:01.367+00	2019-10-11 08:20:10.144+00	489	\N
+4080	\N	3228	2698	2019-10-08	1	8.00	тестовоый лог	t	[6]	3	3	t	2019-10-08 06:19:00.829+00	2019-10-11 08:20:10.144+00	489	\N
+4078	\N	3220	2725	2019-10-04	1	8.00	\N	t	[2]	5	2	t	2019-10-04 08:02:12.18+00	2019-10-04 08:05:12.139+00	481	\N
+4262	\N	3221	2717	2019-12-30	1	1.00	dddd	t	[6]	7	1	t	2019-10-28 12:51:48.356+00	2019-10-28 12:51:52.122+00	482	\N
+4060	\N	\N	2710	2019-09-27	2	41.00	\N	t	\N	2	1	t	2019-10-03 11:45:12.653+00	2019-10-30 11:45:18.806+00	\N	\N
+4058	\N	\N	2732	2019-09-27	2	21.00	\N	t	\N	2	4	t	2019-10-03 11:14:09.223+00	2019-10-03 11:14:11.403+00	\N	\N
+4056	\N	\N	2732	2019-09-23	2	20.00	\N	t	\N	2	4	t	2019-10-03 11:13:04.865+00	2019-10-03 11:13:07.7+00	\N	\N
+4066	428	3083	183	2019-09-30	1	8.00	\N	t	[6]	3	2	t	2019-10-04 07:35:25.109+00	2019-10-29 08:05:52.692+00	470	\N
+4067	428	3083	183	2019-10-01	1	8.00	\N	t	[6]	3	2	t	2019-10-04 07:35:25.337+00	2019-10-29 08:05:52.692+00	470	\N
+4068	428	3083	183	2019-10-02	1	8.00	\N	t	[6]	3	2	t	2019-10-04 07:35:25.52+00	2019-10-29 08:05:52.692+00	470	\N
+4260	\N	3221	2717	2019-12-28	1	6.00	\N	t	[6]	5	3	t	2019-10-27 18:10:09.439+00	2019-10-27 18:10:12.79+00	482	\N
+4069	428	3083	183	2019-10-03	1	8.00		t	[6]	3	2	t	2019-10-04 07:35:25.772+00	2019-10-29 08:05:52.692+00	470	\N
+4070	428	3083	183	2019-10-04	1	8.00		t	[6]	3	2	t	2019-10-04 07:35:25.954+00	2019-10-29 08:05:52.692+00	470	\N
+4270	436	3219	2728	2019-10-30	1	5.00	тест	f	[2]	7	4	t	2019-10-31 11:15:01.328+00	2019-11-22 13:06:10.159+00	480	\N
+4096	\N	\N	2759	2019-10-09	4	2.00	\N	t	[5]	2	3	t	2019-10-10 11:04:48.72+00	2019-10-17 14:53:49.372+00	498	\N
+4110	\N	\N	2759	2019-10-08	4	6.00	\N	t	[5]	2	3	t	2019-10-11 08:05:03.139+00	2019-10-17 14:53:49.372+00	480	\N
+4182	\N	\N	2717	2019-10-31	2	5.00		f	\N	2	4	t	2019-10-23 13:35:50.623+00	2019-11-25 11:03:20.313+00	\N	\N
+4187	\N	3221	2717	2019-10-28	1	9.00		t	[6]	3	3	t	2019-10-24 09:10:36.564+00	2019-11-25 11:03:28.37+00	482	\N
+4214	\N	\N	2717	2019-11-09	2	12.00	\N	t	[6]	2	2	t	2019-10-25 08:29:58.976+00	2019-11-05 07:26:51.129+00	482	\N
+4071	426	3113	102	2019-09-30	1	8.00	\N	t	[2]	3	2	t	2019-10-04 07:36:02.878+00	2019-11-22 06:43:14.07+00	472	\N
+4247	\N	\N	2717	2019-12-02	2	12.00	\N	f	[10]	2	3	t	2019-10-25 08:36:38.714+00	2019-10-25 08:36:47.097+00	485	\N
+4253	436	3219	2728	2019-10-22	1	8.00	\N	t	[2]	3	4	t	2019-10-25 09:54:37.474+00	2019-10-29 14:20:24.259+00	480	\N
+4167	\N	3404	2718	2019-10-24	1	9.00		t	[5]	3	2	t	2019-10-21 14:30:54.679+00	2019-10-25 09:54:16.738+00	505	\N
+4062	\N	\N	2717	2019-10-02	2	0.00	rgtgtre	f	\N	2	3	t	2019-10-03 09:51:07.88+00	2019-10-11 08:26:23.691+00	0	\N
+4061	\N	\N	2717	2019-10-03	2	0.00	new old new	f	\N	2	3	t	2019-10-03 09:50:26.951+00	2019-10-11 08:26:23.691+00	0	\N
+4065	\N	\N	2717	2019-10-01	2	0.00	cmt	f	\N	2	3	t	2019-10-03 10:56:18.222+00	2019-10-11 08:26:23.691+00	0	\N
+4258	436	3243	2728	2019-10-21	1	4.00	\N	t	[2]	3	4	t	2019-10-25 09:55:22.838+00	2019-10-29 14:20:24.259+00	480	\N
+4072	426	3113	102	2019-10-01	1	8.00	\N	t	[2]	3	2	t	2019-10-04 07:36:03.134+00	2019-11-22 06:43:14.07+00	472	\N
+4073	426	3113	102	2019-10-02	1	8.00	\N	t	[2]	3	2	t	2019-10-04 07:36:03.392+00	2019-11-22 06:43:14.07+00	472	\N
+4074	426	3113	102	2019-10-03	1	8.00	\N	t	[2]	3	2	t	2019-10-04 07:36:03.509+00	2019-11-22 06:43:14.07+00	472	\N
+4259	\N	3239	2728	2019-10-25	1	5.00		t	[2]	3	4	t	2019-10-25 09:55:55.479+00	2019-10-29 14:20:24.259+00	475	\N
+4075	426	3113	102	2019-10-04	1	8.00	\N	t	[2]	3	2	t	2019-10-04 07:36:04.834+00	2019-11-22 06:43:14.07+00	472	\N
+4173	\N	3221	2717	2019-10-23	1	12.00	\N	t	[6]	7	2	t	2019-10-23 11:23:19.092+00	2019-11-24 18:37:09.024+00	482	\N
+4113	\N	\N	2728	2019-10-11	6	4.00		t	[2]	2	3	t	2019-10-11 10:20:47.173+00	2019-10-21 10:53:22.013+00	475	\N
+4099	\N	\N	2728	2019-10-09	8	2.00	\N	t	[2]	2	3	t	2019-10-10 12:27:40.424+00	2019-10-21 10:53:22.013+00	475	\N
+4103	\N	\N	2728	2019-10-08	6	3.00		t	[2]	2	3	t	2019-10-10 12:32:07.4+00	2019-10-21 10:53:22.013+00	475	\N
+4105	\N	\N	2728	2019-10-12	6	1.00		f	[2]	2	3	t	2019-10-10 12:32:14.09+00	2019-10-21 10:53:22.013+00	475	\N
+4215	\N	3221	2717	2019-11-24	1	1.00	\N	t	[6]	5	2	t	2019-10-25 08:30:42.838+00	2019-11-22 13:48:34.56+00	482	\N
+4263	\N	3220	2717	2019-12-30	1	1.00	dddd	t	[1]	7	1	t	2019-10-28 12:53:14.337+00	2019-10-28 12:53:18.311+00	481	\N
+4191	\N	3221	2717	2019-10-16	1	1.00	\N	t	[6]	5	3	t	2019-10-24 14:25:01.066+00	2019-10-24 14:25:23.433+00	482	\N
+4172	\N	3221	2717	2019-10-21	1	2.00	mkkk	t	[6]	5	2	t	2019-10-23 11:22:36.889+00	2019-11-24 18:37:09.024+00	482	\N
+4100	\N	3219	2728	2019-10-09	1	3.00		t	[2]	7	4	t	2019-10-10 12:27:42.966+00	2019-10-22 07:45:16.85+00	480	\N
+4101	\N	\N	2728	2019-10-08	3	1.00	\N	t	[2]	2	4	t	2019-10-10 12:32:04.1+00	2019-10-22 07:45:16.85+00	480	\N
+4112	\N	\N	2728	2019-10-11	8	3.00		t	[2]	2	4	t	2019-10-11 10:20:45.543+00	2019-10-22 07:45:16.85+00	480	\N
+4102	\N	\N	2728	2019-10-08	8	2.00	\N	t	[2]	2	4	t	2019-10-10 12:32:05.02+00	2019-10-22 07:45:16.85+00	480	\N
+4106	\N	\N	2728	2019-10-12	8	1.00		f	[2]	2	4	t	2019-10-10 12:32:14.865+00	2019-10-22 07:45:16.85+00	480	\N
+4254	436	3219	2728	2019-10-23	1	8.00	\N	t	[2]	3	4	t	2019-10-25 09:54:38.339+00	2019-10-29 14:20:24.259+00	480	\N
+4248	\N	\N	2717	2019-12-05	3	2.00	\N	t	[6]	2	3	t	2019-10-25 08:36:45.511+00	2019-10-25 08:36:47.097+00	482	\N
+4168	\N	3404	2718	2019-10-23	1	4.00	\N	t	[5]	3	2	t	2019-10-21 14:30:55.959+00	2019-10-25 09:54:16.738+00	505	\N
+4192	\N	3221	2717	2019-10-14	1	1.00	\N	t	[6]	7	3	t	2019-10-24 14:26:29.232+00	2019-10-24 14:26:32.728+00	482	\N
+4108	\N	\N	2728	2019-10-12	8	1.00		t	[2]	2	3	t	2019-10-10 12:32:16.292+00	2019-10-21 10:53:22.013+00	475	\N
+4264	\N	3407	2759	2019-10-28	1	1.00	sssss	t	[5]	7	1	t	2019-10-28 12:58:19.859+00	2019-10-28 12:58:50.131+00	507	\N
+4175	\N	\N	2717	2019-10-24	5	1.00	\N	f	\N	2	2	t	2019-10-23 11:28:10.091+00	2019-11-24 18:36:57.693+00	0	\N
+4156	437	3329	2759	2019-10-14	1	0.00		f	[5]	5	4	t	2019-10-16 11:19:39.865+00	2019-10-24 13:20:00.511+00	480	\N
+4157	438	3287	2759	2019-10-14	1	0.00		t	[5]	5	4	t	2019-10-16 11:20:04.638+00	2019-10-24 13:20:00.511+00	480	\N
+4158	437	3329	2759	2019-10-15	1	0.00		t	[5]	5	4	t	2019-10-16 11:20:56.089+00	2019-10-24 13:20:00.511+00	480	\N
+4249	\N	3221	2717	2019-12-13	1	1.00	\N	t	[6]	5	3	t	2019-10-25 08:44:27.622+00	2019-10-25 08:45:29.569+00	482	\N
+4104	\N	3219	2728	2019-10-12	1	1.00		f	[2]	7	4	t	2019-10-10 12:32:13.455+00	2019-10-22 07:45:16.85+00	480	\N
+4111	\N	\N	2728	2019-10-11	3	2.00		t	[2]	2	4	t	2019-10-11 10:20:44.377+00	2019-10-22 07:45:16.85+00	480	\N
+4107	\N	\N	2728	2019-10-12	3	1.00		t	[2]	2	4	t	2019-10-10 12:32:15.567+00	2019-10-22 07:45:16.85+00	480	\N
+4114	437	\N	2728	2019-10-10	2	23.00		t	[2]	2	4	t	2019-10-11 10:24:22.634+00	2019-10-22 07:45:16.85+00	480	\N
+4169	\N	3404	2718	2019-10-25	1	4.00		f	[5]	3	2	t	2019-10-21 14:30:58.422+00	2019-10-25 09:54:16.738+00	505	\N
+4255	436	3219	2728	2019-10-24	1	8.00	\N	t	[2]	3	4	t	2019-10-25 09:54:40.226+00	2019-10-29 14:20:24.259+00	480	\N
+4267	\N	3408	2728	2019-10-28	1	4.00	\N	t	[5]	5	3	t	2019-10-28 13:12:25.493+00	2019-11-25 09:58:37.522+00	508	\N
+4250	\N	\N	2717	2019-12-12	2	1.00	\N	t	[6]	2	3	t	2019-10-25 08:44:34.593+00	2019-10-25 08:45:29.569+00	482	\N
+4170	\N	\N	2718	2019-10-26	2	8.00		f	[5]	2	2	t	2019-10-21 14:35:39.581+00	2019-10-25 09:54:16.738+00	505	\N
+4256	436	3243	2728	2019-10-23	1	4.00	\N	t	[2]	3	4	t	2019-10-25 09:55:18.831+00	2019-10-29 14:20:24.259+00	480	\N
+4265	436	3219	2728	2019-10-28	1	1.00	фвфыв	t	[2]	7	4	t	2019-10-28 13:08:57.676+00	2019-11-22 13:06:10.159+00	480	\N
+4176	\N	3221	2717	2019-10-23	1	1.00	\N	t	[6]	3	2	t	2019-10-23 11:29:56.101+00	2019-11-24 18:37:09.024+00	482	\N
+4251	\N	3221	2717	2019-12-20	1	1.00	\N	t	[6]	5	3	t	2019-10-25 08:51:52.976+00	2019-10-25 08:51:54.726+00	482	\N
+4171	\N	3404	2718	2019-10-22	1	9.00		f	[5]	5	2	t	2019-10-22 05:58:46.398+00	2019-10-25 09:54:16.738+00	505	\N
+4266	\N	3408	2728	2019-10-28	1	1.00	\N	t	[5]	3	3	t	2019-10-28 13:12:13.653+00	2019-11-25 09:58:37.522+00	508	\N
+4257	436	3243	2728	2019-10-24	1	4.00	\N	t	[2]	3	4	t	2019-10-25 09:55:19.984+00	2019-10-29 14:20:24.259+00	480	\N
+4090	\N	\N	2717	2019-10-14	2	10.00	jjj	f	\N	2	3	t	2019-10-09 09:08:35.545+00	2019-10-24 14:25:23.433+00	\N	\N
+4023	\N	\N	2727	2019-10-02	4	1.00	\N	t	[2]	2	2	t	2019-10-02 08:13:29.868+00	2019-10-29 06:57:56.169+00	477	\N
+4024	\N	\N	2727	2019-10-02	7	1.00	\N	f	\N	2	2	t	2019-10-02 08:13:30.782+00	2019-10-29 06:57:56.169+00	0	\N
+4025	\N	\N	2727	2019-10-02	8	1.00	\N	t	[2]	2	2	t	2019-10-02 08:13:32.995+00	2019-10-29 06:57:56.169+00	477	\N
+4026	\N	\N	2727	2019-10-02	6	1.00	\N	t	[2]	2	2	t	2019-10-02 08:14:01.874+00	2019-10-29 06:57:56.169+00	477	\N
+4027	\N	\N	2727	2019-10-02	2	12.00		f	\N	2	2	t	2019-10-02 08:14:04.152+00	2019-10-29 06:57:56.169+00	\N	\N
+4046	\N	\N	2727	2019-10-03	2	2.00	\N	f	\N	2	2	t	2019-10-02 11:43:16.692+00	2019-10-29 06:57:56.169+00	0	\N
+4047	\N	\N	2727	2019-10-04	2	20.00	\N	f	\N	2	2	t	2019-10-02 11:43:18.218+00	2019-10-29 06:57:56.169+00	0	\N
+4178	\N	\N	2717	2019-10-23	2	1.00	\N	f	\N	2	2	t	2019-10-23 11:30:23.102+00	2019-11-24 18:36:57.693+00	0	\N
+4268	424	3211	212	2019-10-05	1	0.00		f	[9,10]	7	3	t	2019-10-29 08:05:44.093+00	2019-10-29 08:06:24.282+00	470	\N
+4116	\N	\N	2717	2019-10-15	2	9.00	\N	t	[1,10]	2	3	t	2019-10-15 12:17:42.535+00	2019-10-25 08:29:49.047+00	475	\N
+4179	\N	3221	2717	2019-10-30	1	1.00		t	[6]	5	3	t	2019-10-23 12:08:07.545+00	2019-11-25 11:03:28.37+00	482	\N
+4154	\N	\N	2717	2019-10-15	2	0.00		f	\N	2	3	t	2019-10-16 10:13:04.075+00	2019-10-24 14:25:23.433+00	\N	\N
+4091	\N	\N	2717	2019-10-14	4	0.00		f	\N	2	3	t	2019-10-09 11:39:59.141+00	2019-10-24 14:25:23.433+00	0	\N
+4120	435	\N	2717	2019-10-16	2	9.00	\N	t	[1,10]	2	3	t	2019-10-16 07:32:28.523+00	2019-10-25 08:29:49.047+00	475	\N
+4180	\N	3221	2717	2019-11-06	1	1.00	www	t	[6]	3	2	t	2019-10-23 12:11:25.636+00	2019-11-05 07:26:51.129+00	482	\N
+4115	\N	\N	2717	2019-10-15	4	2.00	уццу	f	\N	2	3	t	2019-10-15 12:17:15.122+00	2019-10-24 14:25:23.433+00	\N	\N
 \.
 
 
@@ -3967,21 +5601,10 @@ COPY public.timesheets_draft (id, task_id, user_id, type_id, task_status_id, is_
 4160	3212	266	1	5	t	2019-07-02 11:35:53.975+00	2019-07-02 11:35:53.975+00	2019-07-02	470
 4161	3179	183	1	3	t	2019-07-02 11:36:13.885+00	2019-07-02 11:36:13.885+00	2019-07-02	471
 4162	3106	266	1	5	t	2019-07-02 11:36:17.024+00	2019-07-02 11:36:17.024+00	2019-07-02	470
+4169	3409	2766	1	3	t	2019-10-28 13:40:21.909+00	2019-10-28 13:40:21.909+00	2019-10-28	509
+4170	3410	2717	1	3	t	2019-10-29 06:54:56.033+00	2019-10-29 06:56:38.575+00	2019-10-29	510
+4171	3083	102	1	3	t	2019-10-29 08:08:56.978+00	2019-10-29 08:08:56.978+00	2019-10-29	470
 \.
-
-
---
--- Name: timesheets_draft_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.timesheets_draft_id_seq', 4165, true);
-
-
---
--- Name: timesheets_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.timesheets_id_seq', 4005, true);
 
 
 --
@@ -3994,13 +5617,6 @@ COPY public.timesheets_statuses (id, name, name_ru, is_blocked) FROM stdin;
 3	submitted	Отправлено	t
 4	approved	Согласовано	t
 \.
-
-
---
--- Name: timesheets_statuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.timesheets_statuses_id_seq', 1, false);
 
 
 --
@@ -4020,45 +5636,75 @@ COPY public.timesheets_types (id, name, code_name, is_magic_activity, "order", n
 
 
 --
--- Name: timesheets_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.timesheets_types_id_seq', 1, false);
-
-
---
 -- Data for Name: tokens; Type: TABLE DATA; Schema: public; Owner: track
 --
 
 COPY public.tokens (id, token, expires, user_id) FROM stdin;
+4679	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNzoyNzo1Ni4xMjJaIn0.9_XzU76MkyafrbPVGrW-8v7VlqPsO2iBRyeOs2A_Fks	2019-11-14 07:27:56+00	2941
+4681	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNzozNjo0My4zNzhaIn0.3OXPVys0nB335-kxZw1Lwv2ahklOCh34RdfpTjZkTH4	2019-11-14 07:36:43+00	2941
 3776	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWxla3NhbmRyLmtyYXNub3YifSwiZXhwaXJlcyI6IjIwMTktMDYtMjBUMTI6MzM6MzEuNzQzWiJ9.vC5p6uz3NGtbo7g4yrZ5ypE-S2WW1_W-8ZC-gyiG99k	2019-06-20 12:33:31+00	357
-3780	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYW5kcmV3Lnl1ZGluIn0sImV4cGlyZXMiOiIyMDE5LTA2LTIzVDA2OjIyOjU5LjIwMFoifQ.vB2g3Y5JBq0Q92mIw8IJwBBUNCRSIJ3Uow0TgT5BqN4	2019-06-23 06:22:59+00	336
+4683	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwODowMDozMC40NDJaIn0.WwqilESBZQ_LgbUgtCAMn0E-pswnUk6I6YRtTGA_sa8	2019-11-14 08:00:30+00	2941
+4685	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwOToxMjo0MS45NDRaIn0.gO8qzdZqfg4VnyhyPcVSvwVzbFBHLlni326f5pG8-c8	2019-11-14 09:12:41+00	2941
+4687	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMDozODo1NS45NDVaIn0.exPkRCMnROETpUQIYYJW69uHlO2wUuK-AOfCusW3cdY	2019-11-14 10:38:55+00	2941
+4689	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMDo1NDozOC45NDNaIn0.wx3Xr4uxWmKvxlkTQU89lbBwOCoMxXPSx1jKVuqG71o	2019-11-14 10:54:38+00	2941
+4691	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMTowNTo1NS4zMzBaIn0.jIGKaK5YH_ShzyFVIpQbi_iTO4VzcNlk8I6gkMblkYc	2019-11-14 11:05:55+00	2941
+4694	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMzo1ODo1OC4zODZaIn0.NgMIOCaNFrIaEUHpv4K_DCfkgA-JVIK7ALG_5ZjQ1Bs	2019-11-14 13:58:58+00	2941
 3784	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiaWx5YS5rYXNodGFua2luIn0sImV4cGlyZXMiOiIyMDE5LTA2LTI0VDExOjM3OjE4LjkwOVoifQ.iw92PpbLlUBcLo6WD8yqVD00q9NNjADZe1xjUeVtpJQ	2019-06-24 11:37:18+00	35
 3785	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoianVsaWV0dGEuZWdvcm92YSJ9LCJleHBpcmVzIjoiMjAxOS0wNi0yNVQwNjoxMTowNi42ODZaIn0.6Clm8-zcvY9VWm_GF_OLYIt0erk46h0J-iQPe_Y6gxs	2019-06-25 06:11:06+00	205
 3786	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWxla3NlaS5hcnRhbW9ub3YifSwiZXhwaXJlcyI6IjIwMTktMDYtMjVUMDc6NDY6MjkuNDA5WiJ9.f1g3sXFoIUda90_8mbMZ6NtMh5iUgNKzUY58j7FsDrA	2019-06-25 07:46:29+00	344
+4696	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDowMjo1MS44MDVaIn0.CnWKofofQysp04HNebXr6uXtOEAX0abG6bFTENGvk_A	2019-11-14 14:02:51+00	2941
+4698	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDowNzozNC4zNDZaIn0.7e_lFgvEYJwzdIv7V0NYJ9zTRY0lOVbGso-vZ8EpIUQ	2019-11-14 14:07:34+00	2941
+4700	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDoxMDo0MC40NjVaIn0.aXDNze375fO3a8jkaYlfAuxi_7uXXf3LamO-3uOYg2g	2019-11-14 14:10:40+00	2941
+4702	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDoxNTo0OS41MzVaIn0.kk0Mv7lfZkN7SBUo3XVEpE5qxB1j3Lv_9-BF0CC0hJ8	2019-11-14 14:15:49+00	2941
 3791	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiaWx5YS5rYXNodGFua2luIn0sImV4cGlyZXMiOiIyMDE5LTA2LTI2VDA4OjE0OjMwLjU0MVoifQ.s6fb61IwuzLoNUzvHRCqcMt1hvFgk2Nz619VhTgm6sw	2019-06-26 08:14:30+00	35
-3792	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYW5kcmV3Lnl1ZGluIn0sImV4cGlyZXMiOiIyMDE5LTA2LTI2VDE0OjAxOjUwLjkzNVoifQ.ByLBiEGHNZBATEcBovv3DCqP1bbZ0H9NLk-sMzmSgjs	2019-06-26 14:01:50+00	336
-3796	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGF0eWFuYS5iYWJpY2gifSwiZXhwaXJlcyI6IjIwMTktMDctMDRUMTA6MTY6MDQuNzcwWiJ9._MbGohedXEeJGKY0IwImEgo53iOqDZDtJNbnvjL6QN0	2019-07-04 10:16:04+00	102
-3797	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidmljdG9yLnN5Y2hldiJ9LCJleHBpcmVzIjoiMjAxOS0wNy0wNFQxMDoxNjoxMS4wNjJaIn0.fp084CAQf2S2jdxAXGQgn8uUinS3bmDg-fZl2Q1xqDA	2019-07-04 10:16:11+00	1
+4704	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDozNzoxOS43MzVaIn0.s1CxATTv9FEExKcsp95tuHMGqFcTFvu13P9za_N3nfU	2019-11-14 14:37:19+00	2941
+4706	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDo0NzoxNy42NThaIn0.Pxe8ivshSSlghvN_SotsCPjv01T-3dlEAC28bFSbbWo	2019-11-14 14:47:17+00	2941
+4708	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNVQwNjoxODo0NC4yMTRaIn0.efm9Rn7l88o_IAzEXIMojQoX5BLhFHywsNgQuxuFFp8	2019-11-15 06:18:44+00	2941
+4710	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGF0eWFuYS5iYWJpY2gifSwiZXhwaXJlcyI6IjIwMTktMTEtMjVUMTQ6Mjg6MjguNzM1WiJ9.MLmtj15XaNSVKFC3xW6O8F0iLYoBsr68S8Vqecge_r4	2019-11-25 14:28:28+00	102
+4714	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA2OjI1OjI5LjMwMFoifQ.bM-yKt6VI8Q6n5RSL2KE4OLZVhg9lHbM5jHCTP5XTTY	2019-11-26 06:25:29+00	2725
+4716	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA2OjQ2OjA5LjczN1oifQ.mcfvvvxeqWmgP1qblQCoyOx1dWTrlOpFxAskIt_MniM	2019-11-26 06:46:09+00	2725
 3802	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYW5hc3Rhc2lhLmdvcnNoa292YSJ9LCJleHBpcmVzIjoiMjAxOS0wNy0xMVQxNDozMDo0Ny4xNDdaIn0.ps-Wv8Trfnj_RYX8TPCopoEsgymiTACfwPlcMR2Vy0Q	2019-07-11 14:30:47+00	239
-3806	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWxleGVpLnN0cmF0b25vdiJ9LCJleHBpcmVzIjoiMjAxOS0wNy0xMVQxNTozMzoyMi4yMzdaIn0.OYQ1lcg6J4BZTT2tRtKCZf03hFv_cZMmVJvjkOF0iTE	2019-07-11 15:33:22+00	186
-3807	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWxleGVpLnN0cmF0b25vdiJ9LCJleHBpcmVzIjoiMjAxOS0wNy0xMVQxNTo0NToxNS4zNDJaIn0.nSmAbVzXQ4NlUCS25HYmv-TAX3_6DveukehJJtASZZk	2019-07-11 15:45:15+00	186
-3808	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWxleGVpLnN0cmF0b25vdiJ9LCJleHBpcmVzIjoiMjAxOS0wNy0xMVQxNTo0ODozMS4xODFaIn0.ozdnOAHKAYdQ6-g-sTMvTJ-GHx2CE6ib3liMyd-hJko	2019-07-11 15:48:31+00	186
-3809	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWxleGVpLnN0cmF0b25vdiJ9LCJleHBpcmVzIjoiMjAxOS0wNy0xMVQxNTo1MDoyMC4zOTNaIn0.GEPJ7HEqOcPIDwhpFriu4xhDRvYAPwmCBDXnOYTr2SI	2019-07-11 15:50:20+00	186
 3811	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoibHVkbWlsYS5rbHVldmEifSwiZXhwaXJlcyI6IjIwMTktMDctMTdUMDg6MTE6MDguMTU0WiJ9.I0zbU6tFL0UxWzVWITlE3nEIcExAZMRUTsnu3XWGXMg	2019-07-17 08:11:08+00	266
-3812	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiaWx5YS5maWxpbmluIn0sImV4cGlyZXMiOiIyMDE5LTA3LTE3VDA4OjExOjEzLjgzNFoifQ.r17ILHY0yAhqOkqouXVwWK3fPGSQzAdhmaGD-unw4rw	2019-07-17 08:11:13+00	212
-3813	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYW5kcmVpLmZyZW5rZWwifSwiZXhwaXJlcyI6IjIwMTktMDktMDZUMDk6NTU6NTAuMzQwWiJ9.paSVoAgNNLuQcce17Lsv_7KEe9XONA_0UKaLQKflZdc	2019-09-06 09:55:50+00	183
-3814	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYW5kcmVpLmZyZW5rZWwifSwiZXhwaXJlcyI6IjIwMTktMDktMDZUMDk6NTY6MjUuMTA4WiJ9.YdOjCE-kH14XFruf2Z9Cw3-jfvxMhg_LXMfgvNLdmoE	2019-09-06 09:56:25+00	183
 3815	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiZGVuaXMuc21vcm9kaW4ifSwiZXhwaXJlcyI6IjIwMTktMDktMTBUMTI6NTc6MzQuNzk1WiJ9.NVi0mC_X_OLbyVskVsz3GaieO7gl4zlh_U9vKndqjM4	2019-09-10 12:57:34+00	22
-3816	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoicm9tYW4ua2htdXJlbmtvIn0sImV4cGlyZXMiOiIyMDE5LTA5LTE2VDA4OjUyOjE3LjQ3NloifQ.5iw2ohFxk5nMi6EU1AyPvHrv2K7eiEfwHxLSIy5xQkE	2019-09-16 08:52:17+00	2698
+3844	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoibjEubG4xIn0sImV4cGlyZXMiOiIyMDE5LTEwLTA4VDEzOjQ0OjM0Ljc3MloifQ.r7WEK9YAgSdwaaqhVyJrIL-1nvlelhmC_R5pKlYxUSU	2019-10-08 13:44:34+00	\N
+4647	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoic2VtZW4uc2VtZW5vdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0wN1QxMDowNjozNi4yNzVaIn0.qlVzbuzoei6qFwXW2TS9JzJvAez_5RABD5d8ZHkxsUI	2019-11-07 10:06:36+00	2728
+4665	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNjoyMDo0MC40MThaIn0.uD5_ifYWSV5MDaG-V88m07XnMg-NTZCCv1Pay3pv40c	2019-11-14 06:20:40+00	2941
+4667	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNjoyNDo0Ni40NzRaIn0.EFEpJyykKYyOOQBvpfGmBuHUU4e5qc8x4C8yNLUC0dM	2019-11-14 06:24:46+00	2941
+4669	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNjoyNjozMy45NDRaIn0.EKQ6OsRM9WoWEPnI6gPQ_Rbj99CRgBvoJ9cM88qgzJQ	2019-11-14 06:26:33+00	2941
+4680	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNzozNTozNy4wMDhaIn0.L0qyX2lTBRQvhfjqIWO6TqWIwZXVj88_OloWsQaOsS0	2019-11-14 07:35:37+00	2941
+4682	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNzo1NjowMy42NDdaIn0.Xd_idMAVKJw966VHWfE5mxLWbtp-xg1sLYPf2YuGCqU	2019-11-14 07:56:03+00	2941
+4684	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwOTowODo0Ni42MDNaIn0.VLyVV6vBt0_FTWu43Yz8lAjE3GfyTnnYfSu-MMHiKU0	2019-11-14 09:08:46+00	2941
+4686	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwOTo1MDo0Ny40MjRaIn0.05_ke91F0cJDbqDQIZrjIk7DvmYXDH0KBLKETnypa2k	2019-11-14 09:50:47+00	2941
+4688	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMDo0OTowOC44NzJaIn0.IQG7MNi12uld5yzqMz4e49s2Hac2IUHdKZuw7qnk9tk	2019-11-14 10:49:08+00	2941
+4690	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMDo1ODowOC4yMzVaIn0.V0O81oqAuuTbMPJh4nYFdSuKvjr2Lw6xCrlnGFxF0Ac	2019-11-14 10:58:08+00	2941
+4692	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMzo1NzowNy4yMTFaIn0.SQFN68gs77CDir4KSGFJZtQhrf5v87vJxo59ZJv07yo	2019-11-14 13:57:07+00	2941
+4693	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxMzo1ODowMi41MTBaIn0.G9ftnmRaBW4sO-6fgIggvHresTrS-RSAtcKeCQ2sji8	2019-11-14 13:58:02+00	2941
+4695	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDowMTozMS44MTNaIn0.S9Z8nRXExdBkk7kkYJJb4Ht6ywjmvMV0JTwNu_faS_0	2019-11-14 14:01:31+00	2941
+4697	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDowNTo0NC42ODlaIn0.zHXpLNBkykJiM0C6Bmh1UpLDflMwBN4UHJ0KAtKnoqE	2019-11-14 14:05:44+00	2941
+4699	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDoxMDowMi45MjdaIn0.cQpr6f0P7ShMaIUiGs3Yuxf4mrHsoUkcfRokKdZwagk	2019-11-14 14:10:02+00	2941
+4701	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDoxMzoyOS4zMzFaIn0.o9Lf7nMVskLVjkSzIvPebeiIosmLV8ZISg3kS0xdT0k	2019-11-14 14:13:29+00	2941
+4703	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDoyODo1Ny40NjBaIn0.YY5TNfmdA48mzUWwEg3uIN5tyKoYC1Q2nX89t96jp00	2019-11-14 14:28:57+00	2941
+4705	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDozODozNC41MTdaIn0.xChnxXj2fwkR4izj2gZDVIbjz5RfoLEFbANrxWYvBOU	2019-11-14 14:38:34+00	2941
+4707	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQxNDo1MDozNC42MDRaIn0.yAUsumxXA0qYtLfUQQeOxmoIpNuHar7xTUnyO-w1B2I	2019-11-14 14:50:34+00	2941
+4709	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNVQwNjoyMDo1My4wMjlaIn0.JIIrLfIUiD7n2jecTFbubXoGaeq_leKx_KotA0AUsl0	2019-11-15 06:20:53+00	2941
+4713	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA1OjU2OjEzLjYxMVoifQ.iG4kNnYC_7xf9Lz6KnuZOkU4ZNY_UJQj6fwINimH28E	2019-11-26 05:56:13+00	2725
+4715	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA2OjM3OjA4LjU2MVoifQ.pA5bRki0WMvk-fy4ZzK9KyZMMVLz7q2CloSp_4blLTE	2019-11-26 06:37:08+00	2725
+4717	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA3OjEzOjA2LjUxMloifQ.4nrHyKMBfYmNRQNCC6xlzc99Sh9M-clLVGiUl8bN23Q	2019-11-26 07:13:06+00	2725
+4718	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA4OjA2OjQzLjk3MFoifQ.rgRqtf-cTd5vHhNlA8tbxehcrcKiTLO-h11eeBqsd2s	2019-11-26 08:06:43+00	2725
+4719	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA4OjIwOjM4LjcwOVoifQ.f75htUtq5lWeGpOkZNj0dlDYWIzRxaHJq3xQSksP3pw	2019-11-26 08:20:38+00	2725
+4720	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA4OjM4OjQ0LjIwM1oifQ.jO7AxVWeo0MNbYZiimojEnvRL0KVI7wL6U5JFi8tWUY	2019-11-26 08:38:44+00	2725
+4721	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA4OjQwOjAwLjk2M1oifQ.97fWCTTBtaVwllVfuh8axMLEI2n-VCQvwN3C74Bt_eU	2019-11-26 08:40:00+00	2725
+4570	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXZhdGFyLmF2YXRhcm92In0sImV4cGlyZXMiOiIyMDE5LTExLTA0VDEwOjU4OjQxLjMyMVoifQ.ej21nzi40NXCojkAQhB5rCKxF8v9g4VKsOlRqaILpI8	2019-11-04 10:58:41+00	2940
+4653	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xM1QxMjo1NzoyOS41MTlaIn0.NmcZ7ybwqhbrusbs7Q0D3St3DJx5aS7YJ2cfSg7GK7A	2019-11-13 12:57:29+00	2941
+4664	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xM1QxMzo1NToyNS41OTdaIn0.KKZpA_NdK3_IG4oR284R4yj0mHhhDlEJTvmZQnvdtjY	2019-11-13 13:55:25+00	2941
+4666	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNjoyMjowNi44NzdaIn0.bc1rwn1e0rNqbPnGofgGF77K0PVDdpVmAz6kgghsHxM	2019-11-14 06:22:06+00	2941
+4668	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNjoyNjowMC4zMTRaIn0.OMmdcP6RGj1oXDOz14N5CSaoIM9YnHhVl2srgVb6240	2019-11-14 06:26:00+00	2941
+4670	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYXV0b3Rlc3QuYXV0b3Rlc3RvdiJ9LCJleHBpcmVzIjoiMjAxOS0xMS0xNFQwNjozNDoyOS43ODNaIn0.v_-Ek5JDRe67Yos2lIzKqur2tNu-CwyQ6qOggFnJoMo	2019-11-14 06:34:29+00	2941
+4722	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdC1hZG1pbmlzdHJhdG9yLmxhc3RuYW0gdGVzdC1hZG1pbmlzdHJhdG9yIn0sImV4cGlyZXMiOiIyMDE5LTExLTI2VDA4OjU1OjA5LjQ4N1oifQ.FkmrF0RMJdF0RXEW2ztaS5znjFbP6RXaOEWBg73ECHA	2019-11-26 08:55:09+00	2725
+4723	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWRtLmFkbSJ9LCJleHBpcmVzIjoiMjAxOS0xMS0yOVQwNTo0ODowMC44MDdaIn0.LEkFgguHnxY-BZn7omeK_YnLlarySfE79x-s77aRcto	2019-11-29 05:48:00+00	2717
+4725	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWRtLmFkbSJ9LCJleHBpcmVzIjoiMjAxOS0xMi0wMlQwOTo1NzoyNy41NjBaIn0.mYTHA2L7wzSznwzQrBHmBMxGr6GEk8j3dVpg-v8w11g	2019-12-02 09:57:27+00	2717
+4727	eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImxvZ2luIjoiYWRtLmFkbSJ9LCJleHBpcmVzIjoiMjAxOS0xMi0wMlQxMDo1MTo1Ny42NjhaIn0.SZxOOZcfgMl5hOBTHK3SV_TfcFp3T3J3d0OvWSpH3kM	2019-12-02 10:51:57+00	2717
 \.
-
-
---
--- Name: tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.tokens_id_seq', 3816, true);
 
 
 --
@@ -4077,18 +5723,29 @@ COPY public.user_departments (id, department_id, user_id) FROM stdin;
 95	5	102
 108	5	183
 115	5	239
-131	5	336
-296	2	45
-340	2	186
-760	2	2697
+761	5	2711
+999	2	2710
+780	5	2759
+781	7	2761
+782	4	2763
+783	5	2886
+784	5	2922
+785	5	2923
+786	5	2924
+789	5	2927
+790	5	2928
+791	5	2929
+792	3	2931
+793	5	2932
+794	5	2934
+795	5	2935
+796	5	2936
+797	5	2937
+798	5	2938
+799	2	2939
+800	1	2941
+802	3	2943
 \.
-
-
---
--- Name: user_departments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
---
-
-SELECT pg_catalog.setval('public.user_departments_id_seq', 760, true);
 
 
 --
@@ -4100,6 +5757,348 @@ COPY public.user_email_association (id, project_id, external_user_email, interna
 
 
 --
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: track
+--
+
+COPY public.users (id, ldap_login, login, last_name_en, first_name_en, last_name_ru, first_name_ru, active, photo, email_primary, email_secondary, phone, mobile, skype, city, birth_date, create_date, delete_date, ps_id, created_at, updated_at, deleted_at, full_name_ru, full_name_en, fullnameen, global_role, password, set_password_token, set_password_expired, expired_date, "isActive", description, is_test, gitlab_user_id, employment_date, dismissal_date, telegram_chat_id, telegram_user_name, telegram_reg_date) FROM stdin;
+266	ludmila.klueva	ludmila.klueva	Klueva	Ludmila	Клюева	Людмила	1	/uploads/usersPhotos/266.jpg	ludmila.klueva@nordclan.com	mikadn@mail.ru	\N	79170567742	mikadn2g	Ульяновск	1992-01-18	2016-05-30 08:18:00+00	\N	o2k187g0000la047b70g000000	2016-05-30 11:18:00+00	2017-07-03 13:34:05+00	\N	Людмила Клюева	\N	\N	VISOR	\N	\N	\N	\N	\N	\N	f	12	2019-06-24 00:00:00+00	\N	\N	\N	\N
+1	victor.sychev	victor.sychev	Sychev	Victor	Сычев	Виктор	1	/uploads/usersPhotos/1.jpg	victor.sychev@nordclan.com	simvics@gmail.com	\N	9603779027	sychev.victor	Ульяновск	1985-09-14	2010-07-12 00:35:00+00	\N	o2k00680000ijhl7g9f0000000	2010-07-12 04:35:00+00	2017-07-03 13:33:49.959+00	\N	Виктор Сычев	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	11	2019-07-19 00:00:00+00	\N	\N	\N	\N
+205	julietta.egorova	julietta.egorova	Egorova	Julietta	Егорова	Джульетта	1	/uploads/usersPhotos/205.jpg	julietta.egorova@nordclan.com	julietta.egorova@yandex.ru	\N	79539898993	julietta.egorova	Ульяновск	1993-08-08	2015-12-06 23:29:00+00	\N	o2k187g0000l2uvsokbg000000	2015-12-07 02:29:00+00	2017-07-03 13:34:00.672+00	\N	Джульетта Егорова	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	14	2019-06-24 00:00:00+00	\N	\N	\N	\N
+357	aleksandr.krasnov	aleksandr.krasnov	Krasnov	Aleksandr	Краснов	Александр	1	\N	aleksandr.krasnov@nordclan.com	freeman969@yandex.ru	\N	79176150295	live:aleksandr.krasnov	Ульяновск	1986-05-29	2017-02-01 09:23:00+00	\N	o2k187g0000lju65cn5g000000	2017-02-01 12:23:00+00	2017-07-03 13:34:13.997+00	\N	Александр Краснов	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	15	2019-06-10 00:00:00+00	\N	\N	\N	\N
+183	andrei.frenkel	andrei.frenkel	Frenkel	Andrei	Френкель	Андрей	1	/uploads/usersPhotos/183.jpg	andrei.frenkel@nordclan.com	user11141lkjljk1@gmail.com	\N	\N	andrei.frenkel73	Ульяновск	1990-11-06	2015-10-20 22:08:00+00	\N	o2k187g0000l12d8hcg0000000	2015-10-21 01:08:00+00	2017-07-03 13:33:59.486+00	\N	Андрей Френкель	\N	\N	VISOR	\N	\N	\N	\N	\N	\N	f	3	2019-06-24 00:00:00+00	\N	\N	\N	\N
+344	aleksei.artamonov	aleksei.artamonov	Artamonov	Aleksei	Артамонов	Алексей	1	/uploads/usersPhotos/344.jpg	aleksei.artamonov@nordclan.com	ha1ken@mail.ru	\N	9053487575	alexei.artamonov	Ульяновск	2019-11-01	2016-12-21 07:22:00+00	\N	o2k187g0000li80bme0g000000	2016-12-21 10:22:00+00	2017-07-03 13:34:12.77+00	\N	Алексей Артамонов	Aleksei Artamonov	\N	USER		\N	\N	\N	\N	\N	f	18	2019-06-24 00:00:00+00	\N	\N	\N	\N
+239	anastasia.gorshkova	anastasia.gorshkova	Gorshkova	Anastasia	Горшкова	Анастасия	1	/uploads/usersPhotos/239.jpg	anastasia.gorshkova@nordclan.com	gorshkovang92@gmail.com	\N	79378837644	anastasya9475	Ульяновск	1992-12-28	2016-03-24 09:02:00+00	\N	o2k187g0000l79t5hti0000000	2016-03-24 12:02:00+00	2017-07-03 13:34:03.234+00	\N	Анастасия Горшкова	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	8	2019-06-24 00:00:00+00	\N	\N	\N	\N
+22	denis.smorodin	denis.smorodin	Smorodin	Denis	Смородин	Денис	1	\N	denis.smorodin@nordclan.com	denis.smorodin@nordclan.com	\N	9176296112	smodean73	Ульяновск	1992-07-10	2019-08-26 11:18:00+00	\N	\N	2019-08-26 11:18:00+00	2019-08-26 11:18:00+00	\N	Денис Смородин	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	27	2019-08-26 11:18:00+00	\N	\N	\N	\N
+2696	alexander.noskov	alexander.noskov	Noskov	Alexander	Носков	Александр	1	\N	alexander.noskov@nordclan.com	\N	\N	\N	\N	Ульяновск	\N	2010-07-12 00:35:00+00	\N	\N	2010-07-12 00:35:00+00	2010-07-12 00:35:00+00	\N	Александр Носков	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	19	2019-06-24 00:00:00+00	\N	\N	\N	\N
+336	andrew.yudin	andrew.yudin	Yudin	Andrew	Юдин	Андрей	1	/uploads/usersPhotos/336.jpg	andrew.yudin@nordclan.com	woody.just@gmail.com	\N	9041862212	live:woody.just1	Ульянов	1987-03-05	2016-11-29 05:05:00+00	\N	o2k187g0000lhc6l9cfg000000	2016-11-29 08:05:00+00	2017-07-03 13:34:11.813+00	\N	Андрей Юдин	Andrew Yudin	\N	USER	\N	\N	\N	\N	\N	\N	f	7	2019-07-02 00:00:00+00	\N	\N	\N	\N
+2698	roman.khmurenko	roman.khmurenko	Khmurenko	Roman	Хмуренко	Роман	1	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2010-05-31 11:50:00+00	2010-05-31 11:50:00+00	\N	Роман Хмуренко	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	\N	2019-09-09 00:00:00+00	\N	\N	\N	\N
+2728	semen.semenov	semen.semenov	Semenov	Semen	Семёнов	Семён	1		Semen@test.ru	\N	\N	\N	\N	\N	2000-10-10	\N	\N	\N	2019-10-02 07:35:58.572+00	2019-10-02 07:35:58.572+00	\N	Семён Семёнов	Semen Semenov	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2711	new.user	asdfa@nordclan.com	User	New	Пользователь	Новый	1	\N	asdfa@nordclan.com	\N	+790333858234	+790333858234	test	Ульяновск	\N	\N	\N	\N	2019-10-01 07:50:40.44+00	2019-10-01 07:50:40.44+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2716	newuser.user	asdfaf@nordclan.com	User	Newuser	Пользователь	Новый	1	\N	asdfaf@nordclan.com	\N	+790333858234	+790333858234	test	Ульяновск	\N	\N	\N	\N	2019-10-01 07:53:52.433+00	2019-10-01 07:53:52.433+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2727	perviy.testirovschik	perviy.testirovschik	Testirovschik	Perviy	Тестировщик	Первый	1	\N	Perviy@test.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-02 07:34:21.773+00	2019-10-02 07:34:21.773+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2725	test-administrator.lastnam test-administrator	test-administrator.lastnam test-administrator	Lastnam Test-administrator	Test-administrator	Фамилия тест-администратора	Тест-администратора	1	\N	Test-administrator@test.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-01 13:07:26+00	2019-10-01 13:07:26+00	\N	Тест-администратора Фамилия тест-администратора	Test-administrator Lastnam Test-administrator	\N	ADMIN	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2726	ivan.ivanov	ivan.ivanov	Petrov	Peter	Петров	Пётр	1	\N	Ivanov@test.ru	\N	\N	\N	\N		\N	\N	\N	\N	2019-10-01 14:11:39.505+00	2019-10-01 14:11:39.505+00	\N	Пётр Петров	Ivan Ivanov	\N	VISOR		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2697	radik.khismetov	radik.khismetov	Radik	Khismetov	Хисметов	Радик	1	/uploads/usersPhotos/183.jpg	radik.khismetov@nordclan.com	radik.khismetov@nordclan.com	\N	\N	\N	Ульяновск	1990-11-06	2015-10-20 22:08:00+00	\N	o2k187g0000l12d8hco0000000	2019-07-22 11:38:07.137+00	2019-07-22 11:38:07.137+00	\N	Радий Хисметов	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	20	2019-07-22 00:00:00+00	\N	\N		\N
+35	ilya.kashtankin	ilya.kashtankin	Kashtankin	Ilya	Каштанкин	Илья	1	/uploads/usersPhotos/35.jpg	ilya.kashtankin@nordclan.com	ilya.kashtankin@nordclan.com	\N	+7 927 800 9999	\N	Ульяновск	1982-07-26	2010-05-31 07:50:00+00	\N	fs002080000ihsi7038g000000	2010-05-31 11:50:00+00	2017-07-03 13:33:49.631+00	\N	Илья Каштанкин	\N	\N	ADMIN	\N	\N	\N	\N	1	\N	f	16	2019-06-10 00:00:00+00	\N	\N	\N	\N
+2718	test.testov	test.testov	Testov	Test	Тестов	Тест	1	\N	Test@test.ru	\N	\N	+7555 555 55 55	\N	\N	1900-10-10	\N	\N	\N	2019-10-01 10:46:33.743+00	2019-10-01 10:46:33.743+00	\N	Тест Тестов	Test Testov	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2761	test.test	test.test	test	test	test	test	1	\N	inna@b2bfamily.com	\N	89876543211	89876543211	dsasd	Ульяновск	\N	\N	\N	\N	2019-10-09 12:44:16.392+00	2019-10-09 12:44:16.392+00	\N	\N	\N	\N	USER	1922091998	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2733	petr.petrov	petr.petrov	Petrov	Petr	Петр	Петров	1	\N	petr.petrov@nordclam.com	\N	456787654567890	091823048912	\N	\N	\N	\N	\N	\N	2019-10-02 14:48:02.202+00	2019-10-02 14:48:02.202+00	\N	\N	\N	\N	USER	1йфячыц23увс	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2763	dmitiy.medvedev	dmitiy.medvedev	Medvedev	Dmitiy	Медведев	Дмитрий	1	\N	Dmitiy.Medvedev@nordclan.com	\N	+7 (111) 111-11-11	+7 (111) 111-11-12	\N	Ulyanovsk	\N	\N	\N	\N	2019-10-09 13:57:43.399+00	2019-10-09 13:57:43.399+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2777	using.user	using.user	user	using	usage	user	1	\N	sas@mail.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-10 10:58:14.443+00	2019-10-10 10:58:14.443+00	\N	\N	\N	\N	DEV_OPS	QWE123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2766	n1.ln1	n1.ln1	Ln1	N1	Ф1	N1	1	\N	Ln1@test.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-10 07:17:06.154+00	2019-10-10 07:17:06.154+00	\N	\N	\N	\N	DEV_OPS	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2729	vasya.ivanov	vasya.ivanov	Ivanov	Vasya	Иванов	Вася	1	\N	Vasya@test.ru	\N	\N	\N	\N		\N	\N	\N	\N	2019-10-02 07:39:12.437+00	2019-10-02 07:39:12.437+00	\N	Вася Иванов	Vasya Ivanov	\N	DEV_OPS		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2759	inna.inna	inna.inna	Inna	Inna	Shutova	Inna	0	/avatars/ebc40cf2a8d9acfaebda2310b749b0b9.jpg?1571992583599	inna.shutova@nordclan.com	\N	89297936823	89297936823	aaiaa	Ulyanovsk	\N	\N	2019-11-23 08:00:00+00	\N	2019-10-09 12:10:04.478+00	2019-10-09 12:10:04.478+00	\N	Inna Shutova	Inna Inna	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2751	igor.petrov	igor.petrol	\N	\N	\N	\N	0	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-08 12:14:43.385+00	\N	\N	2019-10-08 12:14:47.691+00	2019-10-08 12:14:49.805+00	\N	\N	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	\N	\N	\N	\N		\N
+2757	yiacov.yiacovich	yiacov.yiacovich	yiacovich	yiacov	яковлич	яков	1	\N	\N	yiacov@gmail.com	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-08 10:02:33.354+00	2019-10-08 10:02:33.354+00	\N	\N	\N	\N	USER	1qazxsw2!!!	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2710	vlad.stepanov	vlad@email.com	Stepanov	Vlad	Степанов	Влад	1	\N	vlad@email.com	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-09-27 06:17:53.943+00	2019-09-27 06:17:53.943+00	\N	\N	\N	\N	ADMIN	123123	\N	\N	\N	1	\N	f	\N	\N	\N	442770345	v555574	2019-10-08 00:00:00
+2785	using.usage	using.usage	usage	using	usage	using	1	\N	usage@mail.ru	\N	\N	\N	\N	Nord	\N	\N	\N	\N	2019-10-10 11:10:12.879+00	2019-10-10 11:10:12.879+00	\N	\N	\N	\N	DEV_OPS	QWE123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2776	ittest173@ya.ru	ittest173@ya.ru	\N	\N	\N	Второй Экстернальный	0	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-10 07:49:14.885+00	2019-10-10 07:49:14.885+00	\N	\N	\N	\N	EXTERNAL_USER	\N	1a1327847b788c5cd361a598381228671748689a	2019-10-11 07:49:14.885+00	2019-10-12 23:59:59.999 +00:00	0	Римский император Константин I Великий по достоинству оценил выгодное местоположение приморского Византия, расположенного на стыке Европы и Азии. Кроме того, на решение Константина повлияла неспокойная обстановка в самом Риме: недовольство знати и постоянные распри в борьбе за трон. Император хотел увенчать свою реформаторскую деятельность созданием нового административного центра огромной державы. Закладка города состоялась осенью 324 года, и Константин лично решил обозначить его границы.	f	\N	\N	\N	\N	\N	\N
+2805	use.use	use.use	use	use	use	used	1	\N	used@mail.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-11 08:36:53.447+00	2019-10-11 08:36:53.447+00	\N	\N	\N	\N	DEV_OPS	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2807	user.user	user.user	user	user	user	used	1	\N	user@mail.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-11 08:39:03.137+00	2019-10-11 08:39:03.137+00	\N	\N	\N	\N	DEV_OPS	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2810	ll.ll	ll.ll	ll	ll	ll	ll	1	\N	ill@ll.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-11 08:40:24.61+00	2019-10-11 08:40:24.61+00	\N	\N	\N	\N	DEV_OPS	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2789	used.used	used.used	used	used	used	used	1	\N	use@mail.ru	\N	\N	\N	\N		\N	\N	\N	\N	2019-10-11 06:36:27.968+00	2019-10-11 06:36:27.968+00	\N	used used	used used	\N	DEV_OPS		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+102	tatyana.babich	tatyana.babich	Babich	Tatyana	Бабич	Татьяна	1	/uploads/usersPhotos/102.jpg	tatyana.babich@nordclan.com	babich_ta@inbox.ru	\N	\N	live:tatyana.babich	Ульяновск	1990-02-01	2014-07-14 07:34:00+00	\N	o2k187g0000kecskg4ag000000	2014-07-14 10:34:00+00	2017-07-03 13:33:54.348+00	\N	Татьяна Бабич	\N	\N	ADMIN	\N	\N	\N	\N	1	\N	f	10	2019-06-21 00:00:00+00	\N	\N		\N
+2732	aleksey.khnyrev	aleksey.khnyrev	Khnyrev	Aleksei	Хнырёв	Алексей	1	\N	test@test.ru	test@test.ru	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-02 14:11:32.629+00	2019-10-02 14:11:35.379+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N		\N
+2838	using.using	using.using	using	using	using	used	1	\N	using@mail.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-13 17:16:40.999+00	2019-10-13 17:16:40.999+00	\N	\N	\N	\N	DEV_OPS	QWE123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2839	newuser.newuser	newuser.newuser	newuser	newuser	newuser	used	1	\N	newuser@mail.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-13 17:17:44.9+00	2019-10-13 17:17:44.9+00	\N	\N	\N	\N	DEV_OPS	QWE123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2765	ittest73@ya.ru	ittest73@ya.ru	\N	\N	\N	Иван Внешний	0	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-10 06:44:38.62+00	2019-10-10 06:44:38.62+00	\N	Иван Внешний	\N	\N	EXTERNAL_USER	$2a$10$B6kR8PSQilC4PWfArQYeku6a5H3rzSDaH4FcuTkTTNZJ4fpxGj69K	1156cd32f31669ecccc69a8f9c5d83f1b2ce19b7	2019-10-12 06:44:38.619+00	2019-10-12 23:59:59.999 +00:00	1	Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.	f	\N	\N	\N	\N	\N	\N
+2928	kekar5.testoviy	kekar5.testoviy	Testoviy	Kekar5	Тестовый	Кекарь5	1	\N	kekartest5@example.com	kekartest5@example.com	+7 (904) 767-1062	+7 (904) 767-1062	kekartest5	kekcity	\N	\N	\N	\N	2019-10-16 13:14:59.372+00	2019-10-16 13:14:59.372+00	\N	Кекарь5 Тестовый	Kekar5 Testoviy	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2853	new.new	new.new	New	New	Ню	Ню	1	\N	new@new.com	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-15 08:44:55.066+00	2019-10-15 08:44:55.066+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2856	used1.used1	used1.used1	used1	used1	used1	used1	1	\N	use1@mail.com	\N	used1	\N	\N	\N	\N	\N	\N	\N	2019-10-15 08:50:40.894+00	2019-10-15 08:50:40.894+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2861	pavel.volya	pavel.volya	Volya	Pavel	Volya	Pavel	1	\N	pavo@mail.ru	\N	\N	\N	\N		\N	\N	\N	\N	2019-10-15 09:02:30.997+00	2019-10-15 09:02:30.997+00	\N	Pavel Volya	Pavel Volya	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2887	vasya2.ivanov2	vasya2.ivanov2	Ivanov2	Vasya2	Иванов2	Вася2	1	\N	Vasya@test.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-16 07:38:46.248+00	2019-10-16 07:38:46.248+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2920	vasya22.ivanov22	vasya22.ivanov22	Ivanov22	Vasya22	Иванов22	Вася22	1	\N	Vasya@test.ru	\N	\N	\N	\N		\N	\N	\N	\N	2019-10-16 09:36:24.756+00	2019-10-16 09:36:24.756+00	\N	Вася22 Иванов22	Vasya22 Ivanov22	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2886	iwnna.inwna	iwnna.inwna	Inwna	Iwnna	Swhutova	Iwnna	0	\N	winna.shutova@nordclan.com	\N	89297936823	89297936823	aaiaa	\N	\N	\N	2019-11-02 08:00:00+00	\N	2019-10-15 10:39:57.259+00	2019-10-15 10:39:57.259+00	\N	Iwnna Swhutova	Iwnna Inwna	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2921	fedor.fedorov	fedor.fedorov	Fedorov	Fedor	Фёдоров	Фёдор	1	\N	fedor@test.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-16 10:27:31.514+00	2019-10-16 10:27:31.514+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2922	testoviy.polzovatel	testoviy.polzovatel	Polzovatel	Testoviy	Пользователь	Тестовый	1	\N	kekar@example.com	\N	+7 904 123 4567	+7 904 123 4567	kekar-skype	Москва	\N	\N	\N	\N	2019-10-16 11:01:42.949+00	2019-10-16 11:01:42.949+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2923	kekar.testoviy	kekar.testoviy	Testoviy	Kekar	Тестовый	Кекарь	1	\N	kekartest@example.com	\N	+7 (904) 123 4567	+7 (904) 123 4567	kekartest	москоу	\N	\N	\N	\N	2019-10-16 11:45:07.296+00	2019-10-16 11:45:07.296+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2924	kekar2.testoviy	kekar2.testoviy	Testoviy	Kekar2	Тестовый	Кекарь2	1	\N	kekartest2@example.com	\N	+7 (904) 123 4455	\N	kekartest2	moscow	\N	\N	\N	\N	2019-10-16 11:57:55.728+00	2019-10-16 11:57:55.728+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2925	kekar3.testoviy	kekar3.testoviy	Testoviy	Kekar3	Тестовый	Кекарь3	1	\N	kekartest3corporat@example.com	\N	\N	+7 (904) 767-1062	kekartest3	city	2019-10-01	\N	\N	\N	2019-10-16 12:53:24.833+00	2019-10-16 12:53:24.833+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2926	kekar4.testoviy	kekar4.testoviy	Testoviy	Kekar4	Тестовый	Кекарь4	1	\N	kekartest4@example.com	kekartest4@example.com	+7 (904) 767-1062	+7 (904) 767-1062	kekartest4	kekcity	2019-10-01	\N	\N	\N	2019-10-16 13:08:50.112+00	2019-10-16 13:08:50.112+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2927	awd.awd	awd.awd	awd	awd	awd	awd	1	\N	awd	awd	awd	awd	awd	awd	2019-10-01	\N	\N	\N	2019-10-16 13:13:09.329+00	2019-10-16 13:13:09.329+00	\N	\N	\N	\N	USER	awd	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2929	kekar6.testoviy	kekar6.testoviy	Testoviy	Kekar6	Тестовый	Кекарь6	1	\N	kekartest6@example.com	kekartest6@example.com	+7 (904) 767-1062	+7 (904) 767-1062	kekartest6	kekCity	2019-10-02	\N	\N	\N	2019-10-16 13:45:56.614+00	2019-10-16 13:45:56.614+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	2019-10-02 09:00:00+00	\N	\N	\N	\N
+2931	proverka.poley	proverka.poley	Poley	Proverka	Полей	Проверка	1	\N	Proverka@test.ru	\N	+7 (111) 111-11-11	+7911) 111-11-11	test	CityTest	\N	\N	\N	\N	2019-10-18 08:52:25.026+00	2019-10-18 08:52:25.026+00	\N	Проверка Полей	Proverka Poley	\N	USER		\N	\N	\N	1	\N	f	\N	2019-10-01 09:00:00+00	\N	\N	\N	\N
+2932	check2.fields	check2.fields	fields	check2	полей	проверка2	1	\N	fieldstest2@example.com	fieldstest2@example.com	123	123	fieldstest2	kek	2019-10-09	\N	\N	\N	2019-10-18 10:49:32.025+00	2019-10-18 10:49:32.025+00	\N	\N	\N	\N	USER	alabala	\N	\N	\N	1	\N	f	\N	2019-10-10 09:00:00+00	\N	\N	\N	\N
+2933	proverka2.poley2	proverka2.poley2	Poley2	Proverka2	Полей2	Проверка2	1	\N	Proverka2@test.ru	Proverka4@test.ru	+7 (111) 111-11-11	+7 (111) 111-11-11	111	msk	1961-04-12	\N	\N	\N	2019-10-18 11:04:49.893+00	2019-10-18 11:04:49.893+00	\N	\N	\N	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	2019-10-18 08:00:00+00	\N	\N	\N	\N
+2934	kekar7.testoviy	kekar7.testoviy	Testoviy	Kekar7	Тестовый	Кекарь7	1	\N	kekartest7@example.com	kekartest7@example.com	123	123	kekartest7	kek	2019-10-18	\N	\N	\N	2019-10-18 11:34:54.459+00	2019-10-18 11:34:54.459+00	\N	\N	\N	\N	USER	123	\N	\N	\N	1	\N	f	\N	2019-10-18 09:00:00+00	\N	\N	\N	\N
+2935	kekar8.testoviy	kekar8.testoviy	Testoviy	Kekar8	Тестовый	Кекарь8	1	\N	kekartest8@example.com	kekartest8@example.com	123	123	123	123	2019-10-01	\N	\N	\N	2019-10-18 11:37:32.416+00	2019-10-18 11:37:32.416+00	\N	\N	\N	\N	USER	123	\N	\N	\N	1	\N	f	\N	2019-10-01 09:00:00+00	\N	\N	\N	\N
+2938	kekar11.testoviy	kekar11.testoviy	Testoviy	Kekar11	Тестовый	Кекарь11	1	\N	123	13	123	123	123	123	2019-10-01	\N	\N	\N	2019-10-18 11:49:10.622+00	2019-10-18 11:49:10.622+00	\N	Кекарь11 Тестовый	Kekar11 Testoviy	\N	USER	123	\N	\N	\N	1	\N	f	\N	2019-10-01 09:00:00+00	\N	\N	\N	\N
+2936	kekar9.testoviy	kekar9.testoviy	testoviy	kekar9	тестовый	кекарь9	1	\N	123	123	123	123	123	123	2019-10-01	\N	\N	\N	2019-10-18 11:42:05.528+00	2019-10-18 11:42:05.528+00	\N	\N	\N	\N	USER	123	\N	\N	\N	1	\N	f	\N	2019-10-01 09:00:00+00	\N	\N	\N	\N
+2937	kekar10.testoviy	kekar10.testoviy	Testoviy	Kekar10	Тестовый	Кекарь10	1	\N	123	123	123	123	123	123	2019-10-01	\N	\N	\N	2019-10-18 11:47:48.731+00	2019-10-18 11:47:48.731+00	\N	Тестовый	Kekar10 Testoviy	\N	USER	123	\N	\N	\N	1	\N	f	\N	2019-10-01 09:00:00+00	\N	\N	\N	\N
+2939	proverka3.poley3	proverka3.poley3	Poley3	Proverka3	Полей3	Проверка3	1	\N	Proverka3@test.ru	Proverka3@test.ru	+7 (911) 111-11-11	+7 (911) 111-11-11	123	123	1961-04-11	\N	\N	\N	2019-10-18 12:15:02.245+00	2019-10-18 12:15:02.245+00	\N	Проверка3 Полей3	Proverka3 Poley3	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	2019-10-19 08:00:00+00	\N	\N	\N	\N
+2852	mr_sloooow@yopmail.com	mr_sloooow@yopmail.com	\N	\N	\N	Тест Внешнего Пользователя	1	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-14 07:46:00.119+00	2019-10-14 07:46:00.119+00	\N	\N	\N	\N	EXTERNAL_USER	$2a$10$B6kR8PSQilC4PWfArQYeku6a5H3rzSDaH4FcuTkTTNZJ4fpxGj69K	e909d4d48aa455106822769db306a0c08bbf211b	2019-10-15 07:46:00.118+00	2019-11-11 00:00:00.000 +00:00	1	"текст описывающий внешнего пользователя"	f	\N	\N	\N	\N	\N	\N
+2940	avatar.avatarov	avatar.avatarov	Avatarov	Avatar	Аватаров	Аватар	1	\N	Avatar@test.ru	\N	+7 (111) 111-11-11	\N	\N	\N	2019-10-01	\N	\N	\N	2019-10-28 06:51:05.076+00	2019-10-28 06:51:05.076+00	\N	Аватар Аватаров	Avatar Avatarov	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2930	pav.vol	pav.vol	Vol	Pav	Vol	Pav	1	\N	pavol@mail.ru	\N	\N	\N	\N	\N	\N	\N	\N	\N	2019-10-16 14:03:15.4+00	2019-10-16 14:03:15.4+00	\N	Pav Vol	Pav Vol	\N	USER		\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+212	ilya.filinin	ilya.filinin	Filinin	Ilya	Филинин	Илья	1	/uploads/usersPhotos/212.jpg	ilya.filinin@nordclan.com	iliya2007852007@gmail.com	\N	\N	filinin94	\N	1994-02-08	2016-01-21 08:10:00+00	\N	o2k187g0000l4oo5252g000000	2016-01-21 11:10:00+00	2017-07-03 13:34:01.188+00	\N	Илья Филинин	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	13	2019-07-01 00:00:00+00	\N	\N		\N
+45	andrey.zolotov	andrey.zolotov	Zolotov	Andrey	Золотов	Андрей	1	/uploads/usersPhotos/45.jpg	andrey.zolotov@nordclan.com	andrey.zolotov@nordclan.com	\N	+7 902 244 58 19	zolotov_andrey	Ульяновск	1981-05-10	2010-05-30 23:08:00+00	\N	o2k007g0000im2moub3g000000	2010-09-13 11:26:00+00	2017-07-03 13:34:23.107+00	\N	Андрей Золотов	\N	\N	USER	\N	\N	\N	\N	1	\N	f	17	2019-06-21 00:00:00+00	\N	\N		\N
+186	alexei.stratonov	alexei.stratonov	Stratonov	Alexei	Стратонов	Алексей	1	/uploads/usersPhotos/186.jpg	alexei.stratonov@nordclan.com	an.stratonov@gmail.com	\N	89276328984	alexstrat2008	Ульяновск	1994-06-20	2015-10-29 22:01:00+00	\N	o2k187g0000l1dvr85cg000000	2015-10-30 01:01:00+00	2017-07-03 13:33:59.584+00	\N	Алексей Стратонов	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	2	2019-06-24 00:00:00+00	\N	\N		\N
+2942	inna.shutova	inna.shutova	shutova	inna	Шутова	Инна	1		pavol@mail.ru	pavol@mail.ru	89865672115	89865672111	iiiinnnnaaa	Ульяновск	2019-11-02	\N	\N	\N	2019-11-25 10:00:54.188+00	2019-11-25 10:00:54.188+00	\N	Инна Шутова	inna shutova	\N	USER	1922091998	\N	\N	\N	1	\N	f	\N	2019-11-01 08:00:00+00	\N	\N	\N	\N
+2717	adm.adm	adm.adm	adm	adm	administratorov	administrator	1		a.administrator@nordclan.com	\N	123123	1231231321	a.administrator	Ульяновск	\N	\N	\N	\N	2019-10-01 09:39:25.6+00	2019-10-01 09:39:25.6+00	\N	administrator administratorov	adm adm	\N	ADMIN	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2941	autotest.autotestov	autotest.autotestov	Autotestov	Autotest	Автотестов	Автотест	1	\N	Autotest@test.ru	\N	\N	\N	\N	\N	2019-11-06	\N	\N	\N	2019-11-06 12:45:38.229+00	2019-11-06 12:45:38.229+00	\N	Автотест Автотестов	Autotest Autotestov	\N	USER	qwe123	\N	\N	\N	1	\N	f	\N	\N	\N	\N	\N	\N
+2943	test11.test11	test11.test11	test11	test11	qwerty	qwerty	1	\N	pavol11@mail.ru	pavo11l@mail.ru	89865672112	89865672112	qwerty.skype	Ульяновск	2019-11-07	\N	\N	\N	2019-11-25 12:24:14.914+00	2019-11-25 12:24:14.914+00	\N	qwerty qwerty	test11 test11	\N	USER	1922091998	\N	\N	\N	1	\N	f	\N	2019-11-01 08:00:00+00	\N	\N	\N	\N
+\.
+
+
+--
+-- Name: Milestones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public."Milestones_id_seq"', 224, true);
+
+
+--
+-- Name: bot_notification_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.bot_notification_seq', 141, true);
+
+
+--
+-- Name: bot_reply_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.bot_reply_seq', 99, false);
+
+
+--
+-- Name: bot_settings_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.bot_settings_seq', 99, false);
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.comments_id_seq', 961, true);
+
+
+--
+-- Name: departments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.departments_id_seq', 17, true);
+
+
+--
+-- Name: gitlab_user_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.gitlab_user_roles_id_seq', 1175, true);
+
+
+--
+-- Name: item_tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.item_tags_id_seq', 851, true);
+
+
+--
+-- Name: jira_sync_status_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.jira_sync_status_id_seq', 1, false);
+
+
+--
+-- Name: metrics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.metrics_id_seq', 194173, true);
+
+
+--
+-- Name: milestone_types_dictionary_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.milestone_types_dictionary_id_seq', 4, true);
+
+
+--
+-- Name: model_histories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.model_histories_id_seq', 25512, true);
+
+
+--
+-- Name: portfolios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.portfolios_id_seq', 12, true);
+
+
+--
+-- Name: project_attachments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.project_attachments_id_seq', 71, true);
+
+
+--
+-- Name: project_histories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.project_histories_id_seq', 5489, true);
+
+
+--
+-- Name: project_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.project_types_id_seq', 4, true);
+
+
+--
+-- Name: project_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.project_users_id_seq', 883, true);
+
+
+--
+-- Name: project_users_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.project_users_roles_id_seq', 4711, true);
+
+
+--
+-- Name: project_users_subscriptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.project_users_subscriptions_id_seq', 3920, true);
+
+
+--
+-- Name: projects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.projects_id_seq', 512, true);
+
+
+--
+-- Name: sprint_statuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.sprint_statuses_id_seq', 1, false);
+
+
+--
+-- Name: sprints_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.sprints_id_seq', 439, true);
+
+
+--
+-- Name: system_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.system_tokens_id_seq', 34, true);
+
+
+--
+-- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.tags_id_seq', 384, true);
+
+
+--
+-- Name: task_attachments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.task_attachments_id_seq', 1746, true);
+
+
+--
+-- Name: task_statuses_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.task_statuses_association_id_seq', 66, true);
+
+
+--
+-- Name: task_statuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.task_statuses_id_seq', 1, false);
+
+
+--
+-- Name: task_tasks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.task_tasks_id_seq', 353, true);
+
+
+--
+-- Name: task_types_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.task_types_association_id_seq', 64, true);
+
+
+--
+-- Name: task_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.task_types_id_seq', 1, false);
+
+
+--
+-- Name: tasks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.tasks_id_seq', 3414, true);
+
+
+--
+-- Name: timesheets_draft_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.timesheets_draft_id_seq', 4171, true);
+
+
+--
+-- Name: timesheets_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.timesheets_id_seq', 4270, true);
+
+
+--
+-- Name: timesheets_statuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.timesheets_statuses_id_seq', 1, false);
+
+
+--
+-- Name: timesheets_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.timesheets_types_id_seq', 1, false);
+
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.tokens_id_seq', 4727, true);
+
+
+--
+-- Name: user_departments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
+--
+
+SELECT pg_catalog.setval('public.user_departments_id_seq', 802, true);
+
+
+--
 -- Name: user_email_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
 --
 
@@ -4107,36 +6106,23 @@ SELECT pg_catalog.setval('public.user_email_association_id_seq', 40, true);
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: track
---
-
-COPY public.users (id, ldap_login, login, last_name_en, first_name_en, last_name_ru, first_name_ru, active, photo, email_primary, email_secondary, phone, mobile, skype, city, birth_date, create_date, delete_date, ps_id, created_at, updated_at, deleted_at, full_name_ru, full_name_en, fullnameen, global_role, password, set_password_token, set_password_expired, expired_date, "isActive", description, is_test, gitlab_user_id, employment_date, dismissal_date) FROM stdin;
-266	ludmila.klueva	ludmila.klueva	Klueva	Ludmila	Клюева	Людмила	1	/uploads/usersPhotos/266.jpg	ludmila.klueva@nordclan.com	mikadn@mail.ru	\N	79170567742	mikadn2g	Ульяновск	1992-01-18	2016-05-30 08:18:00+00	\N	o2k187g0000la047b70g000000	2016-05-30 11:18:00+00	2017-07-03 13:34:05+00	\N	Людмила Клюева	\N	\N	VISOR	\N	\N	\N	\N	\N	\N	f	12	2019-06-24 00:00:00+00	\N
-1	victor.sychev	victor.sychev	Sychev	Victor	Сычев	Виктор	1	/uploads/usersPhotos/1.jpg	victor.sychev@nordclan.com	simvics@gmail.com	\N	9603779027	sychev.victor	Ульяновск	1985-09-14	2010-07-12 00:35:00+00	\N	o2k00680000ijhl7g9f0000000	2010-07-12 04:35:00+00	2017-07-03 13:33:49.959+00	\N	Виктор Сычев	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	11	2019-07-19 00:00:00+00	\N
-205	julietta.egorova	julietta.egorova	Egorova	Julietta	Егорова	Джульетта	1	/uploads/usersPhotos/205.jpg	julietta.egorova@nordclan.com	julietta.egorova@yandex.ru	\N	79539898993	julietta.egorova	Ульяновск	1993-08-08	2015-12-06 23:29:00+00	\N	o2k187g0000l2uvsokbg000000	2015-12-07 02:29:00+00	2017-07-03 13:34:00.672+00	\N	Джульетта Егорова	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	14	2019-06-24 00:00:00+00	\N
-357	aleksandr.krasnov	aleksandr.krasnov	Krasnov	Aleksandr	Краснов	Александр	1	\N	aleksandr.krasnov@nordclan.com	freeman969@yandex.ru	\N	79176150295	live:aleksandr.krasnov	Ульяновск	1986-05-29	2017-02-01 09:23:00+00	\N	o2k187g0000lju65cn5g000000	2017-02-01 12:23:00+00	2017-07-03 13:34:13.997+00	\N	Александр Краснов	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	15	2019-06-10 00:00:00+00	\N
-45	andrey.zolotov	andrey.zolotov	Zolotov	Andrey	Золотов	Андрей	1	/uploads/usersPhotos/45.jpg	andrey.zolotov@nordclan.com	andrey.zolotov@nordclan.com	\N	+7 902 244 58 19	zolotov_andrey	Ульяновск	1981-05-10	2010-05-30 23:08:00+00	2010-09-10 08:43:00+00	o2k007g0000im2moub3g000000	2010-09-13 11:26:00+00	2017-07-03 13:34:23.107+00	\N	Андрей Золотов	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	17	2019-06-21 00:00:00+00	\N
-183	andrei.frenkel	andrei.frenkel	Frenkel	Andrei	Френкель	Андрей	1	/uploads/usersPhotos/183.jpg	andrei.frenkel@nordclan.com	user11141lkjljk1@gmail.com	\N	\N	andrei.frenkel73	Ульяновск	1990-11-06	2015-10-20 22:08:00+00	\N	o2k187g0000l12d8hcg0000000	2015-10-21 01:08:00+00	2017-07-03 13:33:59.486+00	\N	Андрей Френкель	\N	\N	VISOR	\N	\N	\N	\N	\N	\N	f	3	2019-06-24 00:00:00+00	\N
-186	alexei.stratonov	alexei.stratonov	Stratonov	Alexei	Стратонов	Алексей	1	/uploads/usersPhotos/186.jpg	alexei.stratonov@nordclan.com	an.stratonov@gmail.com	\N	89276328984	alexstrat2008	Ульяновск	1994-06-20	2015-10-29 22:01:00+00	\N	o2k187g0000l1dvr85cg000000	2015-10-30 01:01:00+00	2017-07-03 13:33:59.584+00	\N	Алексей Стратонов	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	2	2019-06-24 00:00:00+00	\N
-239	anastasia.gorshkova	anastasia.gorshkova	Gorshkova	Anastasia	Горшкова	Анастасия	1	/uploads/usersPhotos/239.jpg	anastasia.gorshkova@nordclan.com	gorshkovang92@gmail.com	\N	79378837644	anastasya9475	Ульяновск	1992-12-28	2016-03-24 09:02:00+00	\N	o2k187g0000l79t5hti0000000	2016-03-24 12:02:00+00	2017-07-03 13:34:03.234+00	\N	Анастасия Горшкова	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	8	2019-06-24 00:00:00+00	\N
-22	denis.smorodin	denis.smorodin	Smorodin	Denis	Смородин	Денис	1	\N	denis.smorodin@nordclan.com	denis.smorodin@nordclan.com	\N	9176296112	smodean73	Ульяновск	1992-07-10	2019-08-26 11:18:00+00	\N	\N	2019-08-26 11:18:00+00	2019-08-26 11:18:00+00	\N	Денис Смородин	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	27	2019-08-26 11:18:00+00	\N
-2696	alexander.noskov	alexander.noskov	Noskov	Alexander	Носков	Александр	1	\N	alexander.noskov@nordclan.com	\N	\N	\N	\N	Ульяновск	\N	2010-07-12 00:35:00+00	\N	\N	2010-07-12 00:35:00+00	2010-07-12 00:35:00+00	\N	Александр Носков	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	19	2019-06-24 00:00:00+00	\N
-344	aleksei.artamonov	aleksei.artamonov	Artamonov	Aleksei	Артамонов	Алексей	1	/uploads/usersPhotos/344.jpg	aleksei.artamonov@nordclan.com	ha1ken@mail.ru	\N	9053487575	alexei.artamonov	Ульяновск	\N	2016-12-21 07:22:00+00	\N	o2k187g0000li80bme0g000000	2016-12-21 10:22:00+00	2017-07-03 13:34:12.77+00	\N	Алексей Артамонов	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	18	2019-06-24 00:00:00+00	\N
-212	ilya.filinin	ilya.filinin	Filinin	Ilya	Филинин	Илья	1	/uploads/usersPhotos/212.jpg	ilya.filinin@nordclan.com	iliya2007852007@gmail.com	\N	\N	filinin94	\N	1994-02-08	2016-01-21 08:10:00+00	\N	o2k187g0000l4oo5252g000000	2016-01-21 11:10:00+00	2017-07-03 13:34:01.188+00	\N	Илья Филинин	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	13	2019-07-01 00:00:00+00	\N
-336	andrew.yudin	andrew.yudin	Yudin	Andrew	Юдин	Андрей	1	/uploads/usersPhotos/336.jpg	andrew.yudin@nordclan.com	woody.just@gmail.com	\N	9041862212	live:woody.just	Ульяновск	1987-03-26	2016-11-29 05:05:00+00	\N	o2k187g0000lhc6l9cfg000000	2016-11-29 08:05:00+00	2017-07-03 13:34:11.813+00	\N	Андрей Юдин	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	7	2019-07-02 00:00:00+00	\N
-2697	radik.khismetov	radik.khismetov	Radik	Khismetov	Хисметов	Радик	1	/uploads/usersPhotos/183.jpg	radik.khismetov@nordclan.com	radik.khismetov@nordclan.com	\N	\N	\N	Ульяновск	1990-11-06	2015-10-20 22:08:00+00	\N	o2k187g0000l12d8hco0000000	2019-07-22 11:38:07.137+00	2019-07-22 11:38:07.137+00	\N	Радий Хисметов	\N	\N	USER	\N	\N	\N	\N	\N	\N	f	20	2019-07-22 00:00:00+00	\N
-35	ilya.kashtankin	ilya.kashtankin	Kashtankin	Ilya	Каштанкин	Илья	1	/uploads/usersPhotos/35.jpg	ilya.kashtankin@nordclan.com	ilya.kashtankin@nordclan.com	\N	+7 927 800 9999	\N	Ульяновск	1982-07-26	2010-05-31 07:50:00+00	\N	fs002080000ihsi7038g000000	2010-05-31 11:50:00+00	2017-07-03 13:33:49.631+00	\N	Илья Каштанкин	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	16	2019-06-10 00:00:00+00	\N
-2698	roman.khmurenko	roman.khmurenko	Khmurenko	Roman	Хмуренко	Роман	1	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2010-05-31 11:50:00+00	2010-05-31 11:50:00+00	\N	Роман Хмуренко	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	\N	2019-09-09 00:00:00+00	\N
-102	tatyana.babich	tatyana.babich	Babich	Tatyana	Бабич	Татьяна	1	/uploads/usersPhotos/102.jpg	tatyana.babich@nordclan.com	babich_ta@inbox.ru	\N	\N	live:tatyana.babich	Ульяновск	1990-02-01	2014-07-14 07:34:00+00	\N	o2k187g0000kecskg4ag000000	2014-07-14 10:34:00+00	2017-07-03 13:33:54.348+00	\N	Татьяна Бабич	\N	\N	ADMIN	\N	\N	\N	\N	\N	\N	f	10	2019-06-21 00:00:00+00	\N
-\.
-
-
---
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: track
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 2698, true);
+SELECT pg_catalog.setval('public.users_id_seq', 2944, true);
 
+
+--
+-- Data for Name: BLOBS; Type: BLOBS; Schema: -; Owner: -
+--
+
+BEGIN;
+
+SELECT pg_catalog.lo_open('296264', 131072);
+SELECT pg_catalog.lowrite(0, '\xd0add182d0be20d181d0bed0bed0b1d189d0b5d0bdd0b8d0b520d0b7d0b0d0bfd0bbd0b0d0bdd0b8d180d0bed0b2d0b0d0bdd0be20d0ba20d0bed182d0bfd180d0b0d0b2d0bad0b520d0b22031323a343520d0b820d0b1d183d0b4d0b5d18220d0bfd180d0b8d185d0bed0b4d0b8d182d18c20d0bad0b0d0b6d0b4d18bd0b920d0b4d0b5d0bdd18c20d0b220d18dd182d0be20d0b2d180d0b5d0bcd18f2e');
+SELECT pg_catalog.lo_close(0);
+
+COMMIT;
 
 --
 -- Name: Milestones Milestones_pkey; Type: CONSTRAINT; Schema: public; Owner: track
@@ -4155,6 +6141,30 @@ ALTER TABLE ONLY public."SequelizeMeta"
 
 
 --
+-- Name: bot_reply bot_message_pk; Type: CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_reply
+    ADD CONSTRAINT bot_message_pk PRIMARY KEY (id);
+
+
+--
+-- Name: bot_notification bot_notification_pk; Type: CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_notification
+    ADD CONSTRAINT bot_notification_pk PRIMARY KEY (id);
+
+
+--
+-- Name: bot_settings bot_settings_pk; Type: CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_settings
+    ADD CONSTRAINT bot_settings_pk PRIMARY KEY (id);
+
+
+--
 -- Name: comments comments_pkey; Type: CONSTRAINT; Schema: public; Owner: track
 --
 
@@ -4168,6 +6178,14 @@ ALTER TABLE ONLY public.comments
 
 ALTER TABLE ONLY public.departments
     ADD CONSTRAINT departments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: flyway_schema_history flyway_schema_history_pk; Type: CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.flyway_schema_history
+    ADD CONSTRAINT flyway_schema_history_pk PRIMARY KEY (installed_rank);
 
 
 --
@@ -4577,6 +6595,13 @@ CREATE INDEX comments_task_id ON public.comments USING btree (task_id);
 
 
 --
+-- Name: flyway_schema_history_s_idx; Type: INDEX; Schema: public; Owner: track
+--
+
+CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
+
+
+--
 -- Name: index_active_sprint_id; Type: INDEX; Schema: public; Owner: track
 --
 
@@ -4827,6 +6852,38 @@ CREATE UNIQUE INDEX uniq_timesheet_draft ON public.timesheets_draft USING btree 
 
 ALTER TABLE ONLY public."Milestones"
     ADD CONSTRAINT "Milestones_typeId_fkey" FOREIGN KEY ("typeId") REFERENCES public.milestone_types_dictionary(id);
+
+
+--
+-- Name: bot_notification_users bot_notification_users_bot_notification_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_notification_users
+    ADD CONSTRAINT bot_notification_users_bot_notification_id_fk FOREIGN KEY (bot_notification_id) REFERENCES public.bot_notification(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: bot_notification_users bot_notification_users_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_notification_users
+    ADD CONSTRAINT bot_notification_users_users_id_fk FOREIGN KEY (users_id) REFERENCES public.users(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: bot_settings_users bot_settings_users_bot_settings_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_settings_users
+    ADD CONSTRAINT bot_settings_users_bot_settings_id_fk FOREIGN KEY (bot_settings_id) REFERENCES public.bot_settings(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: bot_settings_users bot_settings_users_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: track
+--
+
+ALTER TABLE ONLY public.bot_settings_users
+    ADD CONSTRAINT bot_settings_users_users_id_fk FOREIGN KEY (users_id) REFERENCES public.users(id) ON UPDATE CASCADE;
 
 
 --
