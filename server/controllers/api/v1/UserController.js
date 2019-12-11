@@ -334,11 +334,6 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
     return next(createError(401));
   }
 
-
-  if (userAuth.globalRole !== 'ADMIN') {
-    return next(createError(401));
-  }
-
   let transaction;
 
   try {
