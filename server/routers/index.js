@@ -33,7 +33,7 @@ router.delete('/auth/logout', AuthController.logout);
 router.put('/user', GlobalAccess.can('user', 'updateRole'), UserController.updateUserRole);
 router.put(
   '/user/update-profile',
-  GlobalAccess.can('user', 'updateUserProfile'),
+  GlobalAccess.can('user', 'updateCurrentUserProfile'),
   UserController.updateCurrentUserProfile
 );
 router.patch(

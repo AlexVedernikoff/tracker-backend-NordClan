@@ -272,6 +272,7 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
   const user = req.body;
 
   const userAuth = req.user;
+
   if (!userAuth || userAuth.id !== id) {
     return next(createError(401));
   }
