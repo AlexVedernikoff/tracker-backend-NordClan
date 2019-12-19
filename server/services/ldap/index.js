@@ -130,7 +130,7 @@ module.exports = {
         const emailPrimary = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
         const mail = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
 
-        const jpegPhoto = updateData({jpegPhoto: data.photo});
+        const jpegPhoto = updateData({jpegPhoto: data.photo || ''});
         const uidNumber = updateData({uidNumber: `${data.id || ''}`});
         const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
 
