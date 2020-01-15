@@ -3,7 +3,7 @@ const logger = require('../logger')(module);
 
 (async function checkExternalUserScript () {
   try {
-    checkExternalUsers();
+    await checkExternalUsers().call();
   } catch (e) {
     logger.error(e);
   }
