@@ -15,7 +15,6 @@ const sendEmails = async function (usr, str, emails) {
   emails.forEach(email => {
     emailService.send({
       receiver: email,
-      //receiver: 'i.schutowa2011@yandex.ru',
       subject: template.subject,
       html: template.body
     });
