@@ -9,7 +9,13 @@
       "env": {
         "NODE_ENV": "develop",
         "watch": "server",
-        "ignore_watch": "public/uploads*"
+        "ignore_watch": "public/uploads*",
+        "EMAIL_ENABLED":true,
+        "EMAIL_SERVICE":"Yandex",
+        "EMAIL_LOGIN":"dev.test@nordclan.com",
+        "EMAIL_PASSWORD":"dGn8cqHa",
+        "EMAIL_TITLE": "NordClan",
+        "EMAIL_TEMPLATE_BASE_URL": "http://track-dev.docker.nordclan"
       },
       "env_production": {
         "NODE_ENV": "production",
