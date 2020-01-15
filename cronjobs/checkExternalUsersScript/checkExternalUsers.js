@@ -12,6 +12,7 @@ const sendEmails = async function (usr, str, emails) {
         description: usr.description
       }
     }, templateExternalUrl);
+
   emails.forEach(email => {
     emailService.send({
       receiver: email,
@@ -113,7 +114,7 @@ const sendMessage = async function (usr, str) {
   if (findResult === null || usrs.length === 0) return;
 
   findResult.forEach(result => {
-    const find = listUsers.find(a=>a.id === result.dataValues.projectUserId);
+    const find = listUsers.find(a => a.id === result.dataValues.projectUserId);
     if (find !== null
       && !leaderUsers.includes(find.userId)) {
       leaderUsers.push(find.userId);
@@ -137,39 +138,41 @@ const sendMessage = async function (usr, str) {
 };
 
 
-module.exports.checkExternalUsers = async function () {
-  const todayDateTime = new Date();
+module.exports = () => {
+  async function checkExternalUsers () {
+    const todayDateTime = new Date();
 
-  const today = new Date(
-    todayDateTime.getFullYear(),
-    todayDateTime.getMonth(),
-    todayDateTime.getDate()
-  );
+    const today = new Date(
+      todayDateTime.getFullYear(),
+      todayDateTime.getMonth(),
+      todayDateTime.getDate()
+    );
 
-  const users = await models.User.findAll({
-    where: {
-      globalRole: models.User.EXTERNAL_USER_ROLE,
-      active: 1,
-      expiredDate: {
-        $gt: today
+    const users = await models.User.findAll({
+      where: {
+        globalRole: models.User.EXTERNAL_USER_ROLE,
+        active: 1,
+        expiredDate: {
+          $gt: today
+        }
       }
-    }
-  });
+    });
 
-  users.forEach(usr => {
-    const dateTimeExpire = new Date(usr.expiredDate);
-    const razn = Math.round((dateTimeExpire - today) / (1000 * 60 * 60 * 24));
+    users.forEach(usr => {
+      const dateTimeExpire = new Date(usr.expiredDate);
+      const razn = Math.round((dateTimeExpire - today) / (1000 * 60 * 60 * 24));
 
-    if (razn === 30) {
-      sendMessage(usr.dataValues, 'месяц');
-    }
-    if (razn === 3) {
-      sendMessage(usr.dataValues, '3 дня');
-    }
-    if (razn === 1) {
-      sendMessage(usr.dataValues, 'день');
-    }
-  });
+      if (razn === 30) {
+        sendMessage(usr.dataValues, 'месяц');
+      }
+      if (razn === 3) {
+        sendMessage(usr.dataValues, '3 дня');
+      }
+      if (razn === 1) {
+        sendMessage(usr.dataValues, 'день');
+      }
+    });
+  }
 };
 
 
