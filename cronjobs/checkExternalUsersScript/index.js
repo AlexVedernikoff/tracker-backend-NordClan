@@ -1,12 +1,14 @@
-const checkExternalUsers = require('./checkExternalUsers');
-const logger = require('../logger')(module);
+const checkExternalUsers = require('/home/inna/projects/track-back/cronjobs/checkExternalUsersScript/checkExternalUsers');
+const logger = require('/home/inna/projects/track-back/cronjobs/logger')(module);
 
-(async function checkExternalUserScript () {
+
+test();
+
+async function test () {
   try {
-    await checkExternalUsers().call();
+    await checkExternalUsers();
   } catch (e) {
     logger.error(e);
   }
+}
 
-  logger.info('Done!');
-}());

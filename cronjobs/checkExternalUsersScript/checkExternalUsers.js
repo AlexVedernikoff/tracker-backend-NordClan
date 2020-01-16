@@ -1,6 +1,6 @@
-const models = require('../../server/models');
-const emailService = require('../../server/services/email');
-const { email: { templateExternalUrl } } = require('../../server/configs');
+const models = require('/home/inna/projects/track-back/server/models');
+const emailService = require('/home/inna/projects/track-back/server/services/email');
+const { email: { templateExternalUrl } } = require('/home/inna/projects/track-back/server/configs');
 
 const sendEmails = async function (usr, str, emails) {
   const template = emailService.template('checkExternalUser',
@@ -139,39 +139,36 @@ const sendMessage = async function (usr, str) {
 };
 
 
-module.exports = () => {
-  async function checkExternalUsers () {
-    const todayDateTime = new Date();
+module.exports = async function () {
+  const todayDateTime = new Date();
+  const today = new Date(
+    todayDateTime.getFullYear(),
+    todayDateTime.getMonth(),
+    todayDateTime.getDate()
+  );
 
-    const today = new Date(
-      todayDateTime.getFullYear(),
-      todayDateTime.getMonth(),
-      todayDateTime.getDate()
-    );
+  const users = await models.User.findAll({
+    where: {
+      globalRole: models.User.EXTERNAL_USER_ROLE,
+      active: 1,
+      expiredDate: {
+        $gt: today
+      }
+    }
+  });
 
-    const users = await models.User.findAll({
-      where: {
-        globalRole: models.User.EXTERNAL_USER_ROLE,
-        active: 1,
-        expiredDate: {
-          $gt: today
-        }
-      }
-    });
+  users.forEach(usr => {
+    const dateTimeExpire = new Date(usr.expiredDate);
+    const razn = Math.round((dateTimeExpire - today) / (1000 * 60 * 60 * 24));
 
-    users.forEach(usr => {
-      const dateTimeExpire = new Date(usr.expiredDate);
-      const razn = Math.round((dateTimeExpire - today) / (1000 * 60 * 60 * 24));
-
-      if (razn === 30) {
-        sendMessage(usr.dataValues, 'месяц');
-      }
-      if (razn === 3) {
-        sendMessage(usr.dataValues, '3 дня');
-      }
-      if (razn === 1) {
-        sendMessage(usr.dataValues, 'день');
-      }
-    });
-  }
+    if (razn === 30) {
+      sendMessage(usr.dataValues, 'месяц');
+    }
+    if (razn === 3) {
+      sendMessage(usr.dataValues, '3 дня');
+    }
+    if (razn === 1) {
+      sendMessage(usr.dataValues, 'день');
+    }
+  });
 };
