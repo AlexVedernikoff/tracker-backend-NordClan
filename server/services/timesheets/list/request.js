@@ -16,11 +16,9 @@ module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSyste
     where.userId = userId;
   }
 
-  if (isSystemUser) {
-    where.spentTime = {
-      gt: 0
-    };
-  }
+  where.spentTime = {
+    gt: 0
+  };
 
   if (taskId) {
     where.taskId = taskId;
