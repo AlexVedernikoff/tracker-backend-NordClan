@@ -444,7 +444,7 @@ exports.createUser = async function (req, res, next) {
     });
 
     if (userModel !== null) {
-      return next(createError(400, 'user is already exist'));
+      return next(createError(403, 'user is already exist'));
     }
 
     transaction = await models.sequelize.transaction();
