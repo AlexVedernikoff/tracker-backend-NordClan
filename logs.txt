@@ -11333,3 +11333,138 @@ work
 here
 2020-01-16T11:39:21.063Z [checkExternalUsersScript/index.js] error: users is not defined
 2020-01-16T11:39:21.058Z [checkExternalUsersScript/index.js] error: users is not defined
+function start working
+before async
+2020-01-20T07:35:02.662Z [checkExternalUsersScript/index.js] error: connect ECONNREFUSED 127.0.0.1:5432
+function start working
+before async
+2020-01-20T07:36:02.825Z [checkExternalUsersScript/index.js] error: connect ECONNREFUSED 127.0.0.1:5432
+function start working
+before async
+2020-01-20T07:37:02.918Z [checkExternalUsersScript/index.js] error: connect ECONNREFUSED 127.0.0.1:5432
+function start working
+before async
+2020-01-20T07:38:02.983Z [checkExternalUsersScript/index.js] error: connect ECONNREFUSED 127.0.0.1:5432
+function start working
+before async
+{ SequelizeConnectionRefusedError: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/inna/projects/track-back/node_modules/sequelize/lib/dialects/postgres/connection-manager.js:98:20
+    at Client.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/client.js:203:5)
+    at Connection.emit (events.js:189:13)
+    at Socket.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/connection.js:86:10)
+    at Socket.emit (events.js:189:13)
+    at emitErrorNT (internal/streams/destroy.js:82:8)
+    at emitErrorAndCloseNT (internal/streams/destroy.js:50:3)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+  name: 'SequelizeConnectionRefusedError',
+  message: 'connect ECONNREFUSED 127.0.0.1:5432',
+  parent:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 },
+  original:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 } }
+2020-01-20T07:39:03.219Z [checkExternalUsersScript/index.js] error: err is not defined
+function start working
+before async
+fail into module.exports = async function
+{ SequelizeConnectionRefusedError: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/inna/projects/track-back/node_modules/sequelize/lib/dialects/postgres/connection-manager.js:98:20
+    at Client.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/client.js:203:5)
+    at Connection.emit (events.js:189:13)
+    at Socket.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/connection.js:86:10)
+    at Socket.emit (events.js:189:13)
+    at emitErrorNT (internal/streams/destroy.js:82:8)
+    at emitErrorAndCloseNT (internal/streams/destroy.js:50:3)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+  name: 'SequelizeConnectionRefusedError',
+  message: 'connect ECONNREFUSED 127.0.0.1:5432',
+  parent:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 },
+  original:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 } }
+2020-01-20T07:40:02.963Z [checkExternalUsersScript/index.js] error: err is not defined
+function start working
+before async
+fail into module.exports = async function
+{ SequelizeConnectionRefusedError: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/inna/projects/track-back/node_modules/sequelize/lib/dialects/postgres/connection-manager.js:98:20
+    at Client.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/client.js:203:5)
+    at Connection.emit (events.js:189:13)
+    at Socket.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/connection.js:86:10)
+    at Socket.emit (events.js:189:13)
+    at emitErrorNT (internal/streams/destroy.js:82:8)
+    at emitErrorAndCloseNT (internal/streams/destroy.js:50:3)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+  name: 'SequelizeConnectionRefusedError',
+  message: 'connect ECONNREFUSED 127.0.0.1:5432',
+  parent:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 },
+  original:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 } }
+2020-01-20T07:41:03.193Z [checkExternalUsersScript/index.js] error: err is not defined
+function start working
+before async
+fail into module.exports = async function
+{ SequelizeConnectionRefusedError: connect ECONNREFUSED 127.0.0.1:5432
+    at /home/inna/projects/track-back/node_modules/sequelize/lib/dialects/postgres/connection-manager.js:98:20
+    at Client.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/client.js:203:5)
+    at Connection.emit (events.js:189:13)
+    at Socket.<anonymous> (/home/inna/projects/track-back/node_modules/pg/lib/connection.js:86:10)
+    at Socket.emit (events.js:189:13)
+    at emitErrorNT (internal/streams/destroy.js:82:8)
+    at emitErrorAndCloseNT (internal/streams/destroy.js:50:3)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+  name: 'SequelizeConnectionRefusedError',
+  message: 'connect ECONNREFUSED 127.0.0.1:5432',
+  parent:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 },
+  original:
+   { Error: connect ECONNREFUSED 127.0.0.1:5432
+       at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1104:14)
+     errno: 'ECONNREFUSED',
+     code: 'ECONNREFUSED',
+     syscall: 'connect',
+     address: '127.0.0.1',
+     port: 5432 } }
+2020-01-20T07:42:02.785Z [checkExternalUsersScript/index.js] error: err is not defined
