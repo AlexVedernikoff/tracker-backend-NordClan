@@ -98,7 +98,7 @@ exports.login = function (req, res, next) {
   async function authExternalUser (user, password) {
     if (user.isActive === 0) return next(createError(400, 'Expired Access Timeout'));
 
-    if (moment().isAfter(user.expiredDate)) return next(createError(400, 'Expired Access Timeout'));
+    if (moment().isAfter(user.expiredDate)) return next(createError(410, 'Expired Access Timeout'));
 
     const validPassword = await new Promise((resolve, reject) => {
       bcrypt.hash(password, null, null, (error, result) => {
