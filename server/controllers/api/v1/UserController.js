@@ -67,6 +67,30 @@ exports.read = async function (req, res, next) {
   }
 };
 
+exports.getUser = async function (req, res, next) {
+  try {
+    const ldapLogin = req.sanitize('ldapLogin').trim();
+    req.checkQuery('ldapLogin', 'ldapLogin must be not empty').notEmpty();
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
+
+    const user = await models.User.findOne({
+      where: {
+        ldapLogin: ldapLogin
+      },
+      attributes: models.User.defaultSelect
+    });
+
+    if (!user) {
+      return next(createError(404, 'User not found'));
+    }
+
+    res.json(user);
+  } catch (e) {
+    return next(createError(e));
+  }
+};
+
 exports.autocomplete = function (req, res, next) {
   req.sanitize('userName').trim();
   req.checkQuery('userName', 'userName must be not empty').notEmpty();
@@ -225,6 +249,57 @@ exports.getUsersRoles = async function (req, res, next) {
         firstNameEn,
         lastNameEn,
         globalRole
+      };
+    });
+
+    res.json(usersWithFilteredData);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getInternalUsers = async function (req, res, next) {
+  try {
+
+    const stat = (req.query.status !== null && req.query.status !== undefined)
+      ? req.query.status
+      : true;
+
+    const users = await models.User.findAll({
+      where: {
+        active: stat ? 1 : 0,
+        globalRole: { $not: 'EXTERNAL_USER' }
+      },
+      order: [['last_name_ru']],
+      attributes: [
+        'id',
+        'ldapLogin',
+        'firstNameRu',
+        'lastNameRu',
+        'firstNameEn',
+        'lastNameEn',
+        'birthDate'
+      ]
+    });
+
+    const usersWithFilteredData = users.map(user => {
+      const {
+        id,
+        ldapLogin,
+        firstNameRu,
+        lastNameRu,
+        firstNameEn,
+        lastNameEn,
+        birthDate
+      } = user;
+      return {
+        id,
+        ldapLogin,
+        firstNameRu,
+        lastNameRu,
+        firstNameEn,
+        lastNameEn,
+        birthDate
       };
     });
 

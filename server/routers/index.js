@@ -61,9 +61,12 @@ router.get('/user/roles', GlobalAccess.can('user', 'usersRoles'), UserController
 router.post('/user/external', GlobalAccess.can('user', 'createExternal'), UserController.createExternal);
 router.get('/user/external', GlobalAccess.can('user', 'getExternalUsers'), UserController.getExternalUsers);
 router.put('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), UserController.updateExternal);
+router.get('/user/internal', GlobalAccess.can('companyReports', 'read'), UserController.getInternalUsers);
+
 router.put('/user/password/:token', UserController.setPassword);
 router.put('/user/test/:id', GlobalAccess.can('user', 'updateTestUser'), UserController.updateTestUser);
 router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
+router.get('/user', GlobalAccess.can('user', 'read'), UserController.getUser);
 router.post('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.uploadAvatar);
 router.delete('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.deleteAvatar);
 
