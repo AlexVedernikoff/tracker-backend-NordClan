@@ -110,7 +110,8 @@ module.exports = {
       'refreshTokenExternal': true,
       'updateTestUser': true,
       'updateUsersProfile': true,
-      'createUser': true
+      'createUser': true,
+      'updateCurrentUserProfile': true
     },
     companyReports: {
       ...USER.companyReports
