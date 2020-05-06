@@ -3,7 +3,7 @@ const globalGrants = require('./globalGrants');
 
 //Блокирую доступ к роутам на глобальном уровне
 exports.can = (resource, action) => {
-  return (req, res, next) => {
+  return (req, _res, next) => {
     try {
       const role = req.user.globalRole;
       const permission = getPermission(role, resource, action);
