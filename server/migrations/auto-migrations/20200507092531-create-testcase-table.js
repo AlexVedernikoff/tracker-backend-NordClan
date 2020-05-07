@@ -1,6 +1,6 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('test_case', {
+  up: (queryInterface, Sequelize) => {
+    queryInterface.createTable('test_case', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -62,7 +62,7 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
-    return await queryInterface.createTable('test_case_steps', {
+    return queryInterface.createTable('test_case_steps', {
       id: {
         allowNull: false,
         autoIncrement: true,
