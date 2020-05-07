@@ -36,6 +36,16 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
         order: [
           ['onDate', 'ASC']
         ]
+      },
+      {
+        model: models.Department,
+        as: 'department',
+        required: false,
+        attributes: ['name', 'id'],
+        through: {
+          model: models.UserDepartments,
+          attributes: []
+        }
       }
     ],
     where: {
