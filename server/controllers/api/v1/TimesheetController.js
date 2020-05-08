@@ -272,7 +272,7 @@ exports.approve = async function (req, res, next) {
   req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('userId', 'userId must be int').isInt();
-  req.checkBody('approvedBy', 'approvedBy must be int').isInt();
+  req.checkBody('approvedByUserId', 'approvedByUserId must be int').isInt();
 
   const validationResult = await req.getValidationResult();
 
@@ -280,7 +280,7 @@ exports.approve = async function (req, res, next) {
     return next(createError(400, validationResult));
   }
 
-  return TimesheetService.approve(req.body.userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId, req.body.approvedBy)
+  return TimesheetService.approve(req.body.userId, req.body.dateBegin, req.body.dateEnd, req.body.projectId, req.body.approvedByUserId)
     .then(result => {
       result.forEach(sheet => TimesheetsChannel.sendAction('update', sheet, res.io, req.body.userId));
       res.json(result);
