@@ -17,7 +17,7 @@ const validate = (userId, dateBegin, dateEnd, status) => {
   }
 };
 
-const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId, justRejected) => {
+const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projectId, justRejected, approvedByUserId = null) => {
   validate(userId, dateBegin, dateEnd, status);
 
   const submittedStatus = await TimesheetStatusesDictionary.findOne({
@@ -48,11 +48,11 @@ const updateStatusForProject = async (userId, dateBegin, dateEnd, status, projec
     };
   }
 
-  const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
+  const timesheets = await Timesheet.update({ statusId: status.dataValues.id, approvedByUserId }, { where, returning: true });
   return timesheets[1];
 };
 
-const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected) => {
+const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected, approvedByUserId = null) => {
   validate(userId, dateBegin, dateEnd, status);
 
   const submittedStatus = await TimesheetStatusesDictionary.findOne({
@@ -74,7 +74,7 @@ const updateStatus = async (userId, dateBegin, dateEnd, status, justRejected) =>
     },
     statusId
   };
-  const timesheets = await Timesheet.update({ statusId: status.dataValues.id }, { where, returning: true });
+  const timesheets = await Timesheet.update({ statusId: status.dataValues.id, approvedByUserId }, { where, returning: true });
   return timesheets[1];
 };
 
@@ -88,14 +88,14 @@ exports.submit = async (userId, dateBegin, dateEnd, projectId, justRejected) => 
   return updateStatus(userId, dateBegin, dateEnd, status, justRejected);
 };
 
-exports.approve = async (userId, dateBegin, dateEnd, projectId) => {
+exports.approve = async (userId, dateBegin, dateEnd, projectId, approvedByUserId) => {
   const status = await TimesheetStatusesDictionary.findOne({
     where: { name: { $eq: 'approved' } }
   });
   if (projectId || projectId === 0) {
-    return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId);
+    return updateStatusForProject(userId, dateBegin, dateEnd, status, projectId, undefined, approvedByUserId);
   }
-  return updateStatus(userId, dateBegin, dateEnd, status);
+  return updateStatus(userId, dateBegin, dateEnd, status, undefined, approvedByUserId);
 };
 
 exports.reject = async (userId, dateBegin, dateEnd, projectId) => {
