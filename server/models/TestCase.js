@@ -64,12 +64,12 @@ module.exports = function (sequelize, DataTypes) {
       testSuiteId: {
         field: 'test_suite_id',
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       authorId: {
         field: 'author_id',
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
@@ -81,11 +81,6 @@ module.exports = function (sequelize, DataTypes) {
       underscored: true,
       tableName: 'test_case',
       hooks: {
-        beforeValidate: function (model) {
-          if (!model.testCaseSteps) {
-            createError(500, 'test case steps not specified');
-          }
-        },
         afterFind: function (model) {
           ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
         }
@@ -102,14 +97,14 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
 
-    // TestCase.belongsTo(models.TestSuite, {
-    //   as: 'testSuite',
-    //   foreignKey: {
-    //     name: 'testSuiteId',
-    //     field: 'test_suite_id',
-    //     allowNull: false
-    //   }
-    // });
+    TestCase.belongsTo(models.TestSuite, {
+      as: 'testSuite',
+      foreignKey: {
+        name: 'testSuiteId',
+        field: 'test_suite_id',
+        allowNull: false
+      }
+    });
 
     TestCase.hasMany(models.TestCaseSteps, {
       as: 'testCaseSteps',

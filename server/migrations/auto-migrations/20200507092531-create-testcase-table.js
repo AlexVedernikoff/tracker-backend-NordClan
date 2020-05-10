@@ -46,11 +46,11 @@ module.exports = {
       },
       test_suite_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       author_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       created_at: {
         type: Sequelize.DATE
@@ -80,15 +80,6 @@ module.exports = {
       expected_result: {
         type: Sequelize.TEXT,
         allowNull: true
-      },
-      created_at: {
-        type: Sequelize.DATE
-      },
-      updated_at: {
-        type: Sequelize.DATE
-      },
-      deleted_at: {
-        type: Sequelize.DATE
       }
     });
   },
