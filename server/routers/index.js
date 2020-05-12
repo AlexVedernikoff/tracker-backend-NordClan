@@ -19,6 +19,8 @@ const MetricsController = require('../controllers/api/v1/MetricsController');
 const MilestonesController = require('../controllers/api/v1/MilestonesController');
 const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare');
 const JiraController = require('../controllers/api/v1/JiraController');
+const TestCaseController = require('../controllers/api/v1/TestCaseController');
+const TestSuiteController = require('../controllers/api/v1/TestSuiteController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
@@ -220,5 +222,19 @@ router.post('/jira/synchronize', GlobalAccess.can('jira', 'synchronize'), JiraCo
 router.get('/jira/cleanProjectAssociation/:id', JiraController.clearAssociationWithJiraProject); // эксперементальная функция, не документирована
 router.post('/jira/setJiraSynchronizeStatus', GlobalAccess.can('jira', 'setStatus'), JiraController.setJiraSyncStatus);
 router.get('/jira/getJiraSyncStatuses/:simtrackProjectId', JiraController.getJiraSyncStatuses);
+
+//TestCases
+router.get('/test-case', TestCaseController.getAllTestCases);
+router.get('/test-case/:id', TestCaseController.getTestCaseById);
+router.post('/test-case', TestCaseController.createTestCase);
+router.put('/test-case/:id', TestCaseController.updateTestCase);
+router.delete('/test-case/:id', TestCaseController.deleteTestCase);
+
+//TestSuite
+router.get('/test-suite', TestSuiteController.getAllTestSuites);
+router.get('/test-suite/:id', TestSuiteController.getTestSuiteById);
+router.post('/test-suite', TestSuiteController.createTestSuite);
+router.put('/test-suite/:id', TestSuiteController.updateTestSuite);
+router.delete('/test-suite/:id', TestSuiteController.deleteTestSuite);
 
 module.exports = { routes: router };

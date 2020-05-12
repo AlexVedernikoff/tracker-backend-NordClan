@@ -1,5 +1,4 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
-const createError = require('http-errors');
 
 module.exports = function (sequelize, DataTypes) {
   const TestCase = sequelize.define(
@@ -78,19 +77,13 @@ module.exports = function (sequelize, DataTypes) {
     {
       timestamps: true,
       paranoid: true,
-      underscored: true,
-      tableName: 'test_case',
-      hooks: {
-        afterFind: function (model) {
-          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
-      }
+      tableName: 'test_case'
     }
   );
 
   TestCase.associate = function (models) {
     TestCase.belongsTo(models.User, {
-      as: 'author',
+      as: 'authorInfo',
       foreignKey: {
         name: 'authorId',
         field: 'author_id'
@@ -98,7 +91,7 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     TestCase.belongsTo(models.TestSuite, {
-      as: 'testSuite',
+      as: 'testSuiteInfo',
       foreignKey: {
         name: 'testSuiteId',
         field: 'test_suite_id',

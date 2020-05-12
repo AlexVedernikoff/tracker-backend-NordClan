@@ -33,13 +33,7 @@ module.exports = function (sequelize, DataTypes) {
     {
       timestamps: true,
       paranoid: true,
-      underscored: true,
-      tableName: 'test_suite',
-      hooks: {
-        afterFind: function (model) {
-          ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
-      }
+      tableName: 'test_suite'
     }
   );
 
