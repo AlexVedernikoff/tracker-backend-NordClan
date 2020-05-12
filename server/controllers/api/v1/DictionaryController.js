@@ -43,12 +43,6 @@ exports.milestoneTypes = function (req, res){
     .then(data => res.json(data));
 };
 
-exports.testCaseTypes = function (req, res) {
-  return models.TestCaseTypesDictionary
-    .findAll()
-    .then(data => res.json(data));
-};
-
 exports.departments = function (req, res){
   return models.Department
     .findAll()
