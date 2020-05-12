@@ -21,6 +21,7 @@ const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare
 const JiraController = require('../controllers/api/v1/JiraController');
 const TestCaseController = require('../controllers/api/v1/TestCaseController');
 const TestSuiteController = require('../controllers/api/v1/TestSuiteController');
+const TestPlanController = require('../controllers/api/v1/TestPlanController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
@@ -180,7 +181,7 @@ router.delete('/task/:taskId/comment/:commentId', GlobalAccess.can('comment', 'd
 router.get('/task/:taskId/comment', GlobalAccess.can('comment', 'list'), CommentController.list);
 
 // Dictionaries
-router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
+router.get('/dictionary/:entity(project|task|sprint|timesheet|test-case)/status', DictionaryController.status);
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
 router.get('/dictionary/project/types', DictionaryController.projectTypes);
 router.get('/dictionary/task/types', DictionaryController.taskTypes);
@@ -191,6 +192,7 @@ router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); 
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
 router.get('/dictionary/departments', DictionaryController.departments);
+router.get('/distionary/test-case', DictionaryController.testCaseTypes);
 
 // Attachments
 router.post(
@@ -236,5 +238,12 @@ router.get('/test-suite/:id', TestSuiteController.getTestSuiteById);
 router.post('/test-suite', TestSuiteController.createTestSuite);
 router.put('/test-suite/:id', TestSuiteController.updateTestSuite);
 router.delete('/test-suite/:id', TestSuiteController.deleteTestSuite);
+
+//TestPlan
+router.get('/test-plan', TestPlanController.getAllTestPlans);
+router.get('/test-plan/:id', TestPlanController.getTestPlanById);
+router.post('/test-plan', TestPlanController.createTestPlan);
+router.put('/test-plan/:id', TestPlanController.updateTestPlan);
+router.delete('/test-plan/:id', TestPlanController.deleteTestPlan);
 
 module.exports = { routes: router };
