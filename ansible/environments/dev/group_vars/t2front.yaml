@@ -1,0 +1,14 @@
+---
+
+deploy_app_name: t2back
+deploy_app_port: 3{{deploy_magic_number}}03
+
+deploy_sleep_timeout: 10
+deploy_host_name: back-checkup.docker.nordclan
+deploy_app_envs:
+ - PORT=80
+
+deploy_app_docker_labels:
+  - traefik.enable=true
+  - traefik.port=80
+  - traefik.http.routers.t2front_{{ deploy_project_name }}.rule=Host(`{{ deploy_host_name }}`)

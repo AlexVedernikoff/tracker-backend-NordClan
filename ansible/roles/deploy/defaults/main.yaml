@@ -1,0 +1,30 @@
+---
+
+deploy_project_name: example
+deploy_env: unknown
+
+deploy_compose_project_name: "{{ deploy_project_name | regex_replace('\\/|_|-', '') }}_{{ deploy_env }}"
+
+deploy_project_owner: root
+deploy_project_group: root
+
+deploy_app_name: ""
+deploy_app_root: "/data/{{ deploy_project_name }}-{{ deploy_env }}"
+deploy_app_shared_root: "/data/{{ deploy_project_name }}-{{ deploy_env }}/shared"
+deploy_app_compose_template: "docker-compose.yaml.j2"
+deploy_app_version: "{{ lookup('env', 'TAG') or 'latest' }}"
+
+deploy_app_keep_releases: 5
+
+deploy_docker_registry: "{{ lookup('env', 'DOCKER_REGISTRY') }}"
+deploy_docker_username: "{{ lookup('env', 'DOCKER_REGISTRY_USER') }}"
+deploy_docker_password: "{{ lookup('env', 'DOCKER_REGISTRY_PASS') }}"
+deploy_docker_registry_image: "{{ lookup('env', 'DOCKER_REGISTRY_IMAGE') }}"
+
+deploy_sleep_timeout: 30
+
+deploy_app_volumes: []
+
+deploy_app_envs: []
+
+deploy_app_docker_labels: []
