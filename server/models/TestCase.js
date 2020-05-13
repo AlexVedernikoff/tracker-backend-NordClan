@@ -24,19 +24,33 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: true,
         trim: true
       },
-      status: {
-        type: DataTypes.ENUM('draft', 'needs work', 'actual'),
-        allowNull: true
+      statusId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'status_id',
+        validate: {
+          isInt: true,
+          min: 1,
+          max: 3
+        }
       },
-      severity: {
-        type: DataTypes.ENUM('not set', 'blocker', 'critical', 'major', 'normal', 'minor', 'trivial'),
-        allowNull: true
+      severityId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'severity_id',
+        validate: {
+          isInt: true,
+          min: 1,
+          max: 7
+        }
       },
       priority: {
         type: DataTypes.INTEGER,
         defaultValue: 3,
         validate: {
-          isInt: true
+          isInt: true,
+          min: 1,
+          max: 5
         }
       },
       preConditions: {
@@ -93,6 +107,24 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'testSuiteId',
         field: 'test_suite_id',
+        allowNull: false
+      }
+    });
+
+    TestCase.belongsTo(models.TestCaseStatusesDictionary, {
+      as: 'testCaseStatus',
+      foreignKey: {
+        name: 'statusId',
+        field: 'status_id',
+        allowNull: false
+      }
+    });
+
+    TestCase.belongsTo(models.TestCaseSeverityDictionary, {
+      as: 'testCaseSeverity',
+      foreignKey: {
+        name: 'severityId',
+        field: 'severity_id',
         allowNull: false
       }
     });

@@ -15,13 +15,13 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
-      status: {
-        type: Sequelize.ENUM('draft', 'needs work', 'actual'),
-        defaultValue: 'actual'
+      status_id: {
+        type: Sequelize.INTEGER,
+        defaultValue: 3
       },
-      severity: {
-        type: Sequelize.ENUM('not set', 'blocker', 'critical', 'major', 'normal', 'minor', 'trivial'),
-        allowNull: true
+      severity_id: {
+        type: Sequelize.INTEGER,
+        defaultValue: 1
       },
       priority: {
         type: Sequelize.INTEGER,

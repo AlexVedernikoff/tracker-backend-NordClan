@@ -2103,6 +2103,20 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/dictionary/test-case/status': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник статусов тест кейса',
+        responses: responsesCodes
+      }
+    },
+    '/dictionary/test-case/severity': {
+      get: {
+        tags: ['Dictionary'],
+        summary: 'Справочник сложности тест кейса',
+        responses: responsesCodes
+      }
+    },
     '/milestones/{id}': {
       delete: {
         tags: ['Milestone'],
@@ -2382,14 +2396,14 @@ module.exports = {
                   example: 'description'
                 },
                 status: {
-                  type: 'string',
-                  enum: ['draft', 'needs work', 'actual'],
-                  example: 'draft'
+                  type: 'integer',
+                  enum: [1, 2, 3],
+                  example: 3
                 },
                 severity: {
-                  type: 'string',
-                  enum: ['not set', 'blocker', 'critical', 'major', 'normal', 'minor', 'trivial'],
-                  example: 'not set'
+                  type: 'integer',
+                  enum: [1, 2, 3, 4, 5, 6, 7],
+                  example: 1
                 },
                 priority: {
                   type: 'integer',
@@ -2484,14 +2498,14 @@ module.exports = {
                   example: 'description'
                 },
                 status: {
-                  type: 'string',
-                  enum: ['draft', 'needs work', 'actual'],
-                  example: 'draft'
+                  type: 'integer',
+                  enum: [1, 2, 3],
+                  example: 3
                 },
                 severity: {
                   type: 'string',
-                  enum: ['not set', 'blocker', 'critical', 'major', 'normal', 'minor', 'trivial'],
-                  example: 'not set'
+                  enum: [1, 2, 3, 4, 5, 6, 7],
+                  example: 4
                 },
                 priority: {
                   type: 'integer',

@@ -1,4 +1,11 @@
-const { TestSuite, TestCase, TestCaseSteps, User } = require('../../../models');
+const {
+  TestSuite,
+  TestCase,
+  TestCaseSteps,
+  User,
+  TestCaseStatusesDictionary,
+  TestCaseSeverityDictionary
+} = require('../../../models');
 
 const includeOptions = [
   {
@@ -16,6 +23,14 @@ const includeOptions = [
           'fullNameRu',
           'fullNameEn'
         ]
+      },
+      {
+        model: TestCaseStatusesDictionary,
+        as: 'testCaseStatus'
+      },
+      {
+        model: TestCaseSeverityDictionary,
+        as: 'testCaseSeverity'
       }
     ]
   }

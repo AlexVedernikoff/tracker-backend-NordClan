@@ -181,7 +181,7 @@ router.delete('/task/:taskId/comment/:commentId', GlobalAccess.can('comment', 'd
 router.get('/task/:taskId/comment', GlobalAccess.can('comment', 'list'), CommentController.list);
 
 // Dictionaries
-router.get('/dictionary/:entity(project|task|sprint|timesheet)/status', DictionaryController.status);
+router.get('/dictionary/:entity(project|task|sprint|timesheet|test-case)/status', DictionaryController.status);
 router.get('/dictionary/project/roles', DictionaryController.projectRoles);
 router.get('/dictionary/project/types', DictionaryController.projectTypes);
 router.get('/dictionary/task/types', DictionaryController.taskTypes);
@@ -192,6 +192,7 @@ router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); 
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
 router.get('/dictionary/departments', DictionaryController.departments);
+router.get('/dictionary/test-case/severity', DictionaryController.testCaseSeverity);
 
 // Attachments
 router.post(

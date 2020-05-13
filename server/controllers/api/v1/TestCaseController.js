@@ -1,4 +1,11 @@
-const { TestCase, TestCaseSteps, TestSuite, User } = require('../../../models');
+const {
+  TestCase,
+  TestCaseSteps,
+  TestSuite,
+  User,
+  TestCaseStatusesDictionary,
+  TestCaseSeverityDictionary
+} = require('../../../models');
 const createError = require('http-errors');
 
 const includeOpition = [
@@ -17,6 +24,14 @@ const includeOpition = [
       'fullNameRu',
       'fullNameEn'
     ]
+  },
+  {
+    model: TestCaseStatusesDictionary,
+    as: 'testCaseStatus'
+  },
+  {
+    model: TestCaseSeverityDictionary,
+    as: 'testCaseSeverity'
   }
 ];
 
@@ -61,7 +76,6 @@ exports.createTestCase = async (req, res, next) => {
       testCaseId
     }));
     await TestCaseSteps.bulkCreate(updatedSteps);
-    //Новый запрос а бд, т.к. почему-то не возвращаются id созданных TestCaseSteps
     const result = await getTestCaseByParams({ id: testCaseId });
     res.send(result);
   } catch (e) {

@@ -1,4 +1,12 @@
-const { TestPlan, TestPlanTestCases, TestCase, TestCaseSteps, User } = require('../../../models');
+const {
+  TestPlan,
+  TestPlanTestCases,
+  TestCase,
+  TestCaseSteps,
+  User,
+  TestCaseStatusesDictionary,
+  TestCaseSeverityDictionary
+} = require('../../../models');
 const createError = require('http-errors');
 
 const includeOptions = [
@@ -12,11 +20,20 @@ const includeOptions = [
         include: [
           {
             model: User,
-            as: 'authorInfo'
+            as: 'authorInfo',
+            attributes: ['fullNameEn', 'fullNameRu']
           },
           {
             model: TestCaseSteps,
             as: 'testCaseSteps'
+          },
+          {
+            model: TestCaseStatusesDictionary,
+            as: 'testCaseStatus'
+          },
+          {
+            model: TestCaseSeverityDictionary,
+            as: 'testCaseSeverity'
           }
         ]
       },
