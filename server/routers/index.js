@@ -192,7 +192,6 @@ router.get('/timesheet/types/dictionary', DictionaryController.timesheetTypes); 
 router.get('/task/timesheet/types/dictionary', DictionaryController.timesheetTypes); // Deprecated. но еще используется
 router.get('/dictionary/milestone/types', DictionaryController.milestoneTypes);
 router.get('/dictionary/departments', DictionaryController.departments);
-router.get('/distionary/test-case', DictionaryController.testCaseTypes);
 
 // Attachments
 router.post(
