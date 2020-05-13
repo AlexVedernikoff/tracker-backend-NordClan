@@ -13,6 +13,15 @@ const responsesCodes = {
   }
 };
 
+const putResponseCodes = {
+  '204': {
+    description: 'Нет контента'
+  },
+  '400': responsesCodes['400'],
+  '401': responsesCodes['401'],
+  '50x': responsesCodes['50x']
+};
+
 
 module.exports = {
   swagger: '2.0',
@@ -2343,6 +2352,436 @@ module.exports = {
       get: {
         tags: ['Healthcheck'],
         summary: 'Проверка жив ли бек, реализует простой запрос в бд',
+        responses: responsesCodes
+      }
+    },
+    '/test-case': {
+      get: {
+        tags: ['Test Case'],
+        summary: 'Получить все тест-кейсы',
+        responses: responsesCodes
+      },
+      post: {
+        tags: ['Test Case'],
+        summary: 'Создать тест-кейс',
+        parameters: [
+          {
+            in: 'body',
+            name: 'test-case',
+            description: 'The test case to create',
+            schema: {
+              type: 'object',
+              required: ['title, testCaseSteps'],
+              properties: {
+                title: {
+                  type: 'string',
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  example: 'description'
+                },
+                status: {
+                  type: 'string',
+                  enum: ['draft', 'needs work', 'actual'],
+                  example: 'draft'
+                },
+                severity: {
+                  type: 'string',
+                  enum: ['not set', 'blocker', 'critical', 'major', 'normal', 'minor', 'trivial'],
+                  example: 'not set'
+                },
+                priority: {
+                  type: 'integer',
+                  example: 3
+                },
+                preConditions: {
+                  type: 'string',
+                  example: 'pre conditions'
+                },
+                postConditions: {
+                  type: 'string',
+                  example: 'post conditions'
+                },
+                expectedResult: {
+                  type: 'string',
+                  example: 'expected result'
+                },
+                duration: {
+                  type: 'string',
+                  example: '2:00:00'
+                },
+                testSuiteId: {
+                  type: 'integer',
+                  example: 2
+                },
+                authorId: {
+                  type: 'integer',
+                  example: 4
+                },
+                testCaseSteps: {
+                  type: 'array',
+                  example: [{ 'action': 'action', 'expectedResult': 'expected result' }],
+                  items: {
+                    type: 'object',
+                    properties: {
+                      action: {
+                        type: 'string',
+                        required: true
+                      },
+                      expectedResult: {
+                        type: 'string',
+                        required: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-case/{testCaseId}': {
+      get: {
+        tags: ['Test Case'],
+        summary: 'Получить конкретный тест кейс',
+        parameters: [
+          {
+            name: 'testCaseId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      },
+      put: {
+        tags: ['Test Case'],
+        summary: 'Изменить конкретный тест кейс',
+        parameters: [
+          {
+            name: 'testCaseId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'test-case',
+            description: 'The test case to edit',
+            schema: {
+              type: 'object',
+              required: ['testCaseSteps'],
+              properties: {
+                title: {
+                  type: 'string',
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  example: 'description'
+                },
+                status: {
+                  type: 'string',
+                  enum: ['draft', 'needs work', 'actual'],
+                  example: 'draft'
+                },
+                severity: {
+                  type: 'string',
+                  enum: ['not set', 'blocker', 'critical', 'major', 'normal', 'minor', 'trivial'],
+                  example: 'not set'
+                },
+                priority: {
+                  type: 'integer',
+                  example: 3
+                },
+                preConditions: {
+                  type: 'string',
+                  example: 'pre conditions'
+                },
+                postConditions: {
+                  type: 'string',
+                  example: 'post conditions'
+                },
+                expectedResult: {
+                  type: 'string',
+                  example: 'expected result'
+                },
+                duration: {
+                  type: 'string',
+                  example: '2:00:00'
+                },
+                testSuiteId: {
+                  type: 'integer',
+                  example: 2
+                },
+                authorId: {
+                  type: 'integer',
+                  example: 4
+                },
+                testCaseSteps: {
+                  type: 'array',
+                  example: [{ 'action': 'action', 'expectedResult': 'expected result' }],
+                  items: {
+                    type: 'object',
+                    properties: {
+                      action: {
+                        type: 'string',
+                        required: true
+                      },
+                      expectedResult: {
+                        type: 'string',
+                        required: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        responses: {
+        }
+      },
+      delete: {
+        tags: ['Test Case'],
+        summary: 'Удалить конкретный тест кейс',
+        parameters: [
+          {
+            name: 'testCaseId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-suite': {
+      get: {
+        tags: ['Test Suite'],
+        summary: 'Получить все тест сьюты',
+        responses: responsesCodes
+      },
+      post: {
+        tags: ['Test Suite'],
+        summary: 'Создать тест сьют',
+        parameters: [
+          {
+            in: 'body',
+            name: 'test-suite',
+            description: 'The test suite to create',
+            schema: {
+              type: 'object',
+              required: ['title'],
+              properties: {
+                title: {
+                  type: 'string',
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  example: 'descr'
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-suite/{testSuiteId}': {
+      get: {
+        tags: ['Test Suite'],
+        summary: 'Получить конкретный тест сьют',
+        parameters: [
+          {
+            name: 'testSuiteId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      },
+      put: {
+        tags: ['Test Suite'],
+        summary: 'Изменить конкретный тест сьют',
+        parameters: [
+          {
+            name: 'testSuiteId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'test-suite',
+            description: 'The test suite to edit',
+            schema: {
+              type: 'object',
+              properties: {
+                title: {
+                  type: 'string',
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  example: 'descr'
+                }
+              }
+            }
+          }
+        ],
+        responses: putResponseCodes
+      },
+      delete: {
+        tags: ['Test Suite'],
+        summary: 'Удалить конкретный тест сьют',
+        parameters: [
+          {
+            name: 'testSuiteId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-plan': {
+      get: {
+        tags: ['Test Plan'],
+        summary: 'Получить все тест планы',
+        responses: responsesCodes
+      },
+      post: {
+        tags: ['Test Plan'],
+        summary: 'Создать тест план',
+        parameters: [
+          {
+            in: 'body',
+            name: 'test-plan',
+            description: 'The test plan to create',
+            schema: {
+              type: 'object',
+              required: ['title', 'testCasesData'],
+              properties: {
+                title: {
+                  type: 'string',
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  example: 'desc'
+                },
+                runtime: {
+                  type: 'string',
+                  example: '3:00:00'
+                },
+                testCasesData: {
+                  type: 'array',
+                  example: [{ 'testCaseId': 8, 'assignedTo': 1 }],
+                  items: {
+                    type: 'object',
+                    properties: {
+                      testCaseId: {
+                        type: 'integer',
+                        required: true
+                      },
+                      assignedTo: {
+                        type: 'integer',
+                        required: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-plan/{testPlanId}': {
+      get: {
+        tags: ['Test Plan'],
+        summary: 'Получить конкретный тест план',
+        parameters: [
+          {
+            name: 'testPlanId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      },
+      put: {
+        tags: ['Test Plan'],
+        summary: 'Изменить конкретный тест план',
+        parameters: [
+          {
+            name: 'testPlanId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'test-plan',
+            description: 'The test plan to create',
+            schema: {
+              type: 'object',
+              required: ['testCasesData'],
+              properties: {
+                title: {
+                  type: 'string',
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  example: 'desc'
+                },
+                runtime: {
+                  type: 'string',
+                  example: '3:00:00'
+                },
+                testCasesData: {
+                  type: 'array',
+                  example: [{ 'testCaseId': 8, 'assignedTo': 1 }],
+                  items: {
+                    type: 'object',
+                    properties: {
+                      testCaseId: {
+                        type: 'integer',
+                        required: true
+                      },
+                      assignedTo: {
+                        type: 'integer',
+                        required: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        responses: putResponseCodes
+      },
+      delete: {
+        tags: ['Test Plan'],
+        summary: 'Удалить конкретный тест план',
+        parameters: [
+          {
+            name: 'testPlanId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
         responses: responsesCodes
       }
     }
