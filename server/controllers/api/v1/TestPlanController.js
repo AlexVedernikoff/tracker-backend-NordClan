@@ -78,10 +78,26 @@ exports.createTestPlan = async (req, res, next) => {
 
 exports.updateTestPlan = async (req, res, next) => {
   try {
-    const { body, params } = req;
-    await TestPlan.update(body, {
-      where: params
+    const { body, params: { id } } = req;
+    const testCasesData = body.testCasesData;
+    if (!testCasesData) {
+      next(createError(500, 'Test cases data is empty'));
+    }
+    await TestPlanTestCases.destroy({
+      where: {
+        testPlanId: id
+      }
     });
+    await TestPlan.update(body, {
+      where: {
+        id
+      }
+    });
+    const updatedTestCaseData = testCasesData.map(item => ({
+      ...item,
+      testPlanId: id
+    }));
+    await TestPlanTestCases.bulkCreate(updatedTestCaseData);
     res.sendStatus(204);
   } catch (e) {
     next(e);
