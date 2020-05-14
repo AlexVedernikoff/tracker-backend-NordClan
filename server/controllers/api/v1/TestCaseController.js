@@ -43,8 +43,14 @@ const getTestCaseByParams = async params =>
 
 exports.getAllTestCases = async (req, res, next) => {
   try {
+    const { query } = req;
+    const projectId = query.projectId ? query.projectId : null;
+    const whereValue = {
+      projectId
+    };
     const testCases = await TestCase.findAll({
-      include: includeOpition
+      include: includeOpition,
+      where: whereValue
     });
     res.json(testCases);
   } catch (e) {

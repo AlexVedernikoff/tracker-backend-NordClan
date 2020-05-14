@@ -272,6 +272,14 @@ module.exports = function (sequelize, DataTypes) {
       as: 'attachments',
       foreignKey: 'project_id'
     });
+
+    Project.hasMany(models.TestCase, {
+      as: 'projectTestCases',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id'
+      }
+    });
   };
 
   Project.defaultSelect = [

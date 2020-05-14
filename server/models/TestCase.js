@@ -63,9 +63,9 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.TEXT,
         allowNull: true
       },
-      expectedResult: {
-        field: 'expected_result',
-        type: DataTypes.TEXT,
+      projectId: {
+        field: 'project_id',
+        type: DataTypes.INTEGER,
         allowNull: true
       },
       duration: {
@@ -134,6 +134,14 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'testCaseId',
         field: 'test_case_id'
+      }
+    });
+
+    TestCase.belongsTo(models.Project, {
+      as: 'testCaseProject',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id'
       }
     });
   };
