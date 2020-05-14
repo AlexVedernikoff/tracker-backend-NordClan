@@ -1,6 +1,6 @@
 ---
 
-deploy_project_name: t2back
+deploy_project_name: track2_back
 deploy_env: "{{ env }}"
 
 deploy_app_root: "/data/{{ deploy_project_name }}-{{ env }}/{{ deploy_app_name }}"
