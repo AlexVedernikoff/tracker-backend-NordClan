@@ -47,5 +47,7 @@ module.exports = function (sequelize, DataTypes) {
     });
   };
 
+  TestSuite.addHistoryForTestSuite();
+
   return TestSuite;
 };

@@ -75,12 +75,14 @@ exports.getTestPlanById = async (req, res, next) => {
 
 exports.createTestPlan = async (req, res, next) => {
   try {
-    const { body } = req;
+    const { body, user } = req;
     const testCasesData = body.testCasesData;
     if (!testCasesData) {
       next(createError(500, 'Test cases data is empty'));
     }
-    const { dataValues: testPlanResult } = await TestPlan.create(body);
+    const { dataValues: testPlanResult } = await TestPlan.create(body, {
+      historyAuthorId: user.id
+    });
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
       testPlanId: testPlanResult.id
@@ -95,7 +97,7 @@ exports.createTestPlan = async (req, res, next) => {
 
 exports.updateTestPlan = async (req, res, next) => {
   try {
-    const { body, params: { id } } = req;
+    const { body, params: { id }, user } = req;
     const testCasesData = body.testCasesData;
     if (!testCasesData) {
       next(createError(500, 'Test cases data is empty'));
@@ -108,7 +110,9 @@ exports.updateTestPlan = async (req, res, next) => {
     await TestPlan.update(body, {
       where: {
         id
-      }
+      },
+      historyAuthorId: user.id,
+      individualHooks: true
     });
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
@@ -123,9 +127,11 @@ exports.updateTestPlan = async (req, res, next) => {
 
 exports.deleteTestPlan = async (req, res, next) => {
   try {
-    const { params } = req;
+    const { params, user } = req;
     await TestPlan.destroy({
-      where: params
+      where: params,
+      historyAuthorId: user.id,
+      individualHooks: true
     });
     await TestPlanTestCases.destroy({
       where: {

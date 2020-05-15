@@ -18,7 +18,6 @@ exports.historyHandler = function (sequelize, historyModel) {
       return {
         entity: entity,
         entityId: model.id,
-        testCaseId: model.id,
         userId: userId,
         [modelIdProperty]: modelId,
         action: 'update',
@@ -29,6 +28,8 @@ exports.historyHandler = function (sequelize, historyModel) {
         prevValueStr: (type === 'STRING') ? diffObj[key].oldVal : null,
         valueDate: (type === 'DATE' || type === 'DATEONLY') ? diffObj[key].newVal : null,
         prevValueDate: (type === 'DATE' || type === 'DATEONLY') ? diffObj[key].oldVal : null,
+        valueTime: (type === 'TIME') ? diffObj[key].newVal : null,
+        prevValueTime: (type === 'TIME') ? diffObj[key].oldVal : null,
         valueFloat: (type === 'FLOAT') ? diffObj[key].newVal : null,
         prevValueFloat: (type === 'FLOAT') ? diffObj[key].oldVal : null,
         valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
@@ -53,7 +54,7 @@ exports.historyHandler = function (sequelize, historyModel) {
     const modelIdProperty = `${camelCaseModelName}Id`;
     const modelId = getHistoryModelId(model, entity);
     const modelName = `${historyModel}History`;
-    sequelize.models[modelName].create({
+    return sequelize.models[modelName].create({
       entity,
       entityId: model.id,
       userId,

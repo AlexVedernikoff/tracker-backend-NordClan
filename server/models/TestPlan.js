@@ -49,5 +49,7 @@ module.exports = function (sequelize, DataTypes) {
     });
   };
 
+  TestPlan.addHistoryForTestPlan();
+
   return TestPlan;
 };

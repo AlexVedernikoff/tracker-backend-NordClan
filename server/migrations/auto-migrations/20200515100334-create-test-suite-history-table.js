@@ -1,13 +1,13 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('test_case_histories', {
+    return queryInterface.createTable('test_suite_histories', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
       },
-      test_case_id: {
+      test_suite_id: {
         type: Sequelize.INTEGER,
         allowNull: false
       },
@@ -31,30 +31,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
-      value_int: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      prev_value_int: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      value_time: {
-        type: Sequelize.TIME,
-        allowNull: true
-      },
-      prev_value_time: {
-        type: Sequelize.TIME,
-        allowNull: true
-      },
-      value_date: {
-        type: Sequelize.DATE,
-        allowNull: true
-      },
-      prev_value_date: {
-        type: Sequelize.DATE,
-        allowNull: true
-      },
       action: {
         type: Sequelize.STRING,
         allowNull: false
@@ -69,5 +45,5 @@ module.exports = {
     });
   },
 
-  down: queryInterface => queryInterface.dropTable('test_case_histories')
+  down: queryInterface => queryInterface.dropTable('test_suite_histories')
 };

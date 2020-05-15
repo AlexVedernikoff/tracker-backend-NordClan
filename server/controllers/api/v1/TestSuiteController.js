@@ -62,8 +62,10 @@ exports.getTestSuiteById = async (req, res, next) => {
 
 exports.createTestSuite = async (req, res, next) => {
   try {
-    const { body } = req;
-    const result = await TestSuite.create(body);
+    const { body, user } = req;
+    const result = await TestSuite.create(body, {
+      historyAuthorId: user.id
+    });
     res.json(result);
   } catch (e) {
     next(e);
@@ -72,9 +74,11 @@ exports.createTestSuite = async (req, res, next) => {
 
 exports.updateTestSuite = async (req, res, next) => {
   try {
-    const { body, params } = req;
+    const { body, params, user } = req;
     await TestSuite.update(body, {
-      where: params
+      where: params,
+      historyAuthorId: user.id,
+      individualHooks: true
     });
     res.sendStatus(204);
   } catch (e) {
@@ -84,9 +88,11 @@ exports.updateTestSuite = async (req, res, next) => {
 
 exports.deleteTestSuite = async (req, res, next) => {
   try {
-    const { params } = req;
+    const { params, user } = req;
     await TestSuite.destroy({
-      where: params
+      where: params,
+      historyAuthorId: user.id,
+      individualHooks: true
     });
     res.sendStatus(200);
   } catch (e) {

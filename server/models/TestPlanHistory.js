@@ -1,13 +1,13 @@
 module.exports = function (sequelize, DataTypes) {
-  const TestCaseHistory = sequelize.define('TestCaseHistory', {
+  const TestPlanHistory = sequelize.define('TestPlanHistory', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    testCaseId: {
-      field: 'test_case_id',
+    testPlanId: {
+      field: 'test_plan_id',
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -25,24 +25,14 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true
     },
-    prevValueInt: {
-      field: 'prev_value_int',
-      type: DataTypes.INTEGER,
+    prevValueText: {
+      field: 'prev_value_text',
+      type: DataTypes.TEXT,
       allowNull: true
     },
-    valueInt: {
-      field: 'value_int',
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    prevValueDate: {
-      field: 'prev_value_date',
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    valueDate: {
-      field: 'value_date',
-      type: DataTypes.DATE,
+    valueText: {
+      field: 'value_text',
+      type: DataTypes.TEXT,
       allowNull: true
     },
     prevValueTime: {
@@ -53,16 +43,6 @@ module.exports = function (sequelize, DataTypes) {
     valueTime: {
       field: 'value_time',
       type: DataTypes.TIME,
-      allowNull: true
-    },
-    prevValueText: {
-      field: 'prev_value_text',
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    valueText: {
-      field: 'value_text',
-      type: DataTypes.TEXT,
       allowNull: true
     },
     action: {
@@ -80,11 +60,11 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: true,
     updatedAt: false,
     paranoid: false,
-    tableName: 'test_case_histories'
+    tableName: 'test_plan_histories'
   });
 
-  TestCaseHistory.associate = function (models) {
-    TestCaseHistory.belongsTo(models.User, {
+  TestPlanHistory.associate = function (models) {
+    TestPlanHistory.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'userId',
@@ -93,15 +73,15 @@ module.exports = function (sequelize, DataTypes) {
       constraints: true
     });
 
-    TestCaseHistory.belongsTo(models.TestCase, {
-      as: 'testCaseData',
+    TestPlanHistory.belongsTo(models.TestPlan, {
+      as: 'testPlanData',
       foreignKey: {
-        name: 'testCaseId',
-        field: 'test_case_id'
+        name: 'testPlanId',
+        field: 'test_plan_id'
       },
       constraints: true
     });
 
   };
-  return TestCaseHistory;
+  return TestPlanHistory;
 };

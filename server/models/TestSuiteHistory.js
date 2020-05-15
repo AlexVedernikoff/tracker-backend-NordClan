@@ -1,13 +1,13 @@
 module.exports = function (sequelize, DataTypes) {
-  const TestCaseHistory = sequelize.define('TestCaseHistory', {
+  const TestSuiteHistory = sequelize.define('TestSuiteHistory', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    testCaseId: {
-      field: 'test_case_id',
+    testSuiteId: {
+      field: 'test_suite_id',
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -23,36 +23,6 @@ module.exports = function (sequelize, DataTypes) {
     valueStr: {
       field: 'value_str',
       type: DataTypes.STRING,
-      allowNull: true
-    },
-    prevValueInt: {
-      field: 'prev_value_int',
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    valueInt: {
-      field: 'value_int',
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    prevValueDate: {
-      field: 'prev_value_date',
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    valueDate: {
-      field: 'value_date',
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    prevValueTime: {
-      field: 'prev_value_time',
-      type: DataTypes.TIME,
-      allowNull: true
-    },
-    valueTime: {
-      field: 'value_time',
-      type: DataTypes.TIME,
       allowNull: true
     },
     prevValueText: {
@@ -80,11 +50,11 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: true,
     updatedAt: false,
     paranoid: false,
-    tableName: 'test_case_histories'
+    tableName: 'test_suite_histories'
   });
 
-  TestCaseHistory.associate = function (models) {
-    TestCaseHistory.belongsTo(models.User, {
+  TestSuiteHistory.associate = function (models) {
+    TestSuiteHistory.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'userId',
@@ -93,15 +63,15 @@ module.exports = function (sequelize, DataTypes) {
       constraints: true
     });
 
-    TestCaseHistory.belongsTo(models.TestCase, {
-      as: 'testCaseData',
+    TestSuiteHistory.belongsTo(models.TestSuite, {
+      as: 'testSuiteData',
       foreignKey: {
-        name: 'testCaseId',
-        field: 'test_case_id'
+        name: 'testSuiteId',
+        field: 'test_suite_id'
       },
       constraints: true
     });
 
   };
-  return TestCaseHistory;
+  return TestSuiteHistory;
 };
