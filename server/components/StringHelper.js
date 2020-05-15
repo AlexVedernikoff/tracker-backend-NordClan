@@ -6,3 +6,5 @@ exports.upFirstLettersMultipleWords = string => {
   const wordsArray = string.split('-');
   return wordsArray.reduce((acc, item) => acc + this.firstLetterUp(item), '');
 };
+
+exports.firstLetterDown = string => string[0].toLowerCase() + string.substring(1);

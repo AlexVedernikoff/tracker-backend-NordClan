@@ -70,12 +70,14 @@ exports.getTestCaseById = async (req, res, next) => {
 
 exports.createTestCase = async (req, res, next) => {
   try {
-    const { body } = req;
+    const { body, user } = req;
     const testCaseSteps = body.testCaseSteps;
     if (!testCaseSteps) {
       return next(createError(500, 'Test case steps is empty!'));
     }
-    const { dataValues: testCaseData } = await TestCase.create(body);
+    const { dataValues: testCaseData } = await TestCase.create(body, {
+      historyAuthorId: user.id
+    });
     const testCaseId = testCaseData.id;
     const updatedSteps = testCaseSteps.map(item => ({
       ...item,
@@ -91,7 +93,7 @@ exports.createTestCase = async (req, res, next) => {
 
 exports.updateTestCase = async (req, res, next) => {
   try {
-    const { body, params: { id } } = req;
+    const { body, params: { id }, user } = req;
     const testCaseSteps = body.testCaseSteps;
     if (!testCaseSteps) {
       return next(createError(500, 'Test case steps is empty!'));
@@ -104,7 +106,9 @@ exports.updateTestCase = async (req, res, next) => {
     await TestCase.update(body, {
       where: {
         id
-      }
+      },
+      individualHooks: true,
+      historyAuthorId: user.id
     });
     const updatedSteps = testCaseSteps.map(item => ({
       ...item,
@@ -119,11 +123,13 @@ exports.updateTestCase = async (req, res, next) => {
 
 exports.deleteTestCase = async (req, res, next) => {
   try {
-    const id = req.params.id;
+    const { params: { id }, user } = req;
     await TestCase.destroy({
       where: {
         id
-      }
+      },
+      individualHooks: true,
+      historyAuthorId: user.id
     });
     await TestCaseSteps.destroy({
       where: {

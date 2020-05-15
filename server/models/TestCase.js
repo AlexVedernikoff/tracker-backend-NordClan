@@ -145,5 +145,8 @@ module.exports = function (sequelize, DataTypes) {
       }
     });
   };
+
+  TestCase.addHistoryForTestCase();
+
   return TestCase;
 };
