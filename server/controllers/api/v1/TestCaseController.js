@@ -14,10 +14,6 @@ const includeOpition = [
     as: 'testCaseSteps'
   },
   {
-    model: TestSuite,
-    as: 'testSuiteInfo'
-  },
-  {
     model: User,
     as: 'authorInfo',
     attributes: [
@@ -41,6 +37,35 @@ const getTestCaseByParams = async params =>
     where: params
   });
 
+const getGroupedByTestSuite = (testCases, testSuites) => {
+  const skipWithoutTestSuites = testCases.filter(item => item.testSuiteId);
+  const result = skipWithoutTestSuites.reduce((acc, item) => {
+    const itemTestSuiteId = item.testSuiteId;
+    const itemTestSuiteDataIndex = testSuites.findIndex(testSuiteItem => testSuiteItem.id === itemTestSuiteId);
+    const itemTestSuiteData = testSuites[itemTestSuiteDataIndex];
+    if (!acc[itemTestSuiteId]) {
+      return {
+        ...acc,
+        [itemTestSuiteId]: {
+          ...itemTestSuiteData,
+          testCasesData: [item]
+        }
+      };
+    }
+    return {
+      ...acc,
+      [itemTestSuiteId]: {
+        ...acc[itemTestSuiteId],
+        testCasesData: [
+          ...acc[itemTestSuiteId].testCasesData,
+          item
+        ]
+      }
+    };
+  }, {});
+  return result;
+};
+
 exports.getAllTestCases = async (req, res, next) => {
   try {
     const { query } = req;
@@ -51,8 +76,22 @@ exports.getAllTestCases = async (req, res, next) => {
     const testCases = await TestCase.findAll({
       include: includeOpition,
       where: whereValue
+    }).map((entry) => entry.toJSON());
+    const testSuiteIds = testCases
+      .map(testCase => testCase.testSuiteId)
+      .filter(item => item);
+    const uniqueIds = Array.from(new Set(testSuiteIds));
+    const testSuites = await TestSuite.findAll({
+      where: {
+        id: uniqueIds
+      }
+    }).map((entry) => entry.toJSON());
+    const withoutTestSuite = testCases.filter(item => !item.testSuiteId);
+    const withTestSuite = getGroupedByTestSuite(testCases, testSuites);
+    res.json({
+      withoutTestSuite,
+      withTestSuite
     });
-    res.json(testCases);
   } catch (e) {
     next(e);
   }
