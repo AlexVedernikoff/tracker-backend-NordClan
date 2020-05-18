@@ -1,17 +1,5 @@
 version: '3.3'
 services:
-  t2pg:
-    hostname: track2-pg.docker
-    image: postgres:9.6-alpine
-    enviroment:
-      POSTGRES_DB: simtrack
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - ./simtrack_db:/var/lib/postgresql/data
-      - ./pg_db/dumps:/docker-entrypoint-initdb.d
-      - ./pg_db:/pg
-
   t2back:
     image: {{ deploy_docker_registry_image }}
 {% if deploy_app_volumes %}
@@ -35,6 +23,18 @@ services:
 {% endif %}
     restart: unless-stopped
     command: "bash -c 'bash -s <<EOF npm install && npm rebuild && npm run migrate && pm2-runtime start --env development processes-debug.json EOF'"
+
+  t2pg:
+    hostname: track2-pg.docker
+    image: postgres:9.6-alpine
+    enviroment:
+      POSTGRES_DB: simtrack
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./simtrack_db:/var/lib/postgresql/data
+      - ./pg_db/dumps:/docker-entrypoint-initdb.d
+      - ./pg_db:/pg
 
 networks:
   track2:
