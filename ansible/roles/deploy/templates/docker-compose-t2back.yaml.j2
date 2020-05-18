@@ -4,9 +4,9 @@ services:
     hostname: {{ deploy_project_name }}-pg.docker
     image: postgres:9.6-alpine
     enviroment:
-      - POSTGRES_DB=simtrack
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB="simtrack"
+      - POSTGRES_USER="postgres"
+      - POSTGRES_PASSWORD="postgres"
     volumes:
       - ./simtrack_db:/var/lib/postgresql/data
       - ./pg_db/dumps:/docker-entrypoint-initdb.d
@@ -28,12 +28,12 @@ services:
 {% endif %}
 {% if deploy_app_docker_labels %}
       - DATABASE_HOST="track2-test.docker.nordclan"
-      - DATABASE_PORT=33223
-      - DATABASE_NAME=track
-      - DATABASE_USERNAME=track
-      - DATABASE_PASSWORD=la4eeH2m
-      - API_ROOT=app
-      - API_PORT=8080
+      - DATABASE_PORT="33223"
+      - DATABASE_NAME="track"
+      - DATABASE_USERNAME="track"
+      - DATABASE_PASSWORD="la4eeH2m"
+      - API_ROOT="app"
+      - API_PORT="8080"
     labels:
 {% for item in deploy_app_docker_labels %}
       - {{ item }}
