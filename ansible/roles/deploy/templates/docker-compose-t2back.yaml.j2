@@ -15,12 +15,6 @@ services:
   t2back:
     image: {{ deploy_docker_registry_image }}
 {% if deploy_app_volumes %}
-    volumes:
-{% for item in deploy_app_volumes %}
-      - {{ item }}
-{% endfor %}
-{% endif %}
-{% if deploy_app_envs %}
     environment:
 {% for item in deploy_app_envs %}
       - {{ item }}
