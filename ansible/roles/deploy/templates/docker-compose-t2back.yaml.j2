@@ -22,13 +22,7 @@ services:
 {% endfor %}
 {% endif %}
     restart: unless-stopped
-    entrypoint: |
-      bash -c 'bash -s <<EOF
-      npm install
-      npm rebuild
-      npm run migrate
-      pm2-runtime start --env development processes-debug.json
-      EOF'
+    command: "bash -c 'bash -s <<EOF npm install && npm rebuild && npm run migrate && pm2-runtime start --env development processes-debug.json EOF'"
     ports:
       - 0.0.0.0:{{ deploy_app_port }}:3000
     networks:
