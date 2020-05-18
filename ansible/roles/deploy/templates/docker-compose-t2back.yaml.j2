@@ -39,10 +39,6 @@ services:
     command: "bash -c 'bash -s <<EOF npm install && npm rebuild && npm run migrate && pm2-runtime start --env development processes-debug.json EOF'"
     ports:
       - 0.0.0.0:{{ deploy_app_port }}:3000
-    networks:
-      - track2
-#        ipv4_address: {{ service_net_subnet|replace(".0/24", ".2") }}
-#    restart: unless-stopped
 
 environment:
   - POSTGRES_DB=simtrack
@@ -55,7 +51,3 @@ environment:
   - DATABASE_PASSWORD=la4eeH2m
   - API_ROOT=app
   - API_PORT=8080
-
-networks:
-  track2:
-    external: true
