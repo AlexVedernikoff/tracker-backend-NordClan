@@ -27,7 +27,7 @@ services:
 {% endfor %}
 {% endif %}
 {% if deploy_app_docker_labels %}
-      - DATABASE_HOST=track2-test.docker.nordclan
+      - DATABASE_HOST="track2-test.docker.nordclan"
       - DATABASE_PORT=33223
       - DATABASE_NAME=track
       - DATABASE_USERNAME=track
