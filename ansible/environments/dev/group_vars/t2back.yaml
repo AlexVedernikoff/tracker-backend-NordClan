@@ -11,5 +11,6 @@ deploy_app_envs:
 
 deploy_app_docker_labels:
   - traefik.enable=true
-  - traefik.port=80
+  - traefik.port=8080
+  - traefik.port=9229
   - traefik.http.routers.t2back_{{ deploy_project_name }}.rule=Host(`{{ deploy_host_name }}`) && PathPrefix(`/api/`)
