@@ -16,13 +16,13 @@ services:
 {% endfor %}
 {% endif %}
 {% if deploy_app_docker_labels %}
-      DATABASE_HOST: "track2-test.docker.nordclan"
-      DATABASE_PORT: 33223
-      DATABASE_NAME: track
-      DATABASE_USERNAME: track
-      DATABASE_PASSWORD: la4eeH2m
-      API_ROOT: app
-      API_PORT: 8080
+      - DATABASE_HOST="track2-test.docker.nordclan"
+      - DATABASE_PORT=33223
+      - DATABASE_NAME=track
+      - DATABASE_USERNAME=track
+      - DATABASE_PASSWORD=la4eeH2m
+      - API_ROOT=app
+      - API_PORT=8080
     labels:
 {% for item in deploy_app_docker_labels %}
       - {{ item }}
