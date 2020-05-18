@@ -14,7 +14,8 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+#    build: .
+    image: back:t2
     volumes:
       - .:/app
     ports:

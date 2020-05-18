@@ -29,7 +29,7 @@ services:
 {% endfor %}
 {% endif %}
     restart: unless-stopped
-    command: "bash -c 'bash -s <<EOF npm install && npm rebuild && npm run migrate && pm2-runtime start --env development processes-debug.json EOF'"
+    command: "bash -c 'bash -s <<EOF npm run migrate && pm2-runtime start --env development processes-debug.json EOF'"
 
   t2pg:
     hostname: track2-pg.docker
