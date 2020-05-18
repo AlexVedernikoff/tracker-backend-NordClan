@@ -8,5 +8,3 @@ RUN mkdir -p /app && \
     npm install pm2 -g 
 
 WORKDIR /app
-
-CMD [ "", "" ]
