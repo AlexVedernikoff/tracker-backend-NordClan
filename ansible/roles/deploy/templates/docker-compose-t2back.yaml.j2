@@ -26,7 +26,7 @@ services:
     ports:
       - 0.0.0.0:{{ deploy_app_port }}:3000
     networks:
-      - {{ deploy_project_name }}-{{ deploy_env }}
+      - track2
     restart: unless-stopped
 
   t2pg:
@@ -37,7 +37,7 @@ services:
       - ./pg_db/dumps:/docker-entrypoint-initdb.d
       - ./pg_db:/pg
     networks:
-      {{ deploy_project_name }}:
+      track2:
         ipv4_address: {{ service_net_subnet|replace(".0/24", ".3") }}
     ports:
       - 0.0.0.0:{{ docker_port_t2pg }}:5432
@@ -55,5 +55,5 @@ environment:
   - API_PORT=8080
 
 networks:
-{{ deploy_project_name }}:
-  external: true
+  track2:
+    external: true
