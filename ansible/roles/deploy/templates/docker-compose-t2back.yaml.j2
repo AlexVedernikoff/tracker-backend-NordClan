@@ -9,9 +9,6 @@ services:
       - ./simtrack_db:/var/lib/postgresql/data
       - ./pg_db/dumps:/docker-entrypoint-initdb.d
       - ./pg_db:/pg
-    networks:
-      - track2
-#        ipv4_address: {{ service_net_subnet|replace(".0/24", ".1") }}
     ports:
       - 0.0.0.0:{{ docker_port_t2pg }}:5432
 
@@ -51,3 +48,7 @@ environment:
   - DATABASE_PASSWORD=la4eeH2m
   - API_ROOT=app
   - API_PORT=8080
+
+networks:
+  track2:
+    external: true
