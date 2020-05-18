@@ -22,3 +22,34 @@ services:
 {% endfor %}
 {% endif %}
     restart: unless-stopped
+
+  t2pg:
+    hostname: {{ project_name }}-{{ env }}-pg.docker
+    image: postgres:9.6-alpine
+    volumes:
+      - {{ deploy_app_shared_root }}/pg/data::/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=simtrack
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - DATABASE_HOST=track2-test.docker.nordclan
+#      - DATABASE_PORT=33223
+      - DATABASE_NAME=track
+      - DATABASE_USERNAME=track
+      - DATABASE_PASSWORD=la4eeH2m
+      - API_ROOT=app
+      - API_PORT=8080
+      - LDAP_URL=ldap://ldap-track2-test.nordclan:389
+      - LDAP_LOGIN=admin
+      - LDAP_PASSW=123123
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+    networks:
+      {{ project_name }}-{{ env }}:
+        ipv4_address: {{ service_net_subnet|replace(".0/24", ".3") }}
+    ports:
+      - 0.0.0.0:{{ docker_port_pg }}:5432

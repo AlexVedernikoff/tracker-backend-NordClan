@@ -32,17 +32,17 @@ services:
       pm2-runtime start --env development processes-debug.json
       EOF'
 
-  web:
-    build: ./../track-front
-    volumes:
-      - ./../track-front:/app
-    ports:
-      - 8080:8080
-    env_file:
-      - .docker-compose-dev.env
-    entrypoint: |
-      bash -c 'bash -s <<EOF
-      npm install
-      npm rebuild
-      npm start
-      EOF'
+#  web:
+#    build: ./../track-front
+#    volumes:
+#      - ./../track-front:/app
+#    ports:
+#      - 8080:8080
+#    env_file:
+#      - .docker-compose-dev.env
+#    entrypoint: |
+#      bash -c 'bash -s <<EOF
+#      npm install
+#      npm rebuild
+#      npm start
+#      EOF'
