@@ -22,6 +22,13 @@ services:
 {% endfor %}
 {% endif %}
     restart: unless-stopped
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      npm install
+      npm rebuild
+      npm run migrate
+      pm2-runtime start --env development processes-debug.json
+      EOF'
     ports:
       - 0.0.0.0:{{ deploy_app_port }}:3000
     networks:
@@ -32,23 +39,27 @@ services:
     hostname: {{ project_name }}-pg.docker
     image: postgres:9.6-alpine
     volumes:
-      - ./pg/data::/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=simtrack
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - DATABASE_HOST=track2-test.docker.nordclan
-      - DATABASE_PORT=33223
-      - DATABASE_NAME=track
-      - DATABASE_USERNAME=track
-      - DATABASE_PASSWORD=la4eeH2m
-      - API_ROOT=app
-      - API_PORT=8080
-      - LDAP_URL=ldap://ldap-track2-test.nordclan:389
-      - LDAP_LOGIN=admin
-      - LDAP_PASSW=123123
+      - ./simtrack_db:/var/lib/postgresql/data
+      - ./pg_db/dumps:/docker-entrypoint-initdb.d
+      - ./pg_db:/pg
     networks:
       {{ project_name }}:
         ipv4_address: {{ service_net_subnet|replace(".0/24", ".3") }}
     ports:
       - 0.0.0.0:{{ docker_port_t2pg }}:5432
+
+environment:
+  - POSTGRES_DB=simtrack
+  - POSTGRES_USER=postgres
+  - POSTGRES_PASSWORD=postgres
+  - DATABASE_HOST=track2-test.docker.nordclan
+  - DATABASE_PORT=33223
+  - DATABASE_NAME=track
+  - DATABASE_USERNAME=track
+  - DATABASE_PASSWORD=la4eeH2m
+  - API_ROOT=app
+  - API_PORT=8080
+
+networks:
+{{ project_name }}-{{ env }}:
+  external: true
