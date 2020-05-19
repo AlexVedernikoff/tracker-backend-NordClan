@@ -16,13 +16,6 @@ services:
 {% endfor %}
 {% endif %}
 {% if deploy_app_docker_labels %}
-      - DATABASE_HOST="track2-test.docker.nordclan"
-      - DATABASE_PORT=33223
-      - DATABASE_NAME=track
-      - DATABASE_USERNAME=track
-      - DATABASE_PASSWORD=la4eeH2m
-      - API_ROOT=app
-      - API_PORT=8080
     labels:
 {% for item in deploy_app_docker_labels %}
       - {{ item }}
@@ -35,13 +28,18 @@ services:
     hostname: track2-pg.docker
     image: postgres:9.6-alpine
     environment:
-      POSTGRES_DB: simtrack
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: {{ pg_name }}
+      POSTGRES_USER: {{ pg_username }}
+      POSTGRES_PASSWORD: {{ pg_password }}
     volumes:
-      - ./simtrack_db:/var/lib/postgresql/data
-      - ./pg_db/dumps:/docker-entrypoint-initdb.d
-      - ./pg_db:/pg
+      - {{ deploy_app_root }}/pg/data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:5-alpine
+    volumes:
+      - {{ deploy_app_root }}/redis:/data
+    restart: unless-stopped
+    command: ["--appendonly", "yes", "--requirepass", "{{ redis_password }}"]
 
 networks:
   track2:
