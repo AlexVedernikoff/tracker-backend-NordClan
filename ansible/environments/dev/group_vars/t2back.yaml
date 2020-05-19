@@ -39,7 +39,6 @@ deploy_app_envs:
  - LDAP_LOGIN={{ ldap_user }}
  - LDAP_PASSW={{ ldap_password }}
  - SYSTEMUSER_PASSWORD={{ systemuser_password }}
- - EMAIL_ENABLED={{ email_enabled | lower }}
  - EMAIL_SERVICE={{email_service}}
  - EMAIL_LOGIN={{email_login}}
  - EMAIL_PASSWORD={{email_password}}
