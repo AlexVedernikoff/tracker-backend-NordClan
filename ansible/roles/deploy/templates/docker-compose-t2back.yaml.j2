@@ -40,7 +40,3 @@ services:
       - {{ deploy_app_root }}/redis:/data
     restart: unless-stopped
     command: ["--appendonly", "yes", "--requirepass", "{{ redis_password }}"]
-
-networks:
-  track2:
-    external: true
