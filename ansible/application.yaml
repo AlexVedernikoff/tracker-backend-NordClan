@@ -25,10 +25,9 @@ docker_registry_pass: !vault |
 
 service_version: "{{ env }}"
 
-docker_port_http: 35220
-docker_port_be: 35222
-docker_port_pg: 35223
-docker_port_be_debug: 33224
+docker_port_t2front: 35220
+docker_port_t2back: 35221
+docker_port_t2pg: 35222
 
 nginx_server_name: 'track2-{{ env }}.docker.nordclan'
 nginx_user: www-data
