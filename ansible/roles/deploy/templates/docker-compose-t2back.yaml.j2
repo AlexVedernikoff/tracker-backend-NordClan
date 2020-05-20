@@ -40,3 +40,7 @@ services:
       - {{ deploy_app_root }}/redis:/data
     restart: unless-stopped
     command: ["--appendonly", "yes", "--requirepass", "{{ redis_password }}"]
+
+networks:
+  default:
+      name: checkup_track_back
