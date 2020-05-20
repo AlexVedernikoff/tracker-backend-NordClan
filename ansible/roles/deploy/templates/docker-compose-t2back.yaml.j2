@@ -3,6 +3,8 @@ version: '3.3'
 services:
   t2back:
     image: {{ deploy_docker_registry_image }}
+    networks:
+      - checkup_track_back
 {% if deploy_app_volumes %}
     volumes:
 {% for item in deploy_app_volumes %}
@@ -27,6 +29,8 @@ services:
   t2pg:
     hostname: track2-pg.docker
     image: postgres:9.6-alpine
+    networks:
+      - checkup_track_back
     environment:
       POSTGRES_DB: {{ pg_name }}
       POSTGRES_USER: {{ pg_username }}
@@ -36,6 +40,8 @@ services:
 
   redis:
     image: redis:5-alpine
+    networks:
+      - checkup_track_back
     volumes:
       - {{ deploy_app_root }}/redis:/data
     restart: unless-stopped
