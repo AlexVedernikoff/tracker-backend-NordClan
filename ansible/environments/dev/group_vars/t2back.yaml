@@ -1,8 +1,6 @@
 ---
 
 deploy_app_name: t2back
-#deploy_magic_number: 52
-deploy_app_port: 3{{deploy_magic_number}}03
 
 deploy_sleep_timeout: 10
 deploy_host_name: t2-checkup.docker.nordclan

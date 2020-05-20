@@ -4,7 +4,7 @@ services:
   t2back:
     image: {{ deploy_docker_registry_image }}
     networks:
-      - checkup_track_back
+      - {{ deploy_project_network }}
 {% if deploy_app_volumes %}
     volumes:
 {% for item in deploy_app_volumes %}
@@ -30,7 +30,7 @@ services:
     hostname: track2-pg.docker
     image: postgres:9.6-alpine
     networks:
-      - checkup_track_back
+      - {{ deploy_project_network }}
     environment:
       POSTGRES_DB: {{ pg_name }}
       POSTGRES_USER: {{ pg_username }}
@@ -41,12 +41,12 @@ services:
   redis:
     image: redis:5-alpine
     networks:
-      - checkup_track_back
+      - {{ deploy_project_network }}
     volumes:
       - {{ deploy_app_root }}/redis:/data
     restart: unless-stopped
     command: ["--appendonly", "yes", "--requirepass", "{{ redis_password }}"]
 
 networks:
-  checkup_track_back:
+  {{ deploy_project_network }}:
     external: true

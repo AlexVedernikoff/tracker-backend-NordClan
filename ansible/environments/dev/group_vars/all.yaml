@@ -1,6 +1,7 @@
 ---
 
 deploy_project_name: track2
+deploy_project_network: checkup_track_back
 deploy_env: "{{ env }}"
 
 deploy_app_root: "/data/{{ deploy_project_name }}-{{ env }}/{{ deploy_app_name }}"

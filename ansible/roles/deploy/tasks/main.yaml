@@ -34,7 +34,7 @@
 
 - name: Create a network
   docker_network:
-    name: checkup_track_back
+    name: "{{ deploy_project_network }}"
 
 - name: pull new version images
   command: docker-compose pull
