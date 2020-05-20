@@ -32,6 +32,10 @@
     chdir: "{{ deploy_helper.new_release_path }}"
   tags: skip_ansible_lint
 
+- name: Create a network
+  docker_network:
+    name: checkup_track_back
+
 - name: pull new version images
   command: docker-compose pull
   args:
