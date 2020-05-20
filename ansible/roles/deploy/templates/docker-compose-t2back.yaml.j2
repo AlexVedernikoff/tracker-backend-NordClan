@@ -42,5 +42,5 @@ services:
     command: ["--appendonly", "yes", "--requirepass", "{{ redis_password }}"]
 
 networks:
-  default:
-      name: checkup_track_back
+  checkup_track_back:
+    external: true
