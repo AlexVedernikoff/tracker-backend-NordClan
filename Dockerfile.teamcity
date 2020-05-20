@@ -25,4 +25,7 @@ RUN mv ci/entrypoint.sh /entrypoint.sh && \
 ENV NODE_TLS_REJECT_UNAUTHORIZED=0
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+EXPOSE 4000
+
 CMD ["pm2-runtime", "start", "processes.json"]
