@@ -32,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
       assignedTo: {
         field: 'assigned_to',
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         validate: {
           isInt: true
         }
