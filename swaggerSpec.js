@@ -681,6 +681,76 @@ module.exports = {
       }
     },
 
+    '/project/{projectId}/environment': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить окружения проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      },
+      post: {
+        tags: ['Projects'],
+        summary: 'Создать окружение проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'environment',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                title: {
+                  type: 'string',
+                  required: true,
+                  example: 'title'
+                },
+                description: {
+                  type: 'string',
+                  required: false,
+                  example: 'description'
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/project/{projectId}/environment/{environmentId}': {
+      delete: {
+        tags: ['Projects'],
+        summary: 'Удалить окружение проекта',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'environmentId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+
     '/portfolio': {
       get: {
         tags: ['Portfolios'],
