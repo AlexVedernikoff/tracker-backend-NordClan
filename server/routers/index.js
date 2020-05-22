@@ -22,6 +22,7 @@ const JiraController = require('../controllers/api/v1/JiraController');
 const TestCaseController = require('../controllers/api/v1/TestCaseController');
 const TestSuiteController = require('../controllers/api/v1/TestSuiteController');
 const TestPlanController = require('../controllers/api/v1/TestPlanController');
+const ProjectEnvironmentController = require('../controllers/api/v1/ProjectEnvironmentController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
@@ -121,6 +122,11 @@ router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 're
 
 // Project time sheets
 router.get('/project/:projectId/timesheet', GlobalAccess.can('project', 'read'), TimesheetController.listProject);
+
+// Project environments
+router.get('/project/:projectId/environment/', GlobalAccess.can('environment', 'list'), ProjectEnvironmentController.get);
+router.post('/project/:projectId/environment/', GlobalAccess.can('environment', 'create'), ProjectEnvironmentController.create);
+router.delete('/project/:projectId/environment/:environmentId', GlobalAccess.can('environment', 'delete'), ProjectEnvironmentController.delete);
 
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);

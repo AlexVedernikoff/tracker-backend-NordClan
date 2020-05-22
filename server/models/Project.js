@@ -280,6 +280,14 @@ module.exports = function (sequelize, DataTypes) {
         field: 'project_id'
       }
     });
+
+    Project.hasMany(models.ProjectEnvironment, {
+      as: 'projectEnvironments',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id'
+      }
+    });
   };
 
   Project.defaultSelect = [
