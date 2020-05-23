@@ -7,7 +7,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      project_environmnent_id: {
+      project_environment_id: {
         allowNull: false,
         type: Sequelize.INTEGER
       },

@@ -5,7 +5,8 @@ const {
   TestCaseSteps,
   User,
   TestCaseStatusesDictionary,
-  TestCaseSeverityDictionary
+  TestCaseSeverityDictionary,
+  ProjectEnvironmentTestPlan
 } = require('../../../models');
 const createError = require('http-errors');
 
@@ -76,18 +77,29 @@ exports.getTestPlanById = async (req, res, next) => {
 exports.createTestPlan = async (req, res, next) => {
   try {
     const { body, user } = req;
-    const testCasesData = body.testCasesData;
+    const { testCasesData, projectEnvironments } = body;
     if (!testCasesData) {
-      next(createError(500, 'Test cases data is empty'));
+      return next(createError(500, 'Test cases data is empty'));
+    }
+    if (!projectEnvironments) {
+      return next(createError(500, 'Set at least one project environment for that test case'));
     }
     const { dataValues: testPlanResult } = await TestPlan.create(body, {
       historyAuthorId: user.id
     });
+
+    const updatedPorjectEnvArr = projectEnvironments.map(item => ({
+      projectEnvironmentId: item,
+      testPlanId: testPlanResult.id
+    }));
+    await ProjectEnvironmentTestPlan.bulkCreate(updatedPorjectEnvArr);
+
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
       testPlanId: testPlanResult.id
     }));
     await TestPlanTestCases.bulkCreate(updatedTestCaseData);
+
     const result = await getTestPlanByParams({ id: testPlanResult.id });
     res.json(result);
   } catch (e) {
@@ -100,7 +112,7 @@ exports.updateTestPlan = async (req, res, next) => {
     const { body, params: { id }, user } = req;
     const testCasesData = body.testCasesData;
     if (!testCasesData) {
-      next(createError(500, 'Test cases data is empty'));
+      return next(createError(500, 'Test cases data is empty'));
     }
     await TestPlanTestCases.destroy({
       where: {
