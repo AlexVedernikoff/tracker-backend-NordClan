@@ -2735,23 +2735,23 @@ module.exports = {
         responses: responsesCodes
       }
     },
-    '/test-plan': {
+    '/test-run': {
       get: {
-        tags: ['Test Plan'],
-        summary: 'Получить все тест планы',
+        tags: ['Test Run'],
+        summary: 'Получить все прогоны тестов',
         responses: responsesCodes
       },
       post: {
-        tags: ['Test Plan'],
-        summary: 'Создать тест план',
+        tags: ['Test Run'],
+        summary: 'Создать тест прогон тестов',
         parameters: [
           {
             in: 'body',
-            name: 'test-plan',
-            description: 'The test plan to create',
+            name: 'test-run',
+            description: 'The test run to create',
             schema: {
               type: 'object',
-              required: ['title', 'testCasesData'],
+              required: ['title', 'testCasesData', 'projectEnvironments'],
               properties: {
                 title: {
                   type: 'string',
@@ -2781,6 +2781,13 @@ module.exports = {
                       }
                     }
                   }
+                },
+                projectEnvironments: {
+                  type: 'array',
+                  example: [1, 2],
+                  items: {
+                    type: 'number'
+                  }
                 }
               }
             }
@@ -2789,13 +2796,13 @@ module.exports = {
         responses: responsesCodes
       }
     },
-    '/test-plan/{testPlanId}': {
+    '/test-run/{testRunId}': {
       get: {
-        tags: ['Test Plan'],
-        summary: 'Получить конкретный тест план',
+        tags: ['Test run'],
+        summary: 'Получить конкретный прогон тестов',
         parameters: [
           {
-            name: 'testPlanId',
+            name: 'testRunId',
             type: 'integer',
             in: 'path',
             required: true
@@ -2803,19 +2810,19 @@ module.exports = {
         ]
       },
       put: {
-        tags: ['Test Plan'],
-        summary: 'Изменить конкретный тест план',
+        tags: ['Test run'],
+        summary: 'Изменить конкретный прогон тестов',
         parameters: [
           {
-            name: 'testPlanId',
+            name: 'testRunId',
             type: 'integer',
             in: 'path',
             required: true
           },
           {
             in: 'body',
-            name: 'test-plan',
-            description: 'The test plan to create',
+            name: 'test-run',
+            description: 'The test run to create',
             schema: {
               type: 'object',
               required: ['testCasesData'],
@@ -2848,6 +2855,13 @@ module.exports = {
                       }
                     }
                   }
+                },
+                projectEnvironments: {
+                  type: 'array',
+                  example: [1, 2],
+                  items: {
+                    type: 'number'
+                  }
                 }
               }
             }
@@ -2856,11 +2870,11 @@ module.exports = {
         responses: putResponseCodes
       },
       delete: {
-        tags: ['Test Plan'],
-        summary: 'Удалить конкретный тест план',
+        tags: ['Test run'],
+        summary: 'Удалить конкретный прогон тестов',
         parameters: [
           {
-            name: 'testPlanId',
+            name: 'testRunId',
             type: 'integer',
             in: 'path',
             required: true
@@ -2869,8 +2883,6 @@ module.exports = {
         responses: responsesCodes
       }
     }
-
-
   },
   securityDefinitions: {
     apiKey: {

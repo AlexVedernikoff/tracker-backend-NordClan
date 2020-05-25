@@ -1,8 +1,8 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
 module.exports = function (sequelize, DataTypes) {
-  const TestPlanTestCases = sequelize.define(
-    'TestPlanTestCases',
+  const TestRunTestCases = sequelize.define(
+    'TestRunTestCases',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -13,8 +13,8 @@ module.exports = function (sequelize, DataTypes) {
           isInt: true
         }
       },
-      testPlanId: {
-        field: 'test_plan_id',
+      testRunId: {
+        field: 'test_run_id',
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
@@ -42,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
     },
     {
-      tableName: 'test_plan_test_cases',
+      tableName: 'test_run_test_cases',
       timestamps: true,
       paranoid: true,
       underscored: true,
@@ -54,7 +54,7 @@ module.exports = function (sequelize, DataTypes) {
     }
   );
 
-  TestPlanTestCases.associate = function (models) {
+  TestRunTestCases.associate = function (models) {
     // models.TestPlan.belongsToMany(models.TestCase, {
     //   through: { model: TestPlanTestCases },
     //   as: 'testCaseData',
@@ -73,7 +73,7 @@ module.exports = function (sequelize, DataTypes) {
     //   }
     // });
 
-    TestPlanTestCases.belongsTo(models.User, {
+    TestRunTestCases.belongsTo(models.User, {
       foreignKey: {
         name: 'assignedTo',
         field: 'assigned_to'
@@ -81,14 +81,22 @@ module.exports = function (sequelize, DataTypes) {
       as: 'assignedUser'
     });
 
-    TestPlanTestCases.belongsTo(models.TestCase, {
+    TestRunTestCases.belongsTo(models.TestCase, {
       foreignKey: {
         name: 'testCaseId',
         field: 'test_case_id'
       },
       as: 'testCaseInfo'
     });
+
+    TestRunTestCases.belongsTo(models.TestRun, {
+      foreignKey: {
+        name: 'testRunId',
+        field: 'test_run_id'
+      },
+      as: 'testRunInfo'
+    });
   };
 
-  return TestPlanTestCases;
+  return TestRunTestCases;
 };

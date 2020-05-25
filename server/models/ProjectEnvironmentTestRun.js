@@ -1,6 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
-  const ProjectEnvironmentTestPlan = sequelize.define(
-    'ProjectEnvironmentTestPlan',
+  const ProjectEnvironmentTestRun = sequelize.define(
+    'ProjectEnvironmentTestRun',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -19,9 +19,9 @@ module.exports = function (sequelize, DataTypes) {
           isInt: true
         }
       },
-      testPlanId: {
+      testRunId: {
         type: DataTypes.INTEGER,
-        field: 'test_plan_id',
+        field: 'test_run_id',
         allowNull: false,
         validate: {
           isInt: true
@@ -35,19 +35,29 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: true,
       paranoid: true,
       underscored: true,
-      tableName: 'project_environment_test_plan'
+      tableName: 'project_environment_test_run'
     }
   );
 
-  ProjectEnvironmentTestPlan.associate = function (models) {
-    models.TestPlan.belongsToMany(models.ProjectEnvironment, {
-      through: ProjectEnvironmentTestPlan
+  ProjectEnvironmentTestRun.associate = function (models) {
+    models.TestRun.belongsToMany(models.ProjectEnvironment, {
+      through: { model: ProjectEnvironmentTestRun },
+      as: 'testRunEnvironments',
+      foreignKey: {
+        name: 'testRunId',
+        field: 'test_run_id'
+      }
     });
 
-    models.ProjectEnvironment.belongsToMany(models.TestPlan, {
-      through: ProjectEnvironmentTestPlan
+    models.ProjectEnvironment.belongsToMany(models.TestRun, {
+      as: 'projectEnvorinmentTestRuns',
+      through: ProjectEnvironmentTestRun,
+      foreignKey: {
+        name: 'projectEnvironmentId',
+        field: 'project_environment_id'
+      }
     });
   };
 
-  return ProjectEnvironmentTestPlan;
+  return ProjectEnvironmentTestRun;
 };

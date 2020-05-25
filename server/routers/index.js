@@ -21,7 +21,7 @@ const GlobalAccess = require('../middlewares/Access/RouterGlobalAccessMiddleWare
 const JiraController = require('../controllers/api/v1/JiraController');
 const TestCaseController = require('../controllers/api/v1/TestCaseController');
 const TestSuiteController = require('../controllers/api/v1/TestSuiteController');
-const TestPlanController = require('../controllers/api/v1/TestPlanController');
+const TestRunController = require('../controllers/api/v1/TestRunController');
 const ProjectEnvironmentController = require('../controllers/api/v1/ProjectEnvironmentController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
@@ -245,11 +245,11 @@ router.post('/test-suite', TestSuiteController.createTestSuite);
 router.put('/test-suite/:id', TestSuiteController.updateTestSuite);
 router.delete('/test-suite/:id', TestSuiteController.deleteTestSuite);
 
-//TestPlan
-router.get('/test-plan', TestPlanController.getAllTestPlans);
-router.get('/test-plan/:id', TestPlanController.getTestPlanById);
-router.post('/test-plan', TestPlanController.createTestPlan);
-router.put('/test-plan/:id', TestPlanController.updateTestPlan);
-router.delete('/test-plan/:id', TestPlanController.deleteTestPlan);
+//TestRun
+router.get('/test-run', TestRunController.getAllTestRuns);
+router.get('/test-run/:id', TestRunController.getTestRunById);
+router.post('/test-run', TestRunController.createTestRun);
+router.put('/test-run/:id', TestRunController.updateTestRun);
+router.delete('/test-run/:id', TestRunController.deleteTestRun);
 
 module.exports = { routes: router };

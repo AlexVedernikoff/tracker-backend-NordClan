@@ -1,19 +1,20 @@
 const {
-  TestPlan,
-  TestPlanTestCases,
+  TestRun,
+  TestRunTestCases,
   TestCase,
   TestCaseSteps,
   User,
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary,
-  ProjectEnvironmentTestPlan
+  ProjectEnvironmentTestRun,
+  ProjectEnvironment
 } = require('../../../models');
 const createError = require('http-errors');
 
 const includeOptions = [
   {
-    model: TestPlanTestCases,
-    as: 'testPlanTestCases',
+    model: TestRunTestCases,
+    as: 'testRunTestCases',
     include: [
       {
         model: TestCase,
@@ -44,18 +45,22 @@ const includeOptions = [
         attributes: ['fullNameEn', 'fullNameRu']
       }
     ]
+  },
+  {
+    model: ProjectEnvironment,
+    as: 'testRunEnvironments'
   }
 ];
 
-const getTestPlanByParams = async params =>
-  await TestPlan.findOne({
+const getTestRunByParams = async params =>
+  await TestRun.findOne({
     include: includeOptions,
     where: params
   });
 
-exports.getAllTestPlans = async (req, res, next) => {
+exports.getAllTestRuns = async (req, res, next) => {
   try {
-    const result = await TestPlan.findAll({
+    const result = await TestRun.findAll({
       include: includeOptions
     });
     res.json(result);
@@ -64,62 +69,62 @@ exports.getAllTestPlans = async (req, res, next) => {
   }
 };
 
-exports.getTestPlanById = async (req, res, next) => {
+exports.getTestRunById = async (req, res, next) => {
   const { params } = req;
   try {
-    const result = await getTestPlanByParams(params);
+    const result = await getTestRunByParams(params);
     res.json(result);
   } catch (e) {
     next(e);
   }
 };
 
-exports.createTestPlan = async (req, res, next) => {
+exports.createTestRun = async (req, res, next) => {
   try {
     const { body, user } = req;
     const { testCasesData, projectEnvironments } = body;
     if (!testCasesData) {
       return next(createError(500, 'Test cases data is empty'));
     }
-    if (!projectEnvironments) {
+    if (!projectEnvironments.length) {
       return next(createError(500, 'Set at least one project environment for that test case'));
     }
-    const { dataValues: testPlanResult } = await TestPlan.create(body, {
+    const { dataValues: testRunResult } = await TestRun.create(body, {
       historyAuthorId: user.id
     });
 
     const updatedPorjectEnvArr = projectEnvironments.map(item => ({
       projectEnvironmentId: item,
-      testPlanId: testPlanResult.id
+      testRunId: testRunResult.id
     }));
-    await ProjectEnvironmentTestPlan.bulkCreate(updatedPorjectEnvArr);
+    await ProjectEnvironmentTestRun.bulkCreate(updatedPorjectEnvArr);
 
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
-      testPlanId: testPlanResult.id
+      testRunId: testRunResult.id
     }));
-    await TestPlanTestCases.bulkCreate(updatedTestCaseData);
+    await TestRunTestCases.bulkCreate(updatedTestCaseData);
 
-    const result = await getTestPlanByParams({ id: testPlanResult.id });
+    const result = await getTestRunByParams({ id: testRunResult.id });
     res.json(result);
   } catch (e) {
     next(e);
   }
 };
 
-exports.updateTestPlan = async (req, res, next) => {
+exports.updateTestRun = async (req, res, next) => {
   try {
     const { body, params: { id }, user } = req;
     const testCasesData = body.testCasesData;
     if (!testCasesData) {
       return next(createError(500, 'Test cases data is empty'));
     }
-    await TestPlanTestCases.destroy({
+    await TestRunTestCases.destroy({
       where: {
-        testPlanId: id
+        testRunId: id
       }
     });
-    await TestPlan.update(body, {
+    await TestRun.update(body, {
       where: {
         id
       },
@@ -128,26 +133,26 @@ exports.updateTestPlan = async (req, res, next) => {
     });
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
-      testPlanId: id
+      testRunId: id
     }));
-    await TestPlanTestCases.bulkCreate(updatedTestCaseData);
+    await TestRunTestCases.bulkCreate(updatedTestCaseData);
     res.sendStatus(204);
   } catch (e) {
     next(e);
   }
 };
 
-exports.deleteTestPlan = async (req, res, next) => {
+exports.deleteTestRun = async (req, res, next) => {
   try {
     const { params, user } = req;
-    await TestPlan.destroy({
+    await TestRun.destroy({
       where: params,
       historyAuthorId: user.id,
       individualHooks: true
     });
-    await TestPlanTestCases.destroy({
+    await TestRunTestCases.destroy({
       where: {
-        testPlanId: params.id
+        testRunId: params.id
       }
     });
     res.sendStatus(200);

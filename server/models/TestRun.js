@@ -1,6 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
-  const TestPlan = sequelize.define(
-    'TestPlan',
+  const TestRun = sequelize.define(
+    'TestRun',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -28,6 +28,11 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.TIME,
         allowNull: true
       },
+      projectId: {
+        type: DataTypes.INTEGER,
+        field: 'project_id',
+        allowNull: false
+      },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
@@ -35,21 +40,21 @@ module.exports = function (sequelize, DataTypes) {
     {
       timestamps: true,
       paranoid: true,
-      tableName: 'test_plan'
+      tableName: 'test_run'
     }
   );
 
-  TestPlan.associate = function (models) {
-    TestPlan.hasMany(models.TestPlanTestCases, {
-      as: 'testPlanTestCases',
+  TestRun.associate = function (models) {
+    TestRun.hasMany(models.TestRunTestCases, {
+      as: 'testRunTestCases',
       foreignKey: {
-        name: 'testPlanId',
-        field: 'test_plan_id'
+        name: 'testRunId',
+        field: 'test_run_id'
       }
     });
   };
 
-  TestPlan.addHistoryForTestPlan();
+  TestRun.addHistoryForTestRun();
 
-  return TestPlan;
+  return TestRun;
 };

@@ -45,8 +45,8 @@ module.exports = function (sequelize) {
       return this;
     },
 
-    addHistoryForTestPlan: function () {
-      const entity = 'TestPlan';
+    addHistoryForTestRun: function () {
+      const entity = 'TestRun';
       const handler = historyHandler(sequelize, entity);
       this.revisionable = true;
       this.addHook('afterCreate', handler.onCreate);

@@ -1,13 +1,13 @@
 module.exports = function (sequelize, DataTypes) {
-  const TestPlanHistory = sequelize.define('TestPlanHistory', {
+  const TestRunHistory = sequelize.define('TestRunHistory', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    testPlanId: {
-      field: 'test_plan_id',
+    testRunId: {
+      field: 'test_run_id',
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -60,11 +60,11 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: true,
     updatedAt: false,
     paranoid: false,
-    tableName: 'test_plan_histories'
+    tableName: 'test_run_histories'
   });
 
-  TestPlanHistory.associate = function (models) {
-    TestPlanHistory.belongsTo(models.User, {
+  TestRunHistory.associate = function (models) {
+    TestRunHistory.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'userId',
@@ -73,15 +73,15 @@ module.exports = function (sequelize, DataTypes) {
       constraints: true
     });
 
-    TestPlanHistory.belongsTo(models.TestPlan, {
-      as: 'testPlanData',
+    TestRunHistory.belongsTo(models.TestRun, {
+      as: 'testRunnData',
       foreignKey: {
-        name: 'testPlanId',
-        field: 'test_plan_id'
+        name: 'testRunId',
+        field: 'test_run_id'
       },
       constraints: true
     });
 
   };
-  return TestPlanHistory;
+  return TestRunHistory;
 };
