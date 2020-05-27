@@ -128,6 +128,9 @@ router.get('/project/:projectId/environment/', GlobalAccess.can('environment', '
 router.post('/project/:projectId/environment/', GlobalAccess.can('environment', 'create'), ProjectEnvironmentController.create);
 router.delete('/project/:projectId/environment/:environmentId', GlobalAccess.can('environment', 'delete'), ProjectEnvironmentController.delete);
 
+//Project test runs
+router.get('/project/:projectId/test-runs', TestRunController.getAllTestRuns);
+
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
 router.put('/portfolio/:id', GlobalAccess.can('portfolio', 'update'), PortfolioController.update);

@@ -60,8 +60,14 @@ const getTestRunByParams = async params =>
 
 exports.getAllTestRuns = async (req, res, next) => {
   try {
+    const { params, query } = req;
+    const whereOptions = {
+      ...params,
+      ...query
+    };
     const result = await TestRun.findAll({
-      include: includeOptions
+      include: includeOptions,
+      where: whereOptions
     });
     res.json(result);
   } catch (e) {
