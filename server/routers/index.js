@@ -23,6 +23,7 @@ const TestCaseController = require('../controllers/api/v1/TestCaseController');
 const TestSuiteController = require('../controllers/api/v1/TestSuiteController');
 const TestRunController = require('../controllers/api/v1/TestRunController');
 const ProjectEnvironmentController = require('../controllers/api/v1/ProjectEnvironmentController');
+const TestRunExecutionController = require('../controllers/api/v1/TestRunExecutionController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
 
 router.post('/milestones', MilestonesController.create);
@@ -128,8 +129,18 @@ router.get('/project/:projectId/environment/', GlobalAccess.can('environment', '
 router.post('/project/:projectId/environment/', GlobalAccess.can('environment', 'create'), ProjectEnvironmentController.create);
 router.delete('/project/:projectId/environment/:environmentId', GlobalAccess.can('environment', 'delete'), ProjectEnvironmentController.delete);
 
-//Project test runs
-router.get('/project/:projectId/test-runs', TestRunController.getAllTestRuns);
+// Project test run executions
+router.get('/project/:projectId/test-run-execution', TestRunExecutionController.getCountedAll);
+router.get('/project/:projectId/test-run-execution/:id', TestRunExecutionController.getById);
+router.post('/project/:projectId/test-run-execution', TestRunExecutionController.create);
+router.put('/project/:projectId/test-run-execution/:id', TestRunExecutionController.updateTestRunExecution);
+router.delete('/project/:projectId/test-run-execution/:id', TestRunExecutionController.delete);
+
+// Test Step Execution
+router.put('/test-step-execution/:id', TestRunExecutionController.updateTestStepExecution);
+
+// Test Case Execution
+router.put('/test-case-execution/:id', TestRunExecutionController.updateTestCaseExecution);
 
 // Portfolios
 router.get('/portfolio', GlobalAccess.can('portfolio', 'list'), PortfolioController.list);
@@ -205,12 +216,12 @@ router.get('/dictionary/test-case/severity', DictionaryController.testCaseSeveri
 
 // Attachments
 router.post(
-  '/:entity(project|task)/:entityId/attachment',
+  '/:entity(project|task|test-case-execution|test-step-execution)/:entityId/attachment',
   GlobalAccess.can('attachment', 'upload'),
   UploadController.upload
 );
 router.delete(
-  '/:entity(project|task)/:entityId/attachment/:attachmentId',
+  '/:entity(project|task|test-case-execution|test-step-execution)/:entityId/attachment/:attachmentId',
   GlobalAccess.can('attachment', 'delete'),
   UploadController.delete
 );

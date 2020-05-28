@@ -45,6 +45,7 @@ module.exports = function (sequelize, DataTypes) {
   );
 
   TestRun.associate = function (models) {
+
     TestRun.hasMany(models.TestRunTestCases, {
       as: 'testRunTestCases',
       foreignKey: {
@@ -52,6 +53,15 @@ module.exports = function (sequelize, DataTypes) {
         field: 'test_run_id'
       }
     });
+
+    TestRun.hasMany(models.TestRunExecution, {
+      as: 'testRunExecutions',
+      foreignKey: {
+        name: 'testRunId',
+        field: 'test_run_id'
+      }
+    });
+
   };
 
   TestRun.addHistoryForTestRun();

@@ -750,6 +750,138 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/project/{projectId}/test-run-execution': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить запущенные тест раны проекта, лимит 10 итемов и общее количество',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      },
+      post: {
+        tags: ['Projects'],
+        summary: 'Создать запущенный тест ран (запустить тест ран)',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'testRunExecution',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                testRunId: {
+                  type: 'integer',
+                  required: true,
+                  example: 52
+                },
+                projectEnvironmentId: {
+                  type: 'integer',
+                  required: true,
+                  example: 1
+                },
+                projectId: {
+                  type: 'integer',
+                  required: true,
+                  example: 513
+                },
+                startedBy: {
+                  type: 'integer',
+                  required: true,
+                  example: 357
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/project/{projectId}/test-run-execution/{id}': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить выполняемый тест ран по id',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      },
+      put: {
+        tags: ['Projects'],
+        summary: 'Обновить выполняемый тест ран по id',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'testRunExecution',
+            schema: {
+              type: 'object',
+              required: true,
+              properties: {
+                status: {
+                  type: 'integer',
+                  required: true,
+                  example: 3
+                }
+              }
+            }
+          }
+        ],
+        responses: responsesCodes
+      },
+      delete: {
+        tags: ['Projects'],
+        summary: 'Удалить выполняемый тест ран по id',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
 
     '/portfolio': {
       get: {
@@ -2798,7 +2930,7 @@ module.exports = {
     },
     '/test-run/{testRunId}': {
       get: {
-        tags: ['Test run'],
+        tags: ['Test Run'],
         summary: 'Получить конкретный прогон тестов',
         parameters: [
           {
@@ -2810,7 +2942,7 @@ module.exports = {
         ]
       },
       put: {
-        tags: ['Test run'],
+        tags: ['Test Run'],
         summary: 'Изменить конкретный прогон тестов',
         parameters: [
           {
@@ -2822,7 +2954,7 @@ module.exports = {
           {
             in: 'body',
             name: 'test-run',
-            description: 'The test run to create',
+            description: 'The test run to update',
             schema: {
               type: 'object',
               required: ['testCasesData'],
@@ -2870,7 +3002,7 @@ module.exports = {
         responses: putResponseCodes
       },
       delete: {
-        tags: ['Test run'],
+        tags: ['Test Run'],
         summary: 'Удалить конкретный прогон тестов',
         parameters: [
           {
@@ -2882,8 +3014,158 @@ module.exports = {
         ],
         responses: responsesCodes
       }
+    },
+    '/test-step-execution/{id}': {
+      put: {
+        tags: ['Test Step Execution'],
+        summary: 'Обновить шаг исполняемого тест кейса по id',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'testStepExecution',
+            description: 'Test step execution to update',
+            schema: {
+              type: 'object',
+              properties: {
+                status: {
+                  type: 'integer',
+                  example: 3
+                },
+                description: {
+                  type: 'string',
+                  example: 'something wrong'
+                }
+              }
+            }
+          }
+        ],
+        responses: putResponseCodes
+      }
+    },
+    '/test-step-execution/{testStepExecutionId}/attachment': {
+      post: {
+        tags: ['Test Step Execution'],
+        summary: 'Прикрепить файл к шагу исполняемого тест кейса',
+        parameters: [
+          {
+            name: 'testStepExecutionId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'file',
+            type: 'file',
+            in: 'formData',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-step-execution/{testStepExecutionId}/attachment/{id}': {
+      delete: {
+        tags: ['Test Step Execution'],
+        summary: 'Удалить прикрепленный к исполняемому шагу тест кейса файл',
+        parameters: [
+          {
+            name: 'testStepExecutionId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
+
+    '/test-case-execution/{id}': {
+      put: {
+        tags: ['Test Case Execution'],
+        summary: 'Обновить тест кейс исполняемого тест рана',
+        parameters: [
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            in: 'body',
+            name: 'testCaseExecution',
+            description: 'Test case execution to update',
+            schema: {
+              type: 'object',
+              properties: {
+                status: {
+                  type: 'integer',
+                  example: 3
+                },
+                description: {
+                  type: 'string',
+                  example: 'something wrong'
+                }
+              }
+            }
+          }
+        ],
+        responses: putResponseCodes
+      }
+    },
+    '/test-case-execution/{testCaseExecutionId}/attachment': {
+      post: {
+        tags: ['Test Case Execution'],
+        summary: 'Прикрепить файл к тест кейсу исполняемого тест рана',
+        parameters: [
+          {
+            name: 'testCaseExecutionId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'file',
+            type: 'file',
+            in: 'formData',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/test-case-execution/{testCaseExecutionId}/attachment/{id}': {
+      delete: {
+        tags: ['Test Case Execution'],
+        summary: 'Удалить прикрепленный к исполняемому тест кейсу файл',
+        parameters: [
+          {
+            name: 'testCaseExecutionId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
     }
   },
+
   securityDefinitions: {
     apiKey: {
       type: 'apiKey',
