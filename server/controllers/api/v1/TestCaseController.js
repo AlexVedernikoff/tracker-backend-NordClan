@@ -1,14 +1,13 @@
 const {
   TestCase,
   TestCaseSteps,
-  TestSuite,
   User,
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary
 } = require('../../../models');
 const createError = require('http-errors');
 
-const includeOpition = [
+const includeOption = [
   {
     model: TestCaseSteps,
     as: 'testCaseSteps'
@@ -33,61 +32,36 @@ const includeOpition = [
 
 const getTestCaseByParams = async params =>
   await TestCase.findOne({
-    include: includeOpition,
+    include: includeOption,
     where: params
   });
-
-const getGroupedByTestSuite = (testCases, testSuites) => {
-  const skipWithoutTestSuites = testCases.filter(item => item.testSuiteId);
-  const result = skipWithoutTestSuites.reduce((acc, item) => {
-    const itemTestSuiteId = item.testSuiteId;
-    const itemTestSuiteDataIndex = testSuites.findIndex(testSuiteItem => testSuiteItem.id === itemTestSuiteId);
-    const itemTestSuiteData = testSuites[itemTestSuiteDataIndex];
-    if (!acc[itemTestSuiteId]) {
-      return {
-        ...acc,
-        [itemTestSuiteId]: {
-          ...itemTestSuiteData,
-          testCasesData: [item]
-        }
-      };
-    }
-    return {
-      ...acc,
-      [itemTestSuiteId]: {
-        ...acc[itemTestSuiteId],
-        testCasesData: [
-          ...acc[itemTestSuiteId].testCasesData,
-          item
-        ]
-      }
-    };
-  }, {});
-  return result;
-};
 
 exports.getAllTestCases = async (req, res, next) => {
   try {
     const { query } = req;
     const projectId = query.projectId ? query.projectId : null;
-    const whereValue = {
-      projectId
-    };
+
     const testCases = await TestCase.findAll({
-      include: includeOpition,
-      where: whereValue
-    }).map((entry) => entry.toJSON());
-    const testSuiteIds = testCases
-      .map(testCase => testCase.testSuiteId)
-      .filter(item => item);
-    const uniqueIds = Array.from(new Set(testSuiteIds));
-    const testSuites = await TestSuite.findAll({
+      include: includeOption,
       where: {
-        id: uniqueIds
+        projectId
       }
     }).map((entry) => entry.toJSON());
-    const withoutTestSuite = testCases.filter(item => !item.testSuiteId);
-    const withTestSuite = getGroupedByTestSuite(testCases, testSuites);
+
+    const { withoutTestSuite, withTestSuite } = testCases.reduce((accumulator, testCase) => {
+      if (typeof testCase.testSuiteId === 'number') {
+        return {
+          ...accumulator,
+          withTestSuite: [...accumulator.withTestSuite, testCase]
+        };
+      }
+
+      return {
+        ...accumulator,
+        withoutTestSuite: [...accumulator.withTestSuite, testCase]
+      };
+    }, { withoutTestSuite: [], withTestSuite: [] });
+
     res.json({
       withoutTestSuite,
       withTestSuite
