@@ -58,7 +58,7 @@ exports.getAllTestCases = async (req, res, next) => {
 
       return {
         ...accumulator,
-        withoutTestSuite: [...accumulator.withTestSuite, testCase]
+        withoutTestSuite: [...accumulator.withoutTestSuite, testCase]
       };
     }, { withoutTestSuite: [], withTestSuite: [] });
 
