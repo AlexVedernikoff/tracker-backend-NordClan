@@ -2,8 +2,14 @@
 
 ### Запуск проекта в докере
 
+Может понадобиться раскомментировать строчку `build: .` в `docker-compose.dev.yml` если есть проблемы с `docker-compose`.
+
+```
 $ docker-compose -f docker-compose.dev.yml  build 
 $ docker-compose -f docker-compose.dev.yml  up
+```
+
+В убунте вызывать с `sudo`.
 
 ### Настройки 
 
