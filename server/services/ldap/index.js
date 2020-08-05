@@ -4,7 +4,7 @@ const LOGIN = process.env.LDAP_LOGIN;
 const PASSW = process.env.LDAP_PASSW;
 const client = ldap.createClient({ url: URL });
 
-const defaulteUser = {
+const defaultUser = {
   active:	true,
   birthday: '',
   city: 'Ульяновск',
@@ -42,7 +42,7 @@ module.exports = {
   create (data) {
     return new Promise((resolve, reject) => {
       try {
-        const user = Object.assign({}, defaulteUser);
+        const user = Object.assign({}, defaultUser);
         for (const key in data) {
           if (typeof user[key] === 'boolean' || (user[key] && data[key] && data[key] !== '')) {
             user[key] = data[key];
