@@ -110,7 +110,8 @@ module.exports = {
       'refreshTokenExternal': true,
       'updateTestUser': true,
       'updateUsersProfile': true,
-      'createUser': true
+      'createUser': true,
+      'updateCurrentUserProfile': true
     },
     companyReports: {
       ...USER.companyReports
@@ -192,6 +193,25 @@ module.exports = {
     jira: {
       'setStatus': true,
       'synchronize': true
+    }
+  },
+  HR: {
+    ...USER,
+    portfolio: {
+      ...USER.portfolio,
+      'list': true
+    },
+    user: {
+      ...USER.user,
+      'usersRoles': true,
+      'createExternal': true,
+      'getExternalUsers': true,
+      'updateExternal': true,
+      'refreshTokenExternal': true,
+      'updateTestUser': true,
+      'updateUsersProfile': true,
+      'createUser': true,
+      'updateCurrentUserProfile': true
     }
   }
 };

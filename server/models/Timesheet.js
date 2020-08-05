@@ -54,6 +54,11 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    approvedByUserId: {
+      field: 'approved_by_user_id',
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',

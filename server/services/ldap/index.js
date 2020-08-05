@@ -21,14 +21,15 @@ const defaulteUser = {
   loginShell: '/bin/sh',
   mail: '',
   mobile: '',
-  objectClass: ['posixAccount', 'shadowAccount', 'person', 'inetOrgPerson', 'nordclanClass'],
+  objectClass: ['posixAccount', 'shadowAccount', 'person', 'inetOrgPerson', 'nordclanClass', 'vpnClass'],
   shadowLastChange: '',
   skype:	'',
   sn: '',
   telephoneNumber:	'',
   uid: '',
   uidNumber: '',
-  userPassword: ''
+  userPassword: '',
+  allowVPN: true
 };
 
 client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
@@ -43,7 +44,7 @@ module.exports = {
       try {
         const user = Object.assign({}, defaulteUser);
         for (const key in data) {
-          if (user[key] && data[key] && data[key] !== '') {
+          if (typeof user[key] === 'boolean' || (user[key] && data[key] && data[key] !== '')) {
             user[key] = data[key];
           }
         }
@@ -67,6 +68,7 @@ module.exports = {
         user.homeDirectory = `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
         user.uid = uid;
         user.userPassword = data.password;
+
         client.add(`uid=${uid},dc=nordclan`, user, (err) => {
           if (err) {
             reject(null);
@@ -129,9 +131,13 @@ module.exports = {
         const changeCn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
         const emailPrimary = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
         const mail = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
-        const jpegPhoto = updateData({jpegPhoto: `http://nas.nordclan:8080/${oldUid}.jpg`});
+
+        const jpegPhoto = updateData({jpegPhoto: data.photo || ''});
         const uidNumber = updateData({uidNumber: `${data.id || ''}`});
         const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
+
+        const changeObjectClass = updateData({ objectClass: defaulteUser.objectClass });
+        const changeAllowVPN = updateData({ allowVPN: data.allowVPN });
 
         client.modify(`uid=${oldUid},dc=nordclan`,
           [ changeLastNameEn,
@@ -144,7 +150,9 @@ module.exports = {
             mail,
             jpegPhoto,
             uidNumber,
-            homeDirectory
+            homeDirectory,
+            changeObjectClass,
+            changeAllowVPN
           ], function (err) {
             if (err) {
               console.log('Error user Add LDAP', err);

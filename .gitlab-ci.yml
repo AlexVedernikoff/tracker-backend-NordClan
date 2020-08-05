@@ -39,7 +39,7 @@ build_docker_be:
     - git clone $DEPLOYMENT_REPO ~/deploy
     - cd ~/deploy 
     - echo $ANSIBLE_VAULT_PASSWORD > vault.key
-    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG bot_version=$CI_SHORT_REF_NAME"
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME bot_fe_version=$CI_SHORT_REF_NAME be_version=$TAG bot_version=$CI_SHORT_REF_NAME"
   tags:
     - docker
 
@@ -82,7 +82,7 @@ deploy_to_prod:
     - git clone $DEPLOYMENT_REPO ~/deploy
     - cd ~/deploy 
     - echo $ANSIBLE_VAULT_PASSWORD > vault.key
-    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME be_version=$TAG bot_version=$CI_SHORT_REF_NAME"
+    - ansible-playbook -i environments/${CURRENT_DEPLOYMENT_ENV}/inventory deploy.yaml --extra-vars "fe_version=$CI_SHORT_REF_NAME bot_fe_version=$CI_SHORT_REF_NAME be_version=$TAG bot_version=$CI_SHORT_REF_NAME"
   only:
     - master
   tags:

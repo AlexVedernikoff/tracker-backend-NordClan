@@ -30,12 +30,22 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
         as: 'timesheet',
         required: !!projectId,
         paranoid: false,
-        attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], [models.sequelize.literal('to_char(Timesheet.updated_at, \'YYYY-MM-DD\')'), 'updatedAt'], 'typeId', 'taskId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId'],
+        attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], [models.sequelize.literal('to_char(Timesheet.updated_at, \'YYYY-MM-DD\')'), 'updatedAt'], 'typeId', 'taskId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId', 'approvedByUserId'],
         where,
         include: getInclude(),
         order: [
           ['onDate', 'ASC']
         ]
+      },
+      {
+        model: models.Department,
+        as: 'department',
+        required: false,
+        attributes: ['name', 'id'],
+        through: {
+          model: models.UserDepartments,
+          attributes: []
+        }
       }
     ],
     where: {

@@ -1,6 +1,6 @@
-module.exports = function (templateName, input, templateBaseUrl){
+module.exports = function (templateName, input, templateBaseUrl) {
 
-  let subject, body, lastComment, appointment;
+  let subject, body, appointment;
   const i = input;
 
   const createBlock = content => {
@@ -85,7 +85,7 @@ module.exports = function (templateName, input, templateBaseUrl){
       </html>
   `;
 
-  switch (templateName){
+  switch (templateName) {
   case ('newTaskForQAPM'):
     // input.task
 
@@ -117,7 +117,7 @@ module.exports = function (templateName, input, templateBaseUrl){
       
       ${
   createBlock(`
-          <span style="font-weight: bold;">Приоритет:</span> ${ getTaskPriorityName(i.task.prioritiesId) }
+          <span style="font-weight: bold;">Приоритет:</span> ${ getTaskPriorityName(i.task.prioritiesId)}
           <br>
           <span style="font-weight: bold;">Автор:</span> ${i.task.author.fullNameRu}
           ${
@@ -134,7 +134,7 @@ module.exports = function (templateName, input, templateBaseUrl){
 
   case ('newTaskForPerformer'):
 
-    switch (i.task.statusId){
+    switch (i.task.statusId) {
     case (1): //new
     case (8): //new
       subject = `${i.task.project.name}. Вам назначена задача ${i.task.project.prefix}-${i.task.id} | ${i.task.name}`;
@@ -156,7 +156,7 @@ module.exports = function (templateName, input, templateBaseUrl){
       break;
     }
 
-    switch (i.task.statusId){
+    switch (i.task.statusId) {
     case (1): //new
     case (2): //develop play
     case (3): //develop stop
@@ -196,7 +196,7 @@ module.exports = function (templateName, input, templateBaseUrl){
 
       ${createBlock(`
           <span style="font-weight: bold">Приоритет задачи:</span>
-          ${ getTaskPriorityName(i.task.prioritiesId) }
+          ${ getTaskPriorityName(i.task.prioritiesId)}
           <br>
           <span style="font-weight: bold">Автор задачи:</span>
           ${i.task.author.fullNameRu}
@@ -267,7 +267,7 @@ module.exports = function (templateName, input, templateBaseUrl){
 }
       ${createBlock(`
         <span style="font-weight: bold">Приоритет задачи:</span>
-        ${ getTaskPriorityName(i.task.prioritiesId) }
+        ${ getTaskPriorityName(i.task.prioritiesId)}
         <br>
         <span style="font-weight: bold">Автор задачи:</span>
         ${i.task.author.fullNameRu}
@@ -374,6 +374,22 @@ module.exports = function (templateName, input, templateBaseUrl){
       </html>`;
     break;
 
+  case ('checkExternalUser'):
+    subject = 'Заканчивается доступ у внешнего пользователя';
+
+    body = `
+      ${mailHeader}
+        ${createBlock(`
+        Через ${i.dayCount} заканчивается срок действия учетной записи 
+        для внешнего пользователя ${i.user.login} (${i.user.description}). 
+        <br/>
+        <br/>
+        Не забудьте продлить ее при необходимости
+      `)}
+      ${mailFooter}
+    `;
+
+    break;
   default:
     throw new Error('template not found');
   }
@@ -386,8 +402,8 @@ module.exports = function (templateName, input, templateBaseUrl){
 };
 
 
-function getTaskPriorityName (num){
-  switch (num){
+function getTaskPriorityName (num) {
+  switch (num) {
   case (1):
     return 'Highest';
   case (2):
@@ -403,7 +419,7 @@ function getTaskPriorityName (num){
   }
 }
 
-function getTaskLastComment (task){
+function getTaskLastComment (task) {
   return task.comments[0];
 }
 
