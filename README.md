@@ -2,10 +2,27 @@
 
 ### Запуск проекта в докере
 
-$ docker-compose -f docker-compose.dev.yml  build 
-$ docker-compose -f docker-compose.dev.yml  up
+#### Ошибка `data directory "/var/lib/postgresql/data" has wrong ownership`
 
-### Настройки 
+В файле `docker-compose.dev.yml` добавить `environment: PGDATA ...` в раздел `db:`:
+
+```
+    ...
+    env_file:
+      - .docker-compose-dev.env
+    restart: unless-stopped
+    environment:
+      PGDATA: /tmp
+```
+
+### Запуск проекта в докере - фронтенд собирается и хостится здесь же
+
+```
+$ docker-compose -f docker-compose.dev.yml  build
+$ docker-compose -f docker-compose.dev.yml  up
+```
+
+### Настройки
 
 #### Фронт и бек должны быть расположены в одной директории, например
 

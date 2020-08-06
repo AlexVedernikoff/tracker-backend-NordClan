@@ -2,10 +2,17 @@ const createError = require('http-errors');
 const StringHelper = require('../../../components/StringHelper');
 const models = require('../../../models');
 
+const modifyEntityName = entityName => {
+  const isSingleWord = !entityName.includes('-');
+  return isSingleWord
+    ? StringHelper.firstLetterUp(entityName)
+    : StringHelper.upFirstLettersMultipleWords(entityName);
+};
+
 exports.status = function (req, res, next){
   if (!req.params.entity) return next(createError(400, 'entity need'));
-  if (['project', 'sprint', 'task', 'timesheet'].indexOf(req.params.entity) === -1) return next(createError(400, 'entity must be only \'project\', \'sprint\' or \'task\''));
-  const modelName = StringHelper.firstLetterUp(req.params.entity) + 'StatusesDictionary';
+  if (['project', 'sprint', 'task', 'timesheet', 'test-case'].indexOf(req.params.entity) === -1) return next(createError(400, 'entity must be only \'project\', \'sprint\', \'test-case\', or \'task\''));
+  const modelName = modifyEntityName(req.params.entity) + 'StatusesDictionary';
   return models[modelName]
     .findAll()
     .then(data => res.json(data));
@@ -49,3 +56,8 @@ exports.departments = function (req, res){
     .then(data => res.json(data));
 };
 
+exports.testCaseSeverity = function (req, res) {
+  return models.TestCaseSeverityDictionary
+    .findAll()
+    .then(data => res.json(data));
+};
