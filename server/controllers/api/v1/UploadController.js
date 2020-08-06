@@ -91,32 +91,17 @@ exports.uploadAvatar = async function (req, res, next) {
 exports.delete = async function (req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('id').trim();
-  req.checkParams('entity', 'entity must be \'task\', \'project\', \'testCaseExecution\' or \'testStepExecution\'')
-    .isIn(['task', 'project', 'test-case-execution', 'test-step-execution']);
+  req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req.checkParams('attachmentId', 'entityId must be int').isInt();
   const validationResult = await req.getValidationResult();
   if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-  const modelName = req.params.entity.includes('-')
-    ? stringHelper.upFirstLettersMultipleWords(req.params.entity)
-    : stringHelper.firstLetterUp(req.params.entity);
+  const modelName = stringHelper.firstLetterUp(req.params.entity);
   const modelFileName = modelName + 'Attachments';
-
-  const getAttributesByModelName = name => {
-    switch (name) {
-    case 'Project':
-      return ['id', 'projectId'];
-    case 'Task':
-      return ['id', 'taskId'];
-    default:
-      return ['id'];
-    }
-  };
-
   models[modelFileName]
     .findByPrimary(req.params.attachmentId, {
-      attributes: getAttributesByModelName(modelName),
+      attributes: req.params.entity === 'project' ? ['id', 'projectId'] : ['id', 'taskId'],
       include: req.params.entity === 'task'
         ? [
           {
@@ -155,52 +140,40 @@ exports.delete = async function (req, res, next) {
 
 
 exports.upload = function (req, res, next) {
-  const { params: { entity, entityId } } = req;
   req.sanitize('entity').trim();
   req.sanitize('entityId').trim();
-  req.checkParams('entity', 'entity must be \'task\', \'project\', \'testCaseExecution\' or \'testStepExecution\'')
-    .isIn(['task', 'project', 'test-case-execution', 'test-step-execution']);
+  req.checkParams('entity', 'entity must be \'task\' or \'project\'').isIn(['task', 'project']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req
     .getValidationResult()
     .then((validationResult) => {
       if (!validationResult.isEmpty()) return next(createError(400, validationResult));
 
-      if (entity === 'project' && !req.user.canUpdateProject(entityId)) {
+      if (req.params.entity === 'project' && !req.user.canUpdateProject(req.params.entityId)) {
         return next(createError(403, 'Access denied'));
       }
 
-      const modelName = entity.includes('-') ? stringHelper.upFirstLettersMultipleWords(entity) : stringHelper.firstLetterUp(entity);
+      const modelName = stringHelper.firstLetterUp(req.params.entity);
       const modelFileName = modelName + 'Attachments';
 
-      const getAttributesByModelName = name => {
-        switch (name) {
-        case 'Project':
-          return ['id', 'statusId'];
-        case 'Task':
-          return ['id', 'statusId', 'projectId'];
-        default:
-          return ['id'];
-        }
-      };
 
       return models[modelName]
-        .findByPrimary(entityId, {
-          attributes: getAttributesByModelName(modelName)
+        .findByPrimary(req.params.entityId, {
+          attributes: req.params.entity === 'project' ? ['id', 'statusId'] : ['id', 'statusId', 'projectId']
         })
         .then((model) => {
           if (!model) {
             return next(createError(404, 'Entity model not found'));
           }
-          if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && entity === 'task') {
+          if (model.statusId === models.TaskStatusesDictionary.CLOSED_STATUS && req.params.entity === 'task') {
             return next(createError(400, 'Task is closed'));
           }
-          if (entity === 'task' && !(req.user.isUserOfProject(model.projectId) || req.user.isGlobalAdmin)) {
+          if (req.params.entity === 'task' && !(req.user.isUserOfProject(model.projectId) || req.user.isGlobalAdmin)) {
             return next(createError(403, 'Access denied'));
           }
 
           const appDir = path.dirname(require.main.filename);
-          const uploadDir = 'uploads/' + entity + 'sAttachments/' + model.id + '/' + classicRandom(3);
+          const uploadDir = 'uploads/' + req.params.entity + 'sAttachments/' + model.id + '/' + classicRandom(3);
           const absoluteUploadDir = appDir + '/public/' + uploadDir;
           const files = [];
 
@@ -241,10 +214,8 @@ exports.upload = function (req, res, next) {
 
                     return models[modelFileName]
                       .create({
-                        taskId: entityId,
-                        projectId: entityId,
-                        testStepExecutionId: entityId,
-                        testCaseExecutionId: entityId,
+                        taskId: req.params.entityId,
+                        projectId: req.params.entityId,
                         authorId: req.user.id,
                         fileName: file.name,
                         type: file.type,
@@ -258,7 +229,7 @@ exports.upload = function (req, res, next) {
 
               return Promise.all(promises)
                 .then(() => {
-                  return queries.file.getFilesByModel(modelFileName, entityId)
+                  return queries.file.getFilesByModel(modelFileName, req.params.entityId)
                     .then((uploadFiles) => {
                       res.json(uploadFiles);
                     });

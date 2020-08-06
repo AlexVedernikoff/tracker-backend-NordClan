@@ -2,29 +2,21 @@ const models = require('../');
 
 exports.name = 'file';
 
-exports.getFilesByModel = function (modelFileName, modelId) {
-  const result = [];
+exports.getFilesByModel = function(modelFileName, modelId) {
+  let result = [];
   const where = {
-    deletedAt: null
+    deletedAt: null,
   };
-
-  switch (modelFileName) {
+  
+  switch(modelFileName) {
   case 'ProjectAttachments':
     where.projectId = modelId;
     break;
   case 'TaskAttachments':
     where.taskId = modelId;
     break;
-  case 'TestStepExecutionAttachments':
-    where.testStepExecutionId = modelId;
-    break;
-  case 'TestCaseExecutionAttachments':
-    where.testCaseExecutionId = modelId;
-    break;
-  default:
-    break;
   }
-
+  
   return models[modelFileName]
     .findAll({
       where: where,
@@ -33,8 +25,8 @@ exports.getFilesByModel = function (modelFileName, modelId) {
         ['createdAt', 'ASC']
       ]
     })
-    .then(items => {
-      items.forEach((model) => {
+    .then((models) => {
+      models.forEach((model) => {
         result.push(model.dataValues);
       });
       return result;
