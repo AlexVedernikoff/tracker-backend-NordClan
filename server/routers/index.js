@@ -216,12 +216,12 @@ router.get('/dictionary/test-case/severity', DictionaryController.testCaseSeveri
 
 // Attachments
 router.post(
-  '/:entity(project|task|test-case-execution|test-step-execution)/:entityId/attachment',
+  '/:entity(project|task|test-case-execution|test-step-execution|test-case)/:entityId/attachment',
   GlobalAccess.can('attachment', 'upload'),
   UploadController.upload
 );
 router.delete(
-  '/:entity(project|task|test-case-execution|test-step-execution)/:entityId/attachment/:attachmentId',
+  '/:entity(project|task|test-case-execution|test-step-execution|test-case)/:entityId/attachment/:attachmentId',
   GlobalAccess.can('attachment', 'delete'),
   UploadController.delete
 );

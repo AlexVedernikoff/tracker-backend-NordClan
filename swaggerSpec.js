@@ -3069,6 +3069,27 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/test-case/{testCaseId}/attachment': {
+      post: {
+        tags: ['Test Case'],
+        summary: 'Прикрепить файл к тест кейс',
+        parameters: [
+          {
+            name: 'testCaseId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'file',
+            type: 'file',
+            in: 'formData',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/test-step-execution/{testStepExecutionId}/attachment/{id}': {
       delete: {
         tags: ['Test Step Execution'],
@@ -3089,7 +3110,26 @@ module.exports = {
         ]
       }
     },
-
+    '/test-case/{testCaseId}/attachment/{id}': {
+      delete: {
+        tags: ['Test Case'],
+        summary: 'Удалить прикрепленный к тест кейс файл',
+        parameters: [
+          {
+            name: 'testCaseId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          },
+          {
+            name: 'id',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ]
+      }
+    },
     '/test-case-execution/{id}': {
       put: {
         tags: ['Test Case Execution'],

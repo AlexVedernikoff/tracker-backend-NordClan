@@ -91,8 +91,8 @@ exports.uploadAvatar = async function (req, res, next) {
 exports.delete = async function (req, res, next) {
   req.sanitize('entity').trim();
   req.sanitize('id').trim();
-  req.checkParams('entity', 'entity must be \'task\', \'project\', \'testCaseExecution\' or \'testStepExecution\'')
-    .isIn(['task', 'project', 'test-case-execution', 'test-step-execution']);
+  req.checkParams('entity', 'entity must be \'task\', \'project\', \'testCaseExecution\', \'testCase\' or \'testStepExecution\'')
+    .isIn(['task', 'project', 'test-case-execution', 'test-step-execution', 'test-case']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req.checkParams('attachmentId', 'entityId must be int').isInt();
   const validationResult = await req.getValidationResult();
@@ -109,6 +109,8 @@ exports.delete = async function (req, res, next) {
       return ['id', 'projectId'];
     case 'Task':
       return ['id', 'taskId'];
+    case 'TestCase':
+      return ['id', 'testCaseId'];
     default:
       return ['id'];
     }
@@ -158,8 +160,8 @@ exports.upload = function (req, res, next) {
   const { params: { entity, entityId } } = req;
   req.sanitize('entity').trim();
   req.sanitize('entityId').trim();
-  req.checkParams('entity', 'entity must be \'task\', \'project\', \'testCaseExecution\' or \'testStepExecution\'')
-    .isIn(['task', 'project', 'test-case-execution', 'test-step-execution']);
+  req.checkParams('entity', 'entity must be \'task\', \'project\', \'testCaseExecution\', \'testCase\' or \'testStepExecution\'')
+    .isIn(['task', 'project', 'test-case-execution', 'test-step-execution', 'test-case']);
   req.checkParams('entityId', 'entityId must be int').isInt();
   req
     .getValidationResult()
@@ -179,6 +181,8 @@ exports.upload = function (req, res, next) {
           return ['id', 'statusId'];
         case 'Task':
           return ['id', 'statusId', 'projectId'];
+        case 'TestCase':
+          return ['id'];
         default:
           return ['id'];
         }
@@ -241,6 +245,7 @@ exports.upload = function (req, res, next) {
 
                     return models[modelFileName]
                       .create({
+                        testCaseId: entityId,
                         taskId: entityId,
                         projectId: entityId,
                         testStepExecutionId: entityId,

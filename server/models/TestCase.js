@@ -131,6 +131,15 @@ module.exports = function (sequelize, DataTypes) {
 
     TestCase.hasMany(models.TestCaseSteps, {
       as: 'testCaseSteps',
+      sourceKey: 'id',
+      foreignKey: {
+        name: 'testCaseId',
+        field: 'test_case_id'
+      }
+    });
+
+    TestCase.hasMany(models.TestCaseAttachments, {
+      as: 'testCaseAttachments',
       foreignKey: {
         name: 'testCaseId',
         field: 'test_case_id'

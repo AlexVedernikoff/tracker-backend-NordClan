@@ -15,6 +15,9 @@ exports.getFilesByModel = function (modelFileName, modelId) {
   case 'TaskAttachments':
     where.taskId = modelId;
     break;
+  case 'TestCaseAttachments':
+    where.testCaseId = modelId;
+    break;
   case 'TestStepExecutionAttachments':
     where.testStepExecutionId = modelId;
     break;

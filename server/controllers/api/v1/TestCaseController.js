@@ -1,6 +1,7 @@
 const {
   TestCase,
   TestCaseSteps,
+  TestCaseAttachments,
   User,
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary
@@ -11,6 +12,10 @@ const includeOption = [
   {
     model: TestCaseSteps,
     as: 'testCaseSteps'
+  },
+  {
+    model: TestCaseAttachments,
+    as: 'testCaseAttachments'
   },
   {
     model: User,
