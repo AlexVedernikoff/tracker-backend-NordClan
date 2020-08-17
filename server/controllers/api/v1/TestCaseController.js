@@ -48,9 +48,9 @@ exports.getAllTestCases = async (req, res, next) => {
 
     const testCases = await TestCase.findAll({
       include: includeOption,
-      where: {
+      where: query.projectId ? {
         projectId
-      }
+      } : {}
     }).map((entry) => entry.toJSON());
 
     const { withoutTestSuite, withTestSuite } = testCases.reduce((accumulator, testCase) => {
