@@ -299,6 +299,8 @@ module.exports = function (sequelize, DataTypes) {
     'expiredDate',
     'isActive',
     'active',
+    ['allow_vpn', 'allowVPN'],
+    'allowVPN',
     'deleteDate'
   ];
 
