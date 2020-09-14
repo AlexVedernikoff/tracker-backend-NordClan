@@ -136,7 +136,7 @@ module.exports = {
         const uidNumber = updateData({uidNumber: `${data.id || ''}`});
         const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
 
-        const changeObjectClass = updateData({ objectClass: defaulteUser.objectClass });
+        const changeObjectClass = updateData({ objectClass: defaultUser.objectClass });
         const changeAllowVPN = updateData({ allowVPN: data.allowVPN });
 
         client.modify(`uid=${oldUid},dc=nordclan`,
@@ -169,4 +169,3 @@ module.exports = {
     });
   }
 };
-
