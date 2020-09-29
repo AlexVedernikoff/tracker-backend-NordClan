@@ -46,6 +46,14 @@ module.exports = function (sequelize, DataTypes) {
 
   TestRun.associate = function (models) {
 
+    TestRun.belongsTo(models.Project, {
+      as: 'projectInfo',
+      foreignKey: {
+        name: 'projectId',
+        field: 'project_id'
+      }
+    });
+
     TestRun.hasMany(models.TestRunTestCases, {
       as: 'testRunTestCases',
       foreignKey: {

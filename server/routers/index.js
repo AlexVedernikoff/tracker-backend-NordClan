@@ -130,11 +130,14 @@ router.post('/project/:projectId/environment/', GlobalAccess.can('environment', 
 router.delete('/project/:projectId/environment/:environmentId', GlobalAccess.can('environment', 'delete'), ProjectEnvironmentController.delete);
 
 // Project test run executions
-router.get('/project/:projectId/test-run-execution', TestRunExecutionController.getCountedAll);
-router.get('/project/:projectId/test-run-execution/:id', TestRunExecutionController.getById);
-router.post('/project/:projectId/test-run-execution', TestRunExecutionController.create);
-router.put('/project/:projectId/test-run-execution/:id', TestRunExecutionController.updateTestRunExecution);
-router.delete('/project/:projectId/test-run-execution/:id', TestRunExecutionController.delete);
+router.get('/project/:projectId/test-run', GlobalAccess.can('project', 'read'), TestRunController.getAllTestRuns);
+
+// Project test run executions
+router.get('/project/:projectId/test-run-execution', GlobalAccess.can('project', 'read'), TestRunExecutionController.getCountedAll);
+router.get('/project/:projectId/test-run-execution/:id', GlobalAccess.can('project', 'read'), TestRunExecutionController.getById);
+router.post('/project/:projectId/test-run-execution', GlobalAccess.can('project', 'read'), TestRunExecutionController.create);
+router.put('/project/:projectId/test-run-execution/:id', GlobalAccess.can('project', 'read'), TestRunExecutionController.updateTestRunExecution);
+router.delete('/project/:projectId/test-run-execution/:id', GlobalAccess.can('project', 'read'), TestRunExecutionController.delete);
 
 // Test Step Execution
 router.put('/test-step-execution/:id', TestRunExecutionController.updateTestStepExecution);
@@ -260,7 +263,7 @@ router.put('/test-suite/:id', TestSuiteController.updateTestSuite);
 router.delete('/test-suite/:id', TestSuiteController.deleteTestSuite);
 
 //TestRun
-router.get('/test-run', TestRunController.getAllTestRuns);
+// router.get('/test-run', TestRunController.getAllTestRuns);
 router.get('/test-run/:id', TestRunController.getTestRunById);
 router.post('/test-run', TestRunController.createTestRun);
 router.put('/test-run/:id', TestRunController.updateTestRun);

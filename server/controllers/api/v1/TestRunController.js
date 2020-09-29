@@ -11,6 +11,8 @@ const {
 } = require('../../../models');
 const createError = require('http-errors');
 
+const LIMIT = 10;
+
 const includeOptions = [
   {
     model: TestRunTestCases,
@@ -61,13 +63,17 @@ const getTestRunByParams = async params =>
 exports.getAllTestRuns = async (req, res, next) => {
   try {
     const { params, query } = req;
+    const { page = 1, ...restQueryData } = query;
     const whereOptions = {
       ...params,
-      ...query
+      ...restQueryData
     };
-    const result = await TestRun.findAll({
+    const offset = (Number(page) - 1) * LIMIT;
+    const result = await TestRun.findAndCountAll({
       include: includeOptions,
-      where: whereOptions
+      where: whereOptions,
+      offset,
+      limit: LIMIT
     });
     res.json(result);
   } catch (e) {
@@ -89,6 +95,10 @@ exports.createTestRun = async (req, res, next) => {
   try {
     const { body, user } = req;
     const { testCasesData, projectEnvironments } = body;
+
+    if (!req.user.canReadProject(body.projectId)) {
+      return next(createError(403, 'Access denied'));
+    }
     if (!testCasesData) {
       return next(createError(500, 'Test cases data is empty'));
     }
