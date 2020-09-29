@@ -513,7 +513,7 @@ module.exports = {
         ]
       }
     },
-    '/project/:projectId/reports/period': {
+    '/project/{projectId}/reports/period': {
       get: {
         tags: ['Projects'],
         summary: 'Получить файл - отчёт за период',
@@ -569,7 +569,7 @@ module.exports = {
         responses: responsesCodes
       }
     },
-    '/project/:projectId/addGitlabProject': {
+    '/project/{projectId}/addGitlabProject': {
       post: {
         tags: ['Projects'],
         summary: 'Привязать существующий gitlab репозиторий',
@@ -622,7 +622,7 @@ module.exports = {
         }
       }
     },
-    '/project/:projectId/createGitlabProject': {
+    '/project/{projectId}/createGitlabProject': {
       post: {
         tags: ['Projects'],
         summary: 'Создать gitlab репозиторий и привязать к проекту',
@@ -742,6 +742,21 @@ module.exports = {
           },
           {
             name: 'environmentId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
+    '/project/{projectId}/test-run': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить тест планы проекта, лимит 10 итемов и общее количество',
+        parameters: [
+          {
+            name: 'projectId',
             type: 'integer',
             in: 'path',
             required: true
@@ -2868,11 +2883,6 @@ module.exports = {
       }
     },
     '/test-run': {
-      get: {
-        tags: ['Test Run'],
-        summary: 'Получить все прогоны тестов',
-        responses: responsesCodes
-      },
       post: {
         tags: ['Test Run'],
         summary: 'Создать тест прогон тестов',
@@ -2892,6 +2902,10 @@ module.exports = {
                 description: {
                   type: 'string',
                   example: 'desc'
+                },
+                projectId: {
+                  type: 'integer',
+                  example: 1
                 },
                 runtime: {
                   type: 'string',
@@ -2966,6 +2980,10 @@ module.exports = {
                 description: {
                   type: 'string',
                   example: 'desc'
+                },
+                projectId: {
+                  type: 'integer',
+                  example: 1
                 },
                 runtime: {
                   type: 'string',
