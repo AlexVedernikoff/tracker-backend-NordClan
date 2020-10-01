@@ -78,7 +78,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'testCaseExecutionId',
         field: 'test_case_execution_id'
-      }
+      },
+      onDelete: 'CASCADE'
     });
 
     TestCaseExecution.belongsTo(models.TestCaseStepExecutionStatusDictionary, {
