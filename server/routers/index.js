@@ -130,7 +130,8 @@ router.post('/project/:projectId/environment/', GlobalAccess.can('environment', 
 router.delete('/project/:projectId/environment/:environmentId', GlobalAccess.can('environment', 'delete'), ProjectEnvironmentController.delete);
 
 // Project test run executions
-router.get('/project/:projectId/test-run', GlobalAccess.can('project', 'read'), TestRunController.getAllTestRuns);
+router.get('/project/:projectId/test-run', GlobalAccess.can('project', 'read'), TestRunController.getTestRuns);
+router.get('/project/:projectId/test-run/dict', GlobalAccess.can('project', 'read'), TestRunController.getTestRunsDict);
 
 // Project test run executions
 router.get('/project/:projectId/test-run-execution', GlobalAccess.can('project', 'read'), TestRunExecutionController.getCountedAll);

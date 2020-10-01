@@ -765,6 +765,21 @@ module.exports = {
         responses: responsesCodes
       }
     },
+    '/project/{projectId}/test-run/dict': {
+      get: {
+        tags: ['Projects'],
+        summary: 'Получить все тест планы в усеченном виде',
+        parameters: [
+          {
+            name: 'projectId',
+            type: 'integer',
+            in: 'path',
+            required: true
+          }
+        ],
+        responses: responsesCodes
+      }
+    },
     '/project/{projectId}/test-run-execution': {
       get: {
         tags: ['Projects'],

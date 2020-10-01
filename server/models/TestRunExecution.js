@@ -11,10 +11,23 @@ module.exports = function (sequelize, DataTypes) {
           isInt: true
         }
       },
+      title: {
+        type: DataTypes.STRING,
+        trim: true,
+        allowNull: false,
+        validate: {
+          len: [1, 255]
+        }
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        trim: true
+      },
       testRunId: {
         type: DataTypes.INTEGER,
         field: 'test_run_id',
-        allowNull: false,
+        allowNull: true,
         validate: {
           isInt: true
         }

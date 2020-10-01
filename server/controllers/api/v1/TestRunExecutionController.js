@@ -135,17 +135,9 @@ exports.getById = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { body } = req;
-    const { testRunTestCases } = await TestRun.findByPrimary(body.testRunId, {
-      include: [
-        {
-          model: TestRunTestCases,
-          as: 'testRunTestCases'
-        }
-      ]
-    });
-    const testCasesIds = testRunTestCases.map(item => item.testCaseId);
+    const { testCasesIds, ...testRunExecution } = body;
     const { dataValues: testRunExecutionCreateResult } = await TestRunExecution.create({
-      ...body,
+      ...testRunExecution,
       startTime: new Date()
     });
     const testCaseExecutionToInsert = testCasesIds.map(item => ({

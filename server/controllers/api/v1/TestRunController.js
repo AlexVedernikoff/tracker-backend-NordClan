@@ -2,7 +2,6 @@ const {
   TestRun,
   TestRunTestCases,
   TestCase,
-  TestCaseSteps,
   User,
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary,
@@ -26,10 +25,6 @@ const includeOptions = [
             model: User,
             as: 'authorInfo',
             attributes: ['fullNameEn', 'fullNameRu']
-          },
-          {
-            model: TestCaseSteps,
-            as: 'testCaseSteps'
           },
           {
             model: TestCaseStatusesDictionary,
@@ -60,7 +55,26 @@ const getTestRunByParams = async params =>
     where: params
   });
 
-exports.getAllTestRuns = async (req, res, next) => {
+exports.getTestRunsDict = async (req, res, next) => {
+  try {
+    const { params, query } = req;
+    // eslint-disable-next-line no-unused-vars
+    const { full = 'true', ...restQueryData } = query;
+    const whereOptions = {
+      ...params,
+      ...restQueryData
+    };
+    const result = await TestRun.findAll({
+      attributes: ['id', 'title', 'description'],
+      where: whereOptions
+    });
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.getTestRuns = async (req, res, next) => {
   try {
     const { params, query } = req;
     const { page = 1, ...restQueryData } = query;
@@ -102,9 +116,9 @@ exports.createTestRun = async (req, res, next) => {
     if (!testCasesData) {
       return next(createError(500, 'Test cases data is empty'));
     }
-    if (!projectEnvironments.length) {
+    /*if (!projectEnvironments.length) {
       return next(createError(500, 'Set at least one project environment for that test case'));
-    }
+    }*/
     const { dataValues: testRunResult } = await TestRun.create(body, {
       historyAuthorId: user.id
     });
