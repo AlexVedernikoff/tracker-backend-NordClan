@@ -13,6 +13,7 @@ const {
   TestStepExecutionAttachments
 } = require('../../../models');
 const createError = require('http-errors');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 const LIMIT = 10;
 
@@ -84,11 +85,17 @@ const getTestRunExecutionByPrimary = async (id, params) =>
 exports.getCountedAll = async (req, res, next) => {
   try {
     const { params, query } = req;
-    const { page = 1, ...restQueryData } = query;
+    const { page = 1, name = undefined, ...restQueryData } = query;
     const where = {
       ...params,
       ...restQueryData
     };
+    if (name) {
+      where.$or = {
+        title: { $iLike: layoutAgnostic(name.trim()) },
+        description: { $iLike: layoutAgnostic(name.trim()) }
+      };
+    }
     const offset = (Number(page) - 1) * LIMIT;
     const data = await TestRunExecution.findAndCountAll({
       where,
