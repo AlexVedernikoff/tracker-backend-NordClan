@@ -4,7 +4,6 @@ const {
   ProjectEnvironment,
   User,
   TestCaseExecution,
-  TestRunTestCases,
   TestCaseSteps,
   TestStepExecution,
   TestCase,
@@ -14,6 +13,7 @@ const {
   TestStepExecutionAttachments
 } = require('../../../models');
 const createError = require('http-errors');
+const layoutAgnostic = require('../../../services/layoutAgnostic');
 
 const LIMIT = 10;
 
@@ -85,11 +85,17 @@ const getTestRunExecutionByPrimary = async (id, params) =>
 exports.getCountedAll = async (req, res, next) => {
   try {
     const { params, query } = req;
-    const { page = 1, ...restQueryData } = query;
+    const { page = 1, name = undefined, ...restQueryData } = query;
     const where = {
       ...params,
       ...restQueryData
     };
+    if (name) {
+      where.$or = {
+        title: { $iLike: layoutAgnostic(name.trim()) },
+        description: { $iLike: layoutAgnostic(name.trim()) }
+      };
+    }
     const offset = (Number(page) - 1) * LIMIT;
     const data = await TestRunExecution.findAndCountAll({
       where,
@@ -132,41 +138,35 @@ exports.getById = async (req, res, next) => {
   }
 };
 
+const addTestCaseToTestRunExecution = async (testRunExecutionId, testCasesIds) => {
+  const testCaseExecutionToInsert = testCasesIds.map(testCaseId => ({ testRunExecutionId, testCaseId }));
+  const testCaseExecutionData = await TestCaseExecution.bulkCreate(testCaseExecutionToInsert, { returning: true });
+  const testCasesSteps = await TestCaseSteps.findAll({ where: { testCaseId: testCasesIds } });
+  const testStepExecutionToInsert = testCasesSteps.map(item => {
+    const itemTestCaseExecution = testCaseExecutionData.find(
+      testCaseExecutionItem => testCaseExecutionItem.dataValues.test_case_id === item.testCaseId
+    );
+    return {
+      testCaseExecutionId: itemTestCaseExecution.id,
+      testStepId: item.id
+    };
+  });
+  await TestStepExecution.bulkCreate(testStepExecutionToInsert);
+};
+
+const deleteTestCaseFromTestRunExecution = async (testRunExecutionId, testCasesIds) => {
+};
+
+
 exports.create = async (req, res, next) => {
   try {
     const { body } = req;
-    const { testRunTestCases } = await TestRun.findByPrimary(body.testRunId, {
-      include: [
-        {
-          model: TestRunTestCases,
-          as: 'testRunTestCases'
-        }
-      ]
-    });
-    const testCasesIds = testRunTestCases.map(item => item.testCaseId);
+    const { testCasesIds, ...testRunExecution } = body;
     const { dataValues: testRunExecutionCreateResult } = await TestRunExecution.create({
-      ...body,
+      ...testRunExecution,
       startTime: new Date()
     });
-    const testCaseExecutionToInsert = testCasesIds.map(item => ({
-      testRunExecutionId: testRunExecutionCreateResult.id,
-      testCaseId: item
-    }));
-    const testCaseExecutionData = await TestCaseExecution.bulkCreate(testCaseExecutionToInsert, { returning: true });
-    const testCasesSteps = await TestCaseSteps.findAll({
-      where: {
-        testCaseId: testCasesIds
-      }
-    });
-    const testStepExecutionToInsert = testCasesSteps.map(item => {
-      const itemTestCaseExecution = testCaseExecutionData.find(testCaseExecutionItem =>
-        testCaseExecutionItem.dataValues.test_case_id === item.testCaseId);
-      return {
-        testCaseExecutionId: itemTestCaseExecution.id,
-        testStepId: item.id
-      };
-    });
-    await TestStepExecution.bulkCreate(testStepExecutionToInsert);
+    await addTestCaseToTestRunExecution(testRunExecutionCreateResult.id, testCasesIds);
     const result = await getTestRunExecutionByPrimary(testRunExecutionCreateResult.id);
     res.json(result);
   } catch (e) {
@@ -177,16 +177,31 @@ exports.create = async (req, res, next) => {
 exports.updateTestRunExecution = async (req, res, next) => {
   try {
     const { params: { id }, body } = req;
-    const dataToUpate = body;
+    const { testCasesIds, ...testRunExecution } = body;
     const status = body.status;
     if (status === 4) {
-      dataToUpate.finishTime = new Date();
+      testRunExecution.finishTime = new Date();
     }
-    await TestRunExecution.update(dataToUpate, {
+    await TestRunExecution.update(testRunExecution, {
       where: {
         id
       }
     });
+
+    const oldTestCaseExecution = await TestCaseExecution.findAll({
+      where: {
+        testRunExecutionId: id
+      }
+    });
+    const oldTestCasesIds = oldTestCaseExecution.map(ce => ce.testCaseId);
+    const addTestCasesIds = testCasesIds.filter(caseId => !oldTestCasesIds.includes(caseId));
+    const removeTestCases = oldTestCasesIds.filter(caseId => !testCasesIds.includes(caseId));
+
+    await addTestCaseToTestRunExecution(id, addTestCasesIds);
+    await TestCaseExecution.destroy({
+      where: { testRunExecutionId: id, testCaseId: removeTestCases }
+    });
+
     res.sendStatus(204);
   } catch (e) {
     next(createError(e));
