@@ -2,9 +2,9 @@ const models = require('../../../models');
 const queries = require('../../../models/queries');
 
 exports.create = async (params) => {
-  const isNeedCreateTimesheet = await queries.timesheet.isNeedCreateTimesheet(params);
-  if (!isNeedCreateTimesheet) {
-    throw new Error(`Some timesheet already exists on date ${params.onDate}`);
+  const alreadyCreated = await queries.timesheet.getTimesheetByParams(params);
+  if (alreadyCreated) {
+    await alreadyCreated.destroy();
   }
   const draftToDestroy = await queries.timesheetDraft.getDraftToDestroy(params);
   if (draftToDestroy) {

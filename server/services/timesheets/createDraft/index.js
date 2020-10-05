@@ -3,8 +3,8 @@ const moment = require('moment');
 const queries = require('../../../models/queries');
 
 exports.createDraft = async (params) => {
-  const isNeedCreateDraft = await queries.timesheet.isNeedCreateTimesheet(params);
-  if (!isNeedCreateDraft) {
+  const alreadyCreated = await queries.timesheet.getTimesheetByParams(params);
+  if (alreadyCreated) {
     throw new Error(`Some timesheet already exists on date ${params.onDate}`);
   }
   try {
