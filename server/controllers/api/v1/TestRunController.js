@@ -15,6 +15,7 @@ const LIMIT = 10;
 const includeOptions = [
   {
     model: TestRunTestCases,
+    separate: true,
     as: 'testRunTestCases',
     include: [
       {
@@ -86,6 +87,7 @@ exports.getTestRuns = async (req, res, next) => {
     const result = await TestRun.findAndCountAll({
       include: includeOptions,
       where: whereOptions,
+      order: [['id', 'DESC']],
       offset,
       limit: LIMIT
     });
