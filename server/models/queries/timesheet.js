@@ -99,7 +99,7 @@ exports.getTimesheet = async function (params) {
   return timesheet;
 };
 
-exports.isNeedCreateTimesheet = async function (options) {
+exports.getTimesheetByParams = async function (options) {
   const { onDate, typeId, taskId, projectId, taskStatusId, userId, sprintId } = options;
 
   const where = {
@@ -121,18 +121,7 @@ exports.isNeedCreateTimesheet = async function (options) {
     where.taskStatusId = taskStatusId;
   }
 
-  const foundTimesheet = await models.Timesheet
-    .findOne({
-      where: where,
-      attributes: ['id']
-    });
-
-
-  if (foundTimesheet) {
-    return false;
-  }
-
-  return true;
+  return models.Timesheet.findOne({ where: where, attributes: ['id'] });
 };
 
 exports.isBillableFlag = async function (options) {
