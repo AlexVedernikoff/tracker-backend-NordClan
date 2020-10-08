@@ -9,6 +9,7 @@ const {
   TestCase,
   TestCaseStepExecutionStatusDictionary,
   TestSuite,
+  TestCaseAttachments,
   TestCaseExecutionAttachments,
   TestStepExecutionAttachments
 } = require('../../../models');
@@ -40,8 +41,17 @@ const includeOptions = [
         as: 'testCaseInfo',
         include: [
           {
+            model: TestCaseAttachments,
+            separate: true,
+            as: 'testCaseAttachments'
+          },
+          {
             model: TestSuite,
             as: 'testSuiteInfo'
+          },
+          {
+            model: User,
+            as: 'authorInfo'
           }
         ]
       },
@@ -71,6 +81,10 @@ const includeOptions = [
       {
         model: TestCaseExecutionAttachments,
         as: 'attachments'
+      },
+      {
+        model: User,
+        as: 'closedUserInfo'
       }
     ]
   }
@@ -154,10 +168,6 @@ const addTestCaseToTestRunExecution = async (testRunExecutionId, testCasesIds) =
   await TestStepExecution.bulkCreate(testStepExecutionToInsert);
 };
 
-const deleteTestCaseFromTestRunExecution = async (testRunExecutionId, testCasesIds) => {
-};
-
-
 exports.create = async (req, res, next) => {
   try {
     const { body } = req;
@@ -239,6 +249,10 @@ exports.updateTestStepExecution = async (req, res, next) => {
 exports.updateTestCaseExecution = async (req, res, next) => {
   try {
     const { params: { id }, body } = req;
+    const {status} = body;
+    if (status !== undefined && status !== null && status !== 3) {
+      body.whoClosed = req.user.id;
+    }
     await TestCaseExecution.update(body, {
       where: {
         id

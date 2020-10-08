@@ -34,6 +34,14 @@ module.exports = function (sequelize, DataTypes) {
           isInt: true
         }
       },
+      whoClosed: {
+        type: DataTypes.INTEGER,
+        field: 'who_closed',
+        allowNull: true,
+        validate: {
+          isInt: true
+        }
+      },
       description: {
         type: DataTypes.TEXT,
         allowNull: true
@@ -94,6 +102,12 @@ module.exports = function (sequelize, DataTypes) {
         field: 'test_case_execution_id'
       }
     });
+
+    TestCaseExecution.belongsTo(models.User, {
+      as: 'closedUserInfo',
+      foreignKey: 'who_closed'
+    });
+
 
   };
 
