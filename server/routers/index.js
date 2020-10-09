@@ -250,14 +250,18 @@ router.post('/jira/setJiraSynchronizeStatus', GlobalAccess.can('jira', 'setStatu
 router.get('/jira/getJiraSyncStatuses/:simtrackProjectId', JiraController.getJiraSyncStatuses);
 
 //TestCases
-router.get('/test-case', TestCaseController.getAllTestCases);
+router.get('/test-case', TestCaseController.getTestCases);
+router.get('/test-case/templates', TestCaseController.getTemplates);
+router.post('/test-case/createProjectTestCase', TestCaseController.createProjectTestCase);
 router.get('/test-case/:id', TestCaseController.getTestCaseById);
 router.post('/test-case', TestCaseController.createTestCase);
 router.put('/test-case/:id', TestCaseController.updateTestCase);
 router.delete('/test-case/:id', TestCaseController.deleteTestCase);
 
 //TestSuite
-router.get('/test-suite', TestSuiteController.getAllTestSuites);
+router.get('/test-suite', TestSuiteController.getTestSuites);
+router.get('/test-suite/templates', TestSuiteController.getTemplates);
+router.post('/test-suite/createProjectTestSuite', TestSuiteController.createProjectTestSuite);
 router.get('/test-suite/:id', TestSuiteController.getTestSuiteById);
 router.post('/test-suite', TestSuiteController.createTestSuite);
 router.put('/test-suite/:id', TestSuiteController.updateTestSuite);

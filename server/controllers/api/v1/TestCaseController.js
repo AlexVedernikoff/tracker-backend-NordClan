@@ -1,4 +1,5 @@
 const {
+  TestSuite,
   TestCase,
   TestCaseSteps,
   TestCaseAttachments,
@@ -7,6 +8,7 @@ const {
   TestCaseSeverityDictionary
 } = require('../../../models');
 const createError = require('http-errors');
+const { copyTestCase, sanitizeTestCase } = require('../../../services/testCase');
 
 const includeOption = [
   {
@@ -41,32 +43,54 @@ const getTestCaseByParams = async params =>
     where: params
   });
 
-exports.getAllTestCases = async (req, res, next) => {
+const selectFormattedTestCases = async (criterion) => {
+  const testCases = await TestCase.findAll({
+    include: includeOption,
+    ...criterion
+  }).map((entry) => entry.toJSON());
+  return testCases.reduce((accumulator, testCase) => {
+    const isWithTestSuite = typeof testCase.testSuiteId === 'number';
+    accumulator[isWithTestSuite ? 'withTestSuite' : 'withoutTestSuite'].push(testCase);
+    return accumulator;
+  }, { withoutTestSuite: [], withTestSuite: [] });
+};
+
+const validateCaseAndSuiteRelation = async (testCase) => {
+  const sanitized = sanitizeTestCase(testCase);
+  if (sanitized.testSuiteId) {
+    const parentSuite = await TestSuite.findOne({ where: { id: sanitized.testSuiteId } }).then(s => s.get({ plain: true }));
+    if (parentSuite) {
+      const isInvalidRelation
+        = (parentSuite.projectId === null && sanitized.projectId !== null)
+        || (parentSuite.projectId !== null && sanitized.projectId === null)
+        || (parentSuite.projectId !== null && sanitized.projectId !== null && parentSuite.projectId !== sanitized.projectId);
+
+      if (isInvalidRelation) throw new Error('cant change relation');
+    }
+  }
+};
+
+exports.getTemplates = async (req, res, next) => {
   try {
-    const { query } = req;
-    const projectId = query.projectId ? query.projectId : null;
+    const criterion = {
+      where: { projectId: { $eq: null } }
+    };
+    const { withoutTestSuite, withTestSuite } = await selectFormattedTestCases(criterion);
+    res.json({
+      withoutTestSuite,
+      withTestSuite
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 
-    const testCases = await TestCase.findAll({
-      include: includeOption,
-      where: query.projectId ? {
-        projectId
-      } : {}
-    }).map((entry) => entry.toJSON());
-
-    const { withoutTestSuite, withTestSuite } = testCases.reduce((accumulator, testCase) => {
-      if (typeof testCase.testSuiteId === 'number') {
-        return {
-          ...accumulator,
-          withTestSuite: [...accumulator.withTestSuite, testCase]
-        };
-      }
-
-      return {
-        ...accumulator,
-        withoutTestSuite: [...accumulator.withoutTestSuite, testCase]
-      };
-    }, { withoutTestSuite: [], withTestSuite: [] });
-
+exports.getTestCases = async (req, res, next) => {
+  try {
+    const criterion = {
+      where: { projectId: req.query.projectId || { $not: null } }
+    };
+    const { withoutTestSuite, withTestSuite } = await selectFormattedTestCases(criterion);
     res.json({
       withoutTestSuite,
       withTestSuite
@@ -93,6 +117,7 @@ exports.createTestCase = async (req, res, next) => {
     if (!testCaseSteps) {
       return next(createError(500, 'Test case steps is empty!'));
     }
+    await validateCaseAndSuiteRelation(body);
     const { dataValues: testCaseData } = await TestCase.create(body, {
       historyAuthorId: user.id
     });
@@ -116,6 +141,7 @@ exports.updateTestCase = async (req, res, next) => {
     if (!testCaseSteps) {
       return next(createError(500, 'Test case steps is empty!'));
     }
+    await validateCaseAndSuiteRelation(body);
     await TestCaseSteps.destroy({
       where: {
         testCaseId: id
@@ -155,6 +181,20 @@ exports.deleteTestCase = async (req, res, next) => {
       }
     });
     res.sendStatus(200);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.createProjectTestCase = async (req, res, next) => {
+  try {
+    const { user, body } = req;
+    if (!body.projectId) throw new Error('available only with project id');
+
+    const formattedBody = { ...body, testSuiteId: null };
+    const testCaseId = await copyTestCase({ body: formattedBody, user });
+    const result = await getTestCaseByParams({ id: testCaseId });
+    res.send(result);
   } catch (e) {
     next(e);
   }

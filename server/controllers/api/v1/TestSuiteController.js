@@ -6,6 +6,7 @@ const {
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary
 } = require('../../../models');
+const { copyTestCase } = require('../../../services/testCase');
 
 const includeOptions = [
   {
@@ -36,11 +37,24 @@ const includeOptions = [
   }
 ];
 
-exports.getAllTestSuites = async (req, res, next) => {
+const getTestSuiteByParams = (params) => {
+  return TestSuite.findOne({ include: includeOptions, where: params });
+};
+
+exports.getTemplates = async (req, res, next) => {
   try {
-    const testSuite = await TestSuite.findAll({
-      include: includeOptions
-    });
+    const criterion = { ...req.query, projectId: { $eq: null } };
+    const testSuite = await TestSuite.findAll({ include: includeOptions, where: criterion });
+    res.json(testSuite);
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.getTestSuites = async (req, res, next) => {
+  try {
+    const criterion = { ...req.query, projectId: req.query.projectId || { $not: null } };
+    const testSuite = await TestSuite.findAll({ include: includeOptions, where: criterion });
     res.json(testSuite);
   } catch (e) {
     next(e);
@@ -50,11 +64,8 @@ exports.getAllTestSuites = async (req, res, next) => {
 exports.getTestSuiteById = async (req, res, next) => {
   const { params } = req;
   try {
-    const testCase = await TestSuite.findOne({
-      include: includeOptions,
-      where: params
-    });
-    res.json(testCase);
+    const testSuite = await getTestSuiteByParams(params);
+    res.json(testSuite);
   } catch (e) {
     next(e);
   }
@@ -95,6 +106,33 @@ exports.deleteTestSuite = async (req, res, next) => {
       individualHooks: true
     });
     res.sendStatus(200);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const sanitizeTestSuite = (testSuite) => {
+  const { title, description, projectId } = testSuite;
+  return { title, description, projectId };
+};
+
+exports.createProjectTestSuite = async (req, res, next) => {
+  try {
+    const { body, user } = req;
+    if (!body.projectId) throw new Error('available only with project id');
+
+    const createdSuite = await TestSuite.create(sanitizeTestSuite(body), {
+      historyAuthorId: user.id
+    }).then(s => s.get({ plain: true }));
+    const originalSuite = await getTestSuiteByParams({ id: body.id }).then(s => s.get({ plain: true }));
+    if (originalSuite && Array.isArray(originalSuite.testCases)) {
+      for (const testCase of originalSuite.testCases) {
+        const formattedTestCase = { ...testCase, projectId: body.projectId, testSuiteId: createdSuite.id };
+        await copyTestCase({ body: formattedTestCase, user });
+      }
+    }
+    const result = await getTestSuiteByParams({ id: createdSuite.id });
+    res.json(result);
   } catch (e) {
     next(e);
   }
