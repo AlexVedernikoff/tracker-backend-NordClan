@@ -5,7 +5,9 @@ const {
   TestCaseAttachments,
   User,
   TestCaseStatusesDictionary,
-  TestCaseSeverityDictionary
+  TestCaseSeverityDictionary,
+  TestRunTestCases,
+  TestCaseExecution
 } = require('../../../models');
 const createError = require('http-errors');
 const { copyTestCase, sanitizeTestCase } = require('../../../services/testCase');
@@ -176,6 +178,16 @@ exports.deleteTestCase = async (req, res, next) => {
       historyAuthorId: user.id
     });
     await TestCaseSteps.destroy({
+      where: {
+        testCaseId: id
+      }
+    });
+    await TestRunTestCases.destroy({
+      where: {
+        testCaseId: id
+      }
+    });
+    await TestCaseExecution.destroy({
       where: {
         testCaseId: id
       }
