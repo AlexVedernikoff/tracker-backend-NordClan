@@ -36,15 +36,20 @@ const includeOptions = [
     ]
   }
 ];
+const stepsOrder = [{ model: TestCase, as: 'testCases' }, { model: TestCaseSteps, as: 'testCaseSteps' }, 'id', 'ASC'];
 
 const getTestSuiteByParams = (params) => {
-  return TestSuite.findOne({ include: includeOptions, where: params });
+  return TestSuite.findOne({
+    include: includeOptions,
+    where: params,
+    order: [stepsOrder]
+  });
 };
 
 exports.getTemplates = async (req, res, next) => {
   try {
     const criterion = { ...req.query, projectId: { $eq: null } };
-    const testSuite = await TestSuite.findAll({ include: includeOptions, where: criterion });
+    const testSuite = await TestSuite.findAll({ include: includeOptions, where: criterion, order: [stepsOrder] });
     res.json(testSuite);
   } catch (e) {
     next(e);
@@ -54,7 +59,7 @@ exports.getTemplates = async (req, res, next) => {
 exports.getTestSuites = async (req, res, next) => {
   try {
     const criterion = { ...req.query, projectId: req.query.projectId || { $not: null } };
-    const testSuite = await TestSuite.findAll({ include: includeOptions, where: criterion });
+    const testSuite = await TestSuite.findAll({ include: includeOptions, where: criterion, order: [stepsOrder] });
     res.json(testSuite);
   } catch (e) {
     next(e);
