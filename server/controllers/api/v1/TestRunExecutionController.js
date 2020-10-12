@@ -33,6 +33,11 @@ const includeOptions = [
     attributes: ['fullNameRu', 'fullNameEn']
   },
   {
+    model: User,
+    as: 'executorUser',
+    attributes: ['fullNameRu', 'fullNameEn']
+  },
+  {
     model: TestCaseExecution,
     as: 'testCaseExecutionData',
     include: [
@@ -128,6 +133,11 @@ exports.getCountedAll = async (req, res, next) => {
           attributes: ['fullNameRu', 'fullNameEn']
         },
         {
+          model: User,
+          as: 'executorUser',
+          attributes: ['fullNameRu', 'fullNameEn']
+        },
+        {
           model: TestCaseExecution,
           as: 'testCaseExecutionData'
         }
@@ -170,10 +180,11 @@ const addTestCaseToTestRunExecution = async (testRunExecutionId, testCasesIds) =
 
 exports.create = async (req, res, next) => {
   try {
-    const { body } = req;
+    const { body, user: {id: user_id} } = req;
     const { testCasesIds, ...testRunExecution } = body;
     const { dataValues: testRunExecutionCreateResult } = await TestRunExecution.create({
       ...testRunExecution,
+      startedBy: user_id,
       startTime: new Date()
     });
     await addTestCaseToTestRunExecution(testRunExecutionCreateResult.id, testCasesIds);

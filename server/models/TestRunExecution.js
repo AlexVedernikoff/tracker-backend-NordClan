@@ -43,10 +43,7 @@ module.exports = function (sequelize, DataTypes) {
       projectEnvironmentId: {
         type: DataTypes.INTEGER,
         field: 'project_environment_id',
-        allowNull: false,
-        validate: {
-          isInt: true
-        }
+        allowNull: true
       },
       startedBy: {
         type: DataTypes.INTEGER,
@@ -55,6 +52,11 @@ module.exports = function (sequelize, DataTypes) {
         validate: {
           isInt: true
         }
+      },
+      executor: {
+        type: DataTypes.INTEGER,
+        field: 'executor_id',
+        allowNull: true
       },
       startTime: {
         type: DataTypes.DATE,
@@ -112,6 +114,14 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'startedBy',
         field: 'started_by'
+      }
+    });
+
+    TestRunExecution.belongsTo(models.User, {
+      as: 'executorUser',
+      foreignKey: {
+        name: 'executor',
+        field: 'executor_id'
       }
     });
 
