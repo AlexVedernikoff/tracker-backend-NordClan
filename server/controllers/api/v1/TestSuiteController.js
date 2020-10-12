@@ -117,14 +117,15 @@ exports.deleteTestSuite = async (req, res, next) => {
 };
 
 const sanitizeTestSuite = (testSuite) => {
-  const { title, description, projectId } = testSuite;
-  return { title, description, projectId };
+  const { title, description, projectId, id } = testSuite;
+  return { title, description, projectId, parentSuiteId: id };
 };
 
 exports.createProjectTestSuite = async (req, res, next) => {
   try {
     const { body, user } = req;
     if (!body.projectId) throw new Error('available only with project id');
+    if (!body.id) throw new Error('available only with id');
 
     const createdSuite = await TestSuite.create(sanitizeTestSuite(body), {
       historyAuthorId: user.id

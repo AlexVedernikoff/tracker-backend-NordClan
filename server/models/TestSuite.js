@@ -27,6 +27,12 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: true,
         defaultValue: null
       },
+      parentSuiteId: {
+        field: 'parent_suite_id',
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null
+      },
       description: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -57,6 +63,14 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id'
+      }
+    });
+
+    TestSuite.belongsTo(TestSuite, {
+      as: 'parentSuite',
+      foreignKey: {
+        name: 'testSuiteId',
+        field: 'parent_suite_id'
       }
     });
   };

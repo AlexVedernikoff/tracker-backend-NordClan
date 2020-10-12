@@ -207,6 +207,17 @@ exports.createProjectTestCase = async (req, res, next) => {
     if (!body.projectId) throw new Error('available only with project id');
 
     const formattedBody = { ...body, testSuiteId: null };
+    if (body.testSuiteId) {
+      const templateCriterion = { id: body.testSuiteId };
+      const suiteTemplate = await TestSuite.findOne({ where: templateCriterion });
+      if (suiteTemplate) {
+        const projectSuiteCriterion = { parentSuiteId: body.testSuiteId, projectId: body.projectId };
+        const projectSuite = await TestSuite.findOne({ where: projectSuiteCriterion });
+        if (projectSuite) {
+          formattedBody.testSuiteId = projectSuite.id;
+        }
+      }
+    }
     const testCaseId = await copyTestCase({ body: formattedBody, user });
     const result = await getTestCaseByParams({ id: testCaseId });
     res.send(result);
