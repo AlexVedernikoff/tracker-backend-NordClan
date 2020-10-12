@@ -38,16 +38,19 @@ const includeOption = [
     as: 'testCaseSeverity'
   }
 ];
+const stepsOrder = [[{ model: TestCaseSteps, as: 'testCaseSteps' }, 'id', 'ASC']];
 
 const getTestCaseByParams = async params =>
   await TestCase.findOne({
     include: includeOption,
-    where: params
+    where: params,
+    order: [stepsOrder]
   });
 
 const selectFormattedTestCases = async (criterion) => {
   const testCases = await TestCase.findAll({
     include: includeOption,
+    order: [stepsOrder],
     ...criterion
   }).map((entry) => entry.toJSON());
   return testCases.reduce((accumulator, testCase) => {
