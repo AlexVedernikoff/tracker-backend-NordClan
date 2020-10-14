@@ -173,6 +173,7 @@ exports.updateTestCase = async (req, res, next) => {
 exports.deleteTestCase = async (req, res, next) => {
   try {
     const { params: { id }, user } = req;
+    const testCase = await TestCase.findOne({ where: { id } }).then(c => c.get({ plain: true }));
     await TestCase.destroy({
       where: {
         id
@@ -195,6 +196,16 @@ exports.deleteTestCase = async (req, res, next) => {
         testCaseId: id
       }
     });
+    if (testCase.testSuiteId) {
+      const casesOfParentSuite = await TestCase.findAll({ where: { testSuiteId: testCase.testSuiteId } });
+      if (casesOfParentSuite.length === 0) {
+        await TestSuite.destroy({
+          where: { id: testCase.testSuiteId },
+          historyAuthorId: user.id,
+          individualHooks: true
+        });
+      }
+    }
     res.sendStatus(200);
   } catch (e) {
     next(e);
