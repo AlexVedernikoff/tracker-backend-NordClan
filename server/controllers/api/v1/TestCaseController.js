@@ -10,7 +10,7 @@ const {
   TestCaseExecution
 } = require('../../../models');
 const createError = require('http-errors');
-const { copyTestCase, sanitizeTestCase } = require('../../../services/testCase');
+const { copyTestCase, sanitizeTestCase, sanitizeTestSuite } = require('../../../services/testCase');
 
 const includeOption = [
   {
@@ -220,12 +220,16 @@ exports.createProjectTestCase = async (req, res, next) => {
     const formattedBody = { ...body, testSuiteId: null };
     if (body.testSuiteId) {
       const templateCriterion = { id: body.testSuiteId };
-      const suiteTemplate = await TestSuite.findOne({ where: templateCriterion });
+      const suiteTemplate = await TestSuite.findOne({ where: templateCriterion }).then(s => s.get({ plain: true }));
       if (suiteTemplate) {
         const projectSuiteCriterion = { parentSuiteId: body.testSuiteId, projectId: body.projectId };
         const projectSuite = await TestSuite.findOne({ where: projectSuiteCriterion });
         if (projectSuite) {
           formattedBody.testSuiteId = projectSuite.id;
+        } else {
+          const formattedProjectSuite = sanitizeTestSuite({ ...suiteTemplate, projectId: body.projectId });
+          const newSuite = await TestSuite.create(formattedProjectSuite).then(s => s.get({ plain: true }));
+          formattedBody.testSuiteId = newSuite.id;
         }
       }
     }
