@@ -6,7 +6,7 @@ const {
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary
 } = require('../../../models');
-const { copyTestCase } = require('../../../services/testCase');
+const { copyTestCase, sanitizeTestSuite } = require('../../../services/testCase');
 
 const includeOptions = [
   {
@@ -114,11 +114,6 @@ exports.deleteTestSuite = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-};
-
-const sanitizeTestSuite = (testSuite) => {
-  const { title, description, projectId, id } = testSuite;
-  return { title, description, projectId, parentSuiteId: id };
 };
 
 exports.createProjectTestSuite = async (req, res, next) => {
