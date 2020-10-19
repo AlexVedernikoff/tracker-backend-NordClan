@@ -104,7 +104,7 @@ const getTestRunExecutionByPrimary = async (id, params) =>
 exports.getCountedAll = async (req, res, next) => {
   try {
     const { params, query } = req;
-    const { page = 1, name = undefined, ...restQueryData } = query;
+    const { page = 1, name = undefined, sort, ...restQueryData } = query;
     const where = {
       ...params,
       ...restQueryData
@@ -116,8 +116,14 @@ exports.getCountedAll = async (req, res, next) => {
       };
     }
     const offset = (Number(page) - 1) * LIMIT;
+    const order = sort ? Object.entries(JSON.parse(sort)).filter(([_, value]) => {
+      if (typeof value !== 'string') return false;
+      const lowerValue = value.toLowerCase();
+      return lowerValue === 'asc' || lowerValue === 'desc';
+    }) : [];
     const data = await TestRunExecution.findAndCountAll({
       where,
+      order,
       include: [
         {
           model: TestRun,
