@@ -32,7 +32,7 @@ const defaulteUser = {
   allowVPN: true
 };
 
-client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
+client.bind('', '', (err) => {
   if (err) {
     console.log('Error Client bind LDAP', err);
   }
