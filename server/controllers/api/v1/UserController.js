@@ -577,7 +577,7 @@ exports.createUser = async function (req, res, next) {
         res.sendStatus(200);
       })
       .catch(err => {
-        console.log('catch userController', err);
+        console.error('UserController: Catch error: ', err);
 
         if (err.SequelizeBaseError) {
           transaction.rollback();
