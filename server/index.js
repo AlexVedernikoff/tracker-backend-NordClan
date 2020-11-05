@@ -15,6 +15,7 @@ const errorHandlerMiddleWare = require('./middlewares/ErrorHandlerMiddleWare');
 const Access = require('./middlewares/Access/SetUserAccessMiddleWare');
 const server = require('http').Server(app);
 const HealthcheckController = require('./controllers/api/v1/HealthcheckController');
+const FeatureFlagsController = require('./controllers/api/v1/FeatureFlags');
 const io = require('socket.io')(server, {
   path: '/api/v1/socket'
 });
@@ -38,6 +39,8 @@ exports.run = function () {
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({ extended: false }));
 
+  app.get('/api/v1/core/featureFlags', FeatureFlagsController.get);
+  app.post('/api/v1/core/featureFlags', FeatureFlagsController.set);
   app.get('/api/v1/healthcheck', HealthcheckController.healthcheck);
   app.get('/api/v1/swagger/spec.js', function (req, res) {
     res.send(require('../swaggerSpec.js'));

@@ -32,11 +32,13 @@ const defaulteUser = {
   allowVPN: true
 };
 
+
 client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
   if (err) {
     console.log('Error Client bind LDAP', err);
   }
 });
+
 
 module.exports = {
   create (data) {
@@ -71,6 +73,7 @@ module.exports = {
 
         client.add(`uid=${uid},dc=nordclan`, user, (err) => {
           if (err) {
+            console.error('LDAP: Create User Error: ', err);
             reject(null);
           } else {
             resolve(true);
@@ -78,7 +81,7 @@ module.exports = {
         });
 
       } catch (error) {
-        console.log('catch err Ldap ====>', error);
+        console.log('LDAP: Create User Error (common catch): ', error);
         reject(null);
       }
     });
