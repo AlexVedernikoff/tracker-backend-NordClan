@@ -32,19 +32,13 @@ const defaulteUser = {
   allowVPN: true
 };
 
-if (LOGIN === '') {
-  client.bind('', '', (err) => {
-    if (err) {
-      console.log('Error Client bind LDAP', err);
-    }
-  });
-} else {
-  client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
-    if (err) {
-      console.log('Error Client bind LDAP', err);
-    }
-  });
-}
+
+client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
+  if (err) {
+    console.log('Error Client bind LDAP', err);
+  }
+});
+
 
 module.exports = {
   create (data) {
