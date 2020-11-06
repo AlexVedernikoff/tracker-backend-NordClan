@@ -29,9 +29,9 @@ curl --location --request POST 'http://localhost:8000/api/v1/core/featureFlags' 
 
 ### Тонкости реализации
 
-Контроллеры забиндены в express здесь: `server/index.js#42`
+Контроллеры забиндены в express здесь: [server/index.js#42](../server/index.js#42)
 
-Сами контроллеры находятся здесь: `server/controllers/api/v1/FeatureFlags.js`
+Сами контроллеры находятся здесь: [server/controllers/api/v1/FeatureFlags.js](../server/controllers/api/v1/FeatureFlags.js)
 
 В контроллере изменения флага спорная реализация:
 
