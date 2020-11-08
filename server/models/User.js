@@ -299,7 +299,8 @@ module.exports = function (sequelize, DataTypes) {
     'expiredDate',
     'isActive',
     'active',
-    'deleteDate'
+    'deleteDate',
+    'allowVPN'
   ];
 
   User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';
