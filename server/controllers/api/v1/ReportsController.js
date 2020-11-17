@@ -59,3 +59,22 @@ exports.companyByPeriod = async (req, res, next) => {
     next(createError(err));
   }
 };
+
+exports.byTestPlan = async (req, res, next) => {
+  if (!req.params.projectId.match(/^[0-9]+$/) || !req.params.testPlanId.match(/^[0-9]+$/)) {
+    return next(createError(400, 'id must be int'));
+  }
+  if (!req.user.canReadProject(req.params.projectId)) {
+    return next(createError(403, 'Access denied'));
+  }
+
+  try {
+    const { workbook, options } = await ReportsService.byTestPlan({ params: req.params, user: req.user, lang: req.query.lang });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+    res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    next(createError(err));
+  }
+};

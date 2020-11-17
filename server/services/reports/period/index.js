@@ -13,11 +13,10 @@ const {
 } = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
-const Excel = require('exceljs');
 const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
 const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
-const { getAverageNumberOfEmployees } = require('../utils');
+const { getAverageNumberOfEmployees, getWorkBook } = require('../utils');
 
 exports.getReport = async function (projectId, criteria, options) {
   const { lang = 'en' } = options || {};
@@ -292,27 +291,6 @@ function generateExcellDocument (data, options) {
   const byTaskSheet = new ByTaskWorkSheet(workbook, data, lang);
   byUserSheet.init();
   byTaskSheet.init();
-  return workbook;
-}
-
-function getWorkBook () {
-  const workbook = new Excel.Workbook();
-  workbook.creator = 'Track';
-  workbook.lastModifiedBy = 'Track';
-  workbook.created = new Date();
-  workbook.modified = new Date();
-  workbook.lastPrinted = new Date();
-  workbook.views = [
-    {
-      x: 0,
-      y: 0,
-      width: 10000,
-      height: 20000,
-      firstSheet: 0,
-      activeTab: 0,
-      visibility: 'visible'
-    }
-  ];
   return workbook;
 }
 

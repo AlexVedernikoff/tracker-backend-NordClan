@@ -1,3 +1,4 @@
+const Excel = require('exceljs');
 const { sequelize } = require('../../models');
 
 exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) => {
@@ -8,8 +9,8 @@ exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) 
           from users
          ) as d left join
         users u
-        on  u.employment_date is not null 
-        and (d.dte >= u.employment_date) 
+        on  u.employment_date is not null
+        and (d.dte >= u.employment_date)
         and (d.dte <= u.delete_date or u.delete_date is null)
       group by d.dte
       order by d.dte) as usersdate
@@ -30,4 +31,26 @@ exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) 
   }
 
   return averageNumberOfEmployeesToNumber;
+};
+
+
+exports.getWorkBook = function () {
+  const workbook = new Excel.Workbook();
+  workbook.creator = 'Track';
+  workbook.lastModifiedBy = 'Track';
+  workbook.created = new Date();
+  workbook.modified = new Date();
+  workbook.lastPrinted = new Date();
+  workbook.views = [
+    {
+      x: 0,
+      y: 0,
+      width: 10000,
+      height: 20000,
+      firstSheet: 0,
+      activeTab: 0,
+      visibility: 'visible'
+    }
+  ];
+  return workbook;
 };

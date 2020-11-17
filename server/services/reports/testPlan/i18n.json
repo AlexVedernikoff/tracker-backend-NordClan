@@ -1,0 +1,22 @@
+{
+  "ru": {
+    "COLUMN_ID": "Id",
+    "COLUMN_TITLE": "Название",
+    "COLUMN_DESCRIPTION": "Описание",
+    "COLUMN_STATUS": "Статус",
+    "COLUMN_SEVERITY": "Уровень опасности",
+    "COLUMN_DURATION": "Длительность",
+    "COLUMN_PRIORITY": "Приоритет",
+    "WITHOUT_SUITE": "Без Test Suite"
+  },
+  "en": {
+    "COLUMN_ID": "Id",
+    "COLUMN_TITLE": "Title",
+    "COLUMN_DESCRIPTION": "Description",
+    "COLUMN_STATUS": "Status",
+    "COLUMN_SEVERITY": "Severity",
+    "COLUMN_DURATION": "Duration",
+    "COLUMN_PRIORITY": "Priority",
+    "WITHOUT_SUITE": "Without Test Suite"
+  }
+}
