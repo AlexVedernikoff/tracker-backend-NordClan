@@ -413,7 +413,6 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
   if (!userAuth || userAuth.id !== id) {
     return next(createError(401));
   }
-
   let transaction;
 
   try {
