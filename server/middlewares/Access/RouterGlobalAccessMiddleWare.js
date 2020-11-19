@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const globalGrants = require('./globalGrants');
 
+
 //Блокирую доступ к роутам на глобальном уровне
 exports.can = (resource, action) => {
   return (req, _res, next) => {
