@@ -31,7 +31,6 @@ const defaultUser = {
   userPassword: '',
   allowVPN: true
 };
-
 client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
   if (err) {
     console.log('Error Client bind LDAP', err);
@@ -71,7 +70,7 @@ module.exports = {
 
         client.add(`uid=${uid},dc=nordclan`, user, (err) => {
           if (err) {
-            reject(null);
+            reject(err);
           } else {
             resolve(true);
           }
