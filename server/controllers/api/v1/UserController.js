@@ -486,8 +486,9 @@ exports.updateUserProfile = async function (req, res, next) {
     }
 
     const userLdap = await LDAP.searchUser(model.dataValues.ldapLogin);
+    const deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
 
-    const userLdapUpdated = await LDAP.modify(model.dataValues.ldapLogin, userLdap, req.body);
+    const userLdapUpdated = await LDAP.modify(model.dataValues.ldapLogin, userLdap, {... req.body, deptNames });
     if (!userLdapUpdated) {
       transaction.rollback();
       return next(createError(500));

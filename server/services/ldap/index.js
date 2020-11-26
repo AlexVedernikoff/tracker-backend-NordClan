@@ -174,6 +174,7 @@ module.exports = {
         const homeDirectory = `/home/${newData.firstNameEn.toLowerCase()}.${newData.lastNameEn.toLowerCase()}`;
         addDataToArray(updateDataArray, 'homeDirectory', homeDirectory);
         addDataToArray(updateDataArray, 'telegram', newData.telegram);
+        addDataToArray(updateDataArray, 'department', newData.deptNames);
         addDataToArray(updateDataArray, 'company', newData.company);
         addDataToArray(updateDataArray, 'objectClass', defaultUser.objectClass);
         addDataToArray(updateDataArray, 'allowVPN', newData.allowVPN, false);
