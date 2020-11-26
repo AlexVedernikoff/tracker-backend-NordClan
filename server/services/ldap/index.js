@@ -192,7 +192,9 @@ module.exports = {
 
         if (newData.active === 0) {
           addDataToArray(updateDataArray, 'active', 'false');
-          addDataToArray(updateDataArray, 'userPassword', crypto.randomBytes(50).toString('hex'));
+          // const password = crypto.randomBytes(40).toString('base64').substring(0,50); // 304 bits, 50 charestres
+          const password = crypto.randomBytes(50).toString('hex'); // 400 bits, 100 charestres
+          addDataToArray(updateDataArray, 'userPassword', password);
         }
 
         if (updateDataArray.length > 0) {
