@@ -138,12 +138,9 @@ module.exports = {
 
   modify (uid, oldData, newData) {
 
-    console.log(newData);
-
     function addDataToArray (array, field, value, defaultValue = '') {
       const newVal = (value || defaultValue).toString();
       if (!(field in oldData)) {
-        console.log(`add [${field}]: ${newVal}`);
         array.push(new ldap.Change({
           operation: 'add',
           modification: {
@@ -151,7 +148,6 @@ module.exports = {
           }
         }));
       } else if (!_.isEqual(oldData[field].toString(), newVal)) {
-        console.log(`change [${field}]: ${newVal}`);
         array.push(new ldap.Change({
           operation: 'replace',
           modification: {
@@ -197,8 +193,6 @@ module.exports = {
           addDataToArray(updateDataArray, 'active', 'false');
           addDataToArray(updateDataArray, 'userPassword', crypto.randomBytes(50).toString('hex'));
         }
-
-        console.log(updateDataArray);
 
         if (updateDataArray.length > 0) {
           client.modify(`uid=${uid},dc=nordclan`, updateDataArray, function (err) {
