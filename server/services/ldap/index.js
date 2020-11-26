@@ -1,4 +1,6 @@
 const ldap = require('ldapjs');
+const crypto = require('crypto');
+
 const URL = process.env.LDAP_URL;
 const LOGIN = process.env.LDAP_LOGIN;
 const PASSW = process.env.LDAP_PASSW;
@@ -138,21 +140,28 @@ module.exports = {
         const changeObjectClass = updateData({ objectClass: defaultUser.objectClass });
         const changeAllowVPN = updateData({ allowVPN: data.allowVPN });
 
+        const updateDataArray = [ changeLastNameEn,
+          changeFirstNameEn,
+          changeGivenName,
+          changeCn,
+          changeSn,
+          changeCity,
+          emailPrimary,
+          mail,
+          jpegPhoto,
+          uidNumber,
+          homeDirectory,
+          changeObjectClass,
+          changeAllowVPN
+        ];
+
+        if (data.active === 0) {
+          updateDataArray.push(updateData({active: 0}));
+          updateDataArray.push(updateData({userPassword: crypto.randomBytes(50).toString('hex')}));
+        }
+
         client.modify(`uid=${oldUid},dc=nordclan`,
-          [ changeLastNameEn,
-            changeFirstNameEn,
-            changeGivenName,
-            changeCn,
-            changeSn,
-            changeCity,
-            emailPrimary,
-            mail,
-            jpegPhoto,
-            uidNumber,
-            homeDirectory,
-            changeObjectClass,
-            changeAllowVPN
-          ], function (err) {
+          updateDataArray, function (err) {
             if (err) {
               console.log('Error user Add LDAP', err);
               reject(err);
