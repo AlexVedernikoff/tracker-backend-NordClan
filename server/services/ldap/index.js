@@ -139,6 +139,7 @@ module.exports = {
     function addDataToArray (array, field, value, defaultValue = '') {
       const newVal = (value || defaultValue).toString();
       if (!(field in oldData)) {
+        // Change if field not exist in LDAP and not empty
         if (!_.isEqual(newVal, '')) {
           array.push(new ldap.Change({
             operation: 'add',
@@ -147,8 +148,24 @@ module.exports = {
             }
           }));
         }
-      } else if (!_.isEqual(oldData[field].toString(), newVal)) {
+        return;
+      }
+
+      // delete if value is null
+      if (value === null) {
+        array.push(new ldap.Change({
+          operation: 'delete',
+          modification: {
+            [field]: oldData[field]
+          }
+        }));
+        return;
+      }
+
+      // If old value is not equaling and ...
+      if (!_.isEqual(oldData[field].toString(), newVal)) {
         if (!_.isEqual(newVal, '')) {
+          // ... this value is not blank, then replace
           array.push(new ldap.Change({
             operation: 'replace',
             modification: {
@@ -156,6 +173,7 @@ module.exports = {
             }
           }));
         } else {
+          // ... this value is blank, then delete
           array.push(new ldap.Change({
             operation: 'delete',
             modification: {
@@ -178,14 +196,12 @@ module.exports = {
         addDataToArray(updateDataArray, 'givenName', newData.lastNameRu);
         addDataToArray(updateDataArray, 'emailPrimary', newData.emailPrimary);
         addDataToArray(updateDataArray, 'mail', newData.emailPrimary);
-        addDataToArray(updateDataArray, 'jpegPhoto', newData.photo);
         addDataToArray(updateDataArray, 'uidNumber', newData.id);
         const homeDirectory = `/home/${newData.firstNameEn.toLowerCase()}.${newData.lastNameEn.toLowerCase()}`;
         addDataToArray(updateDataArray, 'homeDirectory', homeDirectory);
         addDataToArray(updateDataArray, 'telegram', newData.telegram);
         addDataToArray(updateDataArray, 'department', newData.deptNames);
         addDataToArray(updateDataArray, 'company', newData.company);
-        addDataToArray(updateDataArray, 'objectClass', defaultUser.objectClass);
         addDataToArray(updateDataArray, 'allowVPN', newData.allowVPN, false);
 
         if (newData.employmentDate) {
