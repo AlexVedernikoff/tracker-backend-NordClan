@@ -58,14 +58,12 @@ module.exports = {
         }
         const uid = `${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
         const cn = `${data.firstNameEn.toLowerCase()} ${data.lastNameEn.toLowerCase()}`;
-        const photo = `http://nas.nordclan:8080/${uid}.jpg`;
         user.cn = cn;
         user.sn = `${data.firstNameRu} ${data.lastNameRu}`;
         user.emailPrimary = `${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}@nordclan.com`;
         user.mail = user.emailPrimary;
         user.firstNameEn = data.firstNameEn;
         user.lastNameEn = data.lastNameEn;
-        user.jpegPhoto = photo;
         user.givenName = data.lastNameRu;
         user.uidNumber = data.uidNumber;
         user.homeDirectory = `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
