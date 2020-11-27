@@ -1,5 +1,7 @@
 const ldap = require('ldapjs');
 const crypto = require('crypto');
+const _ = require('lodash');
+const moment = require('moment');
 
 const URL = process.env.LDAP_URL;
 const LOGIN = process.env.LDAP_LOGIN;
@@ -113,55 +115,90 @@ module.exports = {
     });
   },
 
-  modify (data, oldUid) {
-
-    function updateData (fileld) {
-      return new ldap.Change({
-        operation: 'replace',
-        modification: fileld
+  searchUser (uid) {
+    return new Promise((resolve, reject) => {
+      client.search(`uid=${uid},dc=nordclan`, { }, (err, res) => {
+        if (err) reject(err);
+        res.on('searchEntry', function (entry) {
+          resolve(entry.object);
+        });
+        res.on('searchReference', function () {
+          reject(null);
+        });
+        res.on('error', function (resErr) {
+          reject(resErr);
+        });
+        res.on('end', function () {
+          reject(null);
+        });
       });
+    });
+  },
+
+
+  modify (uid, oldData, newData) {
+
+    function addDataToArray (array, field, value, defaultValue = '') {
+      const newVal = (value || defaultValue).toString();
+      if (!(field in oldData)) {
+        array.push(new ldap.Change({
+          operation: 'add',
+          modification: {
+            [field]: newVal
+          }
+        }));
+      } else if (!_.isEqual(oldData[field].toString(), newVal)) {
+        array.push(new ldap.Change({
+          operation: 'replace',
+          modification: {
+            [field]: newVal
+          }
+        }));
+      }
     }
 
     return new Promise((resolve, reject) => {
       try {
-        const changeCity = updateData({city: data.city || ' '});
-        const changeLastNameEn = updateData({lastNameEn: data.lastNameEn || ' '});
-        const changeFirstNameEn = updateData({firstNameEn: data.firstNameEn || ' '});
-        const changeGivenName = updateData({givenName: data.lastNameRu || ' '});
-        const changeSn = updateData({sn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
-        const changeCn = updateData({cn: `${data.firstNameRu} ${data.lastNameRu || ' '}`});
-        const emailPrimary = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
-        const mail = updateData({emailPrimary: `${data.emailPrimary || ' '}`});
+        const updateDataArray = [];
+        const sn = `${newData.firstNameRu || ' '} ${newData.lastNameRu || ' '}`;
+        addDataToArray(updateDataArray, 'sn', sn);
+        addDataToArray(updateDataArray, 'cn', sn);
+        addDataToArray(updateDataArray, 'city', newData.city);
+        addDataToArray(updateDataArray, 'lastNameEn', newData.lastNameEn);
+        addDataToArray(updateDataArray, 'firstNameEn', newData.firstNameEn);
+        addDataToArray(updateDataArray, 'givenName', newData.lastNameRu);
+        addDataToArray(updateDataArray, 'emailPrimary', newData.emailPrimary);
+        addDataToArray(updateDataArray, 'mail', newData.emailPrimary);
+        addDataToArray(updateDataArray, 'jpegPhoto', newData.photo);
+        addDataToArray(updateDataArray, 'uidNumber', newData.id);
+        const homeDirectory = `/home/${newData.firstNameEn.toLowerCase()}.${newData.lastNameEn.toLowerCase()}`;
+        addDataToArray(updateDataArray, 'homeDirectory', homeDirectory);
+        addDataToArray(updateDataArray, 'telegram', newData.telegram);
+        addDataToArray(updateDataArray, 'department', newData.deptNames);
+        addDataToArray(updateDataArray, 'company', newData.company);
+        addDataToArray(updateDataArray, 'objectClass', defaultUser.objectClass);
+        addDataToArray(updateDataArray, 'allowVPN', newData.allowVPN, false);
 
-        const jpegPhoto = updateData({jpegPhoto: data.photo || ''});
-        const uidNumber = updateData({uidNumber: `${data.id || ''}`});
-        const homeDirectory = updateData({homeDirectory: `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`});
-
-        const changeObjectClass = updateData({ objectClass: defaultUser.objectClass });
-        const changeAllowVPN = updateData({ allowVPN: data.allowVPN });
-
-        const updateDataArray = [ changeLastNameEn,
-          changeFirstNameEn,
-          changeGivenName,
-          changeCn,
-          changeSn,
-          changeCity,
-          emailPrimary,
-          mail,
-          jpegPhoto,
-          uidNumber,
-          homeDirectory,
-          changeObjectClass,
-          changeAllowVPN
-        ];
-
-        if (data.active === 0) {
-          updateDataArray.push(updateData({active: 0}));
-          updateDataArray.push(updateData({userPassword: crypto.randomBytes(50).toString('hex')}));
+        if (newData.employmentDate) {
+          const employmentDate = moment(newData.employmentDate).format('YYYYMMDD000000.000\\Z');
+          addDataToArray(updateDataArray, 'firstDay', employmentDate, '');
         }
 
-        client.modify(`uid=${oldUid},dc=nordclan`,
-          updateDataArray, function (err) {
+        if (newData.deleteDate) {
+          const deleteDate = moment(newData.deleteDate).format('YYYYMMDD000000.000\\Z');
+          addDataToArray(updateDataArray, 'lastDay', deleteDate, '');
+        }
+
+
+        if (newData.active === 0) {
+          addDataToArray(updateDataArray, 'active', 'false');
+          // const password = crypto.randomBytes(40).toString('base64').substring(0,50); // 304 bits, 50 charestres
+          const password = crypto.randomBytes(50).toString('hex'); // 400 bits, 100 charestres
+          addDataToArray(updateDataArray, 'userPassword', password);
+        }
+
+        if (updateDataArray.length > 0) {
+          client.modify(`uid=${uid},dc=nordclan`, updateDataArray, function (err) {
             if (err) {
               console.log('Error user Add LDAP', err);
               reject(err);
@@ -169,6 +206,9 @@ module.exports = {
               resolve(true);
             }
           });
+        } else {
+          resolve(true);
+        }
 
       } catch (error) {
         console.log('catch err Ldap ====>', error);
