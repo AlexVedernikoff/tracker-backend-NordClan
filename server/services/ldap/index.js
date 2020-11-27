@@ -123,13 +123,13 @@ module.exports = {
           resolve(entry.object);
         });
         res.on('searchReference', function () {
-          reject(null);
+          resolve(null);
         });
-        res.on('error', function (resErr) {
-          reject(resErr);
+        res.on('error', function () {
+          resolve(null);
         });
         res.on('end', function () {
-          reject(null);
+          resolve(null);
         });
       });
     });
@@ -141,19 +141,30 @@ module.exports = {
     function addDataToArray (array, field, value, defaultValue = '') {
       const newVal = (value || defaultValue).toString();
       if (!(field in oldData)) {
-        array.push(new ldap.Change({
-          operation: 'add',
-          modification: {
-            [field]: newVal
-          }
-        }));
+        if (!_.isEqual(newVal, '')) {
+          array.push(new ldap.Change({
+            operation: 'add',
+            modification: {
+              [field]: newVal
+            }
+          }));
+        }
       } else if (!_.isEqual(oldData[field].toString(), newVal)) {
-        array.push(new ldap.Change({
-          operation: 'replace',
-          modification: {
-            [field]: newVal
-          }
-        }));
+        if (!_.isEqual(newVal, '')) {
+          array.push(new ldap.Change({
+            operation: 'replace',
+            modification: {
+              [field]: newVal
+            }
+          }));
+        } else {
+          array.push(new ldap.Change({
+            operation: 'delete',
+            modification: {
+              [field]: oldData[field]
+            }
+          }));
+        }
       }
     }
 
@@ -163,7 +174,7 @@ module.exports = {
         const sn = `${newData.firstNameRu || ' '} ${newData.lastNameRu || ' '}`;
         addDataToArray(updateDataArray, 'sn', sn);
         addDataToArray(updateDataArray, 'cn', sn);
-        addDataToArray(updateDataArray, 'city', newData.city);
+        addDataToArray(updateDataArray, 'city', newData.city, '');
         addDataToArray(updateDataArray, 'lastNameEn', newData.lastNameEn);
         addDataToArray(updateDataArray, 'firstNameEn', newData.firstNameEn);
         addDataToArray(updateDataArray, 'givenName', newData.lastNameRu);
