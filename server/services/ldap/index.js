@@ -58,17 +58,24 @@ module.exports = {
         }
         const uid = `${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
         const cn = `${data.firstNameEn.toLowerCase()} ${data.lastNameEn.toLowerCase()}`;
+        const sn = `${data.firstNameRu} ${data.lastNameRu}`;
         user.cn = cn;
-        user.sn = `${data.firstNameRu} ${data.lastNameRu}`;
-        user.emailPrimary = `${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}@nordclan.com`;
-        user.mail = user.emailPrimary;
+        user.sn = sn;
+        const emailPrimary = `${uid}@nordclan.com`;
+        user.emailPrimary = emailPrimary;
+        user.mail = emailPrimary;
         user.firstNameEn = data.firstNameEn;
         user.lastNameEn = data.lastNameEn;
         user.givenName = data.lastNameRu;
         user.uidNumber = data.uidNumber;
-        user.homeDirectory = `/home/${data.firstNameEn.toLowerCase()}.${data.lastNameEn.toLowerCase()}`;
+        user.homeDirectory = `/home/${uid}`;
         user.uid = uid;
         user.userPassword = data.password;
+        if (data.city) user.city = data.city;
+        if (data.telegram) user.telegram = data.telegram;
+        if (data.company) user.company = data.company;
+        if (data.allowVPN) user.allowVPN = data.allowVPN;
+        if (data.deptNames) user.department = data.deptNames;
 
         client.add(`uid=${uid},dc=nordclan`, user, (err) => {
           if (err) {

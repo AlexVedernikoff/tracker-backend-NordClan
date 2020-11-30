@@ -572,8 +572,9 @@ exports.createUser = async function (req, res, next) {
             return next(err);
           });
 
-        const objClone = Object.assign(req.body);
+        const objClone = {...req.body};
         objClone.password = params.password;
+        objClone.deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
         const userLdap = await LDAP.create(objClone);
 
         if (!userLdap) {
