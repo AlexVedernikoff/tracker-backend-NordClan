@@ -40,16 +40,17 @@ module.exports = async ({ user, params, lang = 'en' }) => {
   }).then(r => r.get({ plain: true }));
 
   const casesBySuites = testRun.testRunTestCases.reduce((acc, item) => {
-    const { testSuiteId } = item.testCaseInfo;
+    let { testSuiteId } = item.testCaseInfo;
+    if (!testSuiteId) testSuiteId = 'withoutSuite';
     if (!Array.isArray(acc[testSuiteId])) acc[testSuiteId] = [];
     acc[testSuiteId].push(item.testCaseInfo);
     return acc;
   }, {});
-  const suitesIds = Object.keys(casesBySuites).filter(item => item !== 'null').map(Number);
+  const suitesIds = Object.keys(casesBySuites).filter(item => item !== 'withoutSuite').map(Number);
   const includedSuites = await TestSuite.findAll({ where: { id: suitesIds } })
     .then(items => items.map(item => item.get({ plain: true })));
 
-
+  const { withoutSuite } = casesBySuites;
   const l = locales[lang];
 
   const workbook = getWorkBook();
@@ -66,37 +67,39 @@ module.exports = async ({ user, params, lang = 'en' }) => {
     { header: '', key: 'priority', width: 10 }
   ];
 
-  // currentRow++;
-  // worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-  // worksheet.getCell(`A${currentRow}`).value = '322';
   worksheet.getRow(currentRow)
     .values = [ '', l.COLUMN_ID, l.COLUMN_TITLE, l.COLUMN_DESCRIPTION, l.COLUMN_STATUS, l.COLUMN_SEVERITY, l.COLUMN_DURATION, l.COLUMN_PRIORITY];
   currentRow++;
 
-  const fillSuite = (suite) => {
-    worksheet.addRow([]);
-    currentRow++;
-    worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-    worksheet.getCell(`A${currentRow}`).value = suite.id ? `#${suite.id} ${suite.title}` : `#${l.WITHOUT_SUITE}`;
-
-    const testCases = casesBySuites[suite.id] || [];
-    testCases.forEach(({ id, title, description, testCaseStatus, testCaseSeverity, duration, priority }) => {
-      const status = testCaseStatus ? (lang === 'en' ? testCaseStatus.nameEn : testCaseStatus.name) : '';
-      const severity = testCaseSeverity ? (lang === 'en' ? testCaseSeverity.nameEn : testCaseSeverity.name) : '';
-      const row = worksheet.addRow(['', `#${id}`, title, description, status, severity, duration, priority]);
-      row.getCell(3).alignment = { wrapText: true };
-      row.getCell(4).alignment = { wrapText: true };
-      currentRow++;
-    });
-    worksheet.addRow([]);
+  const fillCase = ({ id, title, description, testCaseStatus, testCaseSeverity, duration, priority }) => {
+    const status = testCaseStatus ? (lang === 'en' ? testCaseStatus.nameEn : testCaseStatus.name) : '';
+    const severity = testCaseSeverity ? (lang === 'en' ? testCaseSeverity.nameEn : testCaseSeverity.name) : '';
+    const row = worksheet.addRow(['', `#${id}`, title, description, status, severity, duration, priority]);
+    row.getCell(3).alignment = { wrapText: true };
+    row.getCell(4).alignment = { wrapText: true };
     currentRow++;
   };
 
-  // if(casesBySuites.null){
+  includedSuites.forEach(suite => {
+    worksheet.addRow([]);
+    currentRow++;
+    worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+    worksheet.getCell(`A${currentRow}`).value = `#${suite.id} ${suite.title}`;
 
-  // }
+    const testCases = casesBySuites[suite.id] || [];
+    testCases.forEach(el => fillCase(el));
+    worksheet.addRow([]);
+    currentRow++;
+  });
 
-  includedSuites.forEach(suite => fillSuite(suite));
+  if (withoutSuite) {
+    worksheet.addRow([]);
+    currentRow++;
+    worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+    worksheet.getCell(`A${currentRow}`).value = `#${l.WITHOUT_SUITE}`;
+
+    withoutSuite.forEach(el => fillCase(el));
+  }
 
   return {
     workbook,
