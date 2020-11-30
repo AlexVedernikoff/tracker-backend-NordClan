@@ -45,7 +45,6 @@ module.exports = async ({ user, params, lang = 'en' }) => {
     acc[testSuiteId].push(item.testCaseInfo);
     return acc;
   }, {});
-
   const suitesIds = Object.keys(casesBySuites).filter(item => item !== 'null').map(Number);
   const includedSuites = await TestSuite.findAll({ where: { id: suitesIds } })
     .then(items => items.map(item => item.get({ plain: true })));
@@ -55,29 +54,30 @@ module.exports = async ({ user, params, lang = 'en' }) => {
 
   const workbook = getWorkBook();
   const worksheet = workbook.addWorksheet(testRun.title);
-  let currentRow = 0;
-
+  let currentRow = 1;
   worksheet.columns = [
     { header: '', key: 'empty', width: 3 },
     { header: '', key: 'id', width: 10 },
-    { header: '', key: 'title', width: 32 },
+    { header: '', key: 'title', width: 46 },
     { header: '', key: 'description', width: 48 },
     { header: '', key: 'status', width: 10 },
     { header: '', key: 'severity', width: lang === 'en' ? 10 : 20 },
     { header: '', key: 'duration', width: lang === 'en' ? 10 : 15 },
     { header: '', key: 'priority', width: 10 }
   ];
+
   // currentRow++;
   // worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
   // worksheet.getCell(`A${currentRow}`).value = '322';
-  worksheet.addRow(['', l.COLUMN_ID, l.COLUMN_TITLE, l.COLUMN_DESCRIPTION, l.COLUMN_STATUS, l.COLUMN_SEVERITY, l.COLUMN_DURATION, l.COLUMN_PRIORITY]);
+  worksheet.getRow(currentRow)
+    .values = [ '', l.COLUMN_ID, l.COLUMN_TITLE, l.COLUMN_DESCRIPTION, l.COLUMN_STATUS, l.COLUMN_SEVERITY, l.COLUMN_DURATION, l.COLUMN_PRIORITY];
   currentRow++;
 
-  [{ title: l.WITHOUT_SUITE, id: null }, ...includedSuites].forEach(suite => {
+  const fillSuite = (suite) => {
     worksheet.addRow([]);
     currentRow++;
     worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-    worksheet.getCell(`A${currentRow}`).value = suite.id ? `#${suite.id} ${suite.title}` : suite.title;
+    worksheet.getCell(`A${currentRow}`).value = suite.id ? `#${suite.id} ${suite.title}` : `#${l.WITHOUT_SUITE}`;
 
     const testCases = casesBySuites[suite.id] || [];
     testCases.forEach(({ id, title, description, testCaseStatus, testCaseSeverity, duration, priority }) => {
@@ -90,7 +90,13 @@ module.exports = async ({ user, params, lang = 'en' }) => {
     });
     worksheet.addRow([]);
     currentRow++;
-  });
+  };
+
+  // if(casesBySuites.null){
+
+  // }
+
+  includedSuites.forEach(suite => fillSuite(suite));
 
   return {
     workbook,
