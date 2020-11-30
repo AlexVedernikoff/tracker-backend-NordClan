@@ -76,6 +76,11 @@ module.exports = {
         if (data.company) user.company = data.company;
         if (data.allowVPN) user.allowVPN = data.allowVPN;
         if (data.deptNames) user.department = data.deptNames;
+        if (data.employmentDate) {
+          const employmentDate = moment(data.employmentDate).format('YYYYMMDD000000.000\\Z');
+          user.firstDay = employmentDate;
+        }
+
 
         client.add(`uid=${uid},dc=nordclan`, user, (err) => {
           if (err) {
@@ -223,7 +228,7 @@ module.exports = {
 
 
         if (newData.active === 0) {
-          addDataToArray(updateDataArray, 'active', 'false');
+          addDataToArray(updateDataArray, 'active', '0');
           // const password = crypto.randomBytes(40).toString('base64').substring(0,50); // 304 bits, 50 charestres
           const password = crypto.randomBytes(50).toString('hex'); // 400 bits, 100 charestres
           addDataToArray(updateDataArray, 'userPassword', password);
