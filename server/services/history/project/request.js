@@ -1,30 +1,30 @@
 const Sequelize = require('sequelize');
 const models = require('../../../models');
 
-module.exports = function(projectId, pageSize, currentPage) {
+module.exports = function (projectId, pageSize, currentPage) {
   return {
     where: { projectId: projectId },
     limit: pageSize,
-    offset: currentPage > 0 ? + pageSize * (+currentPage - 1) : 0,
+    offset: currentPage > 0 ? +pageSize * (+currentPage - 1) : 0,
     order: [['createdAt', 'DESC']],
     include: additionalEntities()
   };
 };
 
-function additionalEntities() {
+function additionalEntities () {
   return [
     {
       as: 'author',
       model: models.User,
       attributes: models.User.defaultSelect,
       paranoid: false,
-      required: false,
+      required: false
     },
     {
       as: 'sprint',
       model: models.Sprint,
       required: false,
-      paranoid: false,
+      paranoid: false
     },
     {
       as: 'project_user',
@@ -43,7 +43,7 @@ function additionalEntities() {
     {
       as: 'itemTag',
       model: models.ItemTag,
-      where: Sequelize.literal('"ProjectHistory"."entity" = \'ItemTag\'' ),
+      where: Sequelize.literal('"ProjectHistory"."entity" = \'ItemTag\''),
       required: false,
       paranoid: false,
       include: [
@@ -52,8 +52,8 @@ function additionalEntities() {
           model: models.Tag,
           attributes: ['name'],
           required: false,
-          paranoid: false,
-        },
+          paranoid: false
+        }
       ]
     },
     {
@@ -61,7 +61,7 @@ function additionalEntities() {
       model: models.Portfolio,
       attributes: ['id', 'name'],
       required: false,
-      paranoid: false,
-    },
+      paranoid: false
+    }
   ];
 }

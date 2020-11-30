@@ -1,0 +1,53 @@
+---
+
+deploy_app_name: t2back
+
+deploy_sleep_timeout: 10
+deploy_host_name: t2-checkup.docker.nordclan
+
+project_name: track2
+storage_root: /srv/{{ project_name }}_{{ env }}
+service_net_name: "{{ project_name }}-{{ env }}"
+service_net_subnet: "172.99.51.0/24"
+
+api_port: 4000
+pg_name: track
+pg_username: track
+pg_password: la4eeH2m
+pg_port: 5432
+
+redis_password: Zahqu1ih
+
+systemuser_password: "5REhSX"
+
+ldap_url: ldap://ldap-test.nordclan:389/dc=nordclan
+ldap_user: admin
+ldap_password: "123123"
+user_source: users
+ldap_dc: nordclan
+ldap_cn: users
+
+deploy_app_envs:
+ - DATABASE_HOST=t2pg
+ - DATABASE_NAME={{ pg_name }}
+ - DATABASE_USERNAME={{ pg_username }}
+ - DATABASE_PASSWORD={{ pg_password }}
+ - RUN_MIGRATIONS=true
+ - LDAP_URL={{ ldap_url }}
+ - LDAP_LOGIN={{ ldap_user }}
+ - LDAP_PASSW={{ ldap_password }}
+ - SYSTEMUSER_PASSWORD={{ systemuser_password }}
+ - NODE_ENV=production
+ - PORT={{ api_port }}
+ - USER_SOURCE={{ user_source }}
+ - LDAP_CN={{ ldap_cn }}
+ - LDAP_DC={{ ldap_dc }}
+ - REDIS_HOST=redis
+ - REDIS_PORT=6379
+ - REDIS_PASSWORD={{ redis_password }}
+ - EXTERNAL_URL=http://track2.docker.nordclan/api/
+
+deploy_app_docker_labels:
+  - traefik.enable=true
+  - traefik.port=4000
+  - traefik.http.routers.t2back_{{ deploy_project_name }}.rule=Host(`{{ deploy_host_name }}`) && PathPrefix(`/api/`)

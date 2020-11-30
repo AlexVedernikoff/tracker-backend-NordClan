@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('SystemToken', {
     id: {
       type: DataTypes.INTEGER,
@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     token: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: false
     },
     expires: {
       type: DataTypes.DATE,

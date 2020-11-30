@@ -9,7 +9,7 @@ const ProjectsChannel = require('../../../channels/Projects');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 const gitLabService = require('../../../services/gitLab');
 
-exports.create = function(req, res, next) {
+exports.create = function (req, res, next) {
   if (req.body.tags) {
     req.body.tags
       .split(',')
@@ -61,7 +61,7 @@ exports.create = function(req, res, next) {
     });
 };
 
-exports.read = function(req, res, next) {
+exports.read = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canReadProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
@@ -173,6 +173,10 @@ exports.read = function(req, res, next) {
       {
         as: 'milestones',
         model: models.Milestone
+      },
+      {
+        model: models.ProjectEnvironment,
+        as: 'projectEnvironments'
       }
     ]
   })
@@ -219,7 +223,7 @@ exports.read = function(req, res, next) {
     });
 };
 
-exports.update = async function(req, res, next) {
+exports.update = async function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
   if (!req.user.canUpdateProject(req.params.id)) {
     return next(createError(403, 'Access denied'));
@@ -351,7 +355,7 @@ exports.update = async function(req, res, next) {
   }
 };
 
-exports.delete = function(req, res, next) {
+exports.delete = function (req, res, next) {
   if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
 
   Project.findByPrimary(req.params.id, { attributes: ['id'] })
@@ -369,7 +373,7 @@ exports.delete = function(req, res, next) {
     });
 };
 
-function getTagByProjectList(projects) {
+function getTagByProjectList (projects) {
   const allTags = [];
   projects.forEach(project => {
     project.itemTagSelect.forEach(tagSelect => allTags.push({ name: tagSelect.dataValues.tag.dataValues.name }));
@@ -377,7 +381,7 @@ function getTagByProjectList(projects) {
   return allTags;
 }
 
-exports.list = function(req, res, next) {
+exports.list = function (req, res, next) {
   if (req.query.dateSprintBegin && !req.query.dateSprintBegin.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return next(createError(400, 'date must be in YYYY-MM-DD format'));
   }
@@ -613,22 +617,22 @@ exports.list = function(req, res, next) {
       'dateFinishLastSprint'
     ] // Дата завершения последнего спринта у проекта
   ];
-  const attributes =
-    userRole !== models.User.EXTERNAL_USER_ROLE
+  const attributes
+    = userRole !== models.User.EXTERNAL_USER_ROLE
       ? Project.defaultSelect.concat(additinalAttr)
       : [
-          'id',
-          'name',
-          'description',
-          'prefix',
-          'statusId',
-          'typeId',
-          'notbillable',
-          'portfolioId',
-          'authorId',
-          'completedAt',
-          'createdAt'
-        ].concat(additinalAttr);
+        'id',
+        'name',
+        'description',
+        'prefix',
+        'statusId',
+        'typeId',
+        'notbillable',
+        'portfolioId',
+        'authorId',
+        'completedAt',
+        'createdAt'
+      ].concat(additinalAttr);
 
   Promise.resolve()
     // Фильтрация по тегам ищем id тегов
@@ -726,7 +730,7 @@ exports.list = function(req, res, next) {
     .catch(err => next(err));
 };
 
-exports.addGitlabProject = async function(req, res, next) {
+exports.addGitlabProject = async function (req, res, next) {
   try {
     const { projectId, path } = req.body;
     const { gitlabProject, notProcessedGitlabUsers } = await gitLabService.projects.addProjectByPath(projectId, path);
@@ -737,7 +741,7 @@ exports.addGitlabProject = async function(req, res, next) {
   }
 };
 
-exports.getGitlabNamespaces = async function(req, res, next) {
+exports.getGitlabNamespaces = async function (req, res, next) {
   try {
     const namespaces = await gitLabService.projects.getNamespacesList(req.query.search);
     res.json(namespaces);
@@ -746,7 +750,7 @@ exports.getGitlabNamespaces = async function(req, res, next) {
   }
 };
 
-exports.createGitlabProject = async function(req, res, next) {
+exports.createGitlabProject = async function (req, res, next) {
   try {
     const { name, namespace_id } = req.body;
     const projectId = req.params.id;
@@ -762,7 +766,7 @@ exports.createGitlabProject = async function(req, res, next) {
   }
 };
 
-exports.getProjects = async function(req, res, next) {
+exports.getProjects = async function (req, res, next) {
   try {
     const { id } = req.params;
     const project = await Project.find({ where: { id } });

@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Token = sequelize.define('Token', {
     id: {
       type: DataTypes.INTEGER,
@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     token: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: false
     },
     expires: {
       type: DataTypes.DATE,
@@ -21,12 +21,12 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'tokens'
   });
 
-  Token.associate = function(models) {
+  Token.associate = function (models) {
     Token.belongsTo(models.User, {foreignKey: {
       name: 'userId',
       field: 'user_id'
     }});
-    
+
   };
 
   return Token;

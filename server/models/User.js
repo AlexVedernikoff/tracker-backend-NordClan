@@ -139,6 +139,14 @@ module.exports = function (sequelize, DataTypes) {
           len: [0, 100]
         }
       },
+      telegram: {
+        field: 'telegram_user_name',
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          len: [0, 100]
+        }
+      },
       skype: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -201,6 +209,12 @@ module.exports = function (sequelize, DataTypes) {
         field: 'allow_vpn',
         type: DataTypes.BOOLEAN,
         allowNull: true
+      },
+      company: {
+        field: 'company',
+        allowNull: true,
+        defaultValue: '',
+        type: DataTypes.STRING
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
@@ -284,9 +298,11 @@ module.exports = function (sequelize, DataTypes) {
     'fullNameEn',
     'lastNameEn',
     'firstNameEn',
+    'telegram',
     'skype',
     'birthDate',
     'city',
+    'company',
     'emailPrimary',
     'emailSecondary',
     'employmentDate',
@@ -299,8 +315,9 @@ module.exports = function (sequelize, DataTypes) {
     'expiredDate',
     'isActive',
     'active',
-    'deleteDate',
-    'allowVPN'
+    ['allow_vpn', 'allowVPN'],
+    'allowVPN',
+    'deleteDate'
   ];
 
   User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';

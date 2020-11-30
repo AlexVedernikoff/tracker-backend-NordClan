@@ -7,7 +7,6 @@ exports.can = (resource, action) => {
     try {
       const role = req.user.globalRole;
       const permission = getPermission(role, resource, action);
-
       if (permission) {
         return next();
       }

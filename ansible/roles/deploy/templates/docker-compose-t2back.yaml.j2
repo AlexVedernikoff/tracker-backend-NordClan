@@ -1,0 +1,52 @@
+version: '3.3'
+
+services:
+  t2back:
+    image: {{ deploy_docker_registry_image }}
+    networks:
+      - {{ deploy_project_network }}
+{% if deploy_app_volumes %}
+    volumes:
+{% for item in deploy_app_volumes %}
+      - {{ item }}
+{% endfor %}
+{% endif %}
+{% if deploy_app_envs %}
+    environment:
+{% for item in deploy_app_envs %}
+      - {{ item }}
+{% endfor %}
+{% endif %}
+{% if deploy_app_docker_labels %}
+    labels:
+{% for item in deploy_app_docker_labels %}
+      - {{ item }}
+{% endfor %}
+{% endif %}
+    restart: unless-stopped
+    command: "bash -c 'bash -s <<EOF npm run migrate && pm2-runtime start --env development processes-debug.json EOF'"
+
+  t2pg:
+    hostname: track2-pg.docker
+    image: postgres:9.6-alpine
+    networks:
+      - {{ deploy_project_network }}
+    environment:
+      POSTGRES_DB: {{ pg_name }}
+      POSTGRES_USER: {{ pg_username }}
+      POSTGRES_PASSWORD: {{ pg_password }}
+    volumes:
+      - {{ deploy_app_root }}/pg/data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:5-alpine
+    networks:
+      - {{ deploy_project_network }}
+    volumes:
+      - {{ deploy_app_root }}/redis:/data
+    restart: unless-stopped
+    command: ["--appendonly", "yes", "--requirepass", "{{ redis_password }}"]
+
+networks:
+  {{ deploy_project_network }}:
+    external: true
