@@ -287,6 +287,14 @@ module.exports = function (sequelize, DataTypes) {
         field: 'user_id'
       }
     });
+
+    User.hasMany(models.TestCase, {
+      as: 'testcases',
+      foreignKey: {
+        name: 'authorId',
+        field: 'author_id'
+      }
+    });
   };
 
   User.defaultSelect = [
