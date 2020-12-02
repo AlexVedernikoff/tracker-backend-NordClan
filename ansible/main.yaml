@@ -1,0 +1,5 @@
+---
+
+- import_playbook: playbooks/deploy.yaml
+  tags:
+    - deploy

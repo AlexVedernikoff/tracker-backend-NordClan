@@ -1,0 +1,9 @@
+---
+
+- hosts: t2back
+  become: yes
+
+  roles:
+    - role: deploy
+      tags:
+        - t2back

@@ -54,7 +54,7 @@ module.exports = {
           code: 'customer',
           name: 'Customer'
         }])
-      ]))
+      ]));
   },
   down: function (queryInterface) {
     return Promise.resolve()

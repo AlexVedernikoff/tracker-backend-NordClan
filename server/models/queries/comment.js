@@ -28,7 +28,7 @@ const include = [
   }
 ];
 
-exports.getCommentsByTask = function(taskId) {
+exports.getCommentsByTask = function (taskId) {
   const where = {
     deletedAt: null,
     taskId
@@ -45,7 +45,7 @@ exports.getCommentsByTask = function(taskId) {
     });
 };
 
-exports.getOne = function(id) {
+exports.getOne = function (id) {
   const where = {
     deletedAt: null,
     id

@@ -352,6 +352,11 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
     return next(createError(401));
   }
 
+
+  if (userAuth.globalRole !== 'ADMIN') {
+    return next(createError(401));
+  }
+
   let transaction;
 
   try {
@@ -383,7 +388,6 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
     newUser.skype = user.skype;
     newUser.photo = user.photo;
 
-
     const updatedModel = await model.updateAttributes(newUser, { transaction });
     if (!updatedModel) {
       await transaction.rollback();
@@ -405,10 +409,10 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
   const user = req.body;
 
   const userAuth = req.user;
+
   if (!userAuth || userAuth.id !== id) {
     return next(createError(401));
   }
-
   let transaction;
 
   try {
@@ -481,10 +485,14 @@ exports.updateUserProfile = async function (req, res, next) {
       return next(createError(404));
     }
 
-    const userLdap = await LDAP.modify(req.body, model.dataValues.ldapLogin);
-    if (!userLdap) {
-      transaction.rollback();
-      return next(createError(500));
+    const userLdap = await LDAP.searchUser(model.dataValues.ldapLogin);
+    const deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
+    if (userLdap) {
+      const userLdapUpdated = await LDAP.modify(model.dataValues.ldapLogin, userLdap, {... req.body, deptNames });
+      if (!userLdapUpdated) {
+        transaction.rollback();
+        return next(createError(500));
+      }
     }
 
 
@@ -564,8 +572,9 @@ exports.createUser = async function (req, res, next) {
             return next(err);
           });
 
-        const objClone = Object.assign(req.body);
+        const objClone = {...req.body};
         objClone.password = params.password;
+        objClone.deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
         const userLdap = await LDAP.create(objClone);
 
         if (!userLdap) {

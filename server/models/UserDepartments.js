@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const UserDepartments = sequelize.define('UserDepartments', {
     id: {
       type: DataTypes.INTEGER,

@@ -1,0 +1,7 @@
+[t2back]
+t2back-checkup ansible_host=docker.nordclan ansible_user=root
+
+[all:vars]
+ansible_connection=ssh
+ansible_port=22
+env=dev

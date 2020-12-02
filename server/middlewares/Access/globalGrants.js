@@ -2,7 +2,7 @@ const USER = {
   user: {
     'autocomplete': true,
     'autocompleteExternal': true,
-    'updateUserProfile': true,
+    'updateCurrentUserProfile': true,
     'me': true,
     'read': true,
     'changeAvatar': true
@@ -120,6 +120,11 @@ module.exports = {
       ...USER.timesheet,
       'approve': true,
       'reject': true
+    },
+    environment: {
+      'list': true,
+      'delete': true,
+      'create': true
     }
   },
   SYSTEM_USER: {

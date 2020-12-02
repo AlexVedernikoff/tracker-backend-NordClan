@@ -2,8 +2,55 @@
 
 ### Запуск проекта в докере
 
+#### Ошибка `data directory "/var/lib/postgresql/data" has wrong ownership`
+
+В файле `docker-compose.dev.yml` добавить `environment: PGDATA ...` в раздел `db:`:
+
+```
+    ...
+    env_file:
+      - .docker-compose-dev.env
+    restart: unless-stopped
+    environment:
+      PGDATA: /tmp
+```
+
+#### Ошибка `The image for the service youre trying to recreate has been removed`
+
+В файле `docker-compose.dev.yml` закоментировать `image: back:t2` и раскоментировать `build: .`:
+
+```
+#    build: .
+    image: back:t2
+
+    build: .
+#    image: back:t2
+```
+
+#### Не запускается фронтенд (висит на `Database connection...`)
+
+Раскоментировать в `docker-compose.dev.yml` весь раздел `web:` (просто убрать решётки).
+
+#### Ошибка `502 Bad Gateway` при авторизации
+
+Поменять `LDAP_URL` в файле `.docker-compose-dev.env`:
+
+```
+LDAP_URL=ldap://ldap-test.nordclan:389
+```
+
+на
+
+```
+LDAP_URL=ldap://ldap-test.nordclan:389/dc=nordclan
+```
+
+### Запуск проекта в докере - фронтенд собирается и хостится здесь же
+
+```
 $ docker-compose -f docker-compose.dev.yml  build 
 $ docker-compose -f docker-compose.dev.yml  up
+```
 
 ### Настройки 
 

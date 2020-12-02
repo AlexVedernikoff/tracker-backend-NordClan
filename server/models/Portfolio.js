@@ -1,6 +1,6 @@
 const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Portfolio = sequelize.define('Portfolio', {
     id: {
       type: DataTypes.INTEGER,
@@ -20,7 +20,7 @@ module.exports = function(sequelize, DataTypes) {
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
@@ -31,13 +31,13 @@ module.exports = function(sequelize, DataTypes) {
     paranoid: false,
     tableName: 'portfolios',
     hooks: {
-      afterFind: function(model) {
+      afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
       }
     }
   });
-	
-  Portfolio.associate = function(models) {
+
+  Portfolio.associate = function (models) {
     Portfolio.hasMany(models.Project, {
       as: 'projects',
       foreignKey: {

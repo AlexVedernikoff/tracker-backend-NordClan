@@ -66,6 +66,7 @@ const getUsersProjectRoles = async function (ids) {
         ]
       }
     });
+
     return result;
   } catch (ex) {
     return null;
@@ -193,5 +194,3 @@ module.exports = async function () {
     console.log(e.message);
   }
 };
-
-

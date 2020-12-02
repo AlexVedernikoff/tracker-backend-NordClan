@@ -1,0 +1,100 @@
+---
+
+- name: login to docker registry
+  docker_login:
+    username: "{{ deploy_docker_username }}"
+    password: "{{ deploy_docker_password }}"
+    registry: "{{ deploy_docker_registry }}"
+    reauthorize: yes
+
+- name: initialize the deploy root and gather facts
+  deploy_helper:
+    path: "{{ deploy_app_root }}"
+    release: "{{ deploy_app_version }}"
+    shared_path: "{{ deploy_app_shared_root }}"
+    state: present
+
+- name: create release directory
+  file:
+    dest: "{{ deploy_helper.new_release_path }}"
+    state: directory
+    mode: 0750
+
+- name: create compose file
+  template:
+    src: "{{ deploy_app_compose_template }}"
+    dest: "{{ deploy_helper.new_release_path }}/docker-compose.yaml"
+    mode: 0750
+
+- name: check new compose file syntax
+  command: "docker-compose config --services"
+  args:
+    chdir: "{{ deploy_helper.new_release_path }}"
+  tags: skip_ansible_lint
+
+- name: Create a network
+  docker_network:
+    name: "{{ deploy_project_network }}"
+
+- name: pull new version images
+  command: docker-compose pull
+  args:
+    chdir: "{{ deploy_helper.new_release_path }}"
+  register: result_docker_pull
+  tags: skip_ansible_lint
+
+- name: check old compose file
+  stat:
+    path: "{{ deploy_helper.current_path }}/docker-compose.yaml"
+  register: old_compose_file
+
+- block:
+
+    - name: get status for old containers
+      command: docker-compose -p {{ deploy_compose_project_name }} ps
+      args:
+        chdir: "{{ deploy_helper.current_path }}"
+      register: result_docker_status
+      tags: skip_ansible_lint
+
+    - name: status for old containers
+      debug:
+        msg: "{{ result_docker_status.stdout_lines }}"
+
+    - name: stop old containers
+      docker_service:
+        project_src: "{{ deploy_helper.current_path }}"
+        project_name: "{{ deploy_compose_project_name }}"
+        state: absent
+      register: result_docker_stop
+
+  when: old_compose_file.stat.exists
+
+- name: start new containers
+  docker_service:
+    project_src: "{{ deploy_helper.new_release_path }}"
+    project_name: "{{ deploy_compose_project_name }}"
+    state: present
+  register: result_docker_start
+
+- name: sleep for start services
+  pause:
+    seconds: "{{ deploy_sleep_timeout }}"
+
+- name: get status for new containers
+  command: docker-compose -p {{ deploy_compose_project_name }} ps
+  args:
+    chdir: "{{ deploy_helper.new_release_path }}"
+  register: result_docker_status
+  tags: skip_ansible_lint
+
+- name: status for new containers
+  debug:
+    msg: "{{ result_docker_status.stdout_lines }}"
+
+- name: finalize the deploy, removing the unfinished file and switching the symlink
+  deploy_helper:
+    path: "{{ deploy_app_root }}"
+    release: "{{ deploy_helper.new_release }}"
+    keep_releases: "{{ deploy_app_keep_releases }}"
+    state: finalize
