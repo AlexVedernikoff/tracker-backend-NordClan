@@ -7,6 +7,10 @@ const getFullName = (user, suffix) => {
   return user[`lastName${pascalCaseSuffix}`] + ' ' + user[`firstName${pascalCaseSuffix}`];
 };
 
+const getDepartmentsName = departments => {
+  if (departments.length > 0) return (departments.map(department => department.name).sort().join(', '));
+  return '';
+};
 class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   constructor (workbook, data, lang, averageNumberOfEmployees) {
     super(workbook, data, lang);
@@ -40,25 +44,25 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const formulas = [
       {
         label: locale.TOTAL_BILLABLE,
-        formula: `=SUBTOTAL(9,I${startAt}:I${endAt})`
+        formula: `=SUBTOTAL(9,I${startAt}:I${endAt})`,
       },
       {
         label: locale.TOTAL_NOT_BILLABLE,
-        formula: `SUBTOTAL(9,J${startAt}:J${endAt})`
+        formula: `SUBTOTAL(9,J${startAt}:J${endAt})`,
       },
       {
         label: locale.TOTAL_AMOUNT,
-        formula: `SUBTOTAL(9,I${startAt}:I${endAt})+SUBTOTAL(9,J${startAt}:J${endAt})`
+        formula: `SUBTOTAL(9,I${startAt}:I${endAt})+SUBTOTAL(9,J${startAt}:J${endAt})`,
       },
       {
         label: locale.BUSY,
         numFmt: '00.00%',
-        get formula () { return `${self._columns[index + 1]}${self._lastIndexRow - 3} / ${self._columns[index + 1]}${self._lastIndexRow - 1}`; }
+        get formula () { return `${self._columns[index + 1]}${self._lastIndexRow - 3} / ${self._columns[index + 1]}${self._lastIndexRow - 1}`; },
       },
       {
         label: locale.AVERAGE_NUMBER_OF_EMPLOYEES,
-        formula: this._averageNumberOfEmployees
-      }
+        formula: this._averageNumberOfEmployees,
+      },
     ];
     if (~index) {
       for (let i = 0; i < formulas.length; i++) {
@@ -117,7 +121,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     this._worksheet
       .getCell(this._columns[0] + this._lastIndexRow)
       .border = {
-        top: { style: 'medium' }
+        top: { style: 'medium' },
       };
   }
 
@@ -146,13 +150,19 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       { calculate: d => getFullName(d.user, this.lang), width: 24, text: locale.PERSON },
       { calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 16, text: locale.EMPLOYMENT_DATE },
       {
+        calculate: d => getDepartmentsName(d.user.department).replace(/\*Направление/gi, ''),
+        width: 22,
+        text: locale.DEPARTMENT,
+        alignment: { wrapText: true, vertical: 'top' },
+      },
+      {
         calculate: d => {
           if (d.task.isMagic) return '';
           if (d.project === null) return '';
 
           return `${d.project.prefix}-${d.task.id}`;
         },
-        text: '#'
+        text: '#',
       },
       { calculate: d => d.project ? d.project.name : '', text: locale.PROJECT, width: 24, alignment: { wrapText: true } },
       { calculate: d => d.task.name, text: locale.TASK, width: 50, alignment: { wrapText: true } },
@@ -161,7 +171,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       {
         calculate: d => moment(d.onDate).format('DD.MM.YYYY'),
         text: locale.DATE,
-        width: 13
+        width: 13,
       },
       {
         calculate: d => {
@@ -173,7 +183,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         numFmt: '0.00',
         width: 15,
         alignment: { horizontal: 'right' },
-        isSummary: true
+        isSummary: true,
       },
       {
         calculate: d => {
@@ -184,8 +194,8 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         text: locale.HOURS_NOT_BILLABLE,
         numFmt: '0.00',
         width: 15,
-        alignment: { horizontal: 'right' }
-      }
+        alignment: { horizontal: 'right' },
+      },
     ];
   }
 
@@ -195,7 +205,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   get _columns () {
-    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
   }
 }
 
