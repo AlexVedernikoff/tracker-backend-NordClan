@@ -16,7 +16,7 @@ exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) 
       order by d.dte) as usersdate
     `,
     {
-      replacements: [ startDate, endDate ]
+      replacements: [ startDate, endDate ],
     }
   ).spread((results) => results[0] && results[0].avg || '0');
 
@@ -49,8 +49,8 @@ exports.getWorkBook = function () {
       height: 20000,
       firstSheet: 0,
       activeTab: 0,
-      visibility: 'visible'
-    }
+      visibility: 'visible',
+    },
   ];
   return workbook;
 };

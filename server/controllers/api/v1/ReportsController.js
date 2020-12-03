@@ -25,7 +25,7 @@ exports.byPeriod = async (req, res, next) => {
 
     const {workbook, options} = await ReportsService.byPeriod
       .getReport(req.params.projectId, startDate && endDate && {
-        startDate, endDate, label, sprintId
+        startDate, endDate, label, sprintId,
       }, {lang});
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
@@ -48,7 +48,7 @@ exports.companyByPeriod = async (req, res, next) => {
 
     const {workbook, options} = await ReportsService.byPeriod
       .getCompanyReport(startDate && endDate && {
-        startDate, endDate, label, sprintId
+        startDate, endDate, label, sprintId,
       }, {lang});
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
@@ -67,9 +67,10 @@ exports.byTestPlan = async (req, res, next) => {
   if (!req.user.canReadProject(req.params.projectId)) {
     return next(createError(403, 'Access denied'));
   }
-
+  const {testPlanId} = req.params;
+  const {lang = 'en'} = req.query;
   try {
-    const { workbook, options } = await ReportsService.byTestPlan({ params: req.params, user: req.user, lang: req.query.lang });
+    const { workbook, options } = await ReportsService.byTestPlan(testPlanId, lang);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
     await workbook.xlsx.write(res);
