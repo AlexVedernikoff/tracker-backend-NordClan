@@ -8,21 +8,21 @@ module.exports = function (sequelize, DataTypes) {
         autoIncrement: true,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       title: {
         type: DataTypes.STRING,
         trim: true,
         allowNull: false,
         validate: {
-          len: [1, 255]
-        }
+          len: [1, 255],
+        },
       },
       description: {
         type: DataTypes.TEXT,
         allowNull: true,
-        trim: true
+        trim: true,
       },
       statusId: {
         type: DataTypes.INTEGER,
@@ -31,8 +31,8 @@ module.exports = function (sequelize, DataTypes) {
         validate: {
           isInt: true,
           min: 1,
-          max: 3
-        }
+          max: 3,
+        },
       },
       severityId: {
         type: DataTypes.INTEGER,
@@ -41,8 +41,8 @@ module.exports = function (sequelize, DataTypes) {
         validate: {
           isInt: true,
           min: 1,
-          max: 7
-        }
+          max: 7,
+        },
       },
       priority: {
         type: DataTypes.INTEGER,
@@ -50,46 +50,46 @@ module.exports = function (sequelize, DataTypes) {
         validate: {
           isInt: true,
           min: 1,
-          max: 5
-        }
+          max: 5,
+        },
       },
       preConditions: {
         field: 'pre_conditions',
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       postConditions: {
         field: 'post_conditions',
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       projectId: {
         field: 'project_id',
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       duration: {
         type: DataTypes.TIME,
-        allowNull: true
+        allowNull: true,
       },
       testSuiteId: {
         field: 'test_suite_id',
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       authorId: {
         field: 'author_id',
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       timestamps: true,
       paranoid: true,
-      tableName: 'test_case'
+      tableName: 'test_case',
     }
   );
 
@@ -98,8 +98,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'authorInfo',
       foreignKey: {
         name: 'authorId',
-        field: 'author_id'
-      }
+        field: 'author_id',
+      },
     });
 
     TestCase.belongsTo(models.TestSuite, {
@@ -107,8 +107,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'testSuiteId',
         field: 'test_suite_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     TestCase.belongsTo(models.TestCaseStatusesDictionary, {
@@ -116,8 +116,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'statusId',
         field: 'status_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     TestCase.belongsTo(models.TestCaseSeverityDictionary, {
@@ -125,8 +125,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'severityId',
         field: 'severity_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     TestCase.hasMany(models.TestCaseSteps, {
@@ -134,24 +134,24 @@ module.exports = function (sequelize, DataTypes) {
       sourceKey: 'id',
       foreignKey: {
         name: 'testCaseId',
-        field: 'test_case_id'
-      }
+        field: 'test_case_id',
+      },
     });
 
     TestCase.hasMany(models.TestCaseAttachments, {
       as: 'testCaseAttachments',
       foreignKey: {
         name: 'testCaseId',
-        field: 'test_case_id'
-      }
+        field: 'test_case_id',
+      },
     });
 
     TestCase.belongsTo(models.Project, {
       as: 'testCaseProject',
       foreignKey: {
         name: 'projectId',
-        field: 'project_id'
-      }
+        field: 'project_id',
+      },
     });
   };
 
