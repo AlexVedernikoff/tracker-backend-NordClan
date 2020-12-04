@@ -1,0 +1,28 @@
+{
+  "ru": {
+    "COLUMN_ID": "Id",
+    "COLUMN_TITLE": "Название",
+    "COLUMN_DESCRIPTION": "Описание",
+    "COLUMN_STATUS": "Статус",
+    "COLUMN_SEVERITY": "Уровень опасности",
+    "COLUMN_DURATION": "Длительность",
+    "COLUMN_PRIORITY": "Приоритет",
+    "COLUMN_AUTHOR": "Автор",
+    "WITHOUT_SUITE": "Без Test Suite",
+    "TEST_PLAN": "Тест План",
+    "TEST_CASES_SUM": "Количество Test Cases"
+  },
+  "en": {
+    "COLUMN_ID": "Id",
+    "COLUMN_TITLE": "Title",
+    "COLUMN_DESCRIPTION": "Description",
+    "COLUMN_STATUS": "Status",
+    "COLUMN_SEVERITY": "Severity",
+    "COLUMN_DURATION": "Duration",
+    "COLUMN_PRIORITY": "Priority",
+    "COLUMN_AUTHOR": "Author",
+    "WITHOUT_SUITE": "Without Test Suite",
+    "TEST_PLAN": "Test Plan",
+    "TEST_CASES_SUM": "Total number of Test Cases"
+  }
+}

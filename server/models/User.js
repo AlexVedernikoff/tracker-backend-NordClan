@@ -6,228 +6,228 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false
+        allowNull: false,
       },
       ldapLogin: {
         field: 'ldap_login',
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       login: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          len: [2, 100]
-        }
+          len: [2, 100],
+        },
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: true,
       },
       setPasswordToken: {
         field: 'set_password_token',
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: true,
       },
       setPasswordExpired: {
         field: 'set_password_expired',
         type: DataTypes.DATE,
-        allowNull: true
+        allowNull: true,
       },
       expiredDate: {
         field: 'expired_date',
         type: DataTypes.DATE,
-        allowNull: true
+        allowNull: true,
       },
       lastNameEn: {
         field: 'last_name_en',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [2, 100]
-        }
+          len: [2, 100],
+        },
       },
       firstNameEn: {
         field: 'first_name_en',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [2, 100]
-        }
+          len: [2, 100],
+        },
       },
       lastNameRu: {
         field: 'last_name_ru',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [2, 100]
-        }
+          len: [2, 100],
+        },
       },
       firstNameRu: {
         field: 'first_name_ru',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [2, 100]
-        }
+          len: [2, 100],
+        },
       },
       fullNameRu: {
         field: 'full_name_ru',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [2, 200]
-        }
+          len: [2, 200],
+        },
       },
       fullNameEn: {
         field: 'full_name_en',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [2, 200]
-        }
+          len: [2, 200],
+        },
       },
       active: {
         field: 'active',
         type: DataTypes.INTEGER,
         allowNull: true,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       isActive: {
         type: DataTypes.INTEGER,
         allowNull: true,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       photo: {
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       emailPrimary: {
         field: 'email_primary',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       emailSecondary: {
         field: 'email_secondary',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       phone: {
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       mobile: {
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       telegram: {
         field: 'telegram_user_name',
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       skype: {
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       city: {
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          len: [0, 100]
-        }
+          len: [0, 100],
+        },
       },
       birthDate: {
         field: 'birth_date',
         type: DataTypes.DATEONLY,
         allowNull: true,
         validate: {
-          isDate: true
-        }
+          isDate: true,
+        },
       },
       deleteDate: {
         field: 'delete_date',
         type: DataTypes.DATEONLY,
         allowNull: true,
         validate: {
-          isDate: true
-        }
+          isDate: true,
+        },
       },
       globalRole: {
         field: 'global_role',
         type: DataTypes.ENUM(0, 1),
-        allowNull: true
+        allowNull: true,
       },
       psId: {
         field: 'ps_id',
         allowNull: true,
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
       },
       description: {
         type: DataTypes.TEXT,
         allowNull: true,
         validate: {
-          len: [0, 5000]
-        }
+          len: [0, 5000],
+        },
       },
       gitlabUserId: {
         field: 'gitlab_user_id',
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       isTest: {
         field: 'is_test',
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false
+        defaultValue: false,
       },
       allowVPN: {
         field: 'allow_vpn',
         type: DataTypes.BOOLEAN,
-        allowNull: true
+        allowNull: true,
       },
       company: {
         field: 'company',
         allowNull: true,
         defaultValue: '',
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
       employmentDate: { type: DataTypes.DATE, field: 'employment_date' },
-      dismissalDate: { type: DataTypes.DATE, field: 'dismissal_date' }
+      dismissalDate: { type: DataTypes.DATE, field: 'dismissal_date' },
     },
     {
       indexes: [
         {
           unique: true,
-          fields: ['login']
-        }
+          fields: ['login'],
+        },
       ],
       timestamps: false,
       paranoid: true,
@@ -245,47 +245,47 @@ module.exports = function (sequelize, DataTypes) {
             i => i
           );
           return fullNameEnArr.join(' ') || this.getDataValue('fullNameEn');
-        }
-      }
+        },
+      },
     }
   );
 
   User.associate = function (models) {
     User.belongsToMany(models.Department, {
       as: 'department',
-      through: models.UserDepartments
+      through: models.UserDepartments,
     });
 
     User.hasOne(models.Token, {
       as: 'token',
       foreignKey: {
         name: 'userId',
-        field: 'user_id'
-      }
+        field: 'user_id',
+      },
     });
 
     User.hasMany(models.ProjectUsers, {
       as: 'usersProjects',
       foreignKey: {
         name: 'userId',
-        field: 'user_id'
-      }
+        field: 'user_id',
+      },
     });
 
     User.hasMany(models.Project, {
       as: 'authorsProjects',
       foreignKey: {
         name: 'authorId',
-        field: 'author_id'
-      }
+        field: 'author_id',
+      },
     });
 
     User.hasMany(models.Timesheet, {
       as: 'timesheet',
       foreignKey: {
         name: 'userId',
-        field: 'user_id'
-      }
+        field: 'user_id',
+      },
     });
   };
 
@@ -317,7 +317,7 @@ module.exports = function (sequelize, DataTypes) {
     'active',
     ['allow_vpn', 'allowVPN'],
     'allowVPN',
-    'deleteDate'
+    'deleteDate',
   ];
 
   User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';
