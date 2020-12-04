@@ -20,7 +20,8 @@
     "PERSON": "ФИО",
     "EMPLOYMENT_DATE": "Дата приема на работу",
     "BUSY": "Занятость:",
-    "AVERAGE_NUMBER_OF_EMPLOYEES": "Среднесписочная численность работников"
+    "AVERAGE_NUMBER_OF_EMPLOYEES": "Среднесписочная численность работников",
+    "DEPARTMENT": "Направление"
   },
   "en": {
     "OTHER_TASKS": "Other Tasks",
@@ -43,6 +44,7 @@
     "PERSON": "Person",
     "EMPLOYMENT_DATE": "Employment date",
     "BUSY": "Busy:",
-    "AVERAGE_NUMBER_OF_EMPLOYEES": "Average number of employees"
+    "AVERAGE_NUMBER_OF_EMPLOYEES": "Average number of employees",
+    "DEPARTMENT": "Department"
   }
 }
