@@ -1,4 +1,4 @@
-exports.setCompletedAtIfNeed = function(model) {
+exports.setCompletedAtIfNeed = function (model) {
   if (+model._previousDataValues.statusId !== 3 && +model.statusId === 3) {
     model.completedAt = new Date();
   }

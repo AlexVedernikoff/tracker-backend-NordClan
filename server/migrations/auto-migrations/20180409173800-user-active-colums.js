@@ -10,7 +10,7 @@ module.exports = {
             type: Sequelize.INTEGER
           }
         )
-      ]))
+      ]));
   },
   down: function (queryInterface) {
     return Promise.resolve()
@@ -18,7 +18,7 @@ module.exports = {
         queryInterface.removeColumn(
           'users',
           'isActive'
-        ),
+        )
       ]));
   }
 };

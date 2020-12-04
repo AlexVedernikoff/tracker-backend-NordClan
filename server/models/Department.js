@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Department = sequelize.define('Department', {
     id: {
       type: DataTypes.INTEGER,
@@ -24,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'departments'
   });
 
-  Department.associate = function(models) {
+  Department.associate = function (models) {
     Department.belongsToMany(models.User, { through: models.UserDepartments });
   };
 

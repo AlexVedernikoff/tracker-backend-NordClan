@@ -1,6 +1,15 @@
 module.exports = {
   appName: 'Epic',
   port: process.env.PORT || 8080,
+  featureFlags: {
+    root: {
+      project: {
+        userCreate: {
+          processGitlabRoles: true
+        }
+      }
+    }
+  },
   db:
   {
     postgres: {

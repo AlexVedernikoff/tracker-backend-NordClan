@@ -2,7 +2,13 @@ version: '3'
 
 services:
   app:
+    #    build: .
+    # image: back:t2
     build: .
+    command:
+      - node
+      - "--inspect"
+      - "bin/www"
     volumes:
       - .:/app
     ports:
@@ -11,12 +17,7 @@ services:
     env_file:
       - .docker-compose-dev.env
     entrypoint: |
-      bash -c 'bash -s <<EOF
-      npm install
-      npm rebuild
-      npm run migrate
-      pm2-runtime start --env development processes-debug.json
-      EOF'
+      bash -c './app_boot.sh'
 
   web:
     build: ./../track-front

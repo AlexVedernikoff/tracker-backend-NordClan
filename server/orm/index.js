@@ -11,11 +11,7 @@ const sequelize = new Sequelize(
     host: config.db.postgres.host,
     dialect: config.db.postgres.dialect,
     port: config.db.postgres.port,
-    logging: function (text) {
-      sequelizeLogger(
-        `${moment().format('YYYY-MM-DD HH:mm:ss:SSS')} - ${text}`
-      );
-    },
+    logging: false,
     isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED,
     pool: {
       max: 30,

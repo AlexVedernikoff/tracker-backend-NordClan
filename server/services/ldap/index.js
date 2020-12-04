@@ -41,6 +41,7 @@ client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
   }
 });
 
+
 module.exports = {
   create (data) {
     return new Promise((resolve, reject) => {
@@ -91,7 +92,7 @@ module.exports = {
         });
 
       } catch (error) {
-        console.log('catch err Ldap ====>', error);
+        console.log('LDAP: Create User Error (common catch): ', error);
         reject(null);
       }
     });

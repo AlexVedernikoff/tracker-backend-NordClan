@@ -7,8 +7,10 @@ const _ = require('underscore');
 require('request').debug = true;
 
 exports.create = async function (req, res, next){
-  const isGitlabEnabled = !!config.gitLab.host;
+  const isGitlabEnabled = !!config.gitLab.host && config.featureFlags.root.project.userCreate.processGitlabRoles;
+
   let transaction;
+
   try {
     if (!(Number.isInteger(+req.params.projectId) && +req.params.projectId > 0)) {
       return next(createError(400, 'projectId is wrong'));
@@ -98,6 +100,7 @@ exports.create = async function (req, res, next){
         }
       }
     }
+
     if (isGitlabEnabled) {
       await gitLabService.projects.processGitlabRoles(gitlabRoles, projectUser, transaction);
     }

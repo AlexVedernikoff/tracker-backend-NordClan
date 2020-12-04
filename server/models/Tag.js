@@ -1,4 +1,4 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Tag = sequelize.define('Tag', {
     id: {
       type: DataTypes.INTEGER,
@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
       {
         unique: true,
         fields: ['name']
-      },
+      }
     ],
     underscored: true,
     timestamps: false,
@@ -27,7 +27,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'tags'
   });
 
-  Tag.associate = function(models) {
+  Tag.associate = function (models) {
     Tag.belongsToMany(models.Task, {
       through: {
         model: models.ItemTag,
@@ -69,7 +69,7 @@ module.exports = function(sequelize, DataTypes) {
       foreignKey: {
         name: 'tagId',
         field: 'tag_id'
-      },
+      }
     });
 
   };
