@@ -5,5 +5,5 @@ const ByCompanyUserWorkSheet = require('./byCompanyUser');
 module.exports = {
   ByTaskWorkSheet,
   ByUserWorkSheet,
-  ByCompanyUserWorkSheet,
+  ByCompanyUserWorkSheet
 };

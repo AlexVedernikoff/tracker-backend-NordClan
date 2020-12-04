@@ -11,14 +11,14 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
     where.onDate = {
       $and: {
         $gte: dateBegin,
-        $lte: dateEnd,
-      },
+        $lte: dateEnd
+      }
     };
   }
 
   if (isSystemUser) {
     where.spentTime = {
-      gt: 0,
+      gt: 0
     };
   }
 
@@ -34,8 +34,8 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
         where,
         include: getInclude(),
         order: [
-          ['onDate', 'ASC'],
-        ],
+          ['onDate', 'ASC']
+        ]
       },
       {
         model: models.Department,
@@ -44,16 +44,16 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
         attributes: ['name', 'id'],
         through: {
           model: models.UserDepartments,
-          attributes: [],
-        },
-      },
+          attributes: []
+        }
+      }
     ],
     where: {
-      active: 1,
+      active: 1
     },
     order: [
-      ['lastNameRu', 'ASC'],
-    ],
+      ['lastNameRu', 'ASC']
+    ]
   };
 };
 
@@ -68,14 +68,14 @@ exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser
     where.onDate = {
       $and: {
         $gte: dateBegin,
-        $lte: dateEnd,
-      },
+        $lte: dateEnd
+      }
     };
   }
 
   if (isSystemUser) {
     where.spentTime = {
-      gt: 0,
+      gt: 0
     };
   }
 
@@ -84,8 +84,8 @@ exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser
     where,
     include: getInclude(),
     order: [
-      ['onDate', 'ASC'],
-    ],
+      ['onDate', 'ASC']
+    ]
   };
 };
 
@@ -104,46 +104,38 @@ function getInclude () {
           model: models.Project,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false,
+          paranoid: false
         },
         {
           as: 'sprint',
           model: models.Sprint,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false,
-        },
-      ],
+          paranoid: false
+        }
+      ]
     },
     {
       as: 'project',
       model: models.Project,
       required: false,
       attributes: ['id', 'name', 'prefix'],
-      paranoid: false,
+      paranoid: false
     },
     {
       as: 'sprint',
       model: models.Sprint,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false,
+      paranoid: false
     },
     {
       as: 'user',
       model: models.User,
       required: false,
       attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'active', 'employment_date', 'delete_date'],
-      paranoid: false,
-      include: [
-        {
-          as: 'department',
-          model: models.Department,
-          attributes: ['name'],
-          paranoid: false,
-        },
-      ],
-    },
+      paranoid: false
+    }
   ];
 
   return include;
