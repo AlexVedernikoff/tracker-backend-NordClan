@@ -38,10 +38,6 @@ exports.create = function (req, res, next) {
     }
   });
 
-  if (req.user.isVisor) {
-    return next(createError(403, 'Access denied'));
-  }
-
   Project.create(req.body)
     .then(model => {
       return queries.tag
@@ -72,7 +68,7 @@ exports.read = function (req, res, next) {
   Project.findByPrimary(req.params.id, {
     order: [
       [{ model: models.Sprint, as: 'sprints' }, 'factStartDate', 'ASC'],
-      [{ model: models.Sprint, as: 'sprints' }, 'name', 'ASC']
+      [{ model: models.Sprint, as: 'sprints' }, 'name', 'ASC'],
     ],
     include: [
       {
@@ -81,19 +77,19 @@ exports.read = function (req, res, next) {
         attributes: ['name'],
         through: {
           model: ItemTag,
-          attributes: []
+          attributes: [],
         },
-        order: [['name', 'ASC']]
+        order: [['name', 'ASC']],
       },
       {
         as: 'sprints',
         model: Sprint,
-        attributes: queries.sprint.queryAttributes('sprints', userRole)
+        attributes: queries.sprint.queryAttributes('sprints', userRole),
       },
       {
         as: 'portfolio',
         model: Portfolio,
-        attributes: ['id', 'name']
+        attributes: ['id', 'name'],
       },
       {
         as: 'projectUsers',
@@ -105,7 +101,8 @@ exports.read = function (req, res, next) {
             as: 'user',
             model: models.User,
             where: {
-              globalRole: { $not: models.User.EXTERNAL_USER_ROLE }
+              active: 1,
+              globalRole: { $not: models.User.EXTERNAL_USER_ROLE },
             },
             attributes: [
               'id',
@@ -116,19 +113,19 @@ exports.read = function (req, res, next) {
               'photo',
               'skype',
               'emailPrimary',
-              'mobile'
-            ]
+              'mobile',
+            ],
           },
           {
             as: 'roles',
-            model: models.ProjectUsersRoles
+            model: models.ProjectUsersRoles,
           },
           {
             as: 'gitlabRoles',
-            model: models.GitlabUserRoles
-          }
+            model: models.GitlabUserRoles,
+          },
         ],
-        order: [['id', 'DESC']]
+        order: [['id', 'DESC']],
       },
       {
         as: 'externalUsers',
@@ -142,7 +139,7 @@ exports.read = function (req, res, next) {
             where: {
               active: 1,
               isActive: 1,
-              globalRole: models.User.EXTERNAL_USER_ROLE
+              globalRole: models.User.EXTERNAL_USER_ROLE,
             },
             attributes: [
               'id',
@@ -154,31 +151,31 @@ exports.read = function (req, res, next) {
               'skype',
               'emailPrimary',
               'mobile',
-              'description'
-            ]
+              'description',
+            ],
           },
           {
             as: 'roles',
-            model: models.ProjectUsersRoles
-          }
+            model: models.ProjectUsersRoles,
+          },
         ],
-        order: [['id', 'DESC']]
+        order: [['id', 'DESC']],
       },
       {
         as: 'attachments',
         model: models.ProjectAttachments,
         attributes: models.ProjectAttachments.defaultSelect,
-        order: [['createdAt', 'ASC']]
+        order: [['createdAt', 'ASC']],
       },
       {
         as: 'milestones',
-        model: models.Milestone
+        model: models.Milestone,
       },
       {
         model: models.ProjectEnvironment,
-        as: 'projectEnvironments'
-      }
-    ]
+        as: 'projectEnvironments',
+      },
+    ],
   })
     .then(async model => {
       if (!model) return next(createError(404));
@@ -195,7 +192,7 @@ exports.read = function (req, res, next) {
             lastNameRu: projectUser.user.lastNameRu,
             lastNameEn: projectUser.user.lastNameEn,
             roles: queries.projectUsers.getTransRolesToObject(projectUser.roles, projectRoles),
-            gitlabRoles: projectUser.gitlabRoles
+            gitlabRoles: projectUser.gitlabRoles,
           });
         });
       }
@@ -290,7 +287,7 @@ exports.update = async function (req, res, next) {
         if (needCreateNewPortfolio) {
           const portfolioParams = {
             name: req.body.portfolioName,
-            authorId: req.user.id
+            authorId: req.user.id,
           };
 
           const portfolio = await Portfolio.create(portfolioParams, { returning: true });
@@ -314,10 +311,10 @@ exports.update = async function (req, res, next) {
                   as: 'portfolio',
                   model: Portfolio,
                   attributes: ['id', 'name'],
-                  required: false
-                }
+                  required: false,
+                },
               ],
-              transaction
+              transaction,
             }).then(async model => {
               const updatedParams = { ...req.body, id: model.id };
               ProjectsChannel.sendAction('update', updatedParams, res.io, model.id);
@@ -437,7 +434,7 @@ exports.list = function (req, res, next) {
       in: req.query.statusId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   }
 
@@ -446,7 +443,7 @@ exports.list = function (req, res, next) {
       in: req.query.typeId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   }
 
@@ -516,10 +513,10 @@ exports.list = function (req, res, next) {
     where: {
       statusId: models.SprintStatusesDictionary.IN_PROCESS_STATUS,
       deletedAt: {
-        $eq: null // IS NULL
-      }
+        $eq: null, // IS NULL
+      },
     },
-    required: false
+    required: false,
   });
 
   // вывод тегов
@@ -527,23 +524,23 @@ exports.list = function (req, res, next) {
     model: ItemTag,
     as: 'itemTagSelect',
     where: {
-      taggable: 'project'
+      taggable: 'project',
     },
     include: [
       {
         as: 'tag',
         model: Tag,
-        attributes: ['name']
-      }
+        attributes: ['name'],
+      },
     ],
-    required: false
+    required: false,
   });
 
   // Порфтель
   include.push({
     as: 'portfolio',
     model: Portfolio,
-    attributes: ['id', 'name']
+    attributes: ['id', 'name'],
   });
 
   // Фильтрация по исполнитею
@@ -552,8 +549,8 @@ exports.list = function (req, res, next) {
       model: models.ProjectUsers,
       attributes: [],
       where: {
-        userId: req.query.performerId
-      }
+        userId: req.query.performerId,
+      },
     });
   }
 
@@ -580,13 +577,13 @@ exports.list = function (req, res, next) {
       where: {
         $or: [
           {
-            factStartDate: queryFactStartDate
+            factStartDate: queryFactStartDate,
           },
           {
-            factFinishDate: queryFactFinishDate
-          }
-        ]
-      }
+            factFinishDate: queryFactFinishDate,
+          },
+        ],
+      },
     });
   }
 
@@ -596,7 +593,7 @@ exports.list = function (req, res, next) {
                                   FROM project_users as t
                                   WHERE t.project_id = "Project"."id"
                                   AND t.deleted_at IS NULL)`),
-      'usersCount'
+      'usersCount',
     ], // Кол-во активных участников в проекте
     [
       Sequelize.literal(`(SELECT fact_start_date
@@ -605,7 +602,7 @@ exports.list = function (req, res, next) {
                                   AND t.deleted_at IS NULL
                                   ORDER BY fact_start_date ASC
                                   LIMIT 1)`),
-      'dateStartFirstSprint'
+      'dateStartFirstSprint',
     ], // Дата начала превого спринта у проекта
     [
       Sequelize.literal(`(SELECT fact_finish_date
@@ -614,8 +611,8 @@ exports.list = function (req, res, next) {
                                   AND t.deleted_at IS NULL
                                   ORDER BY fact_start_date DESC
                                   LIMIT 1)`),
-      'dateFinishLastSprint'
-    ] // Дата завершения последнего спринта у проекта
+      'dateFinishLastSprint',
+    ], // Дата завершения последнего спринта у проекта
   ];
   const attributes
     = userRole !== models.User.EXTERNAL_USER_ROLE
@@ -631,7 +628,7 @@ exports.list = function (req, res, next) {
         'portfolioId',
         'authorId',
         'completedAt',
-        'createdAt'
+        'createdAt',
       ].concat(additinalAttr);
 
   Promise.resolve()
@@ -641,9 +638,9 @@ exports.list = function (req, res, next) {
         return Tag.findAll({
           where: {
             name: {
-              $in: req.query.tags
-            }
-          }
+              $in: req.query.tags,
+            },
+          },
         });
       }
 
@@ -657,17 +654,17 @@ exports.list = function (req, res, next) {
             as: 'itemTag' + tag.id,
             foreignKey: {
               name: 'taggableId',
-              field: 'taggable_id'
+              field: 'taggable_id',
             },
             scope: {
-              taggable: 'project'
-            }
+              taggable: 'project',
+            },
           }),
           attributes: [],
           required: true,
           where: {
-            tag_id: tag.id
-          }
+            tag_id: tag.id,
+          },
         });
       });
     })
@@ -682,12 +679,12 @@ exports.list = function (req, res, next) {
         include: include,
         where: where,
         subQuery: true,
-        order: [['statusId', 'ASC'], ['name', 'ASC'], [{ as: 'currentSprints', model: Sprint }, 'factStartDate', 'ASC']]
+        order: [['statusId', 'ASC'], ['name', 'ASC'], [{ as: 'currentSprints', model: Sprint }, 'factStartDate', 'ASC']],
       }).then(projects => {
         return Project.count({
           where: where,
           include: include,
-          group: ['Project.id']
+          group: ['Project.id'],
         }).then(count => {
           const projectCount = count.length;
 
@@ -721,7 +718,7 @@ exports.list = function (req, res, next) {
             rowsCountAll: projectCount,
             rowsCountOnCurrentPage: projects.length,
             data: projects.slice(offset, offset + pageSize),
-            allTags: getTagByProjectList(projects)
+            allTags: getTagByProjectList(projects),
           };
           res.json(responseObject);
         });

@@ -120,6 +120,7 @@ router.post(
 
 // Project reports
 router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
+router.get('/project/:projectId/test-plans/:testPlanId/report', GlobalAccess.can('project', 'read'), ReportsController.byTestPlan);
 
 // Project time sheets
 router.get('/project/:projectId/timesheet', GlobalAccess.can('project', 'read'), TimesheetController.listProject);

@@ -6,7 +6,7 @@ const {
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary,
   ProjectEnvironmentTestRun,
-  ProjectEnvironment
+  ProjectEnvironment,
 } = require('../../../models');
 const createError = require('http-errors');
 
@@ -25,35 +25,35 @@ const includeOptions = [
           {
             model: User,
             as: 'authorInfo',
-            attributes: ['fullNameEn', 'fullNameRu']
+            attributes: ['fullNameEn', 'fullNameRu'],
           },
           {
             model: TestCaseStatusesDictionary,
-            as: 'testCaseStatus'
+            as: 'testCaseStatus',
           },
           {
             model: TestCaseSeverityDictionary,
-            as: 'testCaseSeverity'
-          }
-        ]
+            as: 'testCaseSeverity',
+          },
+        ],
       },
       {
         model: User,
         as: 'assignedUser',
-        attributes: ['fullNameEn', 'fullNameRu']
-      }
-    ]
+        attributes: ['fullNameEn', 'fullNameRu'],
+      },
+    ],
   },
   {
     model: ProjectEnvironment,
-    as: 'testRunEnvironments'
-  }
+    as: 'testRunEnvironments',
+  },
 ];
 
 const getTestRunByParams = async params =>
   await TestRun.findOne({
     include: includeOptions,
-    where: params
+    where: params,
   });
 
 exports.getTestRunsDict = async (req, res, next) => {
@@ -63,11 +63,11 @@ exports.getTestRunsDict = async (req, res, next) => {
     const { full = 'true', ...restQueryData } = query;
     const whereOptions = {
       ...params,
-      ...restQueryData
+      ...restQueryData,
     };
     const result = await TestRun.findAll({
       attributes: ['id', 'title', 'description'],
-      where: whereOptions
+      where: whereOptions,
     });
     res.json(result);
   } catch (e) {
@@ -81,7 +81,7 @@ exports.getTestRuns = async (req, res, next) => {
     const { page = 1, ...restQueryData } = query;
     const whereOptions = {
       ...params,
-      ...restQueryData
+      ...restQueryData,
     };
     const offset = (Number(page) - 1) * LIMIT;
     const result = await TestRun.findAndCountAll({
@@ -89,7 +89,7 @@ exports.getTestRuns = async (req, res, next) => {
       where: whereOptions,
       order: [['id', 'DESC']],
       offset,
-      limit: LIMIT
+      limit: LIMIT,
     });
     res.json(result);
   } catch (e) {
@@ -122,18 +122,18 @@ exports.createTestRun = async (req, res, next) => {
       return next(createError(500, 'Set at least one project environment for that test case'));
     }*/
     const { dataValues: testRunResult } = await TestRun.create(body, {
-      historyAuthorId: user.id
+      historyAuthorId: user.id,
     });
 
     const updatedPorjectEnvArr = projectEnvironments.map(item => ({
       projectEnvironmentId: item,
-      testRunId: testRunResult.id
+      testRunId: testRunResult.id,
     }));
     await ProjectEnvironmentTestRun.bulkCreate(updatedPorjectEnvArr);
 
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
-      testRunId: testRunResult.id
+      testRunId: testRunResult.id,
     }));
     await TestRunTestCases.bulkCreate(updatedTestCaseData);
 
@@ -153,19 +153,19 @@ exports.updateTestRun = async (req, res, next) => {
     }
     await TestRunTestCases.destroy({
       where: {
-        testRunId: id
-      }
+        testRunId: id,
+      },
     });
     await TestRun.update(body, {
       where: {
-        id
+        id,
       },
       historyAuthorId: user.id,
-      individualHooks: true
+      individualHooks: true,
     });
     const updatedTestCaseData = testCasesData.map(item => ({
       ...item,
-      testRunId: id
+      testRunId: id,
     }));
     await TestRunTestCases.bulkCreate(updatedTestCaseData);
     res.sendStatus(204);
@@ -180,12 +180,12 @@ exports.deleteTestRun = async (req, res, next) => {
     await TestRun.destroy({
       where: params,
       historyAuthorId: user.id,
-      individualHooks: true
+      individualHooks: true,
     });
     await TestRunTestCases.destroy({
       where: {
-        testRunId: params.id
-      }
+        testRunId: params.id,
+      },
     });
     res.sendStatus(200);
   } catch (e) {

@@ -20,7 +20,16 @@
       "allowSingleLine": true
     }],
     "camelcase": [0],
-    "comma-dangle": [2, "never"],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "never"
+      }
+    ],
     "comma-spacing": [2],
     "comma-style": [2, "last"],
     "complexity": [0, 11],

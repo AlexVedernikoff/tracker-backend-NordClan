@@ -9,15 +9,14 @@ const {
   ProjectRolesDictionary,
   TimesheetTypesDictionary,
   Sprint,
-  sequelize
+  sequelize,
 } = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
-const Excel = require('exceljs');
 const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
 const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
-const { getAverageNumberOfEmployees } = require('../utils');
+const { getAverageNumberOfEmployees, getWorkBook } = require('../utils');
 
 exports.getReport = async function (projectId, criteria, options) {
   const { lang = 'en' } = options || {};
@@ -36,22 +35,22 @@ exports.getReport = async function (projectId, criteria, options) {
     projectId: { $eq: projectId },
     ...(criteria ? (
       {
-        onDate: { $between: [startDate, endDate] }
+        onDate: { $between: [startDate, endDate] },
       }
     ) : null),
     spentTime: {
-      $gt: 0
-    }
+      $gt: 0,
+    },
   };
 
   const parseSprintId = parseInt(sprintId);
   if (!isNaN(parseSprintId) && parseSprintId === 0) { // backlog
     queryParams.sprintId = {
-      $or: [0, null]
+      $or: [0, null],
     };
   } else if (!isNaN(parseSprintId) && parseInt(sprintId) > 0) { // sprint
     queryParams.sprintId = {
-      $eq: sprintId
+      $eq: sprintId,
     };
   }
 
@@ -64,14 +63,14 @@ exports.getReport = async function (projectId, criteria, options) {
         model: Sprint,
         required: false,
         attributes: ['id', 'name', 'factStartDate', 'factFinishDate'],
-        paranoid: false
-      }
-    ]
+        paranoid: false,
+      },
+    ],
   }).then(model => ({
     ...model.dataValues,
     createdAt: moment(model.dataValues.createdAt).format('YYYY-MM-DD'),
     completedAt: moment(model.dataValues.completedAt).format('YYYY-MM-DD'),
-    sprints: model.sprints ? model.sprints.map(sprint => sprint.dataValues) : null
+    sprints: model.sprints ? model.sprints.map(sprint => sprint.dataValues) : null,
   }));
 
   const timeSheetsDbData = await Timesheet.findAll({
@@ -86,7 +85,7 @@ exports.getReport = async function (projectId, criteria, options) {
           sequelize.literal(`(SELECT sum(tsh.spent_time)
           FROM timesheets AS tsh
           WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime'], 'projectId', 'typeId', 'sprintId'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'user',
@@ -96,7 +95,7 @@ exports.getReport = async function (projectId, criteria, options) {
           'id',
           [withSuffix('first_name', lang), 'firstName'],
           [withSuffix('last_name', lang), 'lastName'],
-          [withSuffix('full_name', lang), 'fullName']
+          [withSuffix('full_name', lang), 'fullName'],
         ],
         paranoid: false,
         include: [
@@ -109,17 +108,17 @@ exports.getReport = async function (projectId, criteria, options) {
             include: [
               {
                 as: 'roles',
-                model: ProjectUsersRoles
-              }
-            ]
-          }
-        ]
-      }
+                model: ProjectUsersRoles,
+              },
+            ],
+          },
+        ],
+      },
     ],
     order: [
       [{ model: User, as: 'user' }, withSuffix('full_name', lang), 'ASC'],
-      ['onDate', 'ASC']
-    ]
+      ['onDate', 'ASC'],
+    ],
   });
   // Подгрузка словарей из БД
   const projectRolesValues = await ProjectRolesDictionary.findAll();
@@ -135,8 +134,8 @@ exports.getReport = async function (projectId, criteria, options) {
         task: {
           name: type.name,
           id: type.id,
-          isMagic: type.isMagicActivity
-        }
+          isMagic: type.isMagicActivity,
+        },
       });
     } else {
       Object.assign(data, { task: data.task.dataValues });
@@ -170,14 +169,14 @@ exports.getReport = async function (projectId, criteria, options) {
         resultObject.users.push(user);
       }, {}))
       .value(),
-    byUser: divideTimeSheetsBySprints(project, timeSheets, endDate)
+    byUser: divideTimeSheetsBySprints(project, timeSheets, endDate),
   };
 
   return {
     workbook: generateExcellDocument(data, { lang }),
     options: {
-      fileName: `${project.name} - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
-    }
+      fileName: `${project.name} - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`,
+    },
   };
 };
 
@@ -202,8 +201,9 @@ exports.getCompanyReport = async function (criteria, options) {
   const withUserDeleteDate = timeSheetsDbData
     .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date !== null);
   const timeSheets = timeSheetsDbData
-    .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date === null
-      || new Date(timeSheet.dataValues.onDate) <= timeSheet.dataValues.user.dataValues.delete_date)
+    .filter(timeSheet => ((timeSheet.dataValues.user.dataValues.delete_date === null
+      || new Date(timeSheet.dataValues.onDate) <= timeSheet.dataValues.user.dataValues.delete_date))
+      || timeSheet.dataValues.user.dataValues.active === 1)
     .map(timeSheet => {
 
       const data = timeSheet.dataValues;
@@ -216,8 +216,8 @@ exports.getCompanyReport = async function (criteria, options) {
           task: {
             name: type.name,
             id: type.id,
-            isMagic: type.isMagicActivity
-          }
+            isMagic: type.isMagicActivity,
+          },
         });
       } else {
         Object.assign(data, { task: data.task.dataValues });
@@ -239,14 +239,14 @@ exports.getCompanyReport = async function (criteria, options) {
 
   const data = {
     info: { range: { startDate, endDate } },
-    companyByUser: transformToUserList(timeSheets, lang)
+    companyByUser: transformToUserList(timeSheets, lang),
   };
 
   const averageNumberOfEmployees = await getAverageNumberOfEmployees(
     startDate,
     endDate,
     {
-      precision: 1
+      precision: 1,
     }
   );
   // employment_date
@@ -254,11 +254,11 @@ exports.getCompanyReport = async function (criteria, options) {
   return {
     workbook: generateCompanyReportExcellDocument(data, {
       lang,
-      averageNumberOfEmployees
+      averageNumberOfEmployees,
     }),
     options: {
-      fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`
-    }
+      fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`,
+    },
   };
 };
 
@@ -268,7 +268,7 @@ function transformToUserList (timeSheets, lang) {
   return Object.keys(groupedByUser)
     .map(userId => ({
       user: ((groupedByUser[userId] || [])[0] || {}).user,
-      timeSheets: groupedByUser[userId]
+      timeSheets: groupedByUser[userId],
     }))
     .sort(({ user: prev }, { user: next }) => {
       if (prev[`lastName${suffix}`] < next[`lastName${suffix}`]) { return -1; }
@@ -295,42 +295,21 @@ function generateExcellDocument (data, options) {
   return workbook;
 }
 
-function getWorkBook () {
-  const workbook = new Excel.Workbook();
-  workbook.creator = 'Track';
-  workbook.lastModifiedBy = 'Track';
-  workbook.created = new Date();
-  workbook.modified = new Date();
-  workbook.lastPrinted = new Date();
-  workbook.views = [
-    {
-      x: 0,
-      y: 0,
-      width: 10000,
-      height: 20000,
-      firstSheet: 0,
-      activeTab: 0,
-      visibility: 'visible'
-    }
-  ];
-  return workbook;
-}
-
 function validateCriteria (criteria) {
   const paramsChecker = {
     startDate: {
       type: 'string',
-      regExp: /\d{4}-\d{2}-\d{2}/
+      regExp: /\d{4}-\d{2}-\d{2}/,
     },
     endDate: {
       type: 'string',
-      regExp: /\d{4}-\d{2}-\d{2}/
-    }
+      regExp: /\d{4}-\d{2}-\d{2}/,
+    },
   };
 
   const errors = Object.entries({
     startDate: criteria.startDate,
-    endDate: criteria.endDate
+    endDate: criteria.endDate,
   }).filter(([key, value]) => {
     const checker = paramsChecker[key];
     return checker.type !== typeof value || !checkRegExp(checker.regExp, value);
@@ -346,7 +325,7 @@ function validateCriteria (criteria) {
 
   return {
     startDate: criteria.startDate,
-    endDate: criteria.endDate
+    endDate: criteria.endDate,
   };
 }
 
@@ -405,7 +384,7 @@ function divideTimeSheetsBySprints (project, timeSheets, endDate) {
         name,
         factStartDate: formatDate(factStartDate),
         factFinishDate: formatDate(factFinishDate),
-        timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate)
+        timeSheets: groupTimeSheetsInSprint(timeSheetsInSprint, factStartDate, factFinishDate),
       };
     });
   const timeSheetsWithoutSprint = timeSheets.filter(timeSheet => !timeSheet.task.sprintId);
@@ -417,7 +396,7 @@ function divideTimeSheetsBySprints (project, timeSheets, endDate) {
       name: 'Backlog',
       factStartDate: factStartDate,
       factFinishDate: factFinishDate,
-      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, endDate)
+      timeSheets: groupTimeSheetsInSprint(timeSheetsWithoutSprint, project.createdAt, endDate),
     });
   }
   return sprintsWithTimeSheets;
