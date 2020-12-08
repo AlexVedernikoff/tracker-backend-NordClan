@@ -30,8 +30,8 @@ async function createResponse (answerBuilder, histories, countAll, pageSize, cur
 
 module.exports = (entity) => {
   let interfaces = null;
-  if (entity === 'task') interfaces = projectInterfaces;
-  if (entity === 'project') interfaces = taskInterfaces;
+  if (entity === 'task') interfaces = taskInterfaces;
+  if (entity === 'project') interfaces = projectInterfaces;
   if (interfaces === null) throw new Error('fail entity');
   const {requestBuilder, messageBuilder, model} = interfaces;
 
