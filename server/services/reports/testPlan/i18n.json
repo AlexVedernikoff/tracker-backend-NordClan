@@ -10,7 +10,14 @@
     "COLUMN_AUTHOR": "Автор",
     "WITHOUT_SUITE": "Без Test Suite",
     "TEST_PLAN": "Тест План",
-    "TEST_CASES_SUM": "Количество Test Cases"
+    "TEST_CASES_SUM": "Количество Test Cases",
+    "PRORITY": {
+      "1": "наивысший",
+      "2": "высокий",
+      "3": "средний",
+      "4": "низкий",
+      "5": "наинизший"
+    }
   },
   "en": {
     "COLUMN_ID": "Id",
@@ -23,6 +30,13 @@
     "COLUMN_AUTHOR": "Author",
     "WITHOUT_SUITE": "Without Test Suite",
     "TEST_PLAN": "Test Plan",
-    "TEST_CASES_SUM": "Total number of Test Cases"
+    "TEST_CASES_SUM": "Total number of Test Cases",
+    "PRORITY": {
+      "1": "highest",
+      "2": "high",
+      "3": "average",
+      "4": "low",
+      "5": "lowest"
+    }
   }
 }

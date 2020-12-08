@@ -145,7 +145,16 @@ module.exports = async (testPlanId, lang) => {
         const status = translate(testCaseStatus, 'nameEn', 'name');
         const severity = translate(testCaseSeverity, 'nameEn', 'name');
         const authorName = translate(authorInfo, 'fullNameEn', 'fullNameRu');
-        const row = worksheet.addRow(['', `#${id}`, title, description, status, severity, duration, priority, authorName]);
+        const row = worksheet.addRow([
+          '',
+          `#${id}`,
+          title,
+          description,
+          status,
+          severity,
+          duration,
+          locale.PRORITY[priority],
+          authorName]);
         row.getCell(3).alignment = { wrapText: true };
         row.getCell(4).alignment = { wrapText: true };
         currentRow++;
