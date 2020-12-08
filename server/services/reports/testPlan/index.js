@@ -113,6 +113,9 @@ module.exports = async (testPlanId, lang) => {
     currentRow += 2;
   }
 
+  worksheet.mergeCells(`A${currentRow}:I${currentRow}`);
+  worksheet.getCell(`A${currentRow}`).border = {bottom: {style: 'medium', color: {argb: 'FA2b8E1'}}};
+  const summaryRow = currentRow++;
   worksheet.getRow(currentRow)
     .values = [
       '',
@@ -145,7 +148,16 @@ module.exports = async (testPlanId, lang) => {
         const status = translate(testCaseStatus, 'nameEn', 'name');
         const severity = translate(testCaseSeverity, 'nameEn', 'name');
         const authorName = translate(authorInfo, 'fullNameEn', 'fullNameRu');
-        const row = worksheet.addRow(['', `#${id}`, title, description, status, severity, duration, priority, authorName]);
+        const row = worksheet.addRow([
+          '',
+          `#${id}`,
+          title,
+          description,
+          status,
+          severity,
+          duration,
+          locale.PRORITY[priority],
+          authorName]);
         row.getCell(3).alignment = { wrapText: true };
         row.getCell(4).alignment = { wrapText: true };
         currentRow++;
@@ -156,13 +168,8 @@ module.exports = async (testPlanId, lang) => {
   });
 
   currentRow += 2;
-  const boarderStyle = {style: 'medium', color: {argb: 'FA2b8E1'}};
-  worksheet.mergeCells(`A${currentRow}:I${currentRow}`);
-  worksheet.getCell(`A${currentRow}`).border = {
-    top: boarderStyle,
-    bottom: boarderStyle,
-  };
-  worksheet.getCell(`A${currentRow}`).value = `${locale.TEST_CASES_SUM}: ${testCasesSum}`;
+
+  worksheet.getCell(`A${summaryRow}`).value = `${locale.TEST_CASES_SUM}: ${testCasesSum}`;
   return {
     workbook,
     options: {
