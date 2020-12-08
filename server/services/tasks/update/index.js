@@ -9,7 +9,7 @@ const {getQaTimeByTask} = require('../utils');
 const {
   DEVELOP_STATUSES,
   CODE_REVIEW_STATUSES,
-  QA_STATUSES
+  QA_STATUSES,
 } = models.TaskStatusesDictionary;
 
 async function update (body, taskId, user) {
@@ -28,7 +28,7 @@ async function update (body, taskId, user) {
 
     const changedTaskData = {
       'performerId': (originTask.performerId !== oldPerformer),
-      'statusId': (originTask.statusId !== oldStatus)
+      'statusId': (originTask.statusId !== oldStatus),
     };
 
     const updatedTask = await findByPrimary(taskId, user.globalRole);
@@ -53,7 +53,7 @@ async function update (body, taskId, user) {
       createdDraft,
       activeTask,
       projectId: originTask.projectId,
-      changedTaskData
+      changedTaskData,
     };
   } catch (error) {
     throw error;
@@ -64,8 +64,8 @@ async function updateAllByAttribute (attr, taskIds, user) {
   try {
     const originTasks = await Task.findAll({
       where: {
-        id: taskIds
-      }
+        id: taskIds,
+      },
     });
 
     const validTaskIds = await getValidTaskIds(originTasks, attr, user);
@@ -75,9 +75,9 @@ async function updateAllByAttribute (attr, taskIds, user) {
     const sprintId = attr.sprintId !== 0 ? attr.sprintId : null;
     const updatedTasks = await Task.update({...attr, sprintId}, {
       where: {
-        id: validTaskIds
+        id: validTaskIds,
       },
-      returning: true
+      returning: true,
     });
     return updatedTasks[1];
   } catch (error) {
@@ -120,7 +120,7 @@ async function createDraftIfNeeded (task, statusId) {
     const statuses = [
       DEVELOP_STATUSES,
       CODE_REVIEW_STATUSES,
-      QA_STATUSES
+      QA_STATUSES,
     ];
     const onDate = moment().format('YYYY-MM-DD');
     const needCreateDraft = await TimesheetService.isNeedCreateDraft(task, statusId, onDate);
@@ -133,7 +133,7 @@ async function createDraftIfNeeded (task, statusId) {
         typeId: 1,
         taskStatusId: currentStageStatuses[1],
         projectId: task.projectId,
-        isVisible: true
+        isVisible: true,
       };
       await TimesheetService.createDraft(draftParams);
       return TimesheetService.getDraft(draftParams);
@@ -170,16 +170,16 @@ async function getLastActiveTask (currentUserId) {
   try {
     return await Task.findOne({
       where: {
-        performerId: currentUserId
+        performerId: currentUserId,
       },
       order: [['updated_at', 'DESC']],
       include: [
         {
           as: 'project',
           model: Project,
-          attributes: ['prefix']
-        }
-      ]
+          attributes: ['prefix'],
+        },
+      ],
     });
   } catch (error) {
     throw error;
@@ -193,16 +193,16 @@ async function getActiveTasks (currentUserId) {
       where: {
         performerId: currentUserId,
         statusId: {
-          $or: playStatuses
-        }
+          $or: playStatuses,
+        },
       },
       include: [
         {
           as: 'project',
           model: Project,
-          attributes: ['prefix']
-        }
-      ]
+          attributes: ['prefix'],
+        },
+      ],
     });
 
     return tasks;
@@ -253,7 +253,7 @@ async function validateTask (task, body, user) {
     }
     if (body.hasOwnProperty('sprintId')) {
       const projectBySprint = await models.Sprint.findByPrimary(body.sprintId, {
-        attributes: ['projectId']
+        attributes: ['projectId'],
       });
       if (body.sprintId !== 0 && (!projectBySprint || (projectBySprint && task.projectId !== projectBySprint.projectId))) {
         throw createError(400, 'sprintId wrong');
@@ -269,5 +269,5 @@ module.exports = {
   updateAllByAttribute,
   update,
   getActiveTasks,
-  getLastActiveTask
+  getLastActiveTask,
 };

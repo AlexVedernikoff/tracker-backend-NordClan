@@ -10,16 +10,16 @@ module.exports = function (sequelize, DataTypes) {
         autoIncrement: true,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       name: {
         type: DataTypes.STRING,
         trim: true,
         allowNull: false,
         validate: {
-          len: [1, 255]
-        }
+          len: [1, 255],
+        },
       },
       typeId: {
         field: 'type_id',
@@ -27,73 +27,73 @@ module.exports = function (sequelize, DataTypes) {
         defaultValue: 1,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       isTaskByClient: {
         field: 'is_task_by_client',
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-        allowNull: false
+        allowNull: false,
       },
       statusId: {
         field: 'status_id',
         type: DataTypes.INTEGER,
         defaultValue: 1,
-        allowNull: false
+        allowNull: false,
       },
       description: {
         trim: true,
         type: DataTypes.TEXT,
-        defaultValue: null
+        defaultValue: null,
       },
       plannedExecutionTime: {
         field: 'planned_execution_time',
         type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0
+        defaultValue: 0,
       },
       factExecutionTime: {
         field: 'fact_execution_time',
         type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0
+        defaultValue: 0,
       },
       prioritiesId: {
         field: 'priorities_id',
         type: DataTypes.INTEGER,
         defaultValue: 3,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       performerId: {
         field: 'performer_id',
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       authorId: {
         field: 'author_id',
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       externalId: {
         field: 'external_id',
         type: DataTypes.STRING,
         allowNull: true,
-        unique: true
+        unique: true,
       },
       gitlabBranchIds: {
         field: 'gitlab_branch_ids',
         type: DataTypes.JSON,
-        allowNull: true
+        allowNull: true,
       },
       isDevOps: {
         field: 'is_dev_ops',
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: false,
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       timestamps: true,
@@ -103,8 +103,8 @@ module.exports = function (sequelize, DataTypes) {
       hooks: {
         afterFind: function (model) {
           ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
-      }
+        },
+      },
     }
   );
 
@@ -114,8 +114,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Task.belongsTo(models.TaskStatusesDictionary, {
@@ -123,8 +123,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'statusId',
         field: 'status_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Task.belongsTo(models.TaskTypesDictionary, {
@@ -132,60 +132,60 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'typeId',
         field: 'type_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Task.belongsTo(models.Task, {
       as: 'parentTask',
       foreignKey: {
         name: 'parentId',
-        field: 'parent_id'
-      }
+        field: 'parent_id',
+      },
     });
 
     Task.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'authorId',
-        field: 'author_id'
-      }
+        field: 'author_id',
+      },
     });
 
     Task.hasMany(models.Task, {
       as: 'subTasks',
       foreignKey: {
         name: 'parentId',
-        field: 'parent_id'
-      }
+        field: 'parent_id',
+      },
     });
 
     Task.hasMany(models.TaskHistory, {
       as: 'history',
       foreignKey: {
         name: 'taskId',
-        field: 'task_id'
-      }
+        field: 'task_id',
+      },
     });
 
     Task.belongsToMany(models.Task, {
       as: 'linkedTasks',
       through: {
         model: models.TaskTasks,
-        unique: false
+        unique: false,
       },
       foreignKey: {
         name: 'taskId',
-        field: 'task_id'
-      }
+        field: 'task_id',
+      },
     });
 
     Task.belongsTo(models.Sprint, {
       as: 'sprint',
       foreignKey: {
         name: 'sprintId',
-        field: 'sprint_id'
-      }
+        field: 'sprint_id',
+      },
     });
 
     Task.belongsToMany(models.Tag, {
@@ -194,11 +194,11 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'task'
-        }
+          taggable: 'task',
+        },
       },
       foreignKey: 'taggable_id',
-      constraints: false
+      constraints: false,
     });
 
     Task.belongsToMany(models.Tag, {
@@ -207,37 +207,37 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'task'
-        }
+          taggable: 'task',
+        },
       },
       foreignKey: 'taggable_id',
-      constraints: false
+      constraints: false,
     });
 
     Task.belongsTo(models.User, {
       as: 'performer',
       foreignKey: {
         name: 'performerId',
-        field: 'performer_id'
-      }
+        field: 'performer_id',
+      },
     });
 
     Task.hasMany(models.TaskAttachments, {
       as: 'attachments',
-      foreignKey: 'task_id'
+      foreignKey: 'task_id',
     });
 
     Task.hasMany(models.Comment, {
       as: 'comments',
-      foreignKey: 'task_id'
+      foreignKey: 'task_id',
     });
 
     Task.hasMany(models.Timesheet, {
       as: 'timesheets',
       foreignKey: {
         name: 'taskId',
-        field: 'task_id'
-      }
+        field: 'task_id',
+      },
     });
   };
 
