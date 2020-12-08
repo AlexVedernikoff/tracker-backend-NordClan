@@ -35,14 +35,14 @@ exports.historyHandler = function (sequelize, historyModel) {
         valueText: (type === 'TEXT') ? diffObj[key].newVal : null,
         prevValueText: (type === 'TEXT') ? diffObj[key].oldVal : null,
         valueBoolean: (type === 'BOOLEAN') ? diffObj[key].newVal : null,
-        prevValueBoolean: (type === 'BOOLEAN') ? diffObj[key].oldVal : null
+        prevValueBoolean: (type === 'BOOLEAN') ? diffObj[key].oldVal : null,
       };
     });
   }
 
   function getUserId (model, instance) {
-    if (model.authorId) return model.authorId;
     if (instance.historyAuthorId) return instance.historyAuthorId;
+    if (model.authorId) return model.authorId;
     if (instance.transaction
       && instance.transaction.options.historyAuthorId) return instance.transaction.options.historyAuthorId;
     return null;
@@ -60,7 +60,7 @@ exports.historyHandler = function (sequelize, historyModel) {
       userId,
       [modelIdProperty]: modelId,
       action: eventType,
-      testCaseId: model.id
+      testCaseId: model.id,
     });
   }
 
@@ -86,7 +86,7 @@ exports.historyHandler = function (sequelize, historyModel) {
           entityId: modelId,
           userId: userId,
           [modelIdProperty]: model.parentId,
-          action: 'create'
+          action: 'create',
         }).catch((err) => {
           if (err) {
             throw createError(err);
@@ -126,7 +126,7 @@ exports.historyHandler = function (sequelize, historyModel) {
           entityId: modelId,
           userId: userId,
           [modelIdProperty]: model.parentId,
-          action: 'update'
+          action: 'update',
         }).catch((err) => {
           if (err) {
             throw createError(err);
@@ -143,6 +143,6 @@ exports.historyHandler = function (sequelize, historyModel) {
             throw createError(err);
           }
         });
-    }
+    },
   };
 };
