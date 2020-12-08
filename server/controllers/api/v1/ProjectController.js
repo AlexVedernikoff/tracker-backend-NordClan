@@ -38,10 +38,6 @@ exports.create = function (req, res, next) {
     }
   });
 
-  if (req.user.isVisor) {
-    return next(createError(403, 'Access denied'));
-  }
-
   Project.create(req.body)
     .then(model => {
       return queries.tag
