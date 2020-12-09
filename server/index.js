@@ -17,7 +17,7 @@ const server = require('http').Server(app);
 const HealthcheckController = require('./controllers/api/v1/HealthcheckController');
 const FeatureFlagsController = require('./controllers/api/v1/FeatureFlags');
 const io = require('socket.io')(server, {
-  path: '/api/v1/socket'
+  path: '/api/v1/socket',
 });
 
 io.sockets.on('connection', function (socket) {
@@ -52,7 +52,7 @@ exports.run = function () {
       swaggerVersion: '2.0',
       swaggerURL: '/api/v1/swagger',
       swaggerUI: './public/swagger/',
-      basePath: '/api/v1/swagger'
+      basePath: '/api/v1/swagger',
     })
   );
 
@@ -82,7 +82,7 @@ exports.run = function () {
     res.status(404).json({
       status: 404,
       message: 'Page Not Found',
-      name: 'NotFoundError'
+      name: 'NotFoundError',
     });
   });
 

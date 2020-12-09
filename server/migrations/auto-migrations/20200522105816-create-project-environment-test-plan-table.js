@@ -5,27 +5,27 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       project_environment_id: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_plan_id: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
 
-  down: queryInterface => queryInterface.dropTable('project_environment_test_plan')
+  down: queryInterface => queryInterface.dropTable('project_environment_test_plan'),
 };

@@ -25,5 +25,5 @@ module.exports = {
   getDraft,
   submit,
   approve,
-  reject
+  reject,
 };

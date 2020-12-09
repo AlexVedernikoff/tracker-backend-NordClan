@@ -4,15 +4,15 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: false,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(20),
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 20]
-      }
+        len: [1, 20],
+      },
     },
     nameEn: {
       field: 'name_en',
@@ -20,14 +20,14 @@ module.exports = function (sequelize, DataTypes) {
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 20]
-      }
-    }
+        len: [1, 20],
+      },
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'project_statuses'
+    tableName: 'project_statuses',
   });
 
   ProjectStatuses.associate = function (models) {
@@ -35,7 +35,7 @@ module.exports = function (sequelize, DataTypes) {
       as: 'projectStatuses',
       foreignKey: {
         name: 'statusId',
-        field: 'status_id'
+        field: 'status_id',
       }});
   };
 

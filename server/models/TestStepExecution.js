@@ -8,42 +8,42 @@ module.exports = function (sequelize, DataTypes) {
         autoIncrement: true,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       testCaseExecutionId: {
         type: DataTypes.INTEGER,
         field: 'test_case_execution_id',
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       testStepId: {
         type: DataTypes.INTEGER,
         field: 'test_step_id',
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       status: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       description: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       tableName: 'test_step_execution',
       paranoid: true,
       timestamps: true,
-      underscored: true
+      underscored: true,
     }
   );
 
@@ -53,29 +53,29 @@ module.exports = function (sequelize, DataTypes) {
       as: 'TestCaseExecutionInfo',
       foreignKey: {
         name: 'testCaseExecutionId',
-        field: 'test_case_execution_id'
-      }
+        field: 'test_case_execution_id',
+      },
     });
 
     TestStepExecution.belongsTo(models.TestCaseSteps, {
       as: 'testStepInfo',
       foreignKey: {
         name: 'testStepId',
-        field: 'test_step_id'
-      }
+        field: 'test_step_id',
+      },
     });
 
     TestStepExecution.belongsTo(models.TestCaseStepExecutionStatusDictionary, {
       as: 'testStepStatus',
-      foreignKey: 'status'
+      foreignKey: 'status',
     });
 
     TestStepExecution.hasMany(models.TestStepExecutionAttachments, {
       as: 'attachments',
       foreignKey: {
         name: 'testStepExecutionId',
-        field: 'test_step_execution_id'
-      }
+        field: 'test_step_execution_id',
+      },
     });
 
   };

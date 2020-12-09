@@ -4,27 +4,27 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(50),
       trim: true,
       allowNull: false,
       validate: {
-        len: [2, 50]
-      }
-    }
+        len: [2, 50],
+      },
+    },
   }, {
     indexes: [
       {
         unique: true,
-        fields: ['name']
-      }
+        fields: ['name'],
+      },
     ],
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'tags'
+    tableName: 'tags',
   });
 
   Tag.associate = function (models) {
@@ -33,11 +33,11 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'task'
-        }
+          taggable: 'task',
+        },
       },
       foreignKey: 'tag_id',
-      constraints: false
+      constraints: false,
     });
 
     Tag.belongsToMany(models.Project, {
@@ -45,11 +45,11 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'project'
-        }
+          taggable: 'project',
+        },
       },
       foreignKey: 'tag_id',
-      constraints: false
+      constraints: false,
     });
 
     Tag.belongsToMany(models.Sprint, {
@@ -57,19 +57,19 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'sprint'
-        }
+          taggable: 'sprint',
+        },
       },
       foreignKey: 'tag_id',
-      constraints: false
+      constraints: false,
     });
 
     Tag.hasMany(models.ItemTag, {
       as: 'itemTags',
       foreignKey: {
         name: 'tagId',
-        field: 'tag_id'
-      }
+        field: 'tag_id',
+      },
     });
 
   };

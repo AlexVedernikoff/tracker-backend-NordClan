@@ -5,43 +5,43 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_run_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       project_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       project_environment_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       started_by: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       start_time: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       finish_time: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       status: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
 
     queryInterface.createTable('test_case_execution', {
@@ -49,38 +49,38 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_run_execution_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       test_case_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       status: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       is_issue_created: {
         type: Sequelize.BOOLEAN,
         allowNull: true,
-        defaultValue: false
+        defaultValue: false,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
 
     return queryInterface.createTable('test_step_execution', {
@@ -88,33 +88,33 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_case_execution_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       test_step_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       status: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
 
@@ -122,5 +122,5 @@ module.exports = {
     queryInterface.dropTable('test_run_execution');
     queryInterface.dropTable('test_case_execution');
     return queryInterface.dropTable('test_step_execution');
-  }
+  },
 };

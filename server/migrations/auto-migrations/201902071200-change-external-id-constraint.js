@@ -19,5 +19,5 @@ module.exports = {
 
     queryInterface.sequelize.query('ALTER TABLE sprints DROP CONSTRAINT sprints_external_id_uq');
     queryInterface.sequelize.query('ALTER TABLE sprints ADD CONSTRAINT sprints_external_id_key UNIQUE(external_id);');
-  }
+  },
 };

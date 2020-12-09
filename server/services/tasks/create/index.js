@@ -20,8 +20,8 @@ async function saveTagsForModel (task, tags) {
             where: {
               tagId: tag.id,
               taggableId: task.id,
-              taggable: 'task'
-            }
+              taggable: 'task',
+            },
           });
       });
   });

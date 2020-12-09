@@ -7,9 +7,9 @@ module.exports = {
           'users',
           'isActive',
           {
-            type: Sequelize.INTEGER
+            type: Sequelize.INTEGER,
           }
-        )
+        ),
       ]));
   },
   down: function (queryInterface) {
@@ -18,7 +18,7 @@ module.exports = {
         queryInterface.removeColumn(
           'users',
           'isActive'
-        )
+        ),
       ]));
-  }
+  },
 };

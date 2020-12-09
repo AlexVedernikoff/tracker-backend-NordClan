@@ -3,13 +3,13 @@ module.exports = function (sequelize, DataTypes) {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
-    }
+      autoIncrement: true,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'user_departments'
+    tableName: 'user_departments',
   });
 
   return UserDepartments;

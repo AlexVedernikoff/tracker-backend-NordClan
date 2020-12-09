@@ -6,37 +6,37 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     typeId: {
       field: 'type_id',
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
     value: {
-      type: DataTypes.TEXT
+      type: DataTypes.TEXT,
     },
     createdAt: {
       field: 'created_at',
-      type: DataTypes.DATE
+      type: DataTypes.DATE,
     },
     projectId: {
       field: 'project_id',
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
     sprintId: {
       field: 'sprint_id',
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
     userId: {
       field: 'user_id',
-      type: DataTypes.INTEGER
-    }
+      type: DataTypes.INTEGER,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: true,
-    tableName: 'metrics'
+    tableName: 'metrics',
   });
 
   Metrics.associate = function (models) {
@@ -45,24 +45,24 @@ module.exports = function (sequelize, DataTypes) {
       as: 'project',
       foreignKey: {
         name: 'projectId',
-        field: 'project_id'
-      }
+        field: 'project_id',
+      },
     });
 
     Metrics.belongsTo(models.Sprint, {
       as: 'sprint',
       foreignKey: {
         name: 'sprintId',
-        field: 'sprint_id'
-      }
+        field: 'sprint_id',
+      },
     });
 
     Metrics.belongsTo(models.User, {
       as: 'user',
       foreignKey: {
         name: 'userId',
-        field: 'user_id'
-      }
+        field: 'user_id',
+      },
     });
 
   };
@@ -74,7 +74,7 @@ module.exports = function (sequelize, DataTypes) {
     'createdAt',
     'projectId',
     'sprintId',
-    'userId'
+    'userId',
   ];
 
   return Metrics;

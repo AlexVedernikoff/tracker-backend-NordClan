@@ -5,45 +5,45 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_case_execution_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       file_name: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       path: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       preview_path: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       author_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       size: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       type: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
 
     return queryInterface.createTable('test_step_execution_attachments', {
@@ -51,51 +51,51 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_step_execution_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       file_name: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       path: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       preview_path: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       author_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       size: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       type: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
 
   down: queryInterface => {
     queryInterface.dropTable('test_case_execution_attachments');
     return queryInterface.dropTable('test_step_execution_attachments');
-  }
+  },
 
 };

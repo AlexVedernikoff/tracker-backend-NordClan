@@ -120,9 +120,9 @@ class ByTaskWorkSheet extends WorkSheetTemplate {
         numFmt: '0.00',
         text: locale.HOURS_SPENT,
         width: 13,
-        alignment: {horizontal: 'right'}
+        alignment: {horizontal: 'right'},
       },
-      {calculate: () => '', text: locale.HOURS_TOTAL, width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}}
+      {calculate: () => '', text: locale.HOURS_TOTAL, width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}},
     ];
   }
 

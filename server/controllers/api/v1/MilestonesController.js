@@ -12,7 +12,7 @@ const canUpdateOrCreateMilestones = (req, projectId) => {
 exports.create = (req, res, next) => {
   const params = {
     ...req.body,
-    done: false
+    done: false,
   };
 
   Milestone

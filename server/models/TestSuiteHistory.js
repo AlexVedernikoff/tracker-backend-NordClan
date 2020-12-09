@@ -4,53 +4,53 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     testSuiteId: {
       field: 'test_suite_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     field: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     prevValueStr: {
       field: 'prev_value_str',
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     valueStr: {
       field: 'value_str',
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     prevValueText: {
       field: 'prev_value_text',
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     valueText: {
       field: 'value_text',
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     action: {
       type: DataTypes.STRING(6),
-      allowNull: false
+      allowNull: false,
     },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
-    createdAt: { type: DataTypes.DATE, field: 'created_at' }
+    createdAt: { type: DataTypes.DATE, field: 'created_at' },
   }, {
     underscored: true,
     timestamps: true,
     updatedAt: false,
     paranoid: false,
-    tableName: 'test_suite_histories'
+    tableName: 'test_suite_histories',
   });
 
   TestSuiteHistory.associate = function (models) {
@@ -58,18 +58,18 @@ module.exports = function (sequelize, DataTypes) {
       as: 'author',
       foreignKey: {
         name: 'userId',
-        field: 'user_id'
+        field: 'user_id',
       },
-      constraints: true
+      constraints: true,
     });
 
     TestSuiteHistory.belongsTo(models.TestSuite, {
       as: 'testSuiteData',
       foreignKey: {
         name: 'testSuiteId',
-        field: 'test_suite_id'
+        field: 'test_suite_id',
       },
-      constraints: true
+      constraints: true,
     });
 
   };

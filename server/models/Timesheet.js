@@ -7,88 +7,88 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     sprintId: {
       field: 'sprint_id',
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     onDate: {
       field: 'on_date',
       type: DataTypes.DATEONLY,
-      allowNull: false
+      allowNull: false,
     },
     typeId: {
       field: 'type_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     spentTime: {
       field: 'spent_time',
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
+      allowNull: false,
     },
     comment: {
       type: DataTypes.TEXT,
       trim: true,
-      allowNull: true
+      allowNull: true,
     },
     isBillable: {
       field: 'is_billable',
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: false,
     },
     userRoleId: {
       field: 'user_role_id',
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     approvedByUserId: {
       field: 'approved_by_user_id',
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',
-      allowNull: true
+      allowNull: true,
     },
     statusId: {
       type: DataTypes.INTEGER,
       field: 'status_id',
       allowNull: true,
-      defaultValue: 1
+      defaultValue: 1,
     },
     projectId: {
       field: 'project_id',
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     isVisible: {
       field: 'is_visible',
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: true,
     },
     externalId: {
       field: 'external_id',
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true
+      unique: true,
     },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
-    updatedAt: { type: DataTypes.DATE, field: 'updated_at' }
+    updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
   }, {
     underscored: true,
     timestamps: true,
@@ -97,8 +97,8 @@ module.exports = function (sequelize, DataTypes) {
     hooks: {
       afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      }
-    }
+      },
+    },
   });
 
   Timesheet.associate = function (models) {
@@ -107,8 +107,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'taskId',
         field: 'task_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Timesheet.belongsTo(models.Sprint, {
@@ -116,8 +116,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'sprintId',
         field: 'sprint_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     // Устроело, но используется DEPRECATED
@@ -126,9 +126,9 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id',
-        allowNull: true
+        allowNull: true,
       },
-      constraints: false
+      constraints: false,
     });
 
     Timesheet.belongsTo(models.Project, {
@@ -136,9 +136,9 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id',
-        allowNull: true
+        allowNull: true,
       },
-      constraints: false
+      constraints: false,
     });
 
     Timesheet.belongsTo(models.User, {
@@ -146,8 +146,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'userId',
         field: 'user_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Timesheet.belongsTo(models.TimesheetTypesDictionary, {
@@ -155,8 +155,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'typeId',
         field: 'type_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Timesheet.belongsTo(models.ProjectRolesDictionary, {
@@ -164,9 +164,9 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'userRoleId',
         field: 'user_role_id',
-        allowNull: false
+        allowNull: false,
       },
-      constraints: false
+      constraints: false,
     });
 
     Timesheet.belongsTo(models.TaskStatusesDictionary, {
@@ -174,8 +174,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'taskStatusId',
         field: 'task_status_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     Timesheet.belongsTo(models.TimesheetStatusesDictionary, {
@@ -183,8 +183,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'statusId',
         field: 'status_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
   };

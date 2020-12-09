@@ -65,7 +65,7 @@ async function getMetrics (project, taskTypeBug, taskStatusDone, metricTypes) {
     utils.bugsCountRegression(project.id)
       .then(data => {project.bugsCountRegression = data;}),
     utils.spentTimeByRoles(project.id)
-      .then(data => {project.spentTimeByRoles = data;})
+      .then(data => {project.spentTimeByRoles = data;}),
   ]);
   console.timeEnd('subquery metric');
 
@@ -83,7 +83,7 @@ async function getMetrics (project, taskTypeBug, taskStatusDone, metricTypes) {
       //console.log('I value.id = ', value.id);
       projectMetricsTasks.push(metricsLib(value.id, {
         project: project,
-        executeDate
+        executeDate,
       }));
     }
   });
@@ -96,7 +96,7 @@ async function getMetrics (project, taskTypeBug, taskStatusDone, metricTypes) {
           projectMetricsTasks.push(metricsLib(value.id, {
             project: project,
             sprint,
-            executeDate
+            executeDate,
           }));
         }
       });
@@ -117,7 +117,7 @@ async function saveMetrics (metricsData) {
     transaction = await sequelize.transaction();
     await Metrics.bulkCreate(metricsData.filter(md => md), {
       transaction,
-      logging: false
+      logging: false,
     });
     await transaction.commit();
   } catch (e) {

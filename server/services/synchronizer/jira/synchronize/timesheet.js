@@ -8,7 +8,7 @@ const { Timesheet } = models;
 exports.synchronizeTimesheets = async function (timesheets, projectId) {
   const extIds = timesheets.map(s => s.externalId);
   let createdTimesheets = await Timesheet.findAll({
-    where: { externalId: { $in: extIds }, projectId }
+    where: { externalId: { $in: extIds }, projectId },
   });
   const newTimesheets = timesheets.filter(t => {
     const ind = createdTimesheets.findIndex(ct => {
@@ -29,7 +29,7 @@ exports.synchronizeTimesheets = async function (timesheets, projectId) {
       if (ind >= -1) {
         const updObj = timesheets[i];
         await Timesheet.update(updObj, {
-          where: { externalId: t.externalId.toString() }
+          where: { externalId: t.externalId.toString() },
         });
       }
     });
@@ -39,6 +39,6 @@ exports.synchronizeTimesheets = async function (timesheets, projectId) {
   if (newTimesheets.length > 0) await Timesheet.bulkCreate(newTimesheets);
 
   return Timesheet.findAll({
-    where: { externalId: { $in: extIds }, projectId }
+    where: { externalId: { $in: extIds }, projectId },
   });
 };

@@ -1,5 +1,3 @@
-const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
-
 module.exports = function (sequelize, DataTypes) {
   const TestSuite = sequelize.define(
     'TestSuite',

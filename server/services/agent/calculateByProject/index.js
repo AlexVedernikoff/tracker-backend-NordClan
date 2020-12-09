@@ -7,6 +7,7 @@ const recipientsEmails = config.emailsToSendErrorsByMetrics;
 
 module.exports.calculateByProject = async function (projectId, user) {
   return new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-unused-vars
     exec(`node ./server/services/agent/calculateByProject/agent.js ${projectId}`, (error, stdout, stderr) => {
       if (error) {
         emailSubprocess({
@@ -14,9 +15,9 @@ module.exports.calculateByProject = async function (projectId, user) {
           input: {
             recipients: recipientsEmails,
             error: error,
-            projectId: projectId
+            projectId: projectId,
           },
-          user
+          user,
         });
         reject(error);
       } else {

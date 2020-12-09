@@ -7,7 +7,7 @@ exports.replaceAuthHeader = () => {
       req.headers.authorization = req.headers['x-jira-auth'];
       req.headers = {
         'Content-Type': 'application/json',
-        'authorization': `${req.headers.authorization}`
+        'authorization': `${req.headers.authorization}`,
       };
       return next();
     }

@@ -16,13 +16,13 @@ exports.sendActionCreator = (getAction, emit) => async (type, data, socketIO, pr
     include: [
       {
         as: 'usersProjects',
-        model: ProjectUsers
+        model: ProjectUsers,
       },
       {
         as: 'authorsProjects',
-        model: Project
-      }
-    ]
+        model: Project,
+      },
+    ],
   });
 
   users.forEach(user => {

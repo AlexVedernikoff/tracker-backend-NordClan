@@ -18,5 +18,5 @@ module.exports = {
             ALTER COLUMN "type" TYPE character varying(20),
             ALTER COLUMN "type" SET NOT NULL
     `);
-  }
+  },
 };

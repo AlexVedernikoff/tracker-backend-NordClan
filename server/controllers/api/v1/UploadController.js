@@ -124,10 +124,10 @@ exports.delete = async function (req, res, next) {
           {
             as: 'task',
             model: models.Task,
-            attributes: ['projectId']
-          }
+            attributes: ['projectId'],
+          },
         ]
-        : []
+        : [],
     })
     .then(model => {
       if (!model) {
@@ -190,7 +190,7 @@ exports.upload = function (req, res, next) {
 
       return models[modelName]
         .findByPrimary(entityId, {
-          attributes: getAttributesByModelName(modelName)
+          attributes: getAttributesByModelName(modelName),
         })
         .then((model) => {
           if (!model) {
@@ -255,7 +255,7 @@ exports.upload = function (req, res, next) {
                         type: file.type,
                         size: file.size,
                         path: uploadDir + '/' + nameWithTimestamp,
-                        previewPath: previewPath ? previewPath : null
+                        previewPath: previewPath ? previewPath : null,
                       });
                   });
               });

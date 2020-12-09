@@ -12,7 +12,7 @@ const {
   getJiraProjectById,
   getJiraProjectUsers,
   setJiraSyncStatus,
-  getJiraSyncStatuses
+  getJiraSyncStatuses,
 } = require('./jira');
 
 module.exports = {
@@ -29,5 +29,5 @@ module.exports = {
   getJiraProjectById,
   getJiraProjectUsers,
   setJiraSyncStatus,
-  getJiraSyncStatuses
+  getJiraSyncStatuses,
 };

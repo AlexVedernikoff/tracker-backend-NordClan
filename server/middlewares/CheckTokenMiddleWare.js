@@ -69,16 +69,16 @@ const handleToken = (req, res, next) => {
         include: [
           {
             as: 'roles',
-            model: models.ProjectUsersRoles
-          }
+            model: models.ProjectUsersRoles,
+          },
         ],
-        required: false
+        required: false,
       },
       {
         as: 'authorsProjects',
         model: Project,
         attributes: ['id'],
-        required: false
+        required: false,
       },
       {
         model: models.Department,
@@ -87,21 +87,21 @@ const handleToken = (req, res, next) => {
         attributes: ['name'],
         through: {
           model: models.UserDepartments,
-          attributes: []
-        }
-      }
-    ]
+          attributes: [],
+        },
+      },
+    ],
   };
   if (req.isValidKeycloakToken) {
     const { email } = req.kauth.grant.access_token.content;
     userQuery.where = {
       emailPrimary: email,
-      active: 1
+      active: 1,
     };
   } else {
     userQuery.where = {
       login: req.decoded.user.login,
-      active: 1
+      active: 1,
     };
     userQuery.include.push({
       as: 'token',
@@ -111,9 +111,9 @@ const handleToken = (req, res, next) => {
       where: {
         token: req.token,
         expires: {
-          $gt: moment().format() // expires > now
-        }
-      }
+          $gt: moment().format(), // expires > now
+        },
+      },
     });
   }
   User.findOne(userQuery)
@@ -123,8 +123,8 @@ const handleToken = (req, res, next) => {
           return Task.findAll({
             attributes: ['projectId'],
             where: {
-              isDevOps: true
-            }
+              isDevOps: true,
+            },
           }).then((tasks) => {
             if (tasks !== 0) {
               user.devOpsProjects = tasks.map(task => task.projectId);
@@ -185,17 +185,17 @@ exports.getUserByToken = async function (header) {
   const tokenHeader = headerObj.authorization.replace('%20', ' ');
   const fakeRequest = {
     headers: {
-      'authorization': tokenHeader
+      'authorization': tokenHeader,
     },
     body: {},
     cookies: {},
     query: {},
     params: {},
-    get: () => null
+    get: () => null,
   };
   const fakeResponse = {
     status: null,
-    end: null
+    end: null,
   };
   await applyMidlleware([...keycloak.middleware(), validateKeycloakToken, validateDefaultToken, handleToken], fakeRequest, fakeResponse);
   return fakeRequest.user;
@@ -204,7 +204,7 @@ exports.getUserByToken = async function (header) {
 exports.createJwtToken = function (user) {
   const payload = {
     user: user,
-    expires: moment().add(config.auth.accessTokenLifetime, 's')
+    expires: moment().add(config.auth.accessTokenLifetime, 's'),
   };
   return { token: jwt.encode(payload, tokenSecret), expires: payload.expires };
 };

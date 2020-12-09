@@ -8,16 +8,16 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     name: {
       type: DataTypes.STRING,
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 255]
-      }
+        len: [1, 255],
+      },
     },
     statusId: {
       field: 'status_id',
@@ -26,78 +26,78 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: 0,
-        max: 9
-      }
+        max: 9,
+      },
     },
     factStartDate: {
       field: 'fact_start_date',
       type: DataTypes.DATEONLY,
       defaultValue: null,
       validate: {
-        isDate: true
-      }
+        isDate: true,
+      },
     },
     factFinishDate: {
       field: 'fact_finish_date',
       type: DataTypes.DATEONLY,
       defaultValue: null,
       validate: {
-        isDate: true
-      }
+        isDate: true,
+      },
     },
     allottedTime: {
       field: 'allotted_time',
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: null,
       validate: {
-        isFloat: true
-      }
+        isFloat: true,
+      },
     },
     qaPercent: {
       field: 'qa_percent',
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      allowNull: false
+      allowNull: false,
     },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     budget: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: null,
       validate: {
-        isFloat: true
-      }
+        isFloat: true,
+      },
     },
     riskBudget: {
       field: 'risk_budget',
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: null,
       validate: {
-        isFloat: true
-      }
+        isFloat: true,
+      },
     },
     externalId: {
       field: 'external_id',
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true
+      unique: true,
     },
     entitiesLastUpdate: { // see hook server/components/metricNeedUpdateHook.js
       field: 'entities_last_update',
       type: DataTypes.DATE,
-      allowNull: true
+      allowNull: true,
     },
     metricLastUpdate: { // need for optimize calc metric
       field: 'metric_last_update',
       type: DataTypes.DATE,
-      allowNull: true
+      allowNull: true,
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
     underscored: true,
     timestamps: true,
@@ -106,23 +106,23 @@ module.exports = function (sequelize, DataTypes) {
     hooks: {
       afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      }
-    }
+      },
+    },
 
   });
 
   Sprint.associate = function (models) {
     Sprint.belongsTo(models.Project, {foreignKey: {
       name: 'projectId',
-      field: 'project_id'
+      field: 'project_id',
     }});
 
     Sprint.hasMany(models.Task, {
       as: 'tasks',
       foreignKey: {
         name: 'sprintId',
-        field: 'sprint_id'
-      }
+        field: 'sprint_id',
+      },
     });
 
     Sprint.belongsToMany(models.Tag, {
@@ -131,11 +131,11 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'sprint'
-        }
+          taggable: 'sprint',
+        },
       },
       foreignKey: 'taggable_id',
-      constraints: false
+      constraints: false,
     });
 
     Sprint.belongsToMany(models.Tag, {
@@ -144,11 +144,11 @@ module.exports = function (sequelize, DataTypes) {
         model: models.ItemTag,
         unique: false,
         scope: {
-          taggable: 'sprint'
-        }
+          taggable: 'sprint',
+        },
       },
       foreignKey: 'taggable_id',
-      constraints: false
+      constraints: false,
     });
 
   };

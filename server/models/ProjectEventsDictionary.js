@@ -4,18 +4,18 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: false,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(255),
       trim: true,
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'project_events'
+    tableName: 'project_events',
   });
 
   ProjectEvents.values = [
@@ -24,7 +24,7 @@ module.exports = function (sequelize, DataTypes) {
     {id: 3, name: 'Новый комментарий к задаче'},
     {id: 4, name: 'Задача завершена'},
     {id: 5, name: 'Новое упоминание в комментарии к задаче'},
-    {id: 6, name: 'Ошибка просчёта метрик'}
+    {id: 6, name: 'Ошибка просчёта метрик'},
   ];
 
   return ProjectEvents;

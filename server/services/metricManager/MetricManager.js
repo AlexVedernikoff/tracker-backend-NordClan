@@ -10,12 +10,12 @@ module.exports = class MetricManager {
   constructor () {
     this._startedMetrics = {
       project: [], // содержит id проектов для которых запущенна вручную метрика
-      allProjects: false // запуск сборк глобальной метрики
+      allProjects: false, // запуск сборк глобальной метрики
     };
 
     this.lisner = {
       startedMetrics: this._getStartedMetrics.bind(this),
-      startMetric: this._startMetric.bind(this)
+      startMetric: this._startMetric.bind(this),
     };
     this._recipientsEmails = config.emailsToSendErrorsByMetrics;
   }
@@ -54,7 +54,8 @@ module.exports = class MetricManager {
     }
 
     console.log('start');
-    const promise = new Promise((resolve, reject) => {
+    new Promise((resolve, reject) => {
+      // eslint-disable-next-line no-unused-vars
       exec(`node ./server/services/agent/calculateByProject/agent.js ${projectId}`, (error, stdout, stderr) => {
         if (error) {
           reject(error);
@@ -74,8 +75,8 @@ module.exports = class MetricManager {
           input: {
             recipients: this._recipientsEmails,
             error: error,
-            projectId: projectId
-          }
+            projectId: projectId,
+          },
         });
       });
 

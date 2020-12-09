@@ -14,5 +14,5 @@ module.exports = {
      ALTER TABLE users ALTER COLUMN global_role SET DEFAULT 'USER'::global_role_type;
      DROP TYPE global_role_type_old;
     `);
-  }
+  },
 };

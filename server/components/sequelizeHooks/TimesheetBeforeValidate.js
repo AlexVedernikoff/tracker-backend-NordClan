@@ -19,16 +19,16 @@ exports.index = async (instance, options) => {
     const projectUsers = await models.ProjectUsers.findOne({
       where: {
         projectId: instance.projectId,
-        userId: userId
+        userId: userId,
       },
       attributes: ['rolesIds'],
       include: [/** обязательно для формирования виртуального свойства roleIds*/
         {
           as: 'roles',
-          model: models.ProjectUsersRoles
-        }
+          model: models.ProjectUsersRoles,
+        },
       ],
-      transaction: t
+      transaction: t,
     });
     /** Получаем список ролей для заполнения метрик*/
     const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
@@ -40,22 +40,22 @@ exports.index = async (instance, options) => {
   if (isImplementation(instance)) {
     const task = await models.Task.findById(instance.taskId, {
       attributes: ['id', 'projectId'],
-      transaction: t
+      transaction: t,
     });
 
     const projectUsers = await models.ProjectUsers.findOne({
       where: {
         projectId: task.projectId,
-        userId: userId
+        userId: userId,
       },
       attributes: ['rolesIds'],
       include: [/** обязательно для формирования виртуального свойства roleIds*/
         {
           as: 'roles',
-          model: models.ProjectUsersRoles
-        }
+          model: models.ProjectUsersRoles,
+        },
       ],
-      transaction: t
+      transaction: t,
     });
     /** Получаем список ролей для заполнения метрик*/
     const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/

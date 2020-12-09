@@ -8,9 +8,9 @@ exports.savePortfolioToProject = function (projectModel, portfolioName, t = null
     .findOrCreate({
       where: {
         name: portfolioName,
-        authorId: projectModel.authorId
+        authorId: projectModel.authorId,
       },
-      transaction: t
+      transaction: t,
     })
     .spread((portfolio) => {
       if (!portfolio) {
@@ -18,9 +18,9 @@ exports.savePortfolioToProject = function (projectModel, portfolioName, t = null
       }
 
       return projectModel.updateAttributes({
-        portfolioId: portfolio.id
+        portfolioId: portfolio.id,
       }, {
-        transaction: t
+        transaction: t,
       });
     });
 };

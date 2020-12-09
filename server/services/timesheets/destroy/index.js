@@ -1,4 +1,3 @@
-const models = require('../../../models');
 const queries = require('../../../models/queries');
 
 exports.destroy = async (timesheetIds, userId) => {

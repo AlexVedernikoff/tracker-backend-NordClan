@@ -1,32 +1,30 @@
-const ModelsHooks = require('../components/sequelizeHooks/deleteUnderscoredTimeStamp');
-
 module.exports = function (sequelize, DataTypes) {
   const TestCaseSteps = sequelize.define('TestCaseSteps', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     testCaseId: {
       field: 'test_case_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     action: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     expectedResult: {
       field: 'expected_result',
       type: DataTypes.TEXT,
-      allowNull: true
-    }
+      allowNull: true,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: true,
-    tableName: 'test_case_steps'
+    tableName: 'test_case_steps',
   });
 
   TestCaseSteps.associate = function (models) {
@@ -34,8 +32,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'TestCaseData',
       foreignKey: {
         name: 'testCaseId',
-        field: 'test_case_id'
-      }
+        field: 'test_case_id',
+      },
     });
   };
 

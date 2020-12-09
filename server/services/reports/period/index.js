@@ -198,6 +198,7 @@ exports.getCompanyReport = async function (criteria, options) {
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
+  // eslint-disable-next-line no-unused-vars
   const withUserDeleteDate = timeSheetsDbData
     .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date !== null);
   const timeSheets = timeSheetsDbData

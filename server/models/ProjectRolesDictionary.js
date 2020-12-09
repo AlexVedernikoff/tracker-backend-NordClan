@@ -4,35 +4,35 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: false,
-      allowNull: false
+      allowNull: false,
     },
     code: {
       type: DataTypes.STRING(20),
       trim: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(30),
       trim: true,
-      allowNull: false
+      allowNull: false,
     },
     nameEn: {
       field: 'name_en',
       type: DataTypes.STRING(30),
       trim: true,
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     indexes: [
       {
         unique: true,
-        fields: ['code']
-      }
+        fields: ['code'],
+      },
     ],
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'project_roles'
+    tableName: 'project_roles',
   });
 
   ProjectRoles.ADMIN_IDS = [1, 2];

@@ -11,7 +11,7 @@ const {
   TestSuite,
   TestCaseAttachments,
   TestCaseExecutionAttachments,
-  TestStepExecutionAttachments
+  TestStepExecutionAttachments,
 } = require('../../../models');
 const createError = require('http-errors');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
@@ -21,21 +21,21 @@ const LIMIT = 10;
 const includeOptions = [
   {
     model: TestRun,
-    as: 'testRunInfo'
+    as: 'testRunInfo',
   },
   {
     model: ProjectEnvironment,
-    as: 'projectEnvironmentInfo'
+    as: 'projectEnvironmentInfo',
   },
   {
     model: User,
     as: 'startedByUser',
-    attributes: ['fullNameRu', 'fullNameEn']
+    attributes: ['fullNameRu', 'fullNameEn'],
   },
   {
     model: User,
     as: 'executorUser',
-    attributes: ['fullNameRu', 'fullNameEn']
+    attributes: ['fullNameRu', 'fullNameEn'],
   },
   {
     model: TestCaseExecution,
@@ -48,17 +48,17 @@ const includeOptions = [
           {
             model: TestCaseAttachments,
             separate: true,
-            as: 'testCaseAttachments'
+            as: 'testCaseAttachments',
           },
           {
             model: TestSuite,
-            as: 'testSuiteInfo'
+            as: 'testSuiteInfo',
           },
           {
             model: User,
-            as: 'authorInfo'
-          }
-        ]
+            as: 'authorInfo',
+          },
+        ],
       },
       {
         model: TestStepExecution,
@@ -67,38 +67,38 @@ const includeOptions = [
         include: [
           {
             model: TestCaseSteps,
-            as: 'testStepInfo'
+            as: 'testStepInfo',
           },
           {
             model: TestCaseStepExecutionStatusDictionary,
-            as: 'testStepStatus'
+            as: 'testStepStatus',
           },
           {
             model: TestStepExecutionAttachments,
-            as: 'attachments'
-          }
-        ]
+            as: 'attachments',
+          },
+        ],
       },
       {
         model: TestCaseStepExecutionStatusDictionary,
-        as: 'testCaseStatus'
+        as: 'testCaseStatus',
       },
       {
         model: TestCaseExecutionAttachments,
-        as: 'attachments'
+        as: 'attachments',
       },
       {
         model: User,
-        as: 'closedUserInfo'
-      }
-    ]
-  }
+        as: 'closedUserInfo',
+      },
+    ],
+  },
 ];
 
 const getTestRunExecutionByPrimary = async (id, params) =>
   await TestRunExecution.findByPrimary(id, {
     where: params,
-    include: includeOptions
+    include: includeOptions,
   });
 
 exports.getCountedAll = async (req, res, next) => {
@@ -107,15 +107,16 @@ exports.getCountedAll = async (req, res, next) => {
     const { page = 1, name = undefined, sort, ...restQueryData } = query;
     const where = {
       ...params,
-      ...restQueryData
+      ...restQueryData,
     };
     if (name) {
       where.$or = {
         title: { $iLike: layoutAgnostic(name.trim()) },
-        description: { $iLike: layoutAgnostic(name.trim()) }
+        description: { $iLike: layoutAgnostic(name.trim()) },
       };
     }
     const offset = (Number(page) - 1) * LIMIT;
+    // eslint-disable-next-line no-unused-vars
     const order = sort ? Object.entries(JSON.parse(sort)).filter(([_, value]) => {
       if (typeof value !== 'string') return false;
       const lowerValue = value.toLowerCase();
@@ -127,30 +128,30 @@ exports.getCountedAll = async (req, res, next) => {
       include: [
         {
           model: TestRun,
-          as: 'testRunInfo'
+          as: 'testRunInfo',
         },
         {
           model: ProjectEnvironment,
-          as: 'projectEnvironmentInfo'
+          as: 'projectEnvironmentInfo',
         },
         {
           model: User,
           as: 'startedByUser',
-          attributes: ['fullNameRu', 'fullNameEn']
+          attributes: ['fullNameRu', 'fullNameEn'],
         },
         {
           model: User,
           as: 'executorUser',
-          attributes: ['fullNameRu', 'fullNameEn']
+          attributes: ['fullNameRu', 'fullNameEn'],
         },
         {
           model: TestCaseExecution,
-          as: 'testCaseExecutionData'
-        }
+          as: 'testCaseExecutionData',
+        },
       ],
       offset,
       limit: LIMIT,
-      distinct: true
+      distinct: true,
     });
     res.json(data);
   } catch (e) {
@@ -178,7 +179,7 @@ const addTestCaseToTestRunExecution = async (testRunExecutionId, testCasesIds) =
     );
     return {
       testCaseExecutionId: itemTestCaseExecution.id,
-      testStepId: item.id
+      testStepId: item.id,
     };
   });
   await TestStepExecution.bulkCreate(testStepExecutionToInsert);
@@ -191,7 +192,7 @@ exports.create = async (req, res, next) => {
     const { dataValues: testRunExecutionCreateResult } = await TestRunExecution.create({
       ...testRunExecution,
       startedBy: user_id,
-      startTime: new Date()
+      startTime: new Date(),
     });
     await addTestCaseToTestRunExecution(testRunExecutionCreateResult.id, testCasesIds);
     const result = await getTestRunExecutionByPrimary(testRunExecutionCreateResult.id);
@@ -211,14 +212,14 @@ exports.updateTestRunExecution = async (req, res, next) => {
     }
     await TestRunExecution.update(testRunExecution, {
       where: {
-        id
-      }
+        id,
+      },
     });
 
     const oldTestCaseExecution = await TestCaseExecution.findAll({
       where: {
-        testRunExecutionId: id
-      }
+        testRunExecutionId: id,
+      },
     });
     const oldTestCasesIds = oldTestCaseExecution.map(ce => ce.testCaseId);
     const addTestCasesIds = testCasesIds.filter(caseId => !oldTestCasesIds.includes(caseId));
@@ -226,7 +227,7 @@ exports.updateTestRunExecution = async (req, res, next) => {
 
     await addTestCaseToTestRunExecution(id, addTestCasesIds);
     await TestCaseExecution.destroy({
-      where: { testRunExecutionId: id, testCaseId: removeTestCases }
+      where: { testRunExecutionId: id, testCaseId: removeTestCases },
     });
 
     res.sendStatus(204);
@@ -240,8 +241,8 @@ exports.delete = async (req, res, next) => {
     const { params: { id } } = req;
     await TestRunExecution.destroy({
       where: {
-        id
-      }
+        id,
+      },
     });
     res.sendStatus(200);
   } catch (e) {
@@ -254,8 +255,8 @@ exports.updateTestStepExecution = async (req, res, next) => {
     const { params: { id }, body } = req;
     await TestStepExecution.update(body, {
       where: {
-        id
-      }
+        id,
+      },
     });
     res.sendStatus(204);
   } catch (e) {
@@ -272,8 +273,8 @@ exports.updateTestCaseExecution = async (req, res, next) => {
     }
     await TestCaseExecution.update(body, {
       where: {
-        id
-      }
+        id,
+      },
     });
     res.sendStatus(204);
   } catch (e) {

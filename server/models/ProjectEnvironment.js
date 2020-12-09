@@ -8,38 +8,38 @@ module.exports = function (sequelize, DataTypes) {
         autoIncrement: true,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       title: {
         type: DataTypes.STRING,
         trim: true,
         allowNull: false,
         validate: {
-          len: [1, 255]
-        }
+          len: [1, 255],
+        },
       },
       description: {
         type: DataTypes.TEXT,
         allowNull: true,
-        trim: true
+        trim: true,
       },
       projectId: {
         type: DataTypes.INTEGER,
         field: 'project_id',
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       timestamps: true,
       paranoid: true,
-      tableName: 'project_environment'
+      tableName: 'project_environment',
     }
   );
 
@@ -48,8 +48,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'projectInfo',
       foreignKey: {
         name: 'projectId',
-        field: 'project_id'
-      }
+        field: 'project_id',
+      },
     });
   };
 

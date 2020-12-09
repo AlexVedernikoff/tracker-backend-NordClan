@@ -4,7 +4,7 @@ module.exports = {
       if (!attributes.project_id) {
         await queryInterface.addColumn('test_plan', 'project_id', {
           type: Sequelize.INTEGER,
-          allowNull: false
+          allowNull: false,
         });
       }
       return await queryInterface.renameTable('test_plan', 'test_run');
@@ -60,5 +60,5 @@ module.exports = {
       }
       return await queryInterface.renameTable('project_environment_test_run', 'project_environment_test_plan');
     });
-  }
+  },
 };

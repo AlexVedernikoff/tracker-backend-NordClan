@@ -9,7 +9,7 @@ const { NOTAG } = require('../../../components/utils');
 
 function getTagsByTaskList (tasks) {
   const allTags = _.unionBy(...tasks.map(task => task.tags.map(o => o.dataValues)), o => o.name).map(tag => ({
-    name: tag.name
+    name: tag.name,
   }));
   return allTags;
 }
@@ -74,14 +74,14 @@ exports.list = async function (req) {
         + ', "statusId" ASC'
         + ', "prioritiesId" ASC'
         + ', "name" ASC'
-    )
+    ),
   });
 
   const count = await Task.count({
     where: queryWhere,
     include: includeForCount,
     subQuery: false,
-    group: ['Task.id']
+    group: ['Task.id'],
   });
 
   const projectCount = count.length;
@@ -106,7 +106,7 @@ exports.list = async function (req) {
     rowsCountOnCurrentPage: tasks.length,
     data: req.query.pageSize ? tasks.slice(offset, offset + +req.query.pageSize) : tasks,
     allTags: allTags,
-    queryId: req.query.queryId
+    queryId: req.query.queryId,
   };
 
   return responseObject;
@@ -114,7 +114,7 @@ exports.list = async function (req) {
 
 function createWhereForRequest (req, selectWithoutTags) {
   const where = {
-    deletedAt: { $eq: null } // IS NULL
+    deletedAt: { $eq: null }, // IS NULL
   };
 
   if (!req.query.projectId && !req.query.performerId) {
@@ -137,15 +137,15 @@ function createWhereForRequest (req, selectWithoutTags) {
 
       where.$or = [
         {
-          name: { $iLike: searchTemplate }
+          name: { $iLike: searchTemplate },
         },
         models.sequelize.where(models.sequelize.cast(models.sequelize.col('Task.id'), 'varchar'), {
-          $iLike: searchTemplate
-        })
+          $iLike: searchTemplate,
+        }),
       ];
     } else {
       where.name = {
-        $iLike: layoutAgnostic(req.query.name)
+        $iLike: layoutAgnostic(req.query.name),
       };
     }
   }
@@ -155,7 +155,7 @@ function createWhereForRequest (req, selectWithoutTags) {
       in: req.query.statusId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   }
 
@@ -164,7 +164,7 @@ function createWhereForRequest (req, selectWithoutTags) {
       in: req.query.authorId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   }
 
@@ -173,13 +173,13 @@ function createWhereForRequest (req, selectWithoutTags) {
       in: req.query.prioritiesId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   }
 
   if (!req.query.statusId && !req.query.allStatuses) {
     where.statusId = {
-      $notIn: [9, 10] // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
+      $notIn: [9, 10], // По умолчанию показываю все не отмененные и ине закрытые (см. словарь статусов TaskStatusesDictionary)
     };
   }
 
@@ -188,7 +188,7 @@ function createWhereForRequest (req, selectWithoutTags) {
       in: req.query.typeId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   }
 
@@ -197,7 +197,7 @@ function createWhereForRequest (req, selectWithoutTags) {
       in: req.query.projectId
         .toString()
         .split(',')
-        .map(el => el.trim())
+        .map(el => el.trim()),
     };
   } else if (!req.user.isGlobalAdmin && !req.user.isVisor) {
     where.projectId = req.user.dataValues.projects;
@@ -206,7 +206,7 @@ function createWhereForRequest (req, selectWithoutTags) {
   if (req.query.sprintId) {
     if (+req.query.sprintId === 0) {
       where.sprintId = {
-        $eq: null
+        $eq: null,
       };
     } else {
       let sprints;
@@ -225,16 +225,16 @@ function createWhereForRequest (req, selectWithoutTags) {
               in: sprints
                 .toString()
                 .split(',')
-                .map(el => el.trim())
-            }
-          ]
+                .map(el => el.trim()),
+            },
+          ],
         };
       } else {
         where.sprintId = {
           in: req.query.sprintId
             .toString()
             .split(',')
-            .map(el => el.trim())
+            .map(el => el.trim()),
         };
       }
     }
@@ -245,7 +245,7 @@ function createWhereForRequest (req, selectWithoutTags) {
       ...where.created_at,
       $gte: moment(req.query.dateFrom, 'DD.MM.YYYY')
         .startOf('day')
-        .toDate()
+        .toDate(),
     };
   }
 
@@ -254,13 +254,13 @@ function createWhereForRequest (req, selectWithoutTags) {
       ...where.created_at,
       $lte: moment(req.query.dateTo, 'DD.MM.YYYY')
         .endOf('day')
-        .toDate()
+        .toDate(),
     };
   }
 
   if (selectWithoutTags) {
     where['$"tags.ItemTag"."tag_id"$'] = {
-      $is: null
+      $is: null,
     };
   }
   if (req.query.isDevOps) {
@@ -272,13 +272,13 @@ function createWhereForRequest (req, selectWithoutTags) {
       $or: [
         {
           ...where,
-          isDevOps: true
+          isDevOps: true,
         },
         {
           ...where,
-          performerId: req.user.id
-        }
-      ]
+          performerId: req.user.id,
+        },
+      ],
     };
   }
 
@@ -298,19 +298,19 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeAuthor = {
     as: 'author',
     model: models.User,
-    attributes: models.User.defaultSelect
+    attributes: models.User.defaultSelect,
   };
 
   const includePerformer = {
     as: 'performer',
     model: models.User,
-    attributes: models.User.defaultSelect
+    attributes: models.User.defaultSelect,
   };
 
   const includeParentTask = {
     as: 'parentTask',
     model: models.Task,
-    attributes: ['id', 'name', 'statusId']
+    attributes: ['id', 'name', 'statusId'],
   };
 
   const includeSubTasks = {
@@ -319,10 +319,10 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: ['id', 'name', 'statusId'],
     where: {
       statusId: {
-        $notIn: [9] // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
-      }
+        $notIn: [9], // По умолчанию показываю все не отмененные (см. словарь статусов TaskStatusesDictionary)
+      },
     },
-    required: false
+    required: false,
   };
 
   const includeLLnkedTasks = {
@@ -331,8 +331,8 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: ['id', 'name', 'statusId'],
     through: {
       model: models.TaskTasks,
-      attributes: []
-    }
+      attributes: [],
+    },
   };
 
   const includeSprint = {
@@ -341,7 +341,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes:
       role !== 'EXTERNAL_USER'
         ? ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate' /*, allottedTime' DEPRECATED*/, 'budget']
-        : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate']
+        : ['id', 'name', 'statusId', 'factStartDate', 'factFinishDate'],
   };
 
   const includeTagSelect = {
@@ -350,9 +350,9 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: ['name'],
     through: {
       model: ItemTag,
-      attributes: []
+      attributes: [],
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   };
 
   const includeTagConst = {
@@ -362,19 +362,19 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     attributes: [],
     where: {
       name: {
-        $or: parsedTags
-      }
+        $or: parsedTags,
+      },
     },
     through: {
       model: ItemTag,
-      attributes: []
-    }
+      attributes: [],
+    },
   };
 
   const includeProject = {
     as: 'project',
     model: models.Project,
-    attributes: ['prefix']
+    attributes: ['prefix'],
   };
 
   const includeForSelect = [
@@ -384,7 +384,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     includeLLnkedTasks,
     includePerformer,
     includeSprint,
-    includeTagSelect
+    includeTagSelect,
   ];
   if (prefixNeed) includeForSelect.push(includeProject);
 
@@ -398,9 +398,9 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
     const tags = await Tag.findAll({
       where: {
         name: {
-          $in: parsedTags
-        }
-      }
+          $in: parsedTags,
+        },
+      },
     });
 
     tags.forEach(tag => {
@@ -409,17 +409,17 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
           as: 'itemTag' + tag.id,
           foreignKey: {
             name: 'taggableId',
-            field: 'taggable_id'
+            field: 'taggable_id',
           },
           scope: {
-            taggable: 'task'
-          }
+            taggable: 'task',
+          },
         }),
         attributes: [],
         required: true,
         where: {
-          tag_id: tag.id
-        }
+          tag_id: tag.id,
+        },
       });
     });
   }

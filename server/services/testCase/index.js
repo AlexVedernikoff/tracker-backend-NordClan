@@ -5,5 +5,5 @@ const { sanitizeTestCase } = require('./sanitizeTestCase');
 module.exports = {
   sanitizeTestSuite,
   copyTestCase,
-  sanitizeTestCase
+  sanitizeTestCase,
 };

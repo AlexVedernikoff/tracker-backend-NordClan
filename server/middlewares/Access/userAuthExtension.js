@@ -1,6 +1,5 @@
 const models = require('../../models');
 const _ = require('underscore');
-const { Task } = models;
 
 const statuses = {
   VISOR: 'VISOR',
@@ -8,7 +7,7 @@ const statuses = {
   SYSTEM_USER: 'SYSTEM_USER',
   USER: 'SYSTEM_USER',
   EXTERNAL_USER: 'EXTERNAL_USER',
-  DEV_OPS: 'DEV_OPS'
+  DEV_OPS: 'DEV_OPS',
 };
 
 exports.statuses = statuses;
@@ -22,7 +21,7 @@ exports.userAuthExtension = function (user, isSystemUser = false) {
   extensibleUser.dataValues.projectsRoles = getProjectsRoles(extensibleUser);
   extensibleUser.dataValues.projects = [
     ...extensibleUser.dataValues.projectsRoles.user,
-    ...extensibleUser.dataValues.projectsRoles.admin
+    ...extensibleUser.dataValues.projectsRoles.admin,
   ];
 
   extensibleUser.isActive = extensibleUser.dataValues.isActive !== 0;
@@ -81,7 +80,7 @@ function getProjectsRoles (user) {
 
   return {
     admin: administeredProjects,
-    user: projectsParticipant
+    user: projectsParticipant,
   };
 }
 
@@ -89,8 +88,8 @@ function getSystemUser () {
   return {
     dataValues: {
       authorsProjects: [],
-      usersProjects: []
+      usersProjects: [],
     },
-    globalRole: statuses.SYSTEM_USER
+    globalRole: statuses.SYSTEM_USER,
   };
 }

@@ -17,7 +17,7 @@ const queryAttributes = function (sprintSource, role) {
                                     FROM tasks as t
                                     WHERE t.sprint_id = "${sprintSource}"."id"
                                     AND t.deleted_at IS NULL
-                                    AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
+                                    AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'], // Все сделанные задаче
     ]
     : [
       'id', 'name', 'statusId', 'factStartDate', 'factFinishDate', 'createdAt', 'deletedAt',
@@ -31,7 +31,7 @@ const queryAttributes = function (sprintSource, role) {
                                     FROM tasks as t
                                     WHERE t.sprint_id = "${sprintSource}"."id"
                                     AND t.deleted_at IS NULL
-                                    AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
+                                    AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'], // Все сделанные задаче
     ];
 };
 
@@ -45,13 +45,13 @@ exports.allSprintsByProject = function (projectId, attributes = queryAttributes(
       attributes: attributes,
       where: {
         projectId: projectId,
-        deletedAt: null
+        deletedAt: null,
       },
       order: [
         ['factStartDate', 'ASC'],
-        ['name', 'ASC']
+        ['name', 'ASC'],
       ],
-      transaction: t
+      transaction: t,
     })
     .then((model) => {
       model.forEach((elModel) => {

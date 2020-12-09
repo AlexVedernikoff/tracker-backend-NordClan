@@ -4,55 +4,55 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     projectId: {
       field: 'project_id',
       type: DataTypes.INTEGER,
       allowNull: true,
-      unique: false
+      unique: false,
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
       allowNull: true,
-      unique: false
+      unique: false,
     },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
-      unique: false
+      unique: false,
     },
     onDate: {
       field: 'on_date',
       type: DataTypes.DATEONLY,
       allowNull: false,
-      unique: false
+      unique: false,
     },
     typeId: {
       field: 'type_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     taskStatusId: {
       type: DataTypes.INTEGER,
       field: 'task_status_id',
-      allowNull: true
+      allowNull: true,
     },
     isVisible: {
       field: 'is_visible',
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: true,
     },
     createdAt: { type: DataTypes.DATE, field: 'created_at' },
-    updatedAt: { type: DataTypes.DATE, field: 'updated_at' }
+    updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
   }, {
     underscored: true,
     timestamps: true,
     paranoid: false,
-    tableName: 'timesheets_draft'
+    tableName: 'timesheets_draft',
   });
 
   TimesheetDraft.associate = function (models) {
@@ -61,8 +61,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'taskId',
         field: 'task_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     TimesheetDraft.belongsTo(models.Project, {
@@ -70,8 +70,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectId',
         field: 'project_id',
-        allowNull: true
-      }
+        allowNull: true,
+      },
     });
 
     TimesheetDraft.belongsTo(models.User, {
@@ -79,8 +79,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'userId',
         field: 'user_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     TimesheetDraft.belongsTo(models.TimesheetTypesDictionary, {
@@ -88,8 +88,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'typeId',
         field: 'type_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     TimesheetDraft.belongsTo(models.TaskStatusesDictionary, {
@@ -97,8 +97,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'taskStatusId',
         field: 'task_status_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
   };

@@ -6,7 +6,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(150),
@@ -14,17 +14,17 @@ module.exports = function (sequelize, DataTypes) {
       unique: true,
       allowNull: false,
       validate: {
-        len: [1, 150]
-      }
+        len: [1, 150],
+      },
     },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
     underscored: true,
     timestamps: true,
@@ -33,8 +33,8 @@ module.exports = function (sequelize, DataTypes) {
     hooks: {
       afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      }
-    }
+      },
+    },
   });
 
   Portfolio.associate = function (models) {
@@ -42,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
       as: 'projects',
       foreignKey: {
         name: 'portfolioId',
-        field: 'portfolio_id'
+        field: 'portfolio_id',
       }});
 
   };

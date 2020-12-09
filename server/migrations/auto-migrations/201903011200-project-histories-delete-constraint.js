@@ -9,5 +9,5 @@ module.exports = {
      ALTER TABLE project_histories
      ADD CONSTRAINT project_histories_entity_id_fkey FOREIGN KEY (entity_id) REFERENCES users (id);
     `);
-  }
+  },
 };

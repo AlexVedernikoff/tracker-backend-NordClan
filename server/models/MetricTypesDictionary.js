@@ -4,26 +4,26 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: false,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(255),
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 20]
-      }
+        len: [1, 20],
+      },
     },
     calcEverySprint: {
       field: 'calc_every_sprint',
       type: DataTypes.BOOLEAN,
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'metric_types'
+    tableName: 'metric_types',
   });
 
   MetricTypes.values = [
@@ -74,7 +74,7 @@ module.exports = function (sequelize, DataTypes) {
     {id: 54, name: 'Часы затраченные на роль 12(iOS)'},
     {id: 55, name: '% часов затраченных на роль 13(DevOps)'},
     {id: 56, name: 'Часы затраченные на роль 13(DevOps)'},
-    {id: 57, name: 'Часы затраченные на фикс багов'}
+    {id: 57, name: 'Часы затраченные на фикс багов'},
   ];
 
   return MetricTypes;
