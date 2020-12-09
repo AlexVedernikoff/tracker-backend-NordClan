@@ -4,8 +4,8 @@ function getAction (type, data) {
   const actions = {
     update: {
       type: 'TASK_CHANGE_REQUEST_SUCCESS',
-      changedFields: data
-    }
+      changedFields: data,
+    },
   };
 
   return actions[type];

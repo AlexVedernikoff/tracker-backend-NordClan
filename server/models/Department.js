@@ -4,24 +4,24 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.TEXT,
       trim: true,
-      allowNull: false
+      allowNull: false,
     },
     psId: {
       field: 'ps_id',
       trim: true,
       allowNull: false,
-      type: DataTypes.TEXT
-    }
+      type: DataTypes.TEXT,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'departments'
+    tableName: 'departments',
   });
 
   Department.associate = function (models) {

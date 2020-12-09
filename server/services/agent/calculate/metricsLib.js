@@ -1,6 +1,5 @@
 const { TaskStatusesDictionary } = require('../../../models');
 const moment = require('moment');
-const _ = require('underscore');
 const exactMath = require('exact-math');
 const commandMetrics = require('./commandMetrics');
 
@@ -34,7 +33,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': input.project.createdAt,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
 
   case (2):
@@ -44,7 +43,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': input.project.completedAt,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
 
   case (3):
@@ -54,7 +53,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': input.project.budget,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
 
   case (4):
@@ -64,7 +63,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': input.project.riskBudget,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
 
   case (5): {
@@ -80,7 +79,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -97,7 +96,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -110,7 +109,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -123,7 +122,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -136,7 +135,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -166,7 +165,7 @@ module.exports = async function (metricsTypeId, input) {
       '19': 10,
       '51': 11,
       '52': 12,
-      '55': 13
+      '55': 13,
     };
 
     const value = parseFloat(
@@ -179,7 +178,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -209,7 +208,7 @@ module.exports = async function (metricsTypeId, input) {
       '29': 10,
       '53': 11,
       '54': 12,
-      '56': 13
+      '56': 13,
     };
     const value = input.project.spentTimeByRoles[rolesIdsConf[metricsTypeId.toString()]];
 
@@ -219,7 +218,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': value,
       'projectId': input.project.id,
       'sprintId': null,
-      'userId': null
+      'userId': null,
     };
   }
 
@@ -234,7 +233,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': sprintBurndown,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (31):
@@ -248,7 +247,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': sprintBurndown,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (32):
@@ -272,7 +271,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': closedTasksDynamics,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (33):
@@ -295,7 +294,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': laborCostsWithoutRating,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (34):
@@ -313,7 +312,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': laborCostsTotal,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (40):
@@ -331,7 +330,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': unratedFeaturesTotal,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (41):
@@ -361,7 +360,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': unsceduledOpenedFeatures,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (57):
@@ -371,7 +370,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': input.project.timeByBugs,
       'projectId': input.project.id,
       'sprintId': input.sprint ? input.sprint.id : null,
-      'userId': null
+      'userId': null,
     };
 
   case (58): // количество открытых задач от клиента
@@ -391,7 +390,7 @@ module.exports = async function (metricsTypeId, input) {
       '58': [1, true],
       '59': [3, true],
       '39': [2, true],
-      '60': [4, true]
+      '60': [4, true],
     };
     [taskTypeId, isTaskFromClient] = taskTypeIdsConf[metricsTypeId.toString()];
     openedTasksAmount = 0;
@@ -407,7 +406,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': openedTasksAmount,
       'projectId': input.project.id,
       'sprintId': input.sprint.id,
-      'userId': null
+      'userId': null,
     };
 
   case (61): {
@@ -418,7 +417,7 @@ module.exports = async function (metricsTypeId, input) {
       'value': JSON.stringify(commandMetrics(input.sprint)),
       'projectId': input.project.id,
       'sprintId': input.sprint ? input.sprint.id : null,
-      'userId': null
+      'userId': null,
     };
   }
   default:

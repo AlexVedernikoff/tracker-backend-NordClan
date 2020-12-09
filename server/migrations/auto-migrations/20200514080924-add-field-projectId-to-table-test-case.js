@@ -4,7 +4,7 @@ module.exports = {
       if (!attributes.project_id) {
         queryInterface.addColumn('test_case', 'project_id', {
           type: Sequelize.INTEGER,
-          allowNull: true
+          allowNull: true,
         });
       }
       if (attributes.expected_result) {
@@ -22,10 +22,10 @@ module.exports = {
       if (!attributes.expected_result) {
         queryInterface.addColumn('test_case', 'expected_result', {
           type: Sequelize.TEXT,
-          allowNull: true
+          allowNull: true,
         });
       }
       return queryInterface;
     });
-  }
+  },
 };

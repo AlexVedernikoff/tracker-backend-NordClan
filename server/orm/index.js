@@ -1,7 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelizeLogger = require('sequelize-log-syntax-colors');
 const config = require('../configs');
-const moment = require('moment');
 
 const sequelize = new Sequelize(
   config.db.postgres.name,
@@ -16,13 +14,13 @@ const sequelize = new Sequelize(
     pool: {
       max: 30,
       min: 0,
-      idle: 100000
-    }
+      idle: 100000,
+    },
   },
   {
     define: {
-      underscored: true
-    }
+      underscored: true,
+    },
   }
 );
 

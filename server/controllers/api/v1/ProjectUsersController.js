@@ -46,11 +46,11 @@ exports.create = async function (req, res, next){
       include: [
         {
           as: 'roles',
-          model: models.ProjectUsersRoles
-        }
+          model: models.ProjectUsersRoles,
+        },
       ],
       defaults: { projectId, userId },
-      transaction
+      transaction,
     };
 
     const [projectUser, created] = await models.ProjectUsers.findOrCreate(options);
@@ -61,7 +61,7 @@ exports.create = async function (req, res, next){
 
       const roles = await models.ProjectRolesDictionary.findAll({
         attributes: ['id'],
-        transaction
+        transaction,
       });
       roles.forEach((projectRole) => {
         if (rolesIds.indexOf(projectRole.id) === -1) {
@@ -71,7 +71,7 @@ exports.create = async function (req, res, next){
           if (!_.find(projectUser.roles, { projectRoleId: projectRole.id })) {
             createRoles.push({
               projectUserId: projectUser.id,
-              projectRoleId: projectRole.id
+              projectRoleId: projectRole.id,
             });
           }
         }
@@ -82,10 +82,10 @@ exports.create = async function (req, res, next){
           where: {
             projectUserId: projectUser.id,
             projectRoleId: {
-              '$in': deleteRoles
-            }
+              '$in': deleteRoles,
+            },
           },
-          transaction
+          transaction,
         });
       }
 
@@ -108,12 +108,12 @@ exports.create = async function (req, res, next){
     if (created) {
       const projectEvents = await models.ProjectEventsDictionary.findAll({
         attributes: ['id'],
-        transaction
+        transaction,
       });
       const projectUsersSubscriptionsData = projectEvents.map((projectEvent) => {
         return {
           projectUserId: projectUser.id,
-          projectEventId: projectEvent.id
+          projectEventId: projectEvent.id,
         };
       });
       await models.ProjectUsersSubscriptions.bulkCreate(projectUsersSubscriptionsData, { transaction });
@@ -135,7 +135,7 @@ async function parseRolesIds (rolesIds) {
     if (rolesIds && parseInt(rolesIds) !== 0) {
       const roles = rolesIds.split(',').map((el) => +el.trim());
       const allowedRoles = await models.ProjectRolesDictionary.findAll({
-        attributes: ['id']
+        attributes: ['id'],
       });
       const allowedRolesId = allowedRoles.map((el) => el.id);
       roles.forEach((roleId) => {
@@ -171,10 +171,10 @@ exports.delete = async function (req, res, next){
         where: {
           projectId: req.params.projectId,
           userId: req.params.userId,
-          deletedAt: null
+          deletedAt: null,
         },
         transaction,
-        lock: 'UPDATE'
+        lock: 'UPDATE',
       });
 
     if (!projectUser) {
@@ -184,31 +184,31 @@ exports.delete = async function (req, res, next){
 
     await models.ProjectUsersSubscriptions.destroy({
       where: {
-        projectUserId: projectUser.id
+        projectUserId: projectUser.id,
       },
-      transaction
+      transaction,
     });
 
     await models.ProjectUsersRoles.destroy({
       where: {
-        projectUserId: projectUser.id
+        projectUserId: projectUser.id,
       },
-      transaction
+      transaction,
     });
 
     const gitlabUserRoles = await models.GitlabUserRoles.findAll({
       where: {
-        projectUserId: projectUser.id
+        projectUserId: projectUser.id,
       },
-      transaction
+      transaction,
     });
 
     if (gitlabUserRoles.length) {
       const user = await models.User.findOne({
         where: {
-          id: projectUser.userId
+          id: projectUser.userId,
         },
-        transaction
+        transaction,
       });
       for (let i = 0; i < gitlabUserRoles.length; i++) {
         const { gitlabProjectId } = gitlabUserRoles[i];
@@ -217,9 +217,9 @@ exports.delete = async function (req, res, next){
 
       await models.GitlabUserRoles.destroy({
         where: {
-          projectUserId: projectUser.id
+          projectUserId: projectUser.id,
         },
-        transaction
+        transaction,
       });
     }
 

@@ -3,7 +3,7 @@ module.exports = {
     return queryInterface.addColumn('metric_types', 'calc_every_sprint', {
       type: Sequelize.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: true,
     })
       .then(() => {
         return queryInterface.sequelize.query(`
@@ -14,5 +14,5 @@ module.exports = {
   },
   down: function (queryInterface) {
     return queryInterface.removeColumn('metric_types', 'calc_every_sprint');
-  }
+  },
 };

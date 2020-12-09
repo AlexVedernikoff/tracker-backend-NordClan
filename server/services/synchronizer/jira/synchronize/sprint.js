@@ -10,10 +10,10 @@ exports.synchronizeSprints = async function (sprints, projectId) {
   const createdSprints = await Sprint.findAll({
     where: {
       externalId: {
-        $in: extIds
+        $in: extIds,
       },
-      projectId
-    }
+      projectId,
+    },
   });
 
   //обновление созданных спринтов
@@ -27,7 +27,7 @@ exports.synchronizeSprints = async function (sprints, projectId) {
       if (index >= -1) {
         const updObj = sprints[i];
         await Sprint.update(updObj, {
-          where: { externalId: s.externalId.toString() }
+          where: { externalId: s.externalId.toString() },
         });
       }
     });
@@ -40,6 +40,6 @@ exports.synchronizeSprints = async function (sprints, projectId) {
   }
 
   return Sprint.findAll({
-    where: { externalId: { $in: extIds }, projectId }
+    where: { externalId: { $in: extIds }, projectId },
   });
 };

@@ -27,21 +27,21 @@ exports.create = async function (req, res, next) {
       models.TaskTasks.findOrCreate({
         where: {
           taskId: req.params.taskId,
-          linkedTaskId: req.body.linkedTaskId
+          linkedTaskId: req.body.linkedTaskId,
         },
         attributes: ['id'],
         transaction,
-        historyAuthorId: req.user.id
+        historyAuthorId: req.user.id,
       }),
       models.TaskTasks.findOrCreate({
         where: {
           taskId: req.body.linkedTaskId,
-          linkedTaskId: req.params.taskId
+          linkedTaskId: req.params.taskId,
         },
         attributes: ['id'],
         transaction,
-        historyAuthorId: req.user.id
-      })
+        historyAuthorId: req.user.id,
+      }),
     ]);
 
     const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], transaction);
@@ -83,10 +83,10 @@ exports.delete = async function (req, res, next) {
         .findOne({
           where: {
             taskId: req.params.taskId,
-            linkedTaskId: req.params.linkedTaskId
+            linkedTaskId: req.params.linkedTaskId,
           },
           transaction,
-          lock: 'UPDATE'
+          lock: 'UPDATE',
         })
         .then(model => {
           if (model) return model.destroy({ transaction, historyAuthorId: req.user.id });
@@ -94,11 +94,11 @@ exports.delete = async function (req, res, next) {
       models.TaskTasks.destroy({
         where: {
           taskId: req.params.linkedTaskId,
-          linkedTaskId: req.params.taskId
+          linkedTaskId: req.params.taskId,
         },
         transaction,
-        historyAuthorId: req.user.id
-      })
+        historyAuthorId: req.user.id,
+      }),
     ]);
 
     const taskTasks = await queries.taskTasks.findLinkedTasks(req.params.taskId, ['id', 'name', 'statusId'], transaction);

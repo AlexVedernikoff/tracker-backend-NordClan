@@ -33,8 +33,8 @@ exports.checkToken = function (req, res, next) {
 
   SystemToken.findOne({
     where: {
-      token: req.systemToken
-    }
+      token: req.systemToken,
+    },
   })
     .then(row => {
       if (!row) {

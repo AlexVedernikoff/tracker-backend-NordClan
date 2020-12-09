@@ -4,7 +4,7 @@ module.exports = {
       'projects',
       'jira_project_name',
       {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       }
     );
   },
@@ -13,5 +13,5 @@ module.exports = {
       'projects',
       'jira_project_name'
     );
-  }
+  },
 };

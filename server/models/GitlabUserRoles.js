@@ -18,7 +18,7 @@ const projectUserRoleMapping = {
   12: ACCESS_DEVELOPER, // Android
   13: ACCESS_DEVELOPER, // IOS
   14: ACCESS_MAINTAINER, // DevOps
-  default: ACCESS_GUEST
+  default: ACCESS_GUEST,
 };
 
 module.exports = function (sequelize, DataTypes) {
@@ -27,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     accessLevel: {
       field: 'access_level',
@@ -35,50 +35,50 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       validate: {
         isInt: true,
-        isIn: [validAccessLevels]
-      }
+        isIn: [validAccessLevels],
+      },
     },
     expiresAt: {
       field: 'expires_at',
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
     },
     projectUserId: {
       field: 'project_user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     gitlabProjectId: {
       field: 'gitlab_project_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     createdAt: {
       type: DataTypes.DATE,
       field: 'created_at',
-      allowNull: false
+      allowNull: false,
     },
     deletedAt: {
       type: DataTypes.DATE,
       field: 'deleted_at',
-      allowNull: true
+      allowNull: true,
     },
     updatedAt: {
       type: DataTypes.DATE,
       field: 'updated_at',
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     underscored: true,
     timestamps: true,
     paranoid: false,
-    tableName: 'gitlab_user_roles'
+    tableName: 'gitlab_user_roles',
   });
 
   GitlabUserRoles.associate = function (models) {
@@ -86,8 +86,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'projectUser',
       foreignKey: {
         name: 'projectUserId',
-        field: 'project_user_id'
-      }
+        field: 'project_user_id',
+      },
     });
   };
 
@@ -108,7 +108,7 @@ module.exports = function (sequelize, DataTypes) {
         projectUserRoleId =>
           ({
             gitlabProjectId,
-            accessLevel: projectUserRoleMapping[projectUserRoleId] || projectUserRoleMapping.default
+            accessLevel: projectUserRoleMapping[projectUserRoleId] || projectUserRoleMapping.default,
           }),
         []
       );

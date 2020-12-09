@@ -5,7 +5,7 @@ const testCaseSeverity = [
   {id: 4, name: 'Крупный', nameEn: 'Major'},
   {id: 5, name: 'Обычный', nameEn: 'Normal'},
   {id: 6, name: 'Мелкий', nameEn: 'Minor'},
-  {id: 7, name: 'Тривиальный', nameEn: 'Trivial'}
+  {id: 7, name: 'Тривиальный', nameEn: 'Trivial'},
 ];
 
 module.exports = {
@@ -15,16 +15,16 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       name_en: {
         type: Sequelize.STRING,
-        allowNull: false
-      }
+        allowNull: false,
+      },
     }).then(() => {
       Promise.all(testCaseSeverity.map(severity =>
         queryInterface.sequelize.query(
@@ -33,12 +33,12 @@ module.exports = {
           VALUES (:id, :name, :nameEn)
           `,
           {
-            replacements: severity
+            replacements: severity,
           }
         )
       ));
     });
   },
 
-  down: queryInterface => queryInterface.dropTable('test_case_severity')
+  down: queryInterface => queryInterface.dropTable('test_case_severity'),
 };

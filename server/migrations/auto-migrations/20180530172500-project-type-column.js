@@ -7,9 +7,9 @@ module.exports = {
           'projects',
           'type_id',
           {
-            type: Sequelize.INTEGER
+            type: Sequelize.INTEGER,
           }
-        )
+        ),
       ]));
   },
   down: function (queryInterface) {
@@ -18,7 +18,7 @@ module.exports = {
         queryInterface.removeColumn(
           'projects',
           'type_id'
-        )
+        ),
       ]));
-  }
+  },
 };

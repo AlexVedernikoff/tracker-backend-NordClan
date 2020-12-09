@@ -6,46 +6,46 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     testCaseId: {
       field: 'test_case_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     fileName: {
       field: 'file_name',
       type: DataTypes.STRING(255),
       trim: true,
-      allowNull: false
+      allowNull: false,
     },
     path: {
       type: DataTypes.STRING(255),
       trim: true,
-      allowNull: false
+      allowNull: false,
     },
     previewPath: {
       type: DataTypes.STRING(255),
       trim: true,
-      allowNull: true
+      allowNull: true,
     },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     size: {
       field: 'size',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     type: {
       type: DataTypes.STRING(80),
       trim: true,
-      allowNull: false
+      allowNull: false,
     },
     createdAt: { type: DataTypes.DATE, field: 'created_at', allowNull: true },
-    deletedAt: { type: DataTypes.DATE, field: 'deleted_at', allowNull: true }
+    deletedAt: { type: DataTypes.DATE, field: 'deleted_at', allowNull: true },
   }, {
     underscored: true,
     timestamps: true,
@@ -55,8 +55,8 @@ module.exports = function (sequelize, DataTypes) {
     hooks: {
       afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      }
-    }
+      },
+    },
   });
 
   TestCaseAttachments.associate = function (models) {
@@ -65,8 +65,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'testCaseId',
         field: 'test_case_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
   };
 

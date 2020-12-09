@@ -53,6 +53,6 @@ module.exports = function (sequelize) {
       this.addHook('afterUpdate', handler.onUpdate);
       this.addHook('afterDestroy', handler.onDelete);
       return this;
-    }
+    },
   });
 };

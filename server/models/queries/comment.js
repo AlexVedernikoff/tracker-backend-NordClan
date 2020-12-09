@@ -8,7 +8,7 @@ const include = [
     model: models.User,
     required: true,
     attributes: models.User.defaultSelect,
-    paranoid: false
+    paranoid: false,
   },
   {
     as: 'parentComment',
@@ -22,16 +22,16 @@ const include = [
         model: models.User,
         required: false,
         attributes: models.User.defaultSelect,
-        paranoid: false
-      }
-    ]
-  }
+        paranoid: false,
+      },
+    ],
+  },
 ];
 
 exports.getCommentsByTask = function (taskId) {
   const where = {
     deletedAt: null,
-    taskId
+    taskId,
   };
 
   return models.Comment
@@ -39,22 +39,22 @@ exports.getCommentsByTask = function (taskId) {
       where: where,
       attributes: models.Comment.defaultSelect,
       order: [
-        ['createdAt', 'ASC']
+        ['createdAt', 'ASC'],
       ],
-      include
+      include,
     });
 };
 
 exports.getOne = function (id) {
   const where = {
     deletedAt: null,
-    id
+    id,
   };
 
   return models.Comment
     .findOne({
       where: where,
       attributes: models.Comment.defaultSelect,
-      include
+      include,
     });
 };

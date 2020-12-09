@@ -13,7 +13,7 @@ module.exports = class MetricManager {
   constructor () {
     this.subscriber = {
       startedMetrics: () => {},
-      startMetric: () => {}
+      startMetric: () => {},
     };
     this._port = config.metricManagerPort;
     this._server = http.createServer((request, response) => {
@@ -31,7 +31,7 @@ module.exports = class MetricManager {
   _requestHandler (request, response) {
     response.writeHead(200, {
       'Content-Type': 'application/json',
-      'Connection': 'keep-alive'
+      'Connection': 'keep-alive',
     });
 
     if (request.url === '/startedMetrics' && request.method === 'GET'){

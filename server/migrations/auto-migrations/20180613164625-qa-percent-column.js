@@ -9,16 +9,16 @@ module.exports = {
           'sprints',
           'qa_percent',
           {
-            type: Sequelize.INTEGER
+            type: Sequelize.INTEGER,
           }
         ),
         queryInterface.addColumn(
           'projects',
           'qa_percent',
           {
-            type: Sequelize.INTEGER
+            type: Sequelize.INTEGER,
           }
-        )
+        ),
       ]))
       .then(() => Promise.all([
         queryInterface.sequelize.query(
@@ -26,7 +26,7 @@ module.exports = {
         ),
         queryInterface.sequelize.query(
           'UPDATE projects SET "qa_percent" = 30;'
-        )
+        ),
       ]));
   },
   down: function (queryInterface) {
@@ -39,7 +39,7 @@ module.exports = {
         queryInterface.removeColumn(
           'projects',
           'qa_percent'
-        )
+        ),
       ]));
-  }
+  },
 };

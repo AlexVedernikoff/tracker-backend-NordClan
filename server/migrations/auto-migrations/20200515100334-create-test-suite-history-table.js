@@ -5,45 +5,45 @@ module.exports = {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false
+        allowNull: false,
       },
       test_suite_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       field: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       value_str: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       prev_value_str: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       value_text: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       prev_value_text: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       action: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       user_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       created_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
 
-  down: queryInterface => queryInterface.dropTable('test_suite_histories')
+  down: queryInterface => queryInterface.dropTable('test_suite_histories'),
 };

@@ -33,7 +33,7 @@ const defaultUser = {
   uid: '',
   uidNumber: '',
   userPassword: '',
-  allowVPN: true
+  allowVPN: true,
 };
 client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
   if (err) {
@@ -99,6 +99,7 @@ module.exports = {
   },
 
   //TODO: NOT USED
+  // eslint-disable-next-line no-unused-vars
   compare (data) {
     return new Promise((resolve, reject) => {
       client.compare('cn=foo, o=example', 'sn', 'bar', (err, matched) => {
@@ -113,6 +114,7 @@ module.exports = {
     });
   },
   //TODO: NOT USED
+  // eslint-disable-next-line no-unused-vars
   delete (data) {
     return new Promise((resolve, reject) => {
       client.del('cn=foo, o=example', (err) => {
@@ -157,8 +159,8 @@ module.exports = {
           array.push(new ldap.Change({
             operation: 'add',
             modification: {
-              [field]: newVal
-            }
+              [field]: newVal,
+            },
           }));
         }
         return;
@@ -169,8 +171,8 @@ module.exports = {
         array.push(new ldap.Change({
           operation: 'delete',
           modification: {
-            [field]: oldData[field]
-          }
+            [field]: oldData[field],
+          },
         }));
         return;
       }
@@ -182,16 +184,16 @@ module.exports = {
           array.push(new ldap.Change({
             operation: 'replace',
             modification: {
-              [field]: newVal
-            }
+              [field]: newVal,
+            },
           }));
         } else {
           // ... this value is blank, then delete
           array.push(new ldap.Change({
             operation: 'delete',
             modification: {
-              [field]: oldData[field]
-            }
+              [field]: oldData[field],
+            },
           }));
         }
       }
@@ -253,5 +255,5 @@ module.exports = {
         reject(null);
       }
     });
-  }
+  },
 };

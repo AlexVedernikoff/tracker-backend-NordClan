@@ -45,7 +45,7 @@ exports.projectTypes = function (req, res){
 exports.milestoneTypes = function (req, res){
   return models.MilestoneTypesDictionary
     .findAll({
-      order: [['id', 'ASC']]
+      order: [['id', 'ASC']],
     })
     .then(data => res.json(data));
 };

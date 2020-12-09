@@ -6,41 +6,41 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false
+        allowNull: false,
       },
       projectId: {
         field: 'project_id',
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       externalUserEmail: {
         field: 'external_user_email',
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       internalUserId: {
         field: 'internal_user_id',
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       underscored: true,
       timestamps: true,
       paranoid: true,
-      tableName: 'user_email_association'
+      tableName: 'user_email_association',
     }
   );
 
@@ -49,8 +49,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'project',
       foreignKey: {
         name: 'projectId',
-        field: 'project_id'
-      }
+        field: 'project_id',
+      },
     });
   };
 
@@ -59,8 +59,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'user',
       foreignKey: {
         name: 'internalUserId',
-        field: 'internal_user_id'
-      }
+        field: 'internal_user_id',
+      },
     });
   };
 

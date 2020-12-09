@@ -7,7 +7,7 @@ const moment = require('moment');
  */
 exports.getDrafts = async function (req, res, next) {
   const where = {
-    userId: req.query.userId
+    userId: req.query.userId,
   };
 
   if (req.query.onDate) {
@@ -34,7 +34,7 @@ exports.getDrafts = async function (req, res, next) {
       where: where,
       attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], [models.sequelize.literal('0'), 'spentTime'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
       order: [
-        ['on_date', 'ASC']
+        ['on_date', 'ASC'],
       ],
       include: [
         {
@@ -44,7 +44,7 @@ exports.getDrafts = async function (req, res, next) {
           attributes: {
             include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
             FROM timesheets AS tsh
-            WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']]
+            WHERE tsh.task_id = "TimesheetDraft"."task_id")`), 'factExecutionTime']],
           },
           paranoid: false,
           include: [
@@ -53,32 +53,32 @@ exports.getDrafts = async function (req, res, next) {
               model: models.Project,
               required: false,
               attributes: ['id', 'name'],
-              paranoid: false
+              paranoid: false,
             },
             {
               as: 'taskStatus',
               model: models.TaskStatusesDictionary,
               required: false,
               attributes: ['id', 'name'],
-              paranoid: false
-            }
-          ]
+              paranoid: false,
+            },
+          ],
         },
         {
           as: 'taskStatus',
           model: models.TaskStatusesDictionary,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false
+          paranoid: false,
         },
         {
           as: 'projectMaginActivity',
           model: models.Project,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     });
     const result = [];
     draftsheets.map(ds => {

@@ -14,7 +14,7 @@ exports.list = async (req, res, next) => {
     const metrics = await AgentService.list({
       projectId,
       startDate,
-      endDate
+      endDate,
     });
 
     res.json(metrics);

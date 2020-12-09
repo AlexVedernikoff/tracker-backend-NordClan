@@ -4,26 +4,26 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(20),
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 20]
-      }
+        len: [1, 20],
+      },
     },
     nameEn: {
       type: DataTypes.STRING,
       allowNull: false,
-      field: 'name_en'
-    }
+      field: 'name_en',
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'task_types'
+    tableName: 'task_types',
   });
 
 
@@ -32,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
       as: 'taskTypes',
       foreignKey: {
         name: 'typeId',
-        field: 'type_id'
+        field: 'type_id',
       }});
   };
 

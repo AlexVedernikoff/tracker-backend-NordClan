@@ -59,7 +59,7 @@ function getHistoryOfStatuses (task) {
     userId: userId,
     dev: isDevelopStatus(statusId),
     qa: isQaStatus(statusId),
-    createdAt: task.createdAt
+    createdAt: task.createdAt,
   });
 
   // Сортирую от новых записей к старым что бы составить истрию переходов между исполнителями
@@ -72,7 +72,7 @@ function getHistoryOfStatuses (task) {
         userId: userId,
         dev: isDevelopStatus(statusId),
         qa: isQaStatus(statusId),
-        createdAt: historyItem.createdAt
+        createdAt: historyItem.createdAt,
       });
       return;
     }
@@ -84,7 +84,7 @@ function getHistoryOfStatuses (task) {
         userId: userId,
         dev: isDevelopStatus(statusId),
         qa: isQaStatus(statusId),
-        createdAt: historyItem.createdAt
+        createdAt: historyItem.createdAt,
       });
     }
   });
@@ -211,7 +211,7 @@ function getTaskUsersHistory (soretedSheets) {
       if (!taskUserHistory.has(sheetItem.userId)) {
         taskUserHistory.set(sheetItem.userId, {
           qa: 0, // qa проверки
-          return: 0 // возвраты
+          return: 0, // возвраты
         });
       }
 
@@ -252,7 +252,7 @@ function taskHistoryToSprintHistory (taskUserHistory, task, history) {
           taskReturnCount: 0,
           bugDoneCount: 0,
           bugReturnCount: 0,
-          linkedBugsCount: 0
+          linkedBugsCount: 0,
         };
       }
 
