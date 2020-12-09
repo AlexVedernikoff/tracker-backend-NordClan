@@ -8,7 +8,7 @@ exports.getChangedProperty = function (model) {
 
   return {
     prevValue: model[`prevValue${currentType}`] || null,
-    value: model[`value${currentType}`] || null
+    value: model[`value${currentType}`] || null,
   };
 };
 

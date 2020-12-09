@@ -11,7 +11,7 @@ exports.list = async function (req, res, next){
   }
   if (req.params.entity === 'task') {
     const task = await models.Task.findByPrimary(req.params.entityId, {
-      attributes: ['id', 'projectId']
+      attributes: ['id', 'projectId'],
     });
     if (!req.user.canReadProject(task.projectId)) {
       return next(createError(403, 'Access denied'));
@@ -26,8 +26,8 @@ exports.list = async function (req, res, next){
   const pageSize = req.query.pageSize;
   const currentPage = req.query.currentPage;
 
-  historyService()
-    .call(entity, entityId, pageSize, currentPage)
+  historyService(entity)
+    .call(entityId, pageSize, currentPage)
     .then(histories => res.json(histories))
     .catch(error => next(error));
 };

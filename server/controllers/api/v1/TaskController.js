@@ -39,7 +39,7 @@ exports.create = async function (req, res, next) {
   try {
     if (req.body.hasOwnProperty('sprintId')) {
       const projectBySprint = await models.Sprint.findByPrimary(req.body.sprintId, {
-        attributes: ['projectId']
+        attributes: ['projectId'],
       });
 
       if (
@@ -63,13 +63,13 @@ exports.create = async function (req, res, next) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
         input: { taskId: task.id },
-        user: { ...req.user.get() }
+        user: { ...req.user.get() },
       });
     }
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[0].id,
       input: { taskId: task.id },
-      user: { ...req.user.get() }
+      user: { ...req.user.get() },
     });
 
     if (req.user.dataValues.globalRole === models.User.EXTERNAL_USER_ROLE) {
@@ -107,15 +107,15 @@ exports.update = async function (req, res, next) {
   const taskId = req.params.id;
 
   try {
-    let updatedTasks, activeTask, createdDraft, projectId, changedTaskData, updatedTask;
-    const result = ({
+    const {
       updatedTasks,
       updatedTask,
       activeTask,
       createdDraft,
       projectId,
-      changedTaskData
-    } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser));
+      changedTaskData,
+    } = await TasksService.update(req.body, taskId, req.user, req.isSystemUser);
+
     res.json(updatedTasks.map(task => task.dataValues));
 
     sendUpdates(res.io, req.user.id, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData);
@@ -123,14 +123,14 @@ exports.update = async function (req, res, next) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[1].id,
         input: { taskId },
-        user: { ...req.user.get() }
+        user: { ...req.user.get() },
       });
     }
     if (changedTaskData.statusId && taskIsDone(updatedTasks)) {
       emailSubprocess({
         eventId: models.ProjectEventsDictionary.values[3].id,
         input: { taskId },
-        user: { ...req.user.get() }
+        user: { ...req.user.get() },
       });
     }
   } catch (err) {
