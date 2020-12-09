@@ -18,7 +18,7 @@ exports.create = async function (req, res, next){
 
     const task = await models.Task
       .findByPrimary(req.params.taskId, {
-        attributes: ['id', 'projectId']
+        attributes: ['id', 'projectId'],
       });
     if (!task) return next(createError(404, 'Task model not found'));
     if (!req.user.canCreateCommentProject(task.projectId)) {
@@ -40,7 +40,7 @@ exports.create = async function (req, res, next){
     emailSubprocess({
       eventId: models.ProjectEventsDictionary.values[2].id,
       input: { taskId: task.id, commentId: comment.id, parentCommentAuthorId },
-      user: { ...req.user.get() }
+      user: { ...req.user.get() },
     });
     res.json(getOne);
     const currentTask = await queries.task.getTaskWithUsers(getOne.dataValues.taskId);
@@ -68,10 +68,10 @@ exports.update = function (req, res, next){
       return Promise.all([models.Task
         .findByPrimary(req.params.taskId, {
           attributes: ['id', 'projectId'],
-          include: includeProjectWithUsers
+          include: includeProjectWithUsers,
         }), models.Comment
         .findByPrimary(req.params.commentId, {
-          attributes: ['id', 'deletedAt', 'authorId', 'createdAt', 'text']
+          attributes: ['id', 'deletedAt', 'authorId', 'createdAt', 'text'],
         })]);
     })
     .then(([task, comment])=>{
@@ -98,7 +98,7 @@ exports.update = function (req, res, next){
         emailSubprocess({
           eventId: models.ProjectEventsDictionary.values[4].id,
           input: { taskId: task.id, commentId: comment.id },
-          user: newMentions
+          user: newMentions,
         });
       }
 
@@ -129,10 +129,10 @@ exports.delete = function (req, res, next){
       return Promise.all([models.Task
         .findByPrimary(req.params.taskId, {
           attributes: ['id', 'projectId'],
-          include: includeProjectWithUsers
+          include: includeProjectWithUsers,
         }), models.Comment
         .findByPrimary(req.params.commentId, {
-          attributes: ['id', 'deletedAt', 'authorId']
+          attributes: ['id', 'deletedAt', 'authorId'],
         })]);
     })
     .then(([task, comment])=>{

@@ -5,35 +5,35 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       project_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'projects', key: 'id' }
+        references: { model: 'projects', key: 'id' },
       },
       external_task_type_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       internal_task_type_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'task_types', key: 'id' }
+        references: { model: 'task_types', key: 'id' },
       },
       created_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
         allowNull: true,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   down: function (queryInterface) {
     return queryInterface.dropTable('task_types_association');
-  }
+  },
 };
 

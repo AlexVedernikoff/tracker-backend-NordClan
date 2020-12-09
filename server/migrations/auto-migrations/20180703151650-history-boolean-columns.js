@@ -6,16 +6,16 @@ module.exports = {
           'task_histories',
           'value_boolean',
           {
-            type: Sequelize.BOOLEAN
+            type: Sequelize.BOOLEAN,
           }
         ),
         queryInterface.addColumn(
           'task_histories',
           'prev_value_boolean',
           {
-            type: Sequelize.BOOLEAN
+            type: Sequelize.BOOLEAN,
           }
-        )
+        ),
       ]));
   },
   down: function (queryInterface) {
@@ -28,7 +28,7 @@ module.exports = {
         queryInterface.removeColumn(
           'task_histories',
           'prev_value_boolean'
-        )
+        ),
       ]));
-  }
+  },
 };

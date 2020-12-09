@@ -396,7 +396,7 @@ module.exports = function (templateName, input, templateBaseUrl) {
 
   return {
     subject,
-    body
+    body,
   };
 
 };

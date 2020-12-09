@@ -1,43 +1,43 @@
 const timesheetTypes = [
   {
     id: 1,
-    nameEn: 'Implementation'
+    nameEn: 'Implementation',
   },
   {
     id: 2,
-    nameEn: 'Meeting'
+    nameEn: 'Meeting',
   },
   {
     id: 3,
-    nameEn: 'Presale and mark'
+    nameEn: 'Presale and mark',
   },
   {
     id: 4,
-    nameEn: 'Education'
+    nameEn: 'Education',
   },
   {
     id: 5,
-    nameEn: 'Vacation'
+    nameEn: 'Vacation',
   },
   {
     id: 6,
-    nameEn: 'Business trip'
+    nameEn: 'Business trip',
   },
   {
     id: 7,
-    nameEn: 'Hospital'
+    nameEn: 'Hospital',
   },
   {
     id: 8,
-    nameEn: 'Control'
-  }
+    nameEn: 'Control',
+  },
 ];
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
       .addColumn('timesheets_types', 'name_en', {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       })
       .then(() =>
         Promise.all(
@@ -49,7 +49,7 @@ module.exports = {
         WHERE id = :id
     `,
               {
-                replacements: type
+                replacements: type,
               }
             )
           )
@@ -59,5 +59,5 @@ module.exports = {
 
   down: function (queryInterface) {
     return queryInterface.removeColumn('timesheets_types', 'name_en');
-  }
+  },
 };

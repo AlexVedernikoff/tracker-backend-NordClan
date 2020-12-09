@@ -4,5 +4,5 @@ module.exports = {
   },
   down: async (queryInterface) => {
     await queryInterface.removeColumn('timesheets', 'approved_by_user_id');
-  }
+  },
 };

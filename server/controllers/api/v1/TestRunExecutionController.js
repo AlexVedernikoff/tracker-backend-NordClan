@@ -117,6 +117,7 @@ exports.getCountedAll = async (req, res, next) => {
       };
     }
     const offset = (Number(page) - 1) * LIMIT;
+    // eslint-disable-next-line no-unused-vars
     const order = sort ? Object.entries(JSON.parse(sort)).filter(([_, value]) => {
       if (typeof value !== 'string') return false;
       const lowerValue = value.toLowerCase();

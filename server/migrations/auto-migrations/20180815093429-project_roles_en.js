@@ -12,14 +12,14 @@ const Roles = [
   {id: 11, name: 'Customer', nameEn: 'Customer'},
   {id: 12, name: 'Android', nameEn: 'Android'},
   {id: 13, name: 'IOS', nameEn: 'IOS'},
-  {id: 14, name: 'DevOps', nameEn: 'DevOps'}
+  {id: 14, name: 'DevOps', nameEn: 'DevOps'},
 ];
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
       .addColumn('project_roles', 'name_en', {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       })
       .then(() =>
         Promise.all(
@@ -31,7 +31,7 @@ module.exports = {
             WHERE id = :id
         `,
               {
-                replacements: role
+                replacements: role,
               }
             )
           )
@@ -40,5 +40,5 @@ module.exports = {
   },
   down: function (queryInterface) {
     return queryInterface.removeColumn('project_roles', 'name_en');
-  }
+  },
 };

@@ -23,32 +23,32 @@ exports.findDraftSheet = async function (userId, id) {
             model: models.Project,
             required: false,
             attributes: ['id', 'name', 'prefix'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'taskStatus',
             model: models.TaskStatusesDictionary,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
-          }
-        ]
+            paranoid: false,
+          },
+        ],
       },
       {
         as: 'taskStatus',
         model: models.TaskStatusesDictionary,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
-      }
-    ]
+        paranoid: false,
+      },
+    ],
   });
 };
 
@@ -58,7 +58,7 @@ exports.getDraftToDestroy = async function (options) {
   const where = {
     onDate,
     userId,
-    typeId
+    typeId,
   };
 
   if (taskId) {
@@ -76,7 +76,7 @@ exports.getDraftToDestroy = async function (options) {
   const draft = await models.TimesheetDraft
     .findOne({
       where: where,
-      attributes: ['id']
+      attributes: ['id'],
     });
 
 
@@ -88,7 +88,7 @@ exports.all = async function (conditions) {
     where: conditions,
     attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
     order: [
-      ['createdAt', 'ASC']
+      ['createdAt', 'ASC'],
     ],
     include: [
       {
@@ -106,38 +106,38 @@ exports.all = async function (conditions) {
             model: models.Project,
             required: false,
             attributes: ['id', 'name', 'prefix'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'taskStatus',
             model: models.TaskStatusesDictionary,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'sprint',
             model: models.Sprint,
             required: false,
-            attributes: ['name']
-          }
-        ]
+            attributes: ['name'],
+          },
+        ],
       },
       {
         as: 'taskStatus',
         model: models.TaskStatusesDictionary,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
         attributes: ['id', 'name', 'prefix'],
-        paranoid: false
-      }
-    ]
+        paranoid: false,
+      },
+    ],
   });
 };
 
@@ -158,31 +158,31 @@ function appendInclude (entities) {
           model: models.Project,
           required: false,
           attributes: ['id', 'name', 'prefix'],
-          paranoid: false
+          paranoid: false,
         },
         {
           as: 'taskStatus',
           model: models.TaskStatusesDictionary,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     },
     {
       as: 'taskStatus',
       model: models.TaskStatusesDictionary,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'projectMaginActivity',
       model: models.Project,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false
-    }
+      paranoid: false,
+    },
   ];
 
   return entities.map(entity => {
@@ -196,6 +196,6 @@ exports.findDraft = async function (where, links = []) {
     required: true,
     where,
     attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskStatusId', 'userId', 'isVisible', 'taskId', 'projectId'],
-    include
+    include,
   });
 };

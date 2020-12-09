@@ -8,7 +8,7 @@ exports.update = async (req) => {
     where: getWhere(req),
     include: getInclude(),
     returning: true,
-    userId: req.user.id
+    userId: req.user.id,
   });
 
   if (!updatedTimesheet[1][0]) {
@@ -20,7 +20,7 @@ exports.update = async (req) => {
 
 function getWhere (req) {
   const where = {
-    id: req.body.sheetId
+    id: req.body.sheetId,
   };
 
   const userId = req.body.userId || req.user.id; // Todo: validate user rights
@@ -48,30 +48,30 @@ function getInclude () {
           model: models.Project,
           required: false,
           attributes: ['id', 'name', 'prefix'],
-          paranoid: false
+          paranoid: false,
         },
         {
           as: 'taskStatus',
           model: models.TaskStatusesDictionary,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     },
     {
       as: 'taskStatus',
       model: models.TaskStatusesDictionary,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'projectMaginActivity',
       model: models.Project,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false
-    }
+      paranoid: false,
+    },
   ];
 }

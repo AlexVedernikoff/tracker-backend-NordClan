@@ -3,36 +3,36 @@ module.exports = function (sequelize, DataTypes) {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
     },
     tagId: {
       field: 'tag_id',
       type: DataTypes.INTEGER,
-      unique: 'item_tag_taggable'
+      unique: 'item_tag_taggable',
     },
     taggable: {
       type: DataTypes.STRING,
-      unique: 'item_tag_taggable'
+      unique: 'item_tag_taggable',
     },
     taggableId: {
       field: 'taggable_id',
       type: DataTypes.INTEGER,
       unique: 'item_tag_taggable',
-      references: null
-    }
+      references: null,
+    },
   }, {
     indexes: [
       {
         method: 'BTREE',
-        fields: ['tag_id']
-      }
+        fields: ['tag_id'],
+      },
     ],
     underscored: true,
     timestamps: true,
     paranoid: true,
     updatedAt: false,
     createdAt: false,
-    tableName: 'item_tags'
+    tableName: 'item_tags',
   });
 
   ItemTag.associate = function (models) {
@@ -40,8 +40,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'tag',
       foreignKey: {
         name: 'tagId',
-        field: 'tag_id'
-      }
+        field: 'tag_id',
+      },
     },
     { onDelete: 'cascade' });
   };

@@ -4,63 +4,63 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     testRunId: {
       field: 'test_run_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     field: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     prevValueStr: {
       field: 'prev_value_str',
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     valueStr: {
       field: 'value_str',
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     prevValueText: {
       field: 'prev_value_text',
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     valueText: {
       field: 'value_text',
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     prevValueTime: {
       field: 'prev_value_time',
       type: DataTypes.TIME,
-      allowNull: true
+      allowNull: true,
     },
     valueTime: {
       field: 'value_time',
       type: DataTypes.TIME,
-      allowNull: true
+      allowNull: true,
     },
     action: {
       type: DataTypes.STRING(6),
-      allowNull: false
+      allowNull: false,
     },
     userId: {
       field: 'user_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
-    createdAt: { type: DataTypes.DATE, field: 'created_at' }
+    createdAt: { type: DataTypes.DATE, field: 'created_at' },
   }, {
     underscored: true,
     timestamps: true,
     updatedAt: false,
     paranoid: false,
-    tableName: 'test_run_histories'
+    tableName: 'test_run_histories',
   });
 
   TestRunHistory.associate = function (models) {
@@ -68,18 +68,18 @@ module.exports = function (sequelize, DataTypes) {
       as: 'author',
       foreignKey: {
         name: 'userId',
-        field: 'user_id'
+        field: 'user_id',
       },
-      constraints: true
+      constraints: true,
     });
 
     TestRunHistory.belongsTo(models.TestRun, {
       as: 'testRunnData',
       foreignKey: {
         name: 'testRunId',
-        field: 'test_run_id'
+        field: 'test_run_id',
       },
-      constraints: true
+      constraints: true,
     });
 
   };

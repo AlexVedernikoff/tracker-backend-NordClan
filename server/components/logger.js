@@ -20,8 +20,8 @@ module.exports = function (module) {
     ),
     transports: [
       new transports.File({ filename: __dirname + '/../logs/error.log', level: 'error', timestamp: true }),
-      new transports.File({ filename: __dirname + '/../logs/all.log', timestamp: true })
-    ]
+      new transports.File({ filename: __dirname + '/../logs/all.log', timestamp: true }),
+    ],
   });
 
   if (process.env.NODE_ENV !== 'production') {

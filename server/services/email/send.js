@@ -8,14 +8,14 @@ module.exports = async function (input){
     service: config.service,
     auth: {
       user: config.login,
-      pass: config.password
-    }
+      pass: config.password,
+    },
   });
 
   const mailOptions = {
     'from': `${config.title} <${config.login}>`,
     'to': input.receiver,
-    'subject': input.subject
+    'subject': input.subject,
   };
 
   if (input.text) mailOptions.text = input.text;

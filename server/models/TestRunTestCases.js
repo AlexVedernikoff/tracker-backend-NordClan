@@ -10,36 +10,36 @@ module.exports = function (sequelize, DataTypes) {
         autoIncrement: true,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       testRunId: {
         field: 'test_run_id',
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       testCaseId: {
         field: 'test_case_id',
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       assignedTo: {
         field: 'assigned_to',
         type: DataTypes.INTEGER,
         allowNull: true,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       tableName: 'test_run_test_cases',
@@ -49,8 +49,8 @@ module.exports = function (sequelize, DataTypes) {
       hooks: {
         afterFind: function (model) {
           ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-        }
-      }
+        },
+      },
     }
   );
 
@@ -76,25 +76,25 @@ module.exports = function (sequelize, DataTypes) {
     TestRunTestCases.belongsTo(models.User, {
       foreignKey: {
         name: 'assignedTo',
-        field: 'assigned_to'
+        field: 'assigned_to',
       },
-      as: 'assignedUser'
+      as: 'assignedUser',
     });
 
     TestRunTestCases.belongsTo(models.TestCase, {
       foreignKey: {
         name: 'testCaseId',
-        field: 'test_case_id'
+        field: 'test_case_id',
       },
-      as: 'testCaseInfo'
+      as: 'testCaseInfo',
     });
 
     TestRunTestCases.belongsTo(models.TestRun, {
       foreignKey: {
         name: 'testRunId',
-        field: 'test_run_id'
+        field: 'test_run_id',
       },
-      as: 'testRunInfo'
+      as: 'testRunInfo',
     });
   };
 

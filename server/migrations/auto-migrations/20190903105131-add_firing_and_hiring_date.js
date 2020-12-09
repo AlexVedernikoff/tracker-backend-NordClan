@@ -6,5 +6,5 @@ module.exports = {
   down: async (queryInterface) => {
     await queryInterface.removeColumn('users', 'employment_date');
     await queryInterface.removeColumn('users', 'dismissal_date');
-  }
+  },
 };

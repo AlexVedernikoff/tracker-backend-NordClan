@@ -7,5 +7,5 @@ module.exports = {
   getMentions,
   replaceMention,
   getMentionDiff,
-  unlink
+  unlink,
 };

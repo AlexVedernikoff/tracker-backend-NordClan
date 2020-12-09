@@ -30,6 +30,6 @@ function emit (socketIO, taskId, userId) {
   socketIO.to(`user_${ userId }`).emit(channel, {
     type: NEED_TO_UPDATE_TASK_COMMENTS,
     data: { taskId },
-    isSocket: true
+    isSocket: true,
   });
 }

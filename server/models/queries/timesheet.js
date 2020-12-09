@@ -11,9 +11,9 @@ exports.canUserChangeTimesheet = function (userId, timesheetId) {
       where: {
         id: timesheetId,
         userId: userId,
-        statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS
+        statusId: models.TimesheetStatusesDictionary.NON_BLOCKED_IDS,
       },
-      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'statusId', 'spentTime', 'sprintId']
+      attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'statusId', 'spentTime', 'sprintId'],
     })
     .then((model) => {
       if (!model) {
@@ -35,7 +35,7 @@ exports.getTimesheet = async function (params) {
         attributes: {
           include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
           FROM timesheets AS tsh
-          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']]
+          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']],
         },
         paranoid: false,
         include: [
@@ -44,46 +44,46 @@ exports.getTimesheet = async function (params) {
             model: models.Project,
             required: false,
             attributes: ['id', 'name', 'prefix'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'sprint',
             model: models.Sprint,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'taskStatus',
             model: models.TaskStatusesDictionary,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
-          }
-        ]
+            paranoid: false,
+          },
+        ],
       },
       {
         as: 'taskStatus',
         model: models.TaskStatusesDictionary,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'project',
         model: models.Project,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'sprint',
         model: models.Sprint,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
-      }
-    ]
+        paranoid: false,
+      },
+    ],
   }).then((model) => {
     if (!model) {
       return createError('User can\'t change timesheet');
@@ -106,7 +106,7 @@ exports.getTimesheetByParams = async function (options) {
     onDate,
     userId,
     typeId,
-    sprintId
+    sprintId,
   };
 
   if (taskId) {
@@ -129,15 +129,15 @@ exports.isBillableFlag = async function (options) {
   const projectUsers = await models.ProjectUsers.findOne({
     where: {
       projectId: projectId,
-      userId: userId
+      userId: userId,
     },
     attributes: ['rolesIds'],
     include: [/** обязательно для формирования виртуального свойства roleIds*/
       {
         as: 'roles',
-        model: models.ProjectUsersRoles
-      }
-    ]
+        model: models.ProjectUsersRoles,
+      },
+    ],
   });
   /** Получаем список ролей для заполнения метрик*/
   const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
@@ -156,7 +156,7 @@ exports.all = async function (conditions) {
     where: conditions,
     attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'isVisible', 'sprintId', 'taskId'],
     order: [
-      ['createdAt', 'ASC']
+      ['createdAt', 'ASC'],
     ],
     include: [
       {
@@ -166,7 +166,7 @@ exports.all = async function (conditions) {
         attributes: {
           include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
           FROM timesheets AS tsh
-          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']]
+          WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']],
         },
         paranoid: false,
         include: [
@@ -175,53 +175,53 @@ exports.all = async function (conditions) {
             model: models.Project,
             required: false,
             attributes: ['id', 'name', 'prefix'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'sprint',
             model: models.Sprint,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'taskStatus',
             model: models.TaskStatusesDictionary,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
-          }
-        ]
+            paranoid: false,
+          },
+        ],
       },
       {
         as: 'taskStatus',
         model: models.TaskStatusesDictionary,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'user',
         model: models.User,
         required: false,
         attributes: ['id', 'fullNameRu', 'fullNameEn', 'emailPrimary', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'sprint',
         model: models.Sprint,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
         attributes: ['id', 'name', 'prefix'],
-        paranoid: false
-      }
-    ]
+        paranoid: false,
+      },
+    ],
   });
 };
 
@@ -239,7 +239,7 @@ exports.findOne = function (where) {
           attributes: {
             include: [[models.sequelize.literal(`(SELECT sum(tsh.spent_time)
             FROM timesheets AS tsh
-            WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']]
+            WHERE tsh.task_id = "Timesheet"."task_id")`), 'factExecutionTime']],
           },
           paranoid: false,
           include: [
@@ -248,18 +248,18 @@ exports.findOne = function (where) {
               model: models.Project,
               required: false,
               attributes: ['id', 'name', 'prefix'],
-              paranoid: false
-            }
-          ]
+              paranoid: false,
+            },
+          ],
         },
         {
           as: 'project',
           model: models.Project,
           required: false,
           attributes: ['id', 'name', 'prefix'],
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     })
     .then((model) => {
       if (!model) {

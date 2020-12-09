@@ -7,7 +7,7 @@ exports.findLinkedTasks = function (taskId, attributes = ['id', 'name'], t = nul
 
   return models.TaskTasks.findAll({
     where: {
-      taskId: taskId
+      taskId: taskId,
     },
     transaction: t,
     include: [
@@ -18,14 +18,14 @@ exports.findLinkedTasks = function (taskId, attributes = ['id', 'name'], t = nul
         required: true,
         where: {
           statusId: {
-            $ne: models.TaskStatusesDictionary.CANCELED_STATUS
+            $ne: models.TaskStatusesDictionary.CANCELED_STATUS,
           },
           deletedAt: {
-            $eq: null
-          }
-        }
-      }
-    ]
+            $eq: null,
+          },
+        },
+      },
+    ],
   })
     .then((taskTasks) => {
 
@@ -33,7 +33,7 @@ exports.findLinkedTasks = function (taskId, attributes = ['id', 'name'], t = nul
         result.push({
           id: model.task.id,
           name: model.task.name,
-          statusId: model.task.statusId
+          statusId: model.task.statusId,
         });
       });
 

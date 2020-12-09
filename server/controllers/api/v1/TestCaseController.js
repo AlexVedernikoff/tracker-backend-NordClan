@@ -7,7 +7,7 @@ const {
   TestCaseStatusesDictionary,
   TestCaseSeverityDictionary,
   TestRunTestCases,
-  TestCaseExecution
+  TestCaseExecution,
 } = require('../../../models');
 const createError = require('http-errors');
 const { copyTestCase, sanitizeTestCase, sanitizeTestSuite } = require('../../../services/testCase');
@@ -15,28 +15,28 @@ const { copyTestCase, sanitizeTestCase, sanitizeTestSuite } = require('../../../
 const includeOption = [
   {
     model: TestCaseSteps,
-    as: 'testCaseSteps'
+    as: 'testCaseSteps',
   },
   {
     model: TestCaseAttachments,
-    as: 'testCaseAttachments'
+    as: 'testCaseAttachments',
   },
   {
     model: User,
     as: 'authorInfo',
     attributes: [
       'fullNameRu',
-      'fullNameEn'
-    ]
+      'fullNameEn',
+    ],
   },
   {
     model: TestCaseStatusesDictionary,
-    as: 'testCaseStatus'
+    as: 'testCaseStatus',
   },
   {
     model: TestCaseSeverityDictionary,
-    as: 'testCaseSeverity'
-  }
+    as: 'testCaseSeverity',
+  },
 ];
 const stepsOrder = [[{ model: TestCaseSteps, as: 'testCaseSteps' }, 'id', 'ASC']];
 
@@ -44,14 +44,14 @@ const getTestCaseByParams = async params =>
   await TestCase.findOne({
     include: includeOption,
     where: params,
-    order: [stepsOrder]
+    order: [stepsOrder],
   });
 
 const selectFormattedTestCases = async (criterion) => {
   const testCases = await TestCase.findAll({
     include: includeOption,
     order: [stepsOrder],
-    ...criterion
+    ...criterion,
   }).map((entry) => entry.toJSON());
   return testCases.reduce((accumulator, testCase) => {
     const isWithTestSuite = typeof testCase.testSuiteId === 'number';
@@ -78,12 +78,12 @@ const validateCaseAndSuiteRelation = async (testCase) => {
 exports.getTemplates = async (req, res, next) => {
   try {
     const criterion = {
-      where: { projectId: { $eq: null } }
+      where: { projectId: { $eq: null } },
     };
     const { withoutTestSuite, withTestSuite } = await selectFormattedTestCases(criterion);
     res.json({
       withoutTestSuite,
-      withTestSuite
+      withTestSuite,
     });
   } catch (e) {
     next(e);
@@ -93,12 +93,12 @@ exports.getTemplates = async (req, res, next) => {
 exports.getTestCases = async (req, res, next) => {
   try {
     const criterion = {
-      where: { projectId: req.query.projectId || { $not: null } }
+      where: { projectId: req.query.projectId || { $not: null } },
     };
     const { withoutTestSuite, withTestSuite } = await selectFormattedTestCases(criterion);
     res.json({
       withoutTestSuite,
-      withTestSuite
+      withTestSuite,
     });
   } catch (e) {
     next(e);
@@ -124,12 +124,12 @@ exports.createTestCase = async (req, res, next) => {
     }
     await validateCaseAndSuiteRelation(body);
     const { dataValues: testCaseData } = await TestCase.create(body, {
-      historyAuthorId: user.id
+      historyAuthorId: user.id,
     });
     const testCaseId = testCaseData.id;
     const updatedSteps = testCaseSteps.map(item => ({
       ...item,
-      testCaseId
+      testCaseId,
     }));
     await TestCaseSteps.bulkCreate(updatedSteps);
     const result = await getTestCaseByParams({ id: testCaseId });
@@ -149,19 +149,19 @@ exports.updateTestCase = async (req, res, next) => {
     await validateCaseAndSuiteRelation(body);
     await TestCaseSteps.destroy({
       where: {
-        testCaseId: id
-      }
+        testCaseId: id,
+      },
     });
     await TestCase.update(body, {
       where: {
-        id
+        id,
       },
       individualHooks: true,
-      historyAuthorId: user.id
+      historyAuthorId: user.id,
     });
     const updatedSteps = testCaseSteps.map(item => ({
       ...item,
-      testCaseId: id
+      testCaseId: id,
     }));
     await TestCaseSteps.bulkCreate(updatedSteps);
     res.sendStatus(204);
@@ -176,25 +176,25 @@ exports.deleteTestCase = async (req, res, next) => {
     const testCase = await TestCase.findOne({ where: { id } }).then(c => c.get({ plain: true }));
     await TestCase.destroy({
       where: {
-        id
+        id,
       },
       individualHooks: true,
-      historyAuthorId: user.id
+      historyAuthorId: user.id,
     });
     await TestCaseSteps.destroy({
       where: {
-        testCaseId: id
-      }
+        testCaseId: id,
+      },
     });
     await TestRunTestCases.destroy({
       where: {
-        testCaseId: id
-      }
+        testCaseId: id,
+      },
     });
     await TestCaseExecution.destroy({
       where: {
-        testCaseId: id
-      }
+        testCaseId: id,
+      },
     });
     if (testCase.testSuiteId) {
       const casesOfParentSuite = await TestCase.findAll({ where: { testSuiteId: testCase.testSuiteId } });
@@ -202,7 +202,7 @@ exports.deleteTestCase = async (req, res, next) => {
         await TestSuite.destroy({
           where: { id: testCase.testSuiteId },
           historyAuthorId: user.id,
-          individualHooks: true
+          individualHooks: true,
         });
       }
     }

@@ -5,7 +5,7 @@ exports.name = 'file';
 exports.getFilesByModel = function (modelFileName, modelId) {
   const result = [];
   const where = {
-    deletedAt: null
+    deletedAt: null,
   };
 
   switch (modelFileName) {
@@ -33,8 +33,8 @@ exports.getFilesByModel = function (modelFileName, modelId) {
       where: where,
       attributes: models[modelFileName].defaultSelect,
       order: [
-        ['createdAt', 'ASC']
-      ]
+        ['createdAt', 'ASC'],
+      ],
     })
     .then(items => {
       items.forEach((model) => {

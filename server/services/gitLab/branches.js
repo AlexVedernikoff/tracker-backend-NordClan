@@ -10,11 +10,11 @@ const createBranch = async function (taskId, repoId, branchSource, branchName) {
   const taskTypesDictionary = await TaskTypesDictionary.findAll();
   const task = await Task.find({
     where: { id: taskId },
-    attributes: ['id', 'typeId', 'projectId', 'gitlabBranchIds']
+    attributes: ['id', 'typeId', 'projectId', 'gitlabBranchIds'],
   });
   const project = await Project.find({
     where: { id: task.projectId },
-    attributes: ['id', 'prefix', 'gitlabProjectIds']
+    attributes: ['id', 'prefix', 'gitlabProjectIds'],
   });
 
   if (!project.gitlabProjectIds.includes(+repoId)) {
@@ -28,7 +28,7 @@ const createBranch = async function (taskId, repoId, branchSource, branchName) {
       || `${
         taskType.nameEn.toLowerCase().search(/feature/g) ? 'feature' : 'bug'
       }/${project.prefix}-${task.id}`,
-    ref: branchSource
+    ref: branchSource,
   };
 
   try {
@@ -53,7 +53,7 @@ const createBranch = async function (taskId, repoId, branchSource, branchName) {
 const getBranchesByTaskId = async function (taskId) {
   const task = await Task.find({
     where: { id: taskId },
-    attributes: ['id', 'projectId', 'gitlabBranchIds']
+    attributes: ['id', 'projectId', 'gitlabBranchIds'],
   });
   if (!task.gitlabBranchIds) {
     return [];
@@ -63,7 +63,7 @@ const getBranchesByTaskId = async function (taskId) {
   task.gitlabBranchIds.map(e => {
     projects = {
       ...projects,
-      ...Object.keys(e)
+      ...Object.keys(e),
     };
   });
 
@@ -89,12 +89,12 @@ const getBranchesByRepoId = async function (repoId) {
   return http.get({
     host,
     path: `/api/v4/projects/${repoId}/repository/branches`,
-    headers
+    headers,
   });
 };
 
 module.exports = {
   createBranch,
   getBranchesByTaskId,
-  getBranchesByRepoId
+  getBranchesByRepoId,
 };

@@ -16,7 +16,7 @@ function transformSpent (timesheet) {
     spentTime: timesheet.dataValues.spentTime,
     taskStatusId: timesheet.dataValues.statusId,
     user: timesheet.dataValues.user,
-    userRole: timesheet.dataValues.userRoleId
+    userRole: timesheet.dataValues.userRoleId,
   };
 }
 

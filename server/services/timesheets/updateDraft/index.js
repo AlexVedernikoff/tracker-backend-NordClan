@@ -23,12 +23,12 @@ exports.updateDraft = async (params, draftId, userId) => {
 async function updateDraft (params, draftId) {
   const [, [updatedDraft]] = await TimesheetDraft.update(params, {
     where: { id: draftId },
-    returning: true
+    returning: true,
   });
 
   return {
     ...updatedDraft.get(),
-    isDraft: true
+    isDraft: true,
   };
 }
 
@@ -83,7 +83,7 @@ async function getTimesheetParams (params, draftId, userId) {
     userId,
     taskId,
     projectId,
-    spentTime: params.spentTime
+    spentTime: params.spentTime,
   };
   return timesheetParams;
 }

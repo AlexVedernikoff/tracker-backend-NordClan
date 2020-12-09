@@ -1,7 +1,7 @@
 module.exports = {
   up: queryInterface => {
     return queryInterface.bulkInsert('metric_types', [
-      { id: 57, name: 'Часы затраченные на фикс багов' }
+      { id: 57, name: 'Часы затраченные на фикс багов' },
     ]);
   },
 
@@ -12,6 +12,6 @@ module.exports = {
         { id: { [Sequalize.Op.in]: [57] } }
       )
     );
-  }
+  },
 };
 

@@ -8,7 +8,7 @@ const Statues = [
   {id: 7, name: 'QA stop', nameEn: 'QA stop'},
   {id: 8, name: 'Done', nameEn: 'Done'},
   {id: 9, name: 'Canceled', nameEn: 'Canceled'},
-  {id: 10, name: 'Closed', nameEn: 'Closed'}
+  {id: 10, name: 'Closed', nameEn: 'Closed'},
 ];
 
 //На русский не переведено
@@ -17,7 +17,7 @@ module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
       .addColumn('task_statuses', 'name_en', {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       })
       .then(() =>
         Promise.all(
@@ -29,7 +29,7 @@ module.exports = {
             WHERE id = :id
         `,
               {
-                replacements: status
+                replacements: status,
               }
             )
           )
@@ -39,5 +39,5 @@ module.exports = {
 
   down: function (queryInterface) {
     return queryInterface.removeColumn('task_statuses', 'name_en');
-  }
+  },
 };

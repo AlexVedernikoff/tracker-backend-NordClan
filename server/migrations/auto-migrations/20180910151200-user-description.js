@@ -4,7 +4,7 @@ module.exports = {
       'users',
       'description',
       {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       }
     );
   },
@@ -13,5 +13,5 @@ module.exports = {
       'users',
       'description'
     );
-  }
+  },
 };

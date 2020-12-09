@@ -42,8 +42,8 @@ exports.getScales = getScales;
 function getConditions (query) {
   const conditions = {
     userId: {
-      $eq: query.userId
-    }
+      $eq: query.userId,
+    },
   };
 
   if (query.onDate) {
@@ -145,9 +145,9 @@ async function getAvailableProjects (userId) {
         as: 'project',
         model: Project,
         attributes: ['id', 'name', 'prefix'],
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   });
 }
 

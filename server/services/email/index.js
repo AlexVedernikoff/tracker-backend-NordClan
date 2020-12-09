@@ -3,5 +3,5 @@ const template = require('./template');
 
 module.exports = {
   send,
-  template
+  template,
 };

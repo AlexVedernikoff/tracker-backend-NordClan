@@ -5,7 +5,7 @@ module.exports = {
     database: process.env.DATABASE_NAME || 'simtrack',
     host: process.env.DATABASE_HOST || 'localhost',
     port: process.env.DATABASE_PORT || 5432,
-    dialect: 'postgres'
+    dialect: 'postgres',
   },
   test: {
     username: process.env.DATABASE_USERNAME || 'postgres',
@@ -13,7 +13,7 @@ module.exports = {
     database: process.env.DATABASE_NAME || 'sim-track',
     host: process.env.DATABASE_HOST || 'localhost',
     port: process.env.DATABASE_PORT || 5432,
-    dialect: 'postgres'
+    dialect: 'postgres',
   },
   production: {
     username: process.env.DATABASE_USERNAME || 'postgres',
@@ -21,6 +21,6 @@ module.exports = {
     database: process.env.DATABASE_NAME || 'sim-track',
     host: process.env.DATABASE_HOST || 'localhost',
     port: process.env.DATABASE_PORT || 5432,
-    dialect: 'postgres'
-  }
+    dialect: 'postgres',
+  },
 };

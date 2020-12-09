@@ -3,5 +3,5 @@ const byTestPlan = require('./testPlan');
 
 module.exports = {
   byPeriod,
-  byTestPlan
+  byTestPlan,
 };

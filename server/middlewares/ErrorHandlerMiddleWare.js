@@ -3,6 +3,7 @@ const Sequelize = require('sequelize');
 const ldap = require('ldapjs');
 const production = process.env.NODE_ENV === 'production';
 
+// eslint-disable-next-line no-unused-vars
 module.exports = function (err, req, res, next) {
 
   if (err.mapped) { // expressValidator
@@ -27,8 +28,8 @@ module.exports = function (err, req, res, next) {
         value: e.value,
         msg: e.message,
         type: e.type,
-        param: e.path
-      }))
+        param: e.path,
+      })),
     };
   }
 
@@ -44,7 +45,7 @@ function sendError (res, err) {
   res.statusCode = status;
 
   const body = {
-    status: status
+    status: status,
   };
 
   // show the stacktrace when not in production
