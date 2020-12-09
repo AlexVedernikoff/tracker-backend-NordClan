@@ -1,17 +1,8 @@
-const projectRequest = require('./project/request');
-const projectAnswer = require('./project/message');
-const taskRequest = require('./task/request');
-const taskAnswer = require('./task/message');
-const models = require('../../models');
-const { firstLetterUp } = require('../../components/StringHelper');
+const projectInterfaces = require('./project');
+const taskInterfaces = require('./task');
 
-async function createResponse (entity, histories, countAll, pageSize, currentPage) {
+async function createResponse (answerBuilder, histories, countAll, pageSize, currentPage) {
   try {
-    const messageBuilder = {
-      task: taskAnswer,
-      project: projectAnswer
-    };
-
     return await {
       currentPage: currentPage,
       pagesCount: Math.ceil(countAll / pageSize),
@@ -20,38 +11,37 @@ async function createResponse (entity, histories, countAll, pageSize, currentPag
       rowsCountOnCurrentPage: histories.length,
       data: await Promise.all(histories
         .map(async (model) => {
-          const response = await messageBuilder[entity](model);
+          const response = await answerBuilder(model);
           return response ? {
             id: model.id,
             date: model.createdAt,
             message: response.message,
             messageEn: response.messageEn,
             entities: response.entities,
-            author: model.author
+            author: model.author,
           } : null;
         })
-        .filter(response => response))
+        .filter(response => response)),
     };
   } catch (error) {
     throw error;
   }
 }
 
-module.exports = () => {
-
-  const requestBuilder = {
-    task: taskRequest,
-    project: projectRequest
-  };
+module.exports = (entity) => {
+  let interfaces = null;
+  if (entity === 'task') interfaces = taskInterfaces;
+  if (entity === 'project') interfaces = projectInterfaces;
+  if (interfaces === null) throw new Error('fail entity');
+  const {requestBuilder, messageBuilder, model} = interfaces;
 
   return {
-    call: async (entity, entityId, pageSize, currentPage) => {
-      const request = requestBuilder[entity](entityId, pageSize, currentPage);
-      const modelName = `${firstLetterUp(entity)}History`;
-      const histories = await models[modelName].findAll(request);
-      const countAll = await models[modelName].count(request);
+    call: async (entityId, pageSize, currentPage) => {
+      const requestParams = requestBuilder(entityId, pageSize, currentPage);
+      const histories = await model.findAll(requestParams);
+      const countAll = await model.count(requestParams);
 
-      return await createResponse(entity, histories, countAll, pageSize, currentPage);
-    }
+      return await createResponse(messageBuilder, histories, countAll, pageSize, currentPage);
+    },
   };
 };

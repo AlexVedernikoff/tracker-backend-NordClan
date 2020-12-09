@@ -20,12 +20,12 @@ exports.login = function (req, res, next) {
   User.findOne({
     where: {
       login: req.body.login,
-      active: 1
+      active: 1,
     },
     include: [
       {
         as: 'authorsProjects',
-        model: models.Project
+        model: models.Project,
       },
       {
         as: 'usersProjects',
@@ -33,12 +33,12 @@ exports.login = function (req, res, next) {
         include: [
           {
             as: 'roles',
-            model: models.ProjectUsersRoles
-          }
-        ]
-      }
+            model: models.ProjectUsersRoles,
+          },
+        ],
+      },
     ],
-    attributes: [...User.defaultSelect, 'ldapLogin', 'password', 'isTest']
+    attributes: [...User.defaultSelect, 'ldapLogin', 'password', 'isTest'],
   })
     .then(user => {
       if (!user) return next(createError(404, 'Invalid Login or Password'));
@@ -56,9 +56,8 @@ exports.login = function (req, res, next) {
     });
 
   function authLdap (user, password) {
-    console.log(config);
     const client = ldap.createClient({
-      url: config.ldapUrl
+      url: config.ldapUrl,
     });
 
     client.bind('uid=' + user.ldapLogin + ',dc=nordclan', password, function (err) {
@@ -69,18 +68,18 @@ exports.login = function (req, res, next) {
       }
 
       const token = Auth.createJwtToken({
-        login: req.body.login
+        login: req.body.login,
       });
 
       Token.create({
         userId: user.dataValues.id,
         token: token.token,
-        expires: token.expires.format()
+        expires: token.expires.format(),
       })
         .then(() => {
           res.cookie('authorization', 'Basic ' + token.token, {
             maxAge: config.auth.accessTokenLifetime * 1000,
-            httpOnly: true
+            httpOnly: true,
           });
           user.dataValues.birthDate = moment(user.dataValues.birthDate).format('YYYY-DD-MM');
           delete user.dataValues.ldapLogin;
@@ -88,7 +87,7 @@ exports.login = function (req, res, next) {
           res.json({
             token: token.token,
             expire: token.expires,
-            user: userAuthExtension(user)
+            user: userAuthExtension(user),
           });
         })
         .catch(e => next(createError(e)));
@@ -121,24 +120,24 @@ exports.login = function (req, res, next) {
     }
 
     const token = Auth.createJwtToken({
-      login: req.body.login
+      login: req.body.login,
     });
 
     Token.create({
       userId: user.dataValues.id,
       token: token.token,
-      expires: token.expires.format()
+      expires: token.expires.format(),
     })
       .then(() => {
         res.cookie('authorization', 'Basic ' + token.token, {
           maxAge: config.auth.accessTokenLifetime * 1000,
-          httpOnly: true
+          httpOnly: true,
         });
 
         res.json({
           token: token.token,
           expire: token.expires,
-          user: userAuthExtension(user)
+          user: userAuthExtension(user),
         });
       })
       .catch(err => next(createError(err)));
@@ -151,17 +150,17 @@ exports.login = function (req, res, next) {
 
     SystemToken.create({
       token: token.token,
-      expires: token.expires.format()
+      expires: token.expires.format(),
     })
       .then(() => {
         res.cookie('system-authorization', 'Basic ' + token.token, {
           maxAge: config.auth.accessTokenLifetime * 1000,
-          httpOnly: true
+          httpOnly: true,
         });
 
         res.json({
           token: token.token,
-          expire: token.expires
+          expire: token.expires,
         });
       })
       .catch(err => next(createError(err)));
@@ -181,15 +180,15 @@ exports.logout = function (req, res, next) {
 function systemLogout (req, res, next) {
   SystemToken.destroy({
     where: {
-      token: req.systemToken
-    }
+      token: req.systemToken,
+    },
   })
     .then(row => {
       if (!row) return next(createError(404));
 
       res.cookie('system-authorization', '', {
         maxAge: 0,
-        httpOnly: true
+        httpOnly: true,
       });
 
       res.sendStatus(200);
@@ -201,15 +200,15 @@ function userLogout (req, res, next) {
   Token.destroy({
     where: {
       user_id: req.user.id,
-      token: req.token
-    }
+      token: req.token,
+    },
   })
     .then(row => {
       if (!row) return next(createError(404));
 
       res.cookie('authorization', '', {
         maxAge: 0,
-        httpOnly: true
+        httpOnly: true,
       });
 
       userSocketLogout(req, res);
@@ -223,7 +222,7 @@ function userLogout (req, res, next) {
 function keycloakUserLogout (req, res) {
   res.cookie('authorization', '', {
     maxAge: 0,
-    httpOnly: true
+    httpOnly: true,
   });
   userSocketLogout(req, res);
   res.sendStatus(200);

@@ -7,7 +7,7 @@ module.exports = function (taskId, pageSize, currentPage) {
     limit: pageSize,
     offset: currentPage > 0 ? +pageSize * (+currentPage - 1) : 0,
     order: [['createdAt', 'DESC']],
-    include: additionalEntities()
+    include: additionalEntities(),
   };
 };
 
@@ -19,7 +19,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."field" = \'parentId\''),
       attributes: ['id', 'name', 'deletedAt'],
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'prevParentTask',
@@ -27,7 +27,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."field" = \'parentId\''),
       attributes: ['id', 'name', 'deletedAt'],
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'sprint',
@@ -35,7 +35,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."field" = \'sprintId\''),
       attributes: ['id', 'name', 'deletedAt'],
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'prevSprint',
@@ -43,7 +43,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."field" = \'sprintId\''),
       attributes: ['id', 'name', 'deletedAt'],
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'performer',
@@ -51,7 +51,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."field" = \'performerId\''),
       attributes: models.User.defaultSelect,
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'prevPerformer',
@@ -59,14 +59,14 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."field" = \'performerId\''),
       attributes: models.User.defaultSelect,
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'author',
       model: models.User,
       attributes: models.User.defaultSelect,
       paranoid: false,
-      required: false
+      required: false,
     },
     {
       as: 'task',
@@ -74,7 +74,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."entity" = \'Task\''),
       attributes: ['id', 'name', 'deletedAt'],
       paranoid: false,
-      required: false
+      required: false,
     },
     {
       as: 'taskTasks',
@@ -86,9 +86,9 @@ function additionalEntities () {
         {
           as: 'task',
           model: models.Task,
-          attributes: ['id', 'name', 'deletedAt']
-        }
-      ]
+          attributes: ['id', 'name', 'deletedAt'],
+        },
+      ],
     },
     {
       as: 'itemTag',
@@ -102,9 +102,9 @@ function additionalEntities () {
           model: models.Tag,
           attributes: ['name'],
           required: false,
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     },
     {
       as: 'taskAttachments',
@@ -112,7 +112,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."entity" = \'TaskAttachment\''),
       attributes: models.TaskAttachments.defaultSelect,
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'subTask',
@@ -120,7 +120,7 @@ function additionalEntities () {
       where: Sequelize.literal('"TaskHistory"."entity" = \'Task\''),
       attributes: ['id', 'name'],
       required: false,
-      paranoid: false
-    }
+      paranoid: false,
+    },
   ];
 }

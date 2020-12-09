@@ -40,7 +40,7 @@ async function getResources (resource, model, changedProperty) {
   return {
     message: insertChangedProperties(message, properties),
     messageEn: insertChangedProperties(messageEn, propertiesEn),
-    entities
+    entities,
   };
 }
 
@@ -58,7 +58,7 @@ async function transformMessage (message, changedProperty, model, locale = 'ru')
   const dictionary = {
     role: async () => await getUserRole(changedProperty, locale),
     action: () => getUserAction(changedProperty, locale),
-    tag: () => model.itemTag.tag.name
+    tag: () => model.itemTag.tag.name,
   };
 
   return await flags
@@ -112,7 +112,7 @@ function insertChangedProperties (message, changedProperty) {
 async function transformProperties (entity, field, changedProperty, locale = 'ru') {
   const transformValue = async (value) => {
     const dictionary = {
-      [field]: await queries.dictionary.getName(`${entity}StatusesDictionary`, value, locale)
+      [field]: await queries.dictionary.getName(`${entity}StatusesDictionary`, value, locale),
     };
 
     return dictionary[field] || value;
