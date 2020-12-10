@@ -7,13 +7,13 @@ const entityWord = {
   ru: {
     create: 'задачу',
     update: 'задачи',
-    delete: 'задачу'
+    delete: 'задачу',
   },
   en: {
     create: 'task',
     update: 'task',
-    delete: 'task'
-  }
+    delete: 'task',
+  },
 };
 
 module.exports = async function (model) {
@@ -30,7 +30,7 @@ module.exports = async function (model) {
   return {
     message: answer.message,
     messageEn: answer.messageEn,
-    entities: answer.entities
+    entities: answer.entities,
   };
 };
 
@@ -40,7 +40,7 @@ async function generativeAnswer (model, values) {
   const result = {
     message: '',
     messageEn: '',
-    entities: {}
+    entities: {},
   };
 
   if (model.sprint) result.entities.sprint = model.sprint;
@@ -142,7 +142,7 @@ async function transformValue (model, changedProperty, hasPrevChangedProperty = 
     statusId: await queries.dictionary.getName('TaskStatusesDictionary', currentValue, locale),
     typeId: await queries.dictionary.getName('TaskTypesDictionary', currentValue, locale),
     sprintId: hasPrevChangedProperty ? '{prevSprint}' : '{sprint}',
-    parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}'
+    parentId: hasPrevChangedProperty ? '{prevParentTask}' : '{parentTask}',
   };
 
   return changedValue[model.field] || currentValue;
@@ -159,9 +159,9 @@ function declarativeHandlers () {
         return {
           message: `создал(-а) ${entityWord.ru.create} '${model.task.name}'`,
           messageEn: `created ${entityWord.en.create} '${model.task.name}'`,
-          entities: {}
+          entities: {},
         };
-      }
+      },
     },
     {
       name: 'create Subtask',
@@ -173,10 +173,10 @@ function declarativeHandlers () {
           message: `создал(-а) под${entityWord.ru.create} {subTask}`,
           messageEn: `created sub${entityWord.en.create} {subTask}`,
           entities: {
-            subTask: model.subTask
-          }
+            subTask: model.subTask,
+          },
         };
-      }
+      },
     },
     {
       name: 'remove Subtask',
@@ -188,10 +188,10 @@ function declarativeHandlers () {
           message: `отменил(-а) под${entityWord.ru.delete} {subTask}`,
           messageEn: `removed sub${entityWord.en.delete} {subTask}`,
           entities: {
-            subTask: model.subTask
-          }
+            subTask: model.subTask,
+          },
         };
-      }
+      },
     },
     {
       name: 'set performer',
@@ -203,10 +203,10 @@ function declarativeHandlers () {
           message: 'установил(-а) исполнителя {performer}',
           messageEn: 'setted performer {performer}',
           entities: {
-            performer: model.performer
-          }
+            performer: model.performer,
+          },
         };
-      }
+      },
     },
     {
       name: 'delete performer',
@@ -218,10 +218,10 @@ function declarativeHandlers () {
           message: 'убрал(-а) исполнителя {prevPerformer}',
           messageEn: 'removed performer {prevPerformer}',
           entities: {
-            prevPerformer: model.prevPerformer
-          }
+            prevPerformer: model.prevPerformer,
+          },
         };
-      }
+      },
     },
     {
       name: 'change performer',
@@ -234,10 +234,10 @@ function declarativeHandlers () {
           messageEn: 'changed performer from {prevPerformer} to {performer}',
           entities: {
             performer: model.performer,
-            prevPerformer: model.prevPerformer
-          }
+            prevPerformer: model.prevPerformer,
+          },
         };
-      }
+      },
     },
     {
       name: 'create link',
@@ -249,10 +249,10 @@ function declarativeHandlers () {
           message: 'создал(-а) связь с задачей {linkedTask}',
           messageEn: 'created a connection with task {linkedTask}',
           entities: {
-            linkedTask: model.taskTasks
-          }
+            linkedTask: model.taskTasks,
+          },
         };
-      }
+      },
     },
     {
       name: 'delete link',
@@ -264,10 +264,10 @@ function declarativeHandlers () {
           message: 'удалил(-а) связь с задачей {linkedTask}',
           messageEn: 'removed connection with task {linkedTask}',
           entities: {
-            linkedTask: model.taskTasks
-          }
+            linkedTask: model.taskTasks,
+          },
         };
-      }
+      },
     },
     {
       name: 'create tag',
@@ -277,9 +277,9 @@ function declarativeHandlers () {
       answer: (model) => {
         return {
           message: `создал(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`,
-          messageEn: `created tag '${model.itemTag ? model.itemTag.tag.name : ''}'`
+          messageEn: `created tag '${model.itemTag ? model.itemTag.tag.name : ''}'`,
         };
-      }
+      },
     },
     {
       name: 'delete tag',
@@ -289,9 +289,9 @@ function declarativeHandlers () {
       answer: (model) => {
         return {
           message: `удалил(-а) тег '${model.itemTag ? model.itemTag.tag.name : ''}'`,
-          messageEn: `deleted tag '${model.itemTag ? model.itemTag.tag.name : ''}'`
+          messageEn: `deleted tag '${model.itemTag ? model.itemTag.tag.name : ''}'`,
         };
-      }
+      },
     },
     {
       name: 'attach file',
@@ -303,10 +303,10 @@ function declarativeHandlers () {
           message: 'прикрепил(-а) файл {file}',
           messageEn: 'attached file {file}',
           entities: {
-            file: model.taskAttachments
-          }
+            file: model.taskAttachments,
+          },
         };
-      }
+      },
     },
     {
       name: 'detach file',
@@ -318,10 +318,10 @@ function declarativeHandlers () {
           message: 'удалил(-а) файл {file}',
           messageEn: 'removed file {file}',
           entities: {
-            file: model.taskAttachments
-          }
+            file: model.taskAttachments,
+          },
         };
-      }
-    }
+      },
+    },
   ];
 }

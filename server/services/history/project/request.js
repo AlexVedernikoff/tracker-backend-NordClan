@@ -7,7 +7,7 @@ module.exports = function (projectId, pageSize, currentPage) {
     limit: pageSize,
     offset: currentPage > 0 ? +pageSize * (+currentPage - 1) : 0,
     order: [['createdAt', 'DESC']],
-    include: additionalEntities()
+    include: additionalEntities(),
   };
 };
 
@@ -18,13 +18,13 @@ function additionalEntities () {
       model: models.User,
       attributes: models.User.defaultSelect,
       paranoid: false,
-      required: false
+      required: false,
     },
     {
       as: 'sprint',
       model: models.Sprint,
       required: false,
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'project_user',
@@ -37,8 +37,8 @@ function additionalEntities () {
         model: models.User,
         attributes: models.User.defaultSelect,
         required: false,
-        paranoid: false
-      }
+        paranoid: false,
+      },
     },
     {
       as: 'itemTag',
@@ -52,16 +52,16 @@ function additionalEntities () {
           model: models.Tag,
           attributes: ['name'],
           required: false,
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     },
     {
       as: 'portfolio',
       model: models.Portfolio,
       attributes: ['id', 'name'],
       required: false,
-      paranoid: false
-    }
+      paranoid: false,
+    },
   ];
 }
