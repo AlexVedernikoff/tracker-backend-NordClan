@@ -1,3 +1,4 @@
+const lodash = require('lodash');
 const {
   TestRunExecution,
   TestRun,
@@ -210,27 +211,36 @@ exports.updateTestRunExecution = async (req, res, next) => {
     if (status === 4) {
       testRunExecution.finishTime = new Date();
     }
-    await TestRunExecution.update(testRunExecution, {
-      where: {
-        id,
-      },
-    });
+    if (lodash.isEqual(body, {})) {
+      await TestRunExecution.update(testRunExecution, {
+        where: {
+          id,
+        },
+      });
+      res.sendStatus(204);
+    } else {
+      await TestRunExecution.update(testRunExecution, {
+        where: {
+          id,
+        },
+      });
 
-    const oldTestCaseExecution = await TestCaseExecution.findAll({
-      where: {
-        testRunExecutionId: id,
-      },
-    });
-    const oldTestCasesIds = oldTestCaseExecution.map(ce => ce.testCaseId);
-    const addTestCasesIds = testCasesIds.filter(caseId => !oldTestCasesIds.includes(caseId));
-    const removeTestCases = oldTestCasesIds.filter(caseId => !testCasesIds.includes(caseId));
+      const oldTestCaseExecution = await TestCaseExecution.findAll({
+        where: {
+          testRunExecutionId: id,
+        },
+      });
+      const oldTestCasesIds = oldTestCaseExecution.map(ce => ce.testCaseId);
+      const addTestCasesIds = testCasesIds.filter(caseId => !oldTestCasesIds.includes(caseId));
+      const removeTestCases = oldTestCasesIds.filter(caseId => !testCasesIds.includes(caseId));
 
-    await addTestCaseToTestRunExecution(id, addTestCasesIds);
-    await TestCaseExecution.destroy({
-      where: { testRunExecutionId: id, testCaseId: removeTestCases },
-    });
+      await addTestCaseToTestRunExecution(id, addTestCasesIds);
+      await TestCaseExecution.destroy({
+        where: { testRunExecutionId: id, testCaseId: removeTestCases },
+      });
 
-    res.sendStatus(204);
+      res.sendStatus(204);
+    }
   } catch (e) {
     next(createError(e));
   }
