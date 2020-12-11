@@ -22,6 +22,7 @@ const JiraController = require('../controllers/api/v1/JiraController');
 const TestCaseController = require('../controllers/api/v1/TestCaseController');
 const TestSuiteController = require('../controllers/api/v1/TestSuiteController');
 const TestRunController = require('../controllers/api/v1/TestRunController');
+const ErrorLogs = require('../controllers/api/v1/ErrorsLogs');
 const ProjectEnvironmentController = require('../controllers/api/v1/ProjectEnvironmentController');
 const TestRunExecutionController = require('../controllers/api/v1/TestRunExecutionController');
 const { replaceAuthHeader } = require('../middlewares/Jira/RepalceAuthHeaderMiddleWare');
@@ -274,5 +275,8 @@ router.get('/test-run/:id', TestRunController.getTestRunById);
 router.post('/test-run', TestRunController.createTestRun);
 router.put('/test-run/:id', TestRunController.updateTestRun);
 router.delete('/test-run/:id', TestRunController.deleteTestRun);
+
+//Error log
+router.post('/errors_log', ErrorLogs.log);
 
 module.exports = { routes: router };
