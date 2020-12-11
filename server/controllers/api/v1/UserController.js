@@ -171,6 +171,7 @@ exports.getAllUsers = async function (req, res, next) {
         'lastNameRu',
         'firstNameEn',
         'lastNameEn',
+        'active',
         'photo',
         'skype',
         'emailPrimary',
