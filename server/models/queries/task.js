@@ -12,10 +12,10 @@ const projectWithUsers = [
       {
         as: 'projectUsers',
         model: models.ProjectUsers,
-        attributes: ['userId']
-      }
-    ]
-  }
+        attributes: ['userId'],
+      },
+    ],
+  },
 ];
 
 exports.includeProjectWithUsers = projectWithUsers;
@@ -25,17 +25,17 @@ exports.getTaskWithUsers = function (id) {
     .findOne({
       where: {
         deletedAt: null,
-        id
+        id,
       },
       attributes: ['id'],
-      include: projectWithUsers
+      include: projectWithUsers,
     });
 };
 
 exports.defaultAttributes = function (role) {
   if (role === models.User.EXTERNAL_USER_ROLE) {
     return {
-      exclude: ['factExecutionTime', 'plannedExecutionTime']
+      exclude: ['factExecutionTime', 'plannedExecutionTime'],
     };
   }
 
@@ -43,6 +43,6 @@ exports.defaultAttributes = function (role) {
     include: [[models.Sequelize.literal(`(SELECT sum(tsh.spent_time)
                                           FROM timesheets as tsh
                                           WHERE tsh.task_id = "Task"."id")`), 'factExecutionTime']],
-    exclude: ['factExecutionTime']
+    exclude: ['factExecutionTime'],
   };
 };

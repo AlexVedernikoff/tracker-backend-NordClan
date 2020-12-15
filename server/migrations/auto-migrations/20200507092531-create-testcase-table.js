@@ -5,87 +5,87 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       title: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       status_id: {
         type: Sequelize.INTEGER,
-        defaultValue: 3
+        defaultValue: 3,
       },
       severity_id: {
         type: Sequelize.INTEGER,
-        defaultValue: 1
+        defaultValue: 1,
       },
       priority: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        defaultValue: 3
+        defaultValue: 3,
       },
       pre_conditions: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       post_conditions: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       expected_result: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       duration: {
         type: Sequelize.TIME,
-        defaultValue: '00:10:00'
+        defaultValue: '00:10:00',
       },
       test_suite_id: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       author_id: {
         type: Sequelize.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       created_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
     return queryInterface.createTable('test_case_steps', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_case_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       action: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       expected_result: {
         type: Sequelize.TEXT,
-        allowNull: true
-      }
+        allowNull: true,
+      },
     });
   },
 
   down: queryInterface => {
     queryInterface.dropTable('test_case');
     return queryInterface.dropTable('test_case_steps');
-  }
+  },
 };

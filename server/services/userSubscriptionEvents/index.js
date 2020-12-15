@@ -20,33 +20,33 @@ module.exports = async function (eventId, input, user){
       attributes: ['id'],
       where: {
         nameEn: {
-          $or: ['PM', 'QA']
-        }
+          $or: ['PM', 'QA'],
+        },
       }});
     projectRolesValues = projectRolesValues.map(el => el.id);
     receivers = await ProjectUsers.findAll({
       include: [
         {
           as: 'user',
-          model: User
+          model: User,
         },
         {
           as: 'subscriptions',
-          model: ProjectUsersSubscriptions
+          model: ProjectUsersSubscriptions,
         },
         {
           as: 'roles',
           model: ProjectUsersRoles,
           where: {
             projectRoleId: {
-              '$in': projectRolesValues// PM QA
-            }
-          }
-        }
+              '$in': projectRolesValues, // PM QA
+            },
+          },
+        },
       ],
       where: {
-        projectId: task.project.id
-      }
+        projectId: task.project.id,
+      },
     });
 
     receivers.forEach(function (projectUser){
@@ -57,7 +57,7 @@ module.exports = async function (eventId, input, user){
       emails.push({
         'receiver': projectUser.user.emailPrimary,
         'subject': emailTemplate.subject,
-        'html': emailTemplate.body
+        'html': emailTemplate.body,
       });
     });
 
@@ -66,7 +66,7 @@ module.exports = async function (eventId, input, user){
       emails.push({
         'receiver': emailForDevOpsNotify,
         'subject': emailTemplate.subject,
-        'html': emailTemplate.body
+        'html': emailTemplate.body,
       });
     }
 
@@ -87,9 +87,9 @@ module.exports = async function (eventId, input, user){
         ? []
         : await User.findAll({
           where: {
-            id: _.unique(mentions)
+            id: _.unique(mentions),
           },
-          attributes: User.defaultSelect
+          attributes: User.defaultSelect,
         });
 
       taskComment.text = mentions.length ? await replaceMention(taskComment.text, users) : taskComment.text;
@@ -105,7 +105,7 @@ module.exports = async function (eventId, input, user){
       emails.push({
         'receiver': performer.emailPrimary,
         'subject': emailTemplate.subject,
-        'html': emailTemplate.body
+        'html': emailTemplate.body,
       });
     });
 
@@ -128,24 +128,24 @@ module.exports = async function (eventId, input, user){
       const projectUsers = await ProjectUsers.findAll({
         attributes: ['user_id'],
         where: {
-          projectId: task.project.id
-        }
+          projectId: task.project.id,
+        },
       });
       receiverIds = [
         ...projectUsers.map(projectUser => projectUser.dataValues.user_id),
-        task.project.authorId
+        task.project.authorId,
       ];
     } else if (mentions.length) {
       receiverIds = [
         ...receiverIds,
-        ...mentions
+        ...mentions,
       ];
     }
 
 
     receivers = await User.findAll({
       where: {
-        id: _.unique(receiverIds)
+        id: _.unique(receiverIds),
       },
       include: [
         {
@@ -155,11 +155,11 @@ module.exports = async function (eventId, input, user){
           include: [
             {
               as: 'subscriptions',
-              model: ProjectUsersSubscriptions
-            }
-          ]
-        }
-      ]
+              model: ProjectUsersSubscriptions,
+            },
+          ],
+        },
+      ],
     });
 
     comment.text = mentions.length ? await replaceMention(comment.text, receivers) : comment.text;
@@ -172,7 +172,7 @@ module.exports = async function (eventId, input, user){
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
-        'html': emailTemplate.body
+        'html': emailTemplate.body,
       });
     });
 
@@ -187,31 +187,31 @@ module.exports = async function (eventId, input, user){
     projectRolesValues = await ProjectRolesDictionary.find({
       attributes: ['id'],
       where: {
-        nameEn: 'PM'
+        nameEn: 'PM',
       }});
     receivers = await ProjectUsers.findAll({
       include: [
         {
           as: 'user',
-          model: User
+          model: User,
         },
         {
           as: 'subscriptions',
-          model: ProjectUsersSubscriptions
+          model: ProjectUsersSubscriptions,
         },
         {
           as: 'roles',
           model: ProjectUsersRoles,
           where: {
             projectRoleId: {
-              '$in': [projectRolesValues.id]// PM
-            }
-          }
-        }
+              '$in': [projectRolesValues.id], // PM
+            },
+          },
+        },
       ],
       where: {
-        projectId: task.project.id
-      }
+        projectId: task.project.id,
+      },
     });
 
     receivers.forEach(function (receiver){
@@ -221,7 +221,7 @@ module.exports = async function (eventId, input, user){
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
-        'html': emailTemplate.body
+        'html': emailTemplate.body,
       });
     });
 
@@ -239,18 +239,18 @@ module.exports = async function (eventId, input, user){
       const projectUsers = await ProjectUsers.findAll({
         attributes: ['user_id'],
         where: {
-          projectId: task.project.id
-        }
+          projectId: task.project.id,
+        },
       });
       receiverIds = [
-        ...projectUsers.map(projectUser => projectUser.dataValues.user_id)
+        ...projectUsers.map(projectUser => projectUser.dataValues.user_id),
       ];
     } else {
       receiverIds = user;
     }
     receivers = await User.findAll({
       where: {
-        id: _.unique(receiverIds)
+        id: _.unique(receiverIds),
       },
       include: [
         {
@@ -260,17 +260,17 @@ module.exports = async function (eventId, input, user){
           include: [
             {
               as: 'subscriptions',
-              model: ProjectUsersSubscriptions
-            }
-          ]
-        }
-      ]
+              model: ProjectUsersSubscriptions,
+            },
+          ],
+        },
+      ],
     });
 
     if (mentions[0] !== 'all') {
       mentionedUsers = await User.findAll({
         where: {
-          id: _.unique(mentions)
+          id: _.unique(mentions),
         },
         include: [
           {
@@ -280,11 +280,11 @@ module.exports = async function (eventId, input, user){
             include: [
               {
                 as: 'subscriptions',
-                model: ProjectUsersSubscriptions
-              }
-            ]
-          }
-        ]
+                model: ProjectUsersSubscriptions,
+              },
+            ],
+          },
+        ],
       });
     } else {
       mentionedUsers = receivers;
@@ -300,7 +300,7 @@ module.exports = async function (eventId, input, user){
       emails.push({
         'receiver': receiver.emailPrimary,
         'subject': emailTemplate.subject,
-        'html': emailTemplate.body
+        'html': emailTemplate.body,
       });
     });
     break;
@@ -315,7 +315,7 @@ module.exports = async function (eventId, input, user){
         emails.push({
           'receiver': emailRecipient,
           'subject': emailTemplate.subject,
-          'html': emailTemplate.body
+          'html': emailTemplate.body,
         });
       });
     }
@@ -342,19 +342,19 @@ function getTask (id){
     include: [
       {
         as: 'taskStatus',
-        model: TaskStatusesDictionary
+        model: TaskStatusesDictionary,
       },
       {
         as: 'type',
-        model: TaskTypesDictionary
+        model: TaskTypesDictionary,
       },
       {
         as: 'project',
-        model: Project
+        model: Project,
       },
       {
         as: 'sprint',
-        model: Sprint
+        model: Sprint,
       },
       {
         as: 'comments',
@@ -362,9 +362,9 @@ function getTask (id){
         include: [
           {
             as: 'author',
-            model: User
-          }
-        ]
+            model: User,
+          },
+        ],
       },
       {
         as: 'author',
@@ -377,12 +377,12 @@ function getTask (id){
             include: [
               {
                 as: 'subscriptions',
-                model: ProjectUsersSubscriptions
-              }
+                model: ProjectUsersSubscriptions,
+              },
             ],
-            required: false
-          }
-        ]
+            required: false,
+          },
+        ],
       },
       {
         as: 'performer',
@@ -395,13 +395,13 @@ function getTask (id){
             include: [
               {
                 as: 'subscriptions',
-                model: ProjectUsersSubscriptions
-              }
+                model: ProjectUsersSubscriptions,
+              },
             ],
-            required: false
-          }
-        ]
-      }
-    ]
+            required: false,
+          },
+        ],
+      },
+    ],
   });
 }

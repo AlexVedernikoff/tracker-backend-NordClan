@@ -39,7 +39,7 @@ exports.get = (requestOptions) => {
 
   const options = {
     method: 'GET',
-    ...requestOptions
+    ...requestOptions,
   };
 
   return httpRequest(options);
@@ -49,7 +49,7 @@ exports.post = (requestOptions, postData, stringify) => {
 
   const options = {
     method: 'POST',
-    ...requestOptions
+    ...requestOptions,
   };
 
   return httpRequest(options, postData, stringify);

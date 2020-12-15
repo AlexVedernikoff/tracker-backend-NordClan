@@ -5,5 +5,5 @@ module.exports = {
 
   down: function (queryInterface) {
     queryInterface.sequelize.query('UPDATE projects SET "type_id" = NULL WHERE "type_id" = 1;');
-  }
+  },
 };

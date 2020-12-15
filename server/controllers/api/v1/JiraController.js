@@ -1,6 +1,5 @@
 const {
   jiraSync,
-  createProject,
   getJiraProjects,
   setProjectAssociation,
   jiraAuth,
@@ -12,7 +11,7 @@ const {
   getJiraProjectById,
   getJiraProjectUsers,
   getJiraSyncStatuses,
-  setJiraSyncStatus
+  setJiraSyncStatus,
 } = require('../../../services/synchronizer/index');
 const createError = require('http-errors');
 
@@ -31,7 +30,7 @@ exports.jiraAuth = async function (req, res, next) {
   try {
     const { username, password, server, email } = req.body;
     const {
-      data: { token }
+      data: { token },
     } = await jiraAuth(username, password, server, email);
     res.json({ token });
   } catch (e) {
@@ -88,12 +87,12 @@ exports.getJiraProject = async function (req, res, next) {
   try {
     const [ { data }, users ] = await Promise.all([
       getJiraProjectById(req.params.jiraProjectId, req.headers),
-      getJiraProjectUsers(req.headers, req.params.jiraProjectId)
+      getJiraProjectUsers(req.headers, req.params.jiraProjectId),
     ]);
     res.json({
       issueTypes: data.issue_types,
       statusTypes: data.status_type,
-      users
+      users,
     });
   } catch (e) {
     if (e.response && [404].indexOf(e.response.status) !== -1) {
@@ -144,7 +143,7 @@ exports.linkProject = async function (req, res, next) {
     res.json({
       jiraExternalId,
       jiraProjectName: jiraProject.name,
-      ...projectAssociations
+      ...projectAssociations,
     });
 
 

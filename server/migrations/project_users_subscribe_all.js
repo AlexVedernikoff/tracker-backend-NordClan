@@ -16,7 +16,7 @@ async function exec (){
       ProjectEventsDictionary.values.forEach((projectEvent) => {
         projectUsersSubscriptionsData.push({
           projectUserId: projectUser.id,
-          projectEventId: projectEvent.id
+          projectEventId: projectEvent.id,
         });
       });
     });

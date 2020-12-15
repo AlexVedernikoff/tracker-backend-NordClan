@@ -4,7 +4,7 @@ module.exports = {
       'tasks',
       'is_dev_ops',
       {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
       }
     ).then(() => queryInterface.sequelize.query(
       'UPDATE tasks SET "is_dev_ops" = false;'
@@ -15,5 +15,5 @@ module.exports = {
       'tasks',
       'is_dev_ops'
     );
-  }
+  },
 };

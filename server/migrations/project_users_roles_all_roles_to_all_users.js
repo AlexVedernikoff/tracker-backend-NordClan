@@ -1,5 +1,4 @@
 const { ProjectUsers, ProjectUsersRoles, ProjectRolesDictionary, sequelize } = require('../models');
-const _ = require('underscore');
 
 async function exec (){
   try {
@@ -17,7 +16,7 @@ async function exec (){
       ProjectRolesDictionary.values.forEach((projectRole) => {
         projectUsersRolesData.push({
           projectUserId: projectUser.id,
-          projectRoleId: projectRole.id
+          projectRoleId: projectRole.id,
         });
       });
     });

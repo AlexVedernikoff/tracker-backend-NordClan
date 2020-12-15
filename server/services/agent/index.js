@@ -6,5 +6,5 @@ module.exports = {
   calculate,
   calculateByProject,
   list,
-  validate
+  validate,
 };

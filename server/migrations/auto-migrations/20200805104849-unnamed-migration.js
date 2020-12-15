@@ -5,49 +5,49 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       test_case_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'test_case', key: 'id' }
+        references: { model: 'test_case', key: 'id' },
       },
       file_name: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       path: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       previewPath: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       author_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       size: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       type: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       created_at: {
         allowNull: true,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
         allowNull: true,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
         allowNull: true,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     }).then(() => queryInterface.addIndex('test_case_attachments', ['test_case_id']));
     //.then(() => {
     //  return queryInterface.addColumn(
@@ -72,6 +72,7 @@ module.exports = {
     */
   },
 
+  // eslint-disable-next-line no-unused-vars
   down: function (queryInterface, Sequelize) {
     /*
       Add reverting commands here.
@@ -82,5 +83,5 @@ module.exports = {
     return queryInterface.removeIndex('test_case_attachments', ['test_case_id']).then(
       () => queryInterface.dropTable('test_case_attachments')
     );
-  }
+  },
 };

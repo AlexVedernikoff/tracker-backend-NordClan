@@ -5,13 +5,13 @@ const USER = {
     'updateCurrentUserProfile': true,
     'me': true,
     'read': true,
-    'changeAvatar': true
+    'changeAvatar': true,
   },
   tag: {
     'autocompliter': true,
     'create': true,
     'list': true,
-    'delete': true
+    'delete': true,
   },
   project: {
     'create': true,
@@ -20,85 +20,85 @@ const USER = {
     'getGitlabNamespaces': true,
     'createGitlabProject': true,
     'addGitlabProject': true,
-    'getGitlabProjects': true
+    'getGitlabProjects': true,
   },
   projectUsers: {
     'create': true,
     'list': true,
-    'delete': true
+    'delete': true,
   },
   portfolio: {
     'list': true,
     'update': true,
-    'read': true
+    'read': true,
   },
   sprint: {
     'create': true,
     'read': true,
     'update': true,
     'list': true,
-    'delete': true
+    'delete': true,
   },
   task: {
     'create': true,
     'read': true,
     'update': true,
-    'list': true
+    'list': true,
   },
   taskLinks: {
     'create': true,
-    'delete': true
+    'delete': true,
   },
   comment: {
     'create': true,
     'update': true,
     'delete': true,
-    'list': true
+    'list': true,
   },
   attachment: {
     'upload': true,
-    'delete': true
+    'delete': true,
   },
   history: {
-    'list': true
+    'list': true,
   },
   timesheet: {
     'create': true,
     'update': true,
     'delete': true,
     'list': true,
-    'trackAll': true
+    'trackAll': true,
   },
   companyReports: {
     'export': true,
-    'read': true
+    'read': true,
   },
   metrics: {
-    'list': true
-  }
+    'list': true,
+  },
 };
 
 module.exports = {
   USER: {
-    ...USER
+    ...USER,
   },
   DEV_OPS: {
-    ...USER
+    ...USER,
   },
   ADMIN: {
     ...USER,
     project: {
       ...USER.project,
-      'delete': true
+      'delete': true,
     },
     task: {
       ...USER.task,
-      'delete': true
+      'delete': true,
     },
     portfolio: {
       ...USER.portfolio,
       'list': true,
-      'delete': true
+      'delete': true,
     },
     user: {
       ...USER.user,
@@ -111,100 +111,100 @@ module.exports = {
       'updateTestUser': true,
       'updateUsersProfile': true,
       'createUser': true,
-      'updateCurrentUserProfile': true
+      'updateCurrentUserProfile': true,
     },
     companyReports: {
-      ...USER.companyReports
+      ...USER.companyReports,
     },
     timesheet: {
       ...USER.timesheet,
       'approve': true,
-      'reject': true
+      'reject': true,
     },
     environment: {
       'list': true,
       'delete': true,
-      'create': true
-    }
+      'create': true,
+    },
   },
   SYSTEM_USER: {
     timesheet: {
       'update': true,
-      'list': true
+      'list': true,
     },
     project: {
       'read': true,
-      'create': true
-    }
+      'create': true,
+    },
   },
   VISOR: {
     ...USER,
     companyReports: {
       'export': true,
-      'read': true
+      'read': true,
     },
     timesheet: {
       ...USER.timesheet,
       'approve': true,
-      'reject': true
-    }
+      'reject': true,
+    },
   },
   EXTERNAL_USER: {
     user: {
       'autocomplete': true,
       'me': true,
-      'read': true
+      'read': true,
     },
     tag: {
       'autocompliter': true,
-      'list': true
+      'list': true,
     },
     project: {
-      'read': true
+      'read': true,
     },
     projectUsers: {
-      'list': true
+      'list': true,
     },
     portfolio: {
       'list': true,
-      'read': true
+      'read': true,
     },
     sprint: {
       'read': true,
-      'list': true
+      'list': true,
     },
     task: {
       'create': true,
       'read': true,
       'update': true,
-      'list': true
+      'list': true,
     },
     taskLinks: {
       'create': true,
-      'delete': true
+      'delete': true,
     },
     comment: {
       'create': true,
       'update': true,
       'delete': true,
-      'list': true
+      'list': true,
     },
     attachment: {
       'upload': true,
-      'delete': true
-    }
+      'delete': true,
+    },
   },
   EXTERNAL_SERVICE: {
     jira: {
       'setStatus': true,
-      'synchronize': true
-    }
+      'synchronize': true,
+    },
   },
   HR: {
     ...USER,
     portfolio: {
       ...USER.portfolio,
-      'list': true
+      'list': true,
     },
     user: {
       ...USER.user,
@@ -216,7 +216,7 @@ module.exports = {
       'updateTestUser': true,
       'updateUsersProfile': true,
       'createUser': true,
-      'updateCurrentUserProfile': true
-    }
-  }
+      'updateCurrentUserProfile': true,
+    },
+  },
 };

@@ -3,7 +3,7 @@ module.exports = {
     return queryInterface.bulkInsert('project_roles', [
       {id: 12, code: 'android', name: 'Android'},
       {id: 13, code: 'ios', name: 'IOS'},
-      {id: 14, code: 'devops', name: 'DevOps'}
+      {id: 14, code: 'devops', name: 'DevOps'},
     ]);
   },
 
@@ -14,5 +14,5 @@ module.exports = {
         { id: { [Sequalize.Op.in]: [12, 13, 14] } }
       )
     );
-  }
+  },
 };

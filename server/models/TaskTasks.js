@@ -5,17 +5,17 @@ module.exports = function (sequelize, DataTypes) {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
     },
     linkedTaskId: {
       field: 'linked_task_id',
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
     taskId: {
       field: 'task_id',
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
     underscored: true,
     timestamps: true,
@@ -26,8 +26,8 @@ module.exports = function (sequelize, DataTypes) {
     hooks: {
       afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      }
-    }
+      },
+    },
   });
 
 
@@ -36,8 +36,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'task',
       foreignKey: {
         name: 'linkedTaskId',
-        field: 'linked_task_id'
-      }
+        field: 'linked_task_id',
+      },
     });
 
   };

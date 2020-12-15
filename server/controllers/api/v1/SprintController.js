@@ -45,12 +45,12 @@ exports.read = function (req, res, next){
                                 WHERE t.project_id = "Sprint"."project_id"
                                 AND t.sprint_id = "Sprint"."id"
                                 AND t.deleted_at IS NULL
-                                AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'] // Все сделанные задаче
+                                AND t.status_id in (${models.TaskStatusesDictionary.DONE_STATUSES}))`), 'countDoneTasks'], // Все сделанные задаче
     ],
     order: [
       ['factStartDate', 'ASC'],
-      ['name', 'ASC']
-    ]
+      ['name', 'ASC'],
+    ],
   })
     .then((model) => {
       if (!model) {
@@ -152,24 +152,24 @@ exports.list = function (req, res, next){
   }
 
   const where = {
-    deletedAt: {$eq: null} // IS NULL
+    deletedAt: {$eq: null}, // IS NULL
   };
 
   if (req.query.name) {
     where.name = {
-      $iLike: layoutAgnostic(req.query.name.trim())
+      $iLike: layoutAgnostic(req.query.name.trim()),
     };
   }
 
   if (req.query.statusId) {
     where.statusId = {
-      in: req.query.statusId.toString().split(',').map((el)=>el.trim())
+      in: req.query.statusId.toString().split(',').map((el)=>el.trim()),
     };
   }
 
   if (req.query.projectId) {
     where.projectId = {
-      in: req.query.projectId.toString().split(',').map((el)=>el.trim())
+      in: req.query.projectId.toString().split(',').map((el)=>el.trim()),
     };
   }
 
@@ -182,14 +182,14 @@ exports.list = function (req, res, next){
       where: where,
 
       order: [['factStartDate', 'ASC'], ['name', 'ASC']],
-      subQuery: true
+      subQuery: true,
     })
     .then(projects => {
 
       return Sprint
         .count({
           where: where,
-          group: ['Sprint.id']
+          group: ['Sprint.id'],
         })
         .then((count) => {
 
@@ -207,7 +207,7 @@ exports.list = function (req, res, next){
             pageSize: req.query.pageSize ? +req.query.pageSize : +sprintCount,
             rowsCountAll: sprintCount,
             rowsCountOnCurrentPage: projectsRows.length,
-            data: projectsRows
+            data: projectsRows,
           };
           res.end(JSON.stringify(responseObject));
 

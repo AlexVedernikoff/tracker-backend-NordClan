@@ -2,12 +2,12 @@ module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface.addColumn('sprints', 'entities_last_update', {
       type: Sequelize.DATE,
-      allowNull: true
+      allowNull: true,
     })
       .then(() => {
         return queryInterface.addColumn('sprints', 'metric_last_update', {
           type: Sequelize.DATE,
-          allowNull: true
+          allowNull: true,
         });
       });
   },
@@ -16,5 +16,5 @@ module.exports = {
       .then(() => {
         return queryInterface.removeColumn('sprints', 'metric_last_update');
       });
-  }
+  },
 };

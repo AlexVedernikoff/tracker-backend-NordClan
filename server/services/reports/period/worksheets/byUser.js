@@ -114,9 +114,9 @@ class ByUserWorkSheet extends WorkSheetTemplate {
         text: locale.HOURS_SPENT,
         numFmt: '0.00',
         width: 13,
-        alignment: {horizontal: 'right'}
+        alignment: {horizontal: 'right'},
       },
-      {calculate: () => '', text: locale.HOURS_TOTAL, width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}}
+      {calculate: () => '', text: locale.HOURS_TOTAL, width: 13, isSummary: true, numFmt: '0.00', alignment: {horizontal: 'right'}},
     ];
   }
 

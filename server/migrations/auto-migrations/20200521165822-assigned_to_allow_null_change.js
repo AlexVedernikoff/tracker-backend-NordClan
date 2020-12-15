@@ -4,7 +4,7 @@ module.exports = {
       if (attributes.assigned_to) {
         return queryInterface.changeColumn('test_plan_test_cases', 'assigned_to', {
           type: Sequelize.INTEGER,
-          allowNull: true
+          allowNull: true,
         });
       }
     });
@@ -15,9 +15,9 @@ module.exports = {
       if (attributes.assigned_to) {
         return queryInterface.changeColumn('test_plan_test_cases', 'assigned_to', {
           type: Sequelize.INTEGER,
-          allowNull: false
+          allowNull: false,
         });
       }
     });
-  }
+  },
 };

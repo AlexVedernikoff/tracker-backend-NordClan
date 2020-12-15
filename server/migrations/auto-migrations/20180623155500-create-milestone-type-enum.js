@@ -2,7 +2,7 @@ const EnumTypes = [
   {id: 1, name: 'Получение отзыва', codeName: 'GET_REVIEW'},
   {id: 2, name: 'Демо Клиенту', codeName: 'DEMO_CLIENT'},
   {id: 3, name: 'Внутренняя демо', codeName: 'DEMO_INSIDE'},
-  {id: 4, name: 'Другое', codeName: 'OTHER'}
+  {id: 4, name: 'Другое', codeName: 'OTHER'},
 ];
 
 
@@ -13,15 +13,15 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       name: {
-        type: Sequelize.STRING(25)
+        type: Sequelize.STRING(25),
       },
       codeName: {
         field: 'code_name',
-        type: Sequelize.STRING(25)
-      }
+        type: Sequelize.STRING(25),
+      },
     })
       .then(() => Promise.all(EnumTypes.map((type) => queryInterface.sequelize.query(`
         INSERT INTO milestone_types_dictionary (name, code_name)
@@ -34,8 +34,8 @@ module.exports = {
           type: Sequelize.INTEGER,
           references: {
             model: 'milestone_types_dictionary',
-            key: 'id'
-          }
+            key: 'id',
+          },
         }
       ));
   },
@@ -45,7 +45,7 @@ module.exports = {
         'Milestones',
         'typeId'
       ),
-      queryInterface.dropTable('milestone_types_dictionary')
+      queryInterface.dropTable('milestone_types_dictionary'),
     ]);
-  }
+  },
 };

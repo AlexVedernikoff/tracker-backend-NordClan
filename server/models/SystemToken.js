@@ -4,20 +4,20 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     token: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
     },
     expires: {
       type: DataTypes.DATE,
-      defaultValue: null
-    }
+      defaultValue: null,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'system_tokens'
+    tableName: 'system_tokens',
   });
 };

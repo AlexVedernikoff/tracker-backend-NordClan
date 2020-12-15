@@ -4,12 +4,12 @@ function getAction (type, data) {
   const actions = {
     update: {
       type: 'PROJECT_CHANGE_SUCCESS',
-      changedFields: data
+      changedFields: data,
     },
     create: {
       type: 'PROJECT_CREATE_SUCCESS',
-      createdProject: data
-    }
+      createdProject: data,
+    },
   };
 
   return actions[type];

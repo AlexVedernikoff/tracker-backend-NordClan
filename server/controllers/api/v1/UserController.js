@@ -33,7 +33,7 @@ exports.read = async function (req, res, next) {
 
     const user = await models.User.findOne({
       where: {
-        id: req.params.id
+        id: req.params.id,
       },
       attributes: models.User.defaultSelect,
       include: [
@@ -44,10 +44,10 @@ exports.read = async function (req, res, next) {
           attributes: ['name', 'id'],
           through: {
             model: models.UserDepartments,
-            attributes: []
-          }
-        }
-      ]
+            attributes: [],
+          },
+        },
+      ],
     });
 
     if (!user) {
@@ -76,9 +76,9 @@ exports.getUser = async function (req, res, next) {
 
     const user = await models.User.findOne({
       where: {
-        ldapLogin: ldapLogin
+        ldapLogin: ldapLogin,
       },
-      attributes: models.User.defaultSelect
+      attributes: models.User.defaultSelect,
     });
 
     if (!user) {
@@ -108,46 +108,46 @@ exports.autocomplete = function (req, res, next) {
       const $or = [
         {
           firstNameEn: {
-            $iLike: iLikeFirstName
+            $iLike: iLikeFirstName,
           },
           lastNameEn: {
-            $iLike: iLikeLastName
-          }
+            $iLike: iLikeLastName,
+          },
         },
         {
           firstNameRu: {
-            $iLike: iLikeFirstName
+            $iLike: iLikeFirstName,
           },
           lastNameRu: {
-            $iLike: iLikeLastName
-          }
+            $iLike: iLikeLastName,
+          },
         },
         {
           firstNameEn: {
-            $iLike: iLikeLastName
+            $iLike: iLikeLastName,
           },
           lastNameEn: {
-            $iLike: iLikeFirstName
-          }
+            $iLike: iLikeFirstName,
+          },
         },
         {
           firstNameRu: {
-            $iLike: iLikeLastName
+            $iLike: iLikeLastName,
           },
           lastNameRu: {
-            $iLike: iLikeFirstName
-          }
-        }
+            $iLike: iLikeFirstName,
+          },
+        },
       ];
 
       return models.User
         .findAll({
           where: {
             active: 1,
-            $or
+            $or,
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn']
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
         })
         .then((users) => {
           users.forEach((user) => {
@@ -171,11 +171,12 @@ exports.getAllUsers = async function (req, res, next) {
         'lastNameRu',
         'firstNameEn',
         'lastNameEn',
+        'active',
         'photo',
         'skype',
         'emailPrimary',
-        'mobile'
-      ]
+        'mobile',
+      ],
     });
 
     res.json(usersList);
@@ -189,8 +190,8 @@ exports.devOpsUsers = async function (req, res, next) {
     const devOpsList = await models.User.findAll({
       where: {
         globalRole: {
-          $eq: 'DEV_OPS'
-        }
+          $eq: 'DEV_OPS',
+        },
       },
       attributes: [
         'id',
@@ -201,8 +202,8 @@ exports.devOpsUsers = async function (req, res, next) {
         'photo',
         'skype',
         'emailPrimary',
-        'mobile'
-      ]
+        'mobile',
+      ],
     });
     res.json(devOpsList);
   } catch (err) {
@@ -220,7 +221,7 @@ exports.getUsersRoles = async function (req, res, next) {
     const users = await models.User.findAll({
       where: {
         active: stat === 'true' ? 1 : 0,
-        globalRole: { $not: 'EXTERNAL_USER' }
+        globalRole: { $not: 'EXTERNAL_USER' },
       },
       order: [['last_name_ru']],
       attributes: [
@@ -229,8 +230,8 @@ exports.getUsersRoles = async function (req, res, next) {
         'lastNameRu',
         'firstNameEn',
         'lastNameEn',
-        'globalRole'
-      ]
+        'globalRole',
+      ],
     });
 
     const usersWithFilteredData = users.map(user => {
@@ -240,7 +241,7 @@ exports.getUsersRoles = async function (req, res, next) {
         lastNameRu,
         globalRole,
         firstNameEn,
-        lastNameEn
+        lastNameEn,
       } = user;
       return {
         id,
@@ -248,7 +249,7 @@ exports.getUsersRoles = async function (req, res, next) {
         lastNameRu,
         firstNameEn,
         lastNameEn,
-        globalRole
+        globalRole,
       };
     });
 
@@ -268,7 +269,7 @@ exports.getInternalUsers = async function (req, res, next) {
     const users = await models.User.findAll({
       where: {
         active: stat ? 1 : 0,
-        globalRole: { $not: 'EXTERNAL_USER' }
+        globalRole: { $not: 'EXTERNAL_USER' },
       },
       order: [['last_name_ru']],
       attributes: [
@@ -278,8 +279,8 @@ exports.getInternalUsers = async function (req, res, next) {
         'lastNameRu',
         'firstNameEn',
         'lastNameEn',
-        'birthDate'
-      ]
+        'birthDate',
+      ],
     });
 
     const usersWithFilteredData = users.map(user => {
@@ -290,7 +291,7 @@ exports.getInternalUsers = async function (req, res, next) {
         lastNameRu,
         firstNameEn,
         lastNameEn,
-        birthDate
+        birthDate,
       } = user;
       return {
         id,
@@ -299,7 +300,7 @@ exports.getInternalUsers = async function (req, res, next) {
         lastNameRu,
         firstNameEn,
         lastNameEn,
-        birthDate
+        birthDate,
       };
     });
 
@@ -329,7 +330,7 @@ exports.updateUserRole = async function (req, res, next) {
       firstNameRu: updatedModel.firstNameRu,
       lastNameRu: updatedModel.lastNameRu,
       firstNameEn: updatedModel.firstNameEn,
-      lastNameEn: updatedModel.lastNameEn
+      lastNameEn: updatedModel.lastNameEn,
     });
 
 
@@ -521,9 +522,9 @@ exports.createUser = async function (req, res, next) {
   try {
     const userModel = await models.User.findOne({
       where: {
-        login: uid
+        login: uid,
       },
-      attributes: models.User.defaultSelect
+      attributes: models.User.defaultSelect,
     });
 
     if (userModel !== null) {
@@ -540,7 +541,7 @@ exports.createUser = async function (req, res, next) {
       ldapLogin: uid,
       fullNameRu: [req.body.firstNameRu, req.body.lastNameRu].filter(i => i).join(' '),
       fullNameEn: [req.body.firstNameEn, req.body.lastNameEn].filter(i => i).join(' '),
-      ...req.body
+      ...req.body,
     };
     for (const name in params) {
       if (params[name] === '') {
@@ -630,18 +631,18 @@ exports.createExternal = async function (req, res, next) {
     setPasswordToken,
     setPasswordExpired,
     ...req.body,
-    expiredDate
+    expiredDate,
   };
 
   User.create(params)
     .then(model => {
       const template = emailService.template('activateExternalUser', {
-        token: setPasswordToken
+        token: setPasswordToken,
       }, templateExternalUrl);
       emailService.send({
         receiver: req.body.login,
         subject: template.subject,
-        html: template.body
+        html: template.body,
       });
       res.json(model);
     })
@@ -668,18 +669,18 @@ exports.refreshTokenExternal = async function (req, res, next) {
       setPasswordExpired,
       password: null,
       ...req.body,
-      setPasswordToken
+      setPasswordToken,
     };
     const updatedModel = await User.update(params, {
-      where: { id: req.params.id }
+      where: { id: req.params.id },
     });
     const template = emailService.template('activateExternalUser', {
-      token: setPasswordToken
+      token: setPasswordToken,
     }, templateExternalUrl);
     emailService.send({
       receiver: req.body.login,
       subject: template.subject,
-      html: template.body
+      html: template.body,
     });
     res.json(updatedModel);
   } catch (err) {
@@ -706,7 +707,7 @@ exports.updateExternal = async function (req, res, next) {
     transaction = await models.sequelize.transaction();
     const model = await User.findByPrimary(req.params.id, {
       transaction,
-      lock: 'UPDATE'
+      lock: 'UPDATE',
     });
 
     if (!model) {
@@ -739,9 +740,9 @@ exports.setPassword = async function (req, res, next) {
       where: {
         setPasswordToken: req.params.token,
         setPasswordExpired: { $gt: Date.now() },
-        globalRole: 'EXTERNAL_USER'
+        globalRole: 'EXTERNAL_USER',
       },
-      attributes: models.User.defaultSelect
+      attributes: models.User.defaultSelect,
     });
 
     if (!user) {
@@ -754,7 +755,7 @@ exports.setPassword = async function (req, res, next) {
       isActive: 1,
       password: bcrypt.hashSync(req.body.password),
       setPasswordToken: null,
-      setPasswordExpires: null
+      setPasswordExpires: null,
     };
 
     user.updateAttributes(params).then(updatedModel => res.json(updatedModel));
@@ -779,9 +780,9 @@ exports.updateTestUser = async function (req, res, next) {
     const model = await models.User.findOne({
       where: {
         id: req.params.id,
-        isTest: true
+        isTest: true,
       },
-      attributes: models.User.defaultSelect
+      attributes: models.User.defaultSelect,
     });
 
     if (!model) {
@@ -806,7 +807,7 @@ exports.getExternalUsers = async function (req, res, next) {
     const users = await models.User.findAll({
       where: {
         globalRole: 'EXTERNAL_USER',
-        active: 1
+        active: 1,
       },
       order: [['first_name_ru']],
       attributes: [
@@ -817,8 +818,8 @@ exports.getExternalUsers = async function (req, res, next) {
         'active',
         'login',
         'isActive',
-        'description'
-      ]
+        'description',
+      ],
     });
 
     res.json(users);
@@ -842,18 +843,18 @@ exports.autocompleteExternal = function (req, res, next) {
       let $or = [
         {
           firstNameRu: {
-            $iLike
-          }
-        }
+            $iLike,
+          },
+        },
       ];
       if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
         $iLike = layoutAgnostic(reverseUserName);
         $or = $or.concat([
           {
             firstNameRu: {
-              $iLike
-            }
-          }
+              $iLike,
+            },
+          },
         ]);
       }
       return models.User
@@ -862,10 +863,10 @@ exports.autocompleteExternal = function (req, res, next) {
             globalRole: 'EXTERNAL_USER',
             active: 1,
             isActive: 1,
-            $or
+            $or,
           },
           limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'active', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn']
+          attributes: ['id', 'active', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn'],
         })
         .then((users) => {
           users.forEach((user) => {

@@ -8,34 +8,34 @@ module.exports = function (sequelize, DataTypes) {
         autoIncrement: true,
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       projectEnvironmentId: {
         type: DataTypes.INTEGER,
         field: 'project_environment_id',
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       testRunId: {
         type: DataTypes.INTEGER,
         field: 'test_run_id',
         allowNull: false,
         validate: {
-          isInt: true
-        }
+          isInt: true,
+        },
       },
       createdAt: { type: DataTypes.DATE, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, field: 'updated_at' },
-      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
+      deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
     },
     {
       timestamps: true,
       paranoid: true,
       underscored: true,
-      tableName: 'project_environment_test_run'
+      tableName: 'project_environment_test_run',
     }
   );
 
@@ -45,8 +45,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'testRunEnvironments',
       foreignKey: {
         name: 'testRunId',
-        field: 'test_run_id'
-      }
+        field: 'test_run_id',
+      },
     });
 
     models.ProjectEnvironment.belongsToMany(models.TestRun, {
@@ -54,8 +54,8 @@ module.exports = function (sequelize, DataTypes) {
       through: ProjectEnvironmentTestRun,
       foreignKey: {
         name: 'projectEnvironmentId',
-        field: 'project_environment_id'
-      }
+        field: 'project_environment_id',
+      },
     });
   };
 

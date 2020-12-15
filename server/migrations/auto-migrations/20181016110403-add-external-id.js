@@ -3,20 +3,20 @@ module.exports = {
     return Promise.all([
       queryInterface.addColumn('projects', 'external_id', {
         type: Sequelize.STRING,
-        unique: true
+        unique: true,
       }),
       queryInterface.addColumn('sprints', 'external_id', {
         type: Sequelize.STRING,
-        unique: true
+        unique: true,
       }),
       queryInterface.addColumn('tasks', 'external_id', {
         type: Sequelize.STRING,
-        unique: true
+        unique: true,
       }),
       queryInterface.addColumn('timesheets', 'external_id', {
         type: Sequelize.STRING,
-        unique: true
-      })
+        unique: true,
+      }),
     ]);
   },
   down: function (queryInterface) {
@@ -24,7 +24,7 @@ module.exports = {
       queryInterface.removeColumn('projects', 'external_id'),
       queryInterface.removeColumn('sprints', 'external_id'),
       queryInterface.removeColumn('tasks', 'external_id'),
-      queryInterface.removeColumn('timesheets', 'external_id')
+      queryInterface.removeColumn('timesheets', 'external_id'),
     ]);
-  }
+  },
 };

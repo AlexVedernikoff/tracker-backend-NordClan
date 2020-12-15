@@ -5,5 +5,5 @@ const users = require('./users');
 module.exports = {
   projects,
   branches,
-  users
+  users,
 };

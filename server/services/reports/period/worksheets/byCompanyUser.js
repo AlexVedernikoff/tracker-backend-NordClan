@@ -45,15 +45,15 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const formulas = [
       {
         label: locale.TOTAL_BILLABLE,
-        formula: `=SUBTOTAL(9,I${startAt}:I${endAt})`,
+        formula: `SUBTOTAL(9,J${startAt + 1}:J${endAt})`,
       },
       {
         label: locale.TOTAL_NOT_BILLABLE,
-        formula: `SUBTOTAL(9,J${startAt}:J${endAt})`,
+        formula: `SUBTOTAL(9,K${startAt + 1}:K${endAt})`,
       },
       {
         label: locale.TOTAL_AMOUNT,
-        formula: `SUBTOTAL(9,I${startAt}:I${endAt})+SUBTOTAL(9,J${startAt}:J${endAt})`,
+        formula: `SUBTOTAL(9,J${startAt + 1}:J${endAt})+SUBTOTAL(9,K${startAt + 1}:K${endAt})`,
       },
       {
         label: locale.BUSY,

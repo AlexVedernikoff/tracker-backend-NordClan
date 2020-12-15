@@ -91,7 +91,7 @@ exports.create = async function (req, res, next) {
 
     const model = await models[StringHelper.firstLetterUp(req.params.taggable)].findByPrimary(req.params.taggableId, {
       attributes: ['id'],
-      transaction: transaction
+      transaction: transaction,
     });
     if (!model) {
       await transaction.rollback();
@@ -149,10 +149,10 @@ exports.delete = async function (req, res, next) {
       where: {
         tagId: tag.dataValues.id,
         taggableId: req.params.taggableId,
-        taggable: req.params.taggable
+        taggable: req.params.taggable,
       },
       transaction,
-      lock: 'UPDATE'
+      lock: 'UPDATE',
     });
 
     if (!item) {
@@ -189,8 +189,8 @@ exports.autocompliter = function (req, res, next) {
         group: ['Tag.id', 'Tag.name'],
         where: {
           name: {
-            $iLike: layoutAgnostic(req.query.tagName.trim())
-          }
+            $iLike: layoutAgnostic(req.query.tagName.trim()),
+          },
         },
         include: [
           {
@@ -199,10 +199,10 @@ exports.autocompliter = function (req, res, next) {
             attributes: [],
             required: true,
             where: {
-              taggable: req.params.taggable.trim()
-            }
-          }
-        ]
+              taggable: req.params.taggable.trim(),
+            },
+          },
+        ],
       }).then(tags => {
         tags.forEach(tag => {
           resultResponse.push(tag.name);
@@ -217,8 +217,8 @@ function createQuery (params, tagName) {
   return {
     where: {
       projectId: {
-        $eq: params.projectId
-      }
+        $eq: params.projectId,
+      },
     },
     include: {
       as: 'tags',
@@ -228,10 +228,10 @@ function createQuery (params, tagName) {
       ...(tagName && {
         where: {
           name: {
-            $iLike: layoutAgnostic(tagName)
-          }
-        }
-      })
-    }
+            $iLike: layoutAgnostic(tagName),
+          },
+        },
+      }),
+    },
   };
 }

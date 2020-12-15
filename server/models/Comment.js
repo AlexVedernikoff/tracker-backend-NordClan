@@ -8,16 +8,16 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     taskId: {
       field: 'task_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     attachmentIds: {
       field: 'attachment_ids',
@@ -25,35 +25,35 @@ module.exports = function (sequelize, DataTypes) {
       get: function () {
         return JSON.parse(this.getDataValue('attachmentIds'));
       },
-      allowNull: true
+      allowNull: true,
     },
     parentId: {
       field: 'parent_id',
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     authorId: {
       field: 'author_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     text: {
       trim: true,
       type: DataTypes.TEXT,
-      defaultValue: null
+      defaultValue: null,
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
     indexes: [
       {
         method: 'BTREE',
-        fields: ['task_id']
-      }
+        fields: ['task_id'],
+      },
     ],
     underscored: true,
     timestamps: true,
@@ -62,8 +62,8 @@ module.exports = function (sequelize, DataTypes) {
     hooks: {
       afterFind: function (model) {
         ModelsHooks.deleteUnderscoredTimeStampsAttributes(model);
-      }
-    }
+      },
+    },
 
   });
 
@@ -72,29 +72,29 @@ module.exports = function (sequelize, DataTypes) {
       as: 'task',
       foreignKey: {
         name: 'taskId',
-        field: 'task_id'
-      }
+        field: 'task_id',
+      },
     });
     Comment.belongsTo(models.User, {
       as: 'author',
       foreignKey: {
         name: 'authorId',
-        field: 'author_id'
-      }
+        field: 'author_id',
+      },
     });
     Comment.belongsTo(models.Comment, {
       as: 'parentComment',
       foreignKey: {
         name: 'parentId',
-        field: 'parent_id'
-      }
+        field: 'parent_id',
+      },
     });
     Comment.hasMany(models.Comment, {
       as: 'childComment',
       foreignKey: {
         name: 'parentId',
-        field: 'parent_id'
-      }
+        field: 'parent_id',
+      },
     });
   };
 

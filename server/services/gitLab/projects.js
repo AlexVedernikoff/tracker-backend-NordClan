@@ -5,7 +5,7 @@ const config = require('../../configs').gitLab;
 const token = config.token;
 const host = config.host;
 const headers = { 'PRIVATE-TOKEN': token };
-const { sequelize, User, Project, ProjectUsers, ProjectUsersRoles, ProjectRolesDictionary, GitlabUserRoles } = require('../../models');
+const { sequelize, User, Project, ProjectUsers, ProjectUsersRoles, GitlabUserRoles } = require('../../models');
 const { createMasterCommit } = require('./commits');
 const { findOrCreateUser, findOrCreateGroup } = require('./users');
 
@@ -32,7 +32,7 @@ const getProjectsOrErrors = ids =>
       .catch(err => ({
         id,
         status: err.response && err.response.status,
-        error: err.response ? err.response.data.message : err.message
+        error: err.response ? err.response.data.message : err.message,
       }))
   ));
 
@@ -232,7 +232,7 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
     include: [
       {
         as: 'roles',
-        model: ProjectUsersRoles
+        model: ProjectUsersRoles,
       },
       {
         as: 'user',
@@ -240,14 +240,14 @@ async function addAllProjectUsersToGitlab (projectId, gitlabProjectId, transacti
         where: {
           active: 1,
           globalRole: {
-            $not: User.EXTERNAL_USER_ROLE
-          }
+            $not: User.EXTERNAL_USER_ROLE,
+          },
         },
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login']
-      }
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login'],
+      },
     ],
     defaults: { projectId },
-    transaction
+    transaction,
   });
   const notProcessedGitlabUsers = await Promise.all(
     projectUsers.map((projectUser) => {
@@ -273,7 +273,7 @@ async function removeAllProjectUsersFromGitlab (projectId, gitlabProjectId) {
     include: [
       {
         as: 'roles',
-        model: ProjectUsersRoles
+        model: ProjectUsersRoles,
       },
       {
         as: 'user',
@@ -281,13 +281,13 @@ async function removeAllProjectUsersFromGitlab (projectId, gitlabProjectId) {
         where: {
           active: 1,
           globalRole: {
-            $not: User.EXTERNAL_USER_ROLE
-          }
+            $not: User.EXTERNAL_USER_ROLE,
+          },
         },
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login', 'gitlabUserId']
-      }
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login', 'gitlabUserId'],
+      },
     ],
-    defaults: { projectId }
+    defaults: { projectId },
   });
   await Promise.all(
     projectUsers
@@ -309,7 +309,7 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
   try {
     const user = await User.findOne({
       where: { id: projectUser.userId },
-      transaction
+      transaction,
     });
 
     let gitlabUserId = user.gitlabUserId;
@@ -323,7 +323,7 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
       console.log(`INFO: gitlabService: 'User.update': ${JSON.stringify({ gitlabUserId: gitlabUser.id }, undefined, 4)}`);
       await User.update({ gitlabUserId: gitlabUser.id }, {
         where: { id: projectUser.userId },
-        transaction
+        transaction,
       });
     }
 
@@ -341,12 +341,12 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
         $and: {
           projectUserId: projectUser.id,
           gitlabProjectId: {
-            $in: gitlabProjectsIds
-          }
-        }
+            $in: gitlabProjectsIds,
+          },
+        },
       },
       attributes: ['id', 'accessLevel', 'expiresAt'],
-      transaction
+      transaction,
     });
 
     console.log(`INFO: gitlabService: 'userGitlabRoles': ${JSON.stringify({ userGitlabRoles }, undefined, 4)}`);
@@ -375,19 +375,19 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
       await Promise.all(
         removedGitlabRoles.map(({ id, gitlabProjectId }) => {
           return removeProjectMember(gitlabProjectId, gitlabUserId)
-            .then(gitlabResponse => successRemoved.push(id))
+            .then(() => successRemoved.push(id))
             .catch(error => notProcessedGitlabUsers.push({
               user,
               data: { delete: true, gitlabProjectId },
-              error: error.response.data.error
+              error: error.response.data.error,
             }));
         })
       );
 
       GitlabUserRoles.destroy({
         where: {
-          id: { $in: successRemoved }
-        }
+          id: { $in: successRemoved },
+        },
       }, { transaction });
     }
 
@@ -400,9 +400,9 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
           return addProjectMember(gitlabProjectId, gitlabUserId, {
             access_level: accessLevel,
             expires_at: expiresAt,
-            invite_email: user.emailPrimary
+            invite_email: user.emailPrimary,
           })
-            .then(gitlabReponse => {
+            .then(() => {
               successAdded.push(successAddedData);
             })
             .catch(async error => {
@@ -411,13 +411,13 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
                 successAdded.push(successAddedData);
                 await editProjectMember(gitlabProjectId, gitlabUserId, {
                   access_level: accessLevel,
-                  expires_at: expiresAt
+                  expires_at: expiresAt,
                 });
               } else {
                 notProcessedGitlabUsers.push({
                   user,
                   data: { accessLevel, expiresAt, gitlabProjectId },
-                  error: error.response.data.error
+                  error: error.response.data.error,
                 });
               }
             });
@@ -433,17 +433,17 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
       await Promise.all(
         updatedGitlabRoles.map(({ id, accessLevel, expiresAt, gitlabProjectId }) => {
           return editProjectMember(gitlabProjectId, gitlabUserId, { access_level: accessLevel, expires_at: expiresAt })
-            .then(gitlabResponse => successUpdated.push({
+            .then(() => successUpdated.push({
               id,
               accessLevel,
               expiresAt,
               gitlabProjectId,
-              projectUserId: projectUser.id
+              projectUserId: projectUser.id,
             }))
             .catch(error => notProcessedGitlabUsers.push({
               user,
               data: { accessLevel, expiresAt, gitlabProjectId },
-              error: error.response.data.error
+              error: error.response.data.error,
             }));
         })
       );
@@ -451,7 +451,7 @@ async function processGitlabRoles (gitlabRoles, projectUser, transaction) {
       await Promise.all(
         successUpdated.map((member) => {
           return GitlabUserRoles.update(member, {
-            where: { id: member.id }
+            where: { id: member.id },
           }, { transaction });
         })
       );
@@ -473,13 +473,13 @@ async function getGroup (name, namespace_id) {
     return {
       merge_requests_enabled: true,
       name,
-      namespace_id: group.id
+      namespace_id: group.id,
     };
   } else {
     return {
       merge_requests_enabled: true,
       name,
-      namespace_id
+      namespace_id,
     };
   }
 }
@@ -497,5 +497,5 @@ module.exports = {
   editProjectMember,
   removeProjectMember,
   processGitlabRoles,
-  removeAllProjectUsersFromGitlab
+  removeAllProjectUsersFromGitlab,
 };

@@ -33,32 +33,32 @@ exports.getDraft = async (params) => {
             model: models.Project,
             required: false,
             attributes: ['id', 'name', 'prefix'],
-            paranoid: false
+            paranoid: false,
           },
           {
             as: 'taskStatus',
             model: models.TaskStatusesDictionary,
             required: false,
             attributes: ['id', 'name'],
-            paranoid: false
-          }
-        ]
+            paranoid: false,
+          },
+        ],
       },
       {
         as: 'taskStatus',
         model: models.TaskStatusesDictionary,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
+        paranoid: false,
       },
       {
         as: 'projectMaginActivity',
         model: models.Project,
         required: false,
         attributes: ['id', 'name'],
-        paranoid: false
-      }
-    ]
+        paranoid: false,
+      },
+    ],
   });
 
   const transformedDraft = transformDraft(draft);

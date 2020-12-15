@@ -15,20 +15,20 @@ function getAction (type, data) {
   const actions = {
     update: {
       type: 'UPDATE_TIMESHEET_SUCCESS',
-      timesheet: data
+      timesheet: data,
     },
     create: {
       type: 'CREATE_TIMESHEET_SUCCESS',
-      timesheet: data
+      timesheet: data,
     },
     destroy: {
       type: 'DELETE_TIMESHEET_SUCCESS',
-      timesheet: data
+      timesheet: data,
     },
     setActiveTask: {
       type: 'GET_ACTIVE_TASK',
-      task: data
-    }
+      task: data,
+    },
   };
 
   return actions[type];

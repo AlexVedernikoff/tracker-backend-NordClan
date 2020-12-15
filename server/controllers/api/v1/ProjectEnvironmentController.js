@@ -1,5 +1,5 @@
 const {
-  ProjectEnvironment
+  ProjectEnvironment,
 } = require('../../../models');
 
 exports.get = async (req, res, next) => {
@@ -7,8 +7,8 @@ exports.get = async (req, res, next) => {
     const { params: { projectId } } = req;
     const data = await ProjectEnvironment.findAll({
       where: {
-        projectId
-      }
+        projectId,
+      },
     });
     res.json(data);
   } catch (e) {
@@ -21,7 +21,7 @@ exports.create = async (req, res, next) => {
     const { body, params: { projectId } } = req;
     const createData = await ProjectEnvironment.create({
       ...body,
-      projectId
+      projectId,
     });
     res.json(createData);
   } catch (e) {

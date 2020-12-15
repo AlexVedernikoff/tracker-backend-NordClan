@@ -9,9 +9,9 @@ module.exports = {
           {
             type: Sequelize.BOOLEAN,
             allowNull: false,
-            defaultValue: false
+            defaultValue: false,
           }
-        ).catch
+        ).catch,
       ]));
   },
   down: function (queryInterface) {
@@ -20,7 +20,7 @@ module.exports = {
         queryInterface.removeColumn(
           'tasks',
           'is_task_by_client'
-        )
+        ),
       ]));
-  }
+  },
 };

@@ -10,7 +10,7 @@ module.exports = function (sequelize) {
       this.addHook('afterUpdate', HookHandler);
       this.addHook('afterDestroy', HookHandler);
       return this;
-    }
+    },
   });
 
   function HookHandler (model, instance) {
@@ -20,7 +20,7 @@ module.exports = function (sequelize) {
       .then((sprintIds) => {
         if (sprintIds.length > 0) {
           sequelize.models.Sprint.update({ entitiesLastUpdate: moment() }, {
-            where: { id: sprintIds }
+            where: { id: sprintIds },
           });
         }
       });
@@ -42,8 +42,8 @@ async function getSprintIds (model, instance, sequelize) {
     return sequelize.models[this.name].findOne({
       attributes: ['sprintId'],
       where: {
-        id: model.id
-      }
+        id: model.id,
+      },
     })
       .then((row) => {
         return row && [row.sprintId] || [];
@@ -54,8 +54,8 @@ async function getSprintIds (model, instance, sequelize) {
     return sequelize.models.Task.findAll({
       attributes: ['sprintId'],
       where: {
-        id: [model.linkedTaskId, model.taskId]
-      }
+        id: [model.linkedTaskId, model.taskId],
+      },
     })
       .then((rows) => {
         return rows.map((row) => row.sprintId);

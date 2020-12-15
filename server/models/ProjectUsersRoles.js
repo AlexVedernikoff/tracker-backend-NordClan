@@ -4,29 +4,29 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     projectUserId: {
       field: 'project_user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     projectRoleId: {
       field: 'project_role_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
-    }
+        isInt: true,
+      },
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: true,
-    tableName: 'project_users_roles'
+    tableName: 'project_users_roles',
   });
 
   ProjectUsersRoles.associate = function (models) {
@@ -34,8 +34,8 @@ module.exports = function (sequelize, DataTypes) {
       as: 'projectUser',
       foreignKey: {
         name: 'projectUserId',
-        field: 'project_user_id'
-      }
+        field: 'project_user_id',
+      },
     });
 
     ProjectUsersRoles.belongsTo(models.ProjectRolesDictionary, {
@@ -43,8 +43,8 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: {
         name: 'projectRoleId',
         field: 'project_role_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
   };
 

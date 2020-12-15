@@ -8,7 +8,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
     .findAll({
       where: {
         projectId: projectId,
-        deletedAt: null
+        deletedAt: null,
       },
       transaction: t,
       attributes: attributes,
@@ -21,33 +21,33 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
               {
                 active: 1,
                 globalRole: {
-                  $not: models.User.EXTERNAL_USER_ROLE
-                }
+                  $not: models.User.EXTERNAL_USER_ROLE,
+                },
               },
               {
                 active: 1,
                 isActive: 1,
-                globalRole: models.User.EXTERNAL_USER_ROLE
-              }
+                globalRole: models.User.EXTERNAL_USER_ROLE,
+              },
             ],
-            globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE }
+            globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE },
           },
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login']
+          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login'],
         },
         {
           as: 'roles',
-          model: models.ProjectUsersRoles
+          model: models.ProjectUsersRoles,
         },
         {
           as: 'gitlabRoles',
-          model: models.GitlabUserRoles
-        }
+          model: models.GitlabUserRoles,
+        },
       ],
       order: [
-        ['id', 'DESC']
+        ['id', 'DESC'],
         // [{ model: models.User, as: 'user' }, 'lastNameRu', 'ASC'],
         // [{ model: models.User, as: 'user' }, 'firstNameRu', 'ASC']
-      ]
+      ],
     })
     .then(async (projectUsers) => {
       const projectRoles = await models.ProjectRolesDictionary.findAll();
@@ -57,7 +57,7 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
           fullNameRu: projectUser.user.fullNameRu,
           fullNameEn: projectUser.user.fullNameEn,
           roles: getTransRolesToObject(projectUser.roles, projectRoles),
-          gitlabRoles: projectUser.gitlabRoles
+          gitlabRoles: projectUser.gitlabRoles,
         };
       });
 
@@ -73,15 +73,15 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
       where: {
         projectId: projectId,
         userId: userId,
-        deletedAt: null
+        deletedAt: null,
       },
       include: [
         {
           as: 'roles',
-          model: models.ProjectUsersRoles
-        }
+          model: models.ProjectUsersRoles,
+        },
       ],
-      transaction: t
+      transaction: t,
     })
     .then((projectUsers) => {
       let rolesIds;
@@ -95,8 +95,8 @@ exports.getUserRolesByProject = function (projectId, userId, t = null) {
 exports.findAllUsersByProjectId = function (projectId) {
   return models.ProjectUsers.findAll({
     where: {
-      projectId
-    }
+      projectId,
+    },
   });
 };
 
@@ -106,6 +106,6 @@ function getTransRolesToObject (rolesIds, projectRoles) {
 
   return projectRoles.reduce((acc, el) => ({
     ...acc,
-    [el.code]: projectRoleIds.indexOf(el.id) > -1
+    [el.code]: projectRoleIds.indexOf(el.id) > -1,
   }), {});
 }
