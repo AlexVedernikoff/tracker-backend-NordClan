@@ -3,28 +3,28 @@ module.exports = function (sequilize, DataTypes) {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
     },
     jiraProjectId: {
       field: 'jira_project_id',
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     date: {
       field: 'date',
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
     },
     status: {
       field: 'status',
       type: DataTypes.STRING,
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     tableName: 'jira_sync_status',
     timestamp: true,
     updatedAt: false,
-    createdAt: false
+    createdAt: false,
   });
 
   JiraSyncStatus.associate = function (models) {
@@ -33,8 +33,8 @@ module.exports = function (sequilize, DataTypes) {
       foreignKey: {
         name: 'simtrackProjectId',
         field: 'simtrack_project_id',
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
   };
 

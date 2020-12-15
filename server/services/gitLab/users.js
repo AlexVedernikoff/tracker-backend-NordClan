@@ -114,5 +114,5 @@ module.exports = {
   getUsers,
   getUser,
   findOrCreateUser,
-  findOrCreateGroup
+  findOrCreateGroup,
 };

@@ -4,7 +4,7 @@ const {
   TestCaseSteps,
   User,
   TestCaseStatusesDictionary,
-  TestCaseSeverityDictionary
+  TestCaseSeverityDictionary,
 } = require('../../../models');
 const { copyTestCase, sanitizeTestSuite } = require('../../../services/testCase');
 
@@ -15,26 +15,26 @@ const includeOptions = [
     include: [
       {
         model: TestCaseSteps,
-        as: 'testCaseSteps'
+        as: 'testCaseSteps',
       },
       {
         model: User,
         as: 'authorInfo',
         attributes: [
           'fullNameRu',
-          'fullNameEn'
-        ]
+          'fullNameEn',
+        ],
       },
       {
         model: TestCaseStatusesDictionary,
-        as: 'testCaseStatus'
+        as: 'testCaseStatus',
       },
       {
         model: TestCaseSeverityDictionary,
-        as: 'testCaseSeverity'
-      }
-    ]
-  }
+        as: 'testCaseSeverity',
+      },
+    ],
+  },
 ];
 const stepsOrder = [{ model: TestCase, as: 'testCases' }, { model: TestCaseSteps, as: 'testCaseSteps' }, 'id', 'ASC'];
 
@@ -42,7 +42,7 @@ const getTestSuiteByParams = (params) => {
   return TestSuite.findOne({
     include: includeOptions,
     where: params,
-    order: [stepsOrder]
+    order: [stepsOrder],
   });
 };
 
@@ -80,7 +80,7 @@ exports.createTestSuite = async (req, res, next) => {
   try {
     const { body, user } = req;
     const result = await TestSuite.create(body, {
-      historyAuthorId: user.id
+      historyAuthorId: user.id,
     });
     res.json(result);
   } catch (e) {
@@ -94,7 +94,7 @@ exports.updateTestSuite = async (req, res, next) => {
     await TestSuite.update(body, {
       where: params,
       historyAuthorId: user.id,
-      individualHooks: true
+      individualHooks: true,
     });
     res.sendStatus(204);
   } catch (e) {
@@ -108,7 +108,7 @@ exports.deleteTestSuite = async (req, res, next) => {
     await TestSuite.destroy({
       where: params,
       historyAuthorId: user.id,
-      individualHooks: true
+      individualHooks: true,
     });
     res.sendStatus(200);
   } catch (e) {
@@ -123,7 +123,7 @@ exports.createProjectTestSuite = async (req, res, next) => {
     if (!body.id) throw new Error('available only with id');
 
     const createdSuite = await TestSuite.create(sanitizeTestSuite(body), {
-      historyAuthorId: user.id
+      historyAuthorId: user.id,
     }).then(s => s.get({ plain: true }));
     const originalSuite = await getTestSuiteByParams({ id: body.id }).then(s => s.get({ plain: true }));
     if (originalSuite && Array.isArray(originalSuite.testCases)) {

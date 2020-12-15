@@ -12,7 +12,7 @@ exports.create = async (req, res, next) => {
   const timesheetParams = {
     ...req.body,
     userId,
-    taskStatusId: req.body.taskStatusId || 2
+    taskStatusId: req.body.taskStatusId || 2,
   };
 
   if (req.body.spentTime && req.body.spentTime < 0) {
@@ -62,7 +62,7 @@ exports.getAverageNumberOfEmployees = async function (req, res, next) {
   const { dateBegin, dateEnd } = req.query;
 
   const averageNumberOfEmployees = await _getAverageNumberOfEmployees(dateBegin, dateEnd, {
-    precision: 1
+    precision: 1,
   });
 
   res.json({ total: averageNumberOfEmployees });
@@ -99,7 +99,7 @@ exports.list = async function (req, res, next) {
   const userPSId = req.query.userPSId ? req.query.userPSId : null;
   const task = taskId
     ? await models.Task.findByPrimary(taskId, {
-      attributes: ['id', 'projectId']
+      attributes: ['id', 'projectId'],
     })
     : null;
   const isAllTimeSheets = taskId ? req.user.isAdminOfProject(task.projectId) : false;
@@ -154,7 +154,7 @@ const updateTimesheet = async (req, res) => {
       Promise.all([
         taskId && TasksService.read(taskId, req.user),
         sheet,
-        taskId && TasksService.read(sheet.taskId, req.user)
+        taskId && TasksService.read(sheet.taskId, req.user),
       ])
     )
     .then(([task, sheet, taskSheet]) => {
@@ -175,8 +175,8 @@ exports.update = async (req, res, next) => {
         ...req,
         body: {
           ...req.body,
-          sheetId: id
-        }
+          sheetId: id,
+        },
       };
       return updateTimesheet(singleReq, res);
     });

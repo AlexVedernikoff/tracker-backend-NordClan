@@ -15,7 +15,7 @@ const saveJiraErrorStatus = async ({simtrackProjectId, projectId, date }) => {
     simtrackProjectId,
     jiraProjectId: projectId,
     date,
-    status: FAILED
+    status: FAILED,
   });
 };
 
@@ -68,7 +68,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
     // Подготовка проекта
     const [{ projectId }] = data.batch;
     const project = await Project.findOne({
-      where: { externalId: projectId }
+      where: { externalId: projectId },
     });
 
     if (!project) {
@@ -83,7 +83,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
     const [taskStatusesAssociation, taskTypesAssociation, userEmailAssociation] = await Promise.all([
       TaskStatusesAssociation.findAll({ where: { projectId: simtrackProjectId } }),
       TaskTypesAssociation.findAll({ where: { projectId: simtrackProjectId } }),
-      UserEmailAssociation.findAll({ where: { projectId: simtrackProjectId } })
+      UserEmailAssociation.findAll({ where: { projectId: simtrackProjectId } }),
     ]);
 
     // Подготовка пользователей
@@ -91,11 +91,11 @@ exports.jiraSync = async function (headers, data, socketIO) {
 
     users = users.map(u => u.email);
     let usersAssociation = await UserEmailAssociation.findAll({
-      where: { externalUserEmail: { $in: users } }
+      where: { externalUserEmail: { $in: users } },
     });
     usersAssociation = usersAssociation.map(ua => ua.internalUserId);
     users = await User.findAll({
-      where: { id: { $in: usersAssociation } }
+      where: { id: { $in: usersAssociation } },
     });
 
     /**
@@ -105,7 +105,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
       if (task.sprint && !acc[task.sprint.id]) {
         acc[task.sprint.id] = {
           name: task.sprint.name,
-          authorId: project.authorId
+          authorId: project.authorId,
         };
       }
 
@@ -118,7 +118,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
         externalId: key,
         name: jiraSprintsObj[key].name,
         authorId: jiraSprintsObj[key].authorId,
-        projectId: project.id
+        projectId: project.id,
       });
     }
 
@@ -151,7 +151,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
           typeId: typeAssociation.internalTaskTypeId,
           statusId: statusAssociation.internalStatusId,
           authorId: project.authorId,
-          projectId: project.id
+          projectId: project.id,
         });
 
       }
@@ -207,7 +207,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
           typeId: 1,
           statusId: 1,
           projectId: project.id,
-          isBillable: true
+          isBillable: true,
         };
 
         acc.push(newWorklog);
@@ -229,7 +229,7 @@ exports.jiraSync = async function (headers, data, socketIO) {
       simtrackProjectId,
       jiraProjectId: projectId,
       date,
-      status
+      status,
     }).then(() => updateJiraStatus(
       socketIO,
       cacheStatusData.simtrackProjectId
@@ -266,7 +266,7 @@ exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraPro
     externalId: jiraProjectId,
     jiraHostname: jiraHostName,
     jiraProjectName: jiraProjectName,
-    jiraToken: jiraToken
+    jiraToken: jiraToken,
   });
   return jiraProjectId;
 };
@@ -278,7 +278,7 @@ exports.setAssociateWithJiraProject = async function (simTrackProjectId, jiraPro
  */
 exports.createProject = async function (headers, id, authorId, prefix) {
   const { data: jiraProject } = await request.get(`${config.ttiUrl}/project/${id}`, {
-    headers
+    headers,
   });
   const jiraHostname = await getJiraHostname(headers);
   const users = await getJiraProjectUsers(headers, id);
@@ -290,7 +290,7 @@ exports.createProject = async function (headers, id, authorId, prefix) {
       ...project.dataValues,
       ...{ issue_types: jiraProject.issue_types },
       ...{ status_types: jiraProject.status_type },
-      ...{ users }
+      ...{ users },
     };
   } else {
     project = await Project.create({
@@ -299,13 +299,13 @@ exports.createProject = async function (headers, id, authorId, prefix) {
       externalId: jiraProject.id,
       authorId,
       prefix,
-      jiraHostname: jiraHostname.server
+      jiraHostname: jiraHostname.server,
     });
     project = {
       ...project.dataValues,
       ...{ issue_types: jiraProject.issue_types },
       ...{ status_types: jiraProject.status_type },
-      ...{ users }
+      ...{ users },
     };
   }
 
@@ -345,7 +345,7 @@ exports.setProjectAssociation = async function (
   const [createdTaskTypes, createdTaskStatuses, createdUserEmail] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
     TaskStatusesAssociation.findAll({ where: { projectId } }),
-    UserEmailAssociation.findAll({ where: { projectId } })
+    UserEmailAssociation.findAll({ where: { projectId } }),
   ]);
 
   if (createdTaskTypes.length !== 0) {
@@ -363,13 +363,13 @@ exports.setProjectAssociation = async function (
   await Promise.all([
     TaskTypesAssociation.bulkCreate(ita),
     TaskStatusesAssociation.bulkCreate(sa),
-    UserEmailAssociation.bulkCreate(ua)
+    UserEmailAssociation.bulkCreate(ua),
   ]);
 
   const [taskTypes, taskStatuses, userEmail] = await Promise.all([
     TaskTypesAssociation.findAll({ where: { projectId } }),
     TaskStatusesAssociation.findAll({ where: { projectId } }),
-    UserEmailAssociation.findAll({ where: { projectId } })
+    UserEmailAssociation.findAll({ where: { projectId } }),
   ]);
 
   return { taskTypes, taskStatuses, userEmail };
@@ -383,7 +383,7 @@ exports.jiraAuth = async function (username, password, server, email) {
     username,
     password,
     server,
-    email
+    email,
   });
 };
 
@@ -397,7 +397,7 @@ exports.getJiraProjects = async function (headers) {
 
 exports.getJiraProjectById = async function (jiraProjectId, headers) {
   return await request.get(`${config.ttiUrl}/project/${jiraProjectId}`, {
-    headers
+    headers,
   });
 };
 
@@ -407,9 +407,9 @@ exports.getActiveSimtrackProjects = async function () {
       where: {
         statusId: 1,
         externalId: {
-          $ne: null
-        }
-      }
+          $ne: null,
+        },
+      },
     });
   } catch (e) {
     throw e;
@@ -422,14 +422,14 @@ exports.getActiveSimtrackProjects = async function () {
 async function getJiraProjectUsers (headers, projectId) {
   const { data: users } = await request.get(`${config.ttiUrl}/project/${projectId}/users`, { headers: {
     'authorization': headers.authorization,
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   }});
   return users;
 }
 
 async function getJiraHostname (headers) {
   const { data: server } = await request.get(`${config.ttiUrl}/jira-client`, {
-    headers
+    headers,
   });
   return server;
 }
@@ -438,7 +438,7 @@ exports.createBatch = async function (headers, pid) {
   const res = await request.post(
     `${config.ttiUrl}/batch`,
     {
-      pid
+      pid,
     },
     { headers }
   );
@@ -451,7 +451,7 @@ exports.setJiraSyncStatus = async function (simtrackProjectId, jiraProjectId, da
       simtrackProjectId,
       jiraProjectId,
       date: new Date(),
-      status
+      status,
     });
   } catch (e) {
     throw e;
@@ -471,7 +471,7 @@ exports.getProjectAssociations = async function (projectId) {
     const [issueTypesAssociation, statusesAssociation, userAssociation] = await Promise.all([
       TaskTypesAssociation.findAll({ where: { projectId } }),
       TaskStatusesAssociation.findAll({ where: { projectId } }),
-      UserEmailAssociation.findAll({ where: { projectId } })
+      UserEmailAssociation.findAll({ where: { projectId } }),
     ]);
 
     const userIds = userAssociation.map(e => e.internalUserId);
@@ -480,13 +480,13 @@ exports.getProjectAssociations = async function (projectId) {
       const user = users.find(u => ua.internalUserId === u.id);
       return {
         ...ua.dataValues,
-        ...{ fullNameRu: user.fullNameRu }
+        ...{ fullNameRu: user.fullNameRu },
       };
     });
     return {
       issueTypesAssociation,
       statusesAssociation,
-      userEmailAssociation
+      userEmailAssociation,
     };
   } catch (e) {
     throw e;

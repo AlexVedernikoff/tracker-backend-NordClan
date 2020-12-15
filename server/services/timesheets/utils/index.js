@@ -5,7 +5,7 @@ const {
   DEVELOP_STATUSES,
   CODE_REVIEW_STATUSES,
   QA_STATUSES,
-  CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS
+  CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS,
 } = models.TaskStatusesDictionary;
 
 exports.isNeedCreateDraft = async (task, statusId, onDate) => {
@@ -16,7 +16,7 @@ exports.isNeedCreateDraft = async (task, statusId, onDate) => {
   const statuses = [
     DEVELOP_STATUSES,
     CODE_REVIEW_STATUSES,
-    QA_STATUSES
+    QA_STATUSES,
   ];
 
   const currentStageStatuses = statuses.find(item => item.includes(statusId));
@@ -25,7 +25,7 @@ exports.isNeedCreateDraft = async (task, statusId, onDate) => {
     taskStatusId: currentStageStatuses ? currentStageStatuses : statusId,
     taskId: task.id,
     onDate: new Date(onDate),
-    userId: task.performerId
+    userId: task.performerId,
   };
 
   const timesheets = await queries.timesheet.all(queryParams);

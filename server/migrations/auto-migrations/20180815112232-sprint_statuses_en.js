@@ -1,13 +1,13 @@
 const Statuses = [
   {id: 1, name: 'Не в процессе', nameEn: 'Stopped'},
-  {id: 2, name: 'В процессе', nameEn: 'In progress'}
+  {id: 2, name: 'В процессе', nameEn: 'In progress'},
 ];
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
       .addColumn('sprint_statuses', 'name_en', {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       })
       .then(() =>
         Promise.all(
@@ -19,7 +19,7 @@ module.exports = {
             WHERE id = :id
         `,
               {
-                replacements: status
+                replacements: status,
               }
             )
           )
@@ -29,5 +29,5 @@ module.exports = {
 
   down: function (queryInterface) {
     return queryInterface.removeColumn('sprint_statuses', 'name_en');
-  }
+  },
 };

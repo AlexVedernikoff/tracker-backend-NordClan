@@ -16,17 +16,17 @@ exports.getAllTagsByModel = function (modelName, modelId, t = null) {
           attributes: ['name'],
           through: {
             model: models.ItemTag,
-            attributes: []
+            attributes: [],
           },
-          order: [['name', 'ASC']]
-        }
-      ]
+          order: [['name', 'ASC']],
+        },
+      ],
     })
     .then(model => {
       if (!model) return createError(404, 'taggable model not found');
 
       const {
-        dataValues: { tags = [] }
+        dataValues: { tags = [] },
       } = model;
 
       return tags.map(({ name }) => name);
@@ -57,8 +57,8 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
           name: itemTag
             .toString()
             .trim()
-            .toLowerCase()
-        }
+            .toLowerCase(),
+        },
       })
         .spread(tag => {
           tagId = tag.id;
@@ -66,10 +66,10 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
             where: {
               tagId: tag.id,
               taggableId: Model.id,
-              taggable: taggable
+              taggable: taggable,
             },
             historyAuthorId: userId,
-            paranoid: false
+            paranoid: false,
           });
         }).then(tagResponse => {
           if (tagResponse) {
@@ -78,9 +78,9 @@ exports.saveTagsForModel = function (Model, tagsString, taggable, userId) {
             return models.ItemTag.create({
               tagId: tagId,
               taggableId: Model.id,
-              taggable: taggable
+              taggable: taggable,
             }, {
-              historyAuthorId: userId
+              historyAuthorId: userId,
             });
           }
         })

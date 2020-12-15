@@ -11,34 +11,34 @@ module.exports = {
           columnName: 'global_role',
           defaultValue: 'USER',
           newValues: ['ADMIN', 'VISOR', 'USER', 'EXTERNAL_USER'],
-          enumName: 'global_role_type'
+          enumName: 'global_role_type',
         }),
         queryInterface.addColumn(
           'users',
           'password',
           {
-            type: Sequelize.STRING(100)
+            type: Sequelize.STRING(100),
           }
         ),
         queryInterface.addColumn(
           'users',
           'set_password_token',
           {
-            type: Sequelize.STRING(100)
+            type: Sequelize.STRING(100),
           }
         ),
         queryInterface.addColumn(
           'users',
           'set_password_expired',
           {
-            type: Sequelize.DATE
+            type: Sequelize.DATE,
           }
         ),
         queryInterface.addColumn(
           'users',
           'expired_date',
           {
-            type: Sequelize.STRING(100)
+            type: Sequelize.STRING(100),
           }
         ),
         queryInterface.addIndex(
@@ -46,14 +46,14 @@ module.exports = {
           {
             name: 'login_unique',
             unique: true,
-            fields: ['login']
+            fields: ['login'],
           }
         ),
         queryInterface.bulkInsert('project_roles', [{
           id: 11,
           code: 'customer',
-          name: 'Customer'
-        }])
+          name: 'Customer',
+        }]),
       ]));
   },
   down: function (queryInterface) {
@@ -65,7 +65,7 @@ module.exports = {
           columnName: 'global_role',
           defaultValue: 'USER',
           newValues: ['ADMIN', 'VISOR', 'USER'],
-          enumName: 'global_role_type'
+          enumName: 'global_role_type',
         }),
         queryInterface.removeColumn(
           'users',
@@ -88,8 +88,8 @@ module.exports = {
           'login_unique'
         ),
         queryInterface.bulkDelete('project_roles', {
-          id: 11
-        })
+          id: 11,
+        }),
       ]));
-  }
+  },
 };

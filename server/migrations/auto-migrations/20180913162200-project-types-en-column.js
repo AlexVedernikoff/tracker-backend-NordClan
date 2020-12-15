@@ -2,14 +2,14 @@ const projectTypes = [
   { id: 1, nameEn: 'No type' },
   { id: 2, nameEn: 'Product' },
   { id: 3, nameEn: 'Intenrship' },
-  { id: 4, nameEn: 'Internal' }
+  { id: 4, nameEn: 'Internal' },
 ];
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface
       .addColumn('project_types', 'name_en', {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       })
       .then(() =>
         Promise.all(
@@ -21,7 +21,7 @@ module.exports = {
                 WHERE id = :id
               `,
               {
-                replacements: type
+                replacements: type,
               }
             )
           )
@@ -31,5 +31,5 @@ module.exports = {
 
   down: function (queryInterface) {
     return queryInterface.removeColumn('project_types', 'name_en');
-  }
+  },
 };

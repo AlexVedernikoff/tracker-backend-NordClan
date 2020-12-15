@@ -8,7 +8,7 @@ const { Task } = models;
 exports.synchronizeTasks = async function (tasks, projectId) {
   const extIds = tasks.map(s => s.externalId);
   let createdTasks = await Task.findAll({
-    where: { externalId: { $in: extIds }, projectId }
+    where: { externalId: { $in: extIds }, projectId },
   });
   const newTasks = tasks.filter(t => {
     const ind = createdTasks.findIndex(ct => {
@@ -29,7 +29,7 @@ exports.synchronizeTasks = async function (tasks, projectId) {
       if (ind >= -1) {
         const updObj = tasks[i];
         await Task.update(updObj, {
-          where: { externalId: t.externalId.toString() }
+          where: { externalId: t.externalId.toString() },
         });
       }
     });
@@ -38,6 +38,6 @@ exports.synchronizeTasks = async function (tasks, projectId) {
   // создание новых задач
   if (newTasks.length > 0) await Task.bulkCreate(newTasks);
   return Task.findAll({
-    where: { externalId: { $in: extIds }, projectId }
+    where: { externalId: { $in: extIds }, projectId },
   });
 };

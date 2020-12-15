@@ -4,7 +4,7 @@ module.exports = {
       if (!attributes.allow_vpn) {
         return queryInterface.addColumn('users', 'allow_vpn', {
           type: Sequelize.BOOLEAN,
-          allowNull: true
+          allowNull: true,
         });
       }
     });
@@ -16,5 +16,5 @@ module.exports = {
         return queryInterface.removeColumn('users', 'allow_vpn');
       }
     });
-  }
+  },
 };

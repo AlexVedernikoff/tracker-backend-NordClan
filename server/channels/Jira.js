@@ -12,7 +12,7 @@ const emitSocket = (socketIO, simtrackProjectId, userId) => {
   socketIO.to(`user_${ userId }`).emit(channel, {
     type: NEED_TO_UPDATE_JIRA_STATUS,
     data: { simtrackProjectId },
-    isSocket: true
+    isSocket: true,
   });
 };
 

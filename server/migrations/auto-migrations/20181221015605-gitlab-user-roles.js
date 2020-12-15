@@ -5,37 +5,37 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       access_level: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       expires_at: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       project_user_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'project_users', key: 'id' }
+        references: { model: 'project_users', key: 'id' },
       },
       gitlab_project_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       created_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updated_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deleted_at: {
         allowNull: true,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   down (queryInterface) {
     return queryInterface.dropTable('gitlab_user_roles');
-  }
+  },
 };
 

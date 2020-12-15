@@ -5,17 +5,17 @@ exports.name = 'user';
 exports.findAllGlobalAdmin = function () {
   return models.User.findAll({
     where: {
-      globalRole: 'ADMIN'
+      globalRole: 'ADMIN',
     },
-    attributes: ['id']
+    attributes: ['id'],
   });
 };
 
 exports.findAllDevOps = function () {
   return models.User.findAll({
     where: {
-      globalRole: 'DEV_OPS'
+      globalRole: 'DEV_OPS',
     },
-    attributes: ['id']
+    attributes: ['id'],
   });
 };

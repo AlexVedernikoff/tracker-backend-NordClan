@@ -9,8 +9,8 @@ exports.deleteExpiredTokens = function (user) {
       where: {
         userId: user.id,
         expires: {
-          $lt: moment().format() // expires < now
-        }
-      }
+          $lt: moment().format(), // expires < now
+        },
+      },
     });
 };

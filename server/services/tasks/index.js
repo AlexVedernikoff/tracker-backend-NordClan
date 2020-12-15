@@ -12,5 +12,5 @@ module.exports = {
   getLastActiveTask,
   create,
   list,
-  destroy
+  destroy,
 };

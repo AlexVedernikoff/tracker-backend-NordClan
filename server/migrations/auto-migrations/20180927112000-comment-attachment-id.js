@@ -4,7 +4,7 @@ module.exports = {
       'comments',
       'attachment_ids',
       {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
       }
     );
   },
@@ -13,5 +13,5 @@ module.exports = {
       'comments',
       'attachment_ids'
     );
-  }
+  },
 };

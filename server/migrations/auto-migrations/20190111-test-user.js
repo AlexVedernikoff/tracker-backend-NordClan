@@ -18,7 +18,7 @@ const user = {
   email_primary: 'ivan-sinitsyn-sorokin@simbirsoft.com',
   skype: '',
   created_at: moment().toISOString(),
-  updated_at: moment().toISOString()
+  updated_at: moment().toISOString(),
 };
 
 module.exports = {
@@ -30,7 +30,7 @@ module.exports = {
       {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: false
+        defaultValue: false,
       }
     )
       .then(() => {
@@ -52,7 +52,7 @@ module.exports = {
       queryInterface.bulkDelete(
         'users',
         { login: user.login }
-      )
+      ),
     ]);
-  }
+  },
 };

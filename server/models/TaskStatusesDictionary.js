@@ -16,15 +16,15 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(20),
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 20]
-      }
+        len: [1, 20],
+      },
     },
     nameEn: {
       field: 'name_en',
@@ -32,14 +32,14 @@ module.exports = function (sequelize, DataTypes) {
       trim: true,
       allowNull: false,
       validate: {
-        len: [1, 20]
-      }
-    }
+        len: [1, 20],
+      },
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'task_statuses'
+    tableName: 'task_statuses',
   });
 
   // TODO: move to database
@@ -53,30 +53,30 @@ module.exports = function (sequelize, DataTypes) {
   TaskStatuses.NOT_AVAILABLE_STATUSES = [
     TaskStatuses.DONE_STATUS,
     TaskStatuses.CANCELED_STATUS,
-    TaskStatuses.CLOSED_STATUS
+    TaskStatuses.CLOSED_STATUS,
   ];
   TaskStatuses.DONE_STATUSES = [ // Готовые и закрытые задачи
     TaskStatuses.DONE_STATUS,
-    TaskStatuses.CLOSED_STATUS
+    TaskStatuses.CLOSED_STATUS,
   ];
   TaskStatuses.DONE_STATUSES_WITH_CANCELLED = [ // Готовые и закрытые задачи
     TaskStatuses.DONE_STATUS,
     TaskStatuses.CLOSED_STATUS,
-    TaskStatuses.CANCELED_STATUS
+    TaskStatuses.CANCELED_STATUS,
   ];
   TaskStatuses.CAN_CREATE_DRAFT_BY_CRON = [
     TASK_STATUS_DEVELOP_PLAY,
     TASK_STATUS_DEVELOP_STOP,
     TASK_STATUS_CODE_REVIEW_PLAY,
     TASK_STATUS_CODE_REVIEW_STOP,
-    TASK_STATUS_QA_PLAY
+    TASK_STATUS_QA_PLAY,
   ];
   TaskStatuses.CAN_CREATE_DRAFT_BY_CHANGES_TASKS_STATUS = [
     TASK_STATUS_DEVELOP_PLAY,
     TASK_STATUS_DEVELOP_STOP,
     TASK_STATUS_CODE_REVIEW_PLAY,
     TASK_STATUS_CODE_REVIEW_STOP,
-    TASK_STATUS_QA_PLAY
+    TASK_STATUS_QA_PLAY,
   ];
 
   return TaskStatuses;

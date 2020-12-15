@@ -1,4 +1,4 @@
-const { Metrics, User, Sprint } = require('../../../models');
+const { Metrics, User } = require('../../../models');
 const { getUsersByProject } = require('../../../models/queries/projectUsers');
 const _ = require('lodash');
 
@@ -17,11 +17,11 @@ exports.list = async (params) => {
   const metrics = await Metrics.findAll({
     where: {
       createdAt: {
-        $between: [startDate, endDate]
+        $between: [startDate, endDate],
       },
-      ...params
+      ...params,
     },
-    order: [['createdAt', 'ASC']]
+    order: [['createdAt', 'ASC']],
   });
 
   return await handleCommandMetric(metrics, params);
@@ -33,29 +33,29 @@ exports.validate = (params) => {
       type: 'number',
       interval: {
         min: 0,
-        max: 40
-      }
+        max: 40,
+      },
     },
     startDate: {
       type: 'string',
-      regExp: /\d{4}-\d{2}-\d{2}/
+      regExp: /\d{4}-\d{2}-\d{2}/,
     },
     endDate: {
       type: 'string',
-      regExp: /\d{4}-\d{2}-\d{2}/
+      regExp: /\d{4}-\d{2}-\d{2}/,
     },
     projectId: {
-      type: 'number'
+      type: 'number',
     },
     sprintId: {
-      type: 'number'
+      type: 'number',
     },
     userId: {
-      type: 'number'
+      type: 'number',
     },
     recalculate: {
-      type: 'boolean'
-    }
+      type: 'boolean',
+    },
   };
 
   const errors = Object.entries(params)
@@ -118,7 +118,7 @@ async function handleCommandMetric (metrics, params) {
       if (teamMetricsObj[metricId] && teamMetricsObj[metricId].dataValues.value[userId]) {
         data.push({
           user: user,
-          ...teamMetricsObj[metricId].dataValues.value[userId]
+          ...teamMetricsObj[metricId].dataValues.value[userId],
         });
       } else {
         data.push({
@@ -127,7 +127,7 @@ async function handleCommandMetric (metrics, params) {
           taskReturnCount: 0,
           bugDoneCount: 0,
           bugReturnCount: 0,
-          linkedBugsCount: 0
+          linkedBugsCount: 0,
         });
       }
     }
@@ -144,6 +144,7 @@ async function handleCommandMetric (metrics, params) {
   return metrics;
 }
 
+// eslint-disable-next-line no-unused-vars
 async function findUsersFromTeamMetric (teamMetricsObj, projectId) {
 
   const usersIds = [];
@@ -157,10 +158,10 @@ async function findUsersFromTeamMetric (teamMetricsObj, projectId) {
     attributes: User.defaultSelect,
     where: {
       id: {
-        $in: _.uniq(usersIds)
-      }
+        $in: _.uniq(usersIds),
+      },
     },
-    order: [['firstNameRu', 'ASC'], ['lastNameRu', 'ASC']]
+    order: [['firstNameRu', 'ASC'], ['lastNameRu', 'ASC']],
   });
 
   return usersArr.reduce((map, user) => {

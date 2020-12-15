@@ -4,42 +4,42 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING(25),
       allowNull: false,
       validate: {
-        len: [1, 25]
-      }
+        len: [1, 25],
+      },
     },
     nameEn: {
       type: DataTypes.STRING,
       allowNull: false,
-      field: 'name_en'
+      field: 'name_en',
     },
     codeName: {
       field: 'code_name',
       type: DataTypes.STRING(25),
       allowNull: false,
       validate: {
-        len: [1, 25]
-      }
+        len: [1, 25],
+      },
     },
     isMagicActivity: {
       field: 'is_magic_activity',
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: false,
     },
     order: {
       type: DataTypes.INTEGER,
-      allowNull: false
-    }
+      allowNull: false,
+    },
   }, {
     underscored: true,
     timestamps: false,
     paranoid: false,
-    tableName: 'timesheets_types'
+    tableName: 'timesheets_types',
   });
 
   return TimesheetTypesDictionary;

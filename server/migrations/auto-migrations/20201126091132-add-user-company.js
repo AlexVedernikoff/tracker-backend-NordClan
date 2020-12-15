@@ -4,11 +4,11 @@ module.exports = {
     return queryInterface.addColumn('users', 'company', {
       type: Sequelize.STRING,
       allowNull: true,
-      defaultValue: ''
+      defaultValue: '',
     });
   },
 
   down: function (queryInterface) {
     return queryInterface.removeColumn('users', 'company');
-  }
+  },
 };

@@ -1,5 +1,6 @@
 const models = require('../../../models');
 
+// eslint-disable-next-line no-unused-vars
 module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSystemUser) {
   const where = {};
 
@@ -7,8 +8,8 @@ module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSyste
     where.onDate = {
       $and: {
         $gte: dateBegin,
-        $lte: dateEnd
-      }
+        $lte: dateEnd,
+      },
     };
   }
 
@@ -17,7 +18,7 @@ module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSyste
   }
 
   where.spentTime = {
-    gt: 0
+    gt: 0,
   };
 
   if (taskId) {
@@ -29,8 +30,8 @@ module.exports = function (dateBegin, dateEnd, taskId, userId, userPSId, isSyste
     where,
     include: getInclude(userId, userPSId),
     order: [
-      ['createdAt', 'ASC']
-    ]
+      ['createdAt', 'ASC'],
+    ],
   };
 };
 
@@ -49,31 +50,31 @@ function getInclude (userId, userPSId) {
           model: models.Project,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false
+          paranoid: false,
         },
         {
           as: 'sprint',
           model: models.Sprint,
           required: false,
           attributes: ['id', 'name'],
-          paranoid: false
-        }
-      ]
+          paranoid: false,
+        },
+      ],
     },
     {
       as: 'project',
       model: models.Project,
       required: false,
       attributes: ['id', 'name', 'prefix'],
-      paranoid: false
+      paranoid: false,
     },
     {
       as: 'sprint',
       model: models.Sprint,
       required: false,
       attributes: ['id', 'name'],
-      paranoid: false
-    }
+      paranoid: false,
+    },
   ];
 
   if (userPSId && !userId) {
@@ -84,8 +85,8 @@ function getInclude (userId, userPSId) {
       attributes: [],
       paranoid: false,
       where: {
-        psId: userPSId
-      }
+        psId: userPSId,
+      },
     });
   }
 

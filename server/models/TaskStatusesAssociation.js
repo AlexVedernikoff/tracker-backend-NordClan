@@ -4,40 +4,40 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     projectId: {
       field: 'project_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     externalStatusId: {
       field: 'external_status_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     internalStatusId: {
       field: 'internal_status_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        isInt: true
-      }
+        isInt: true,
+      },
     },
     createdAt: {type: DataTypes.DATE, field: 'created_at'},
     updatedAt: {type: DataTypes.DATE, field: 'updated_at'},
-    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'}
+    deletedAt: {type: DataTypes.DATE, field: 'deleted_at'},
   }, {
     underscored: true,
     timestamps: true,
     paranoid: true,
-    tableName: 'task_statuses_association'
+    tableName: 'task_statuses_association',
   });
 
   TaskStatusesAssociation.associate = function (models) {
@@ -45,14 +45,14 @@ module.exports = function (sequelize, DataTypes) {
       as: 'project',
       foreignKey: {
         name: 'projectId',
-        field: 'project_id'
+        field: 'project_id',
       }});
 
     TaskStatusesAssociation.belongsTo(models.TaskStatusesDictionary, {
       as: 'taskStatus',
       foreignKey: {
         name: 'internalStatusId',
-        field: 'internal_status_id'
+        field: 'internal_status_id',
       }});
 
   };

@@ -12,26 +12,26 @@ exports.findByPrimary = (id, role) => {
         attributes: ['name'],
         through: {
           model: ItemTag,
-          attributes: []
+          attributes: [],
         },
         order: [
-          ['name', 'ASC']
-        ]
+          ['name', 'ASC'],
+        ],
       },
       {
         as: 'project',
         model: models.Project,
-        attributes: ['id', 'name', 'prefix', 'qaPercent']
+        attributes: ['id', 'name', 'prefix', 'qaPercent'],
       },
       {
         as: 'parentTask',
         model: models.Task,
-        attributes: ['id', 'name']
+        attributes: ['id', 'name'],
       },
       {
         as: 'author',
         model: models.User,
-        attributes: models.User.defaultSelect
+        attributes: models.User.defaultSelect,
       },
       {
         as: 'subTasks',
@@ -39,50 +39,50 @@ exports.findByPrimary = (id, role) => {
         attributes: ['id', 'name', 'statusId'],
         where: {
           statusId: {
-            $ne: models.TaskStatusesDictionary.CANCELED_STATUS
+            $ne: models.TaskStatusesDictionary.CANCELED_STATUS,
           },
           deletedAt: {
-            $eq: null
-          }
+            $eq: null,
+          },
         },
-        required: false
+        required: false,
       },
       {
         as: 'linkedTasks',
         model: models.Task,
         through: {
           model: models.TaskTasks,
-          attributes: []
+          attributes: [],
         },
         attributes: ['id', 'name', 'statusId'],
         where: {
           statusId: {
-            $ne: models.TaskStatusesDictionary.CANCELED_STATUS
+            $ne: models.TaskStatusesDictionary.CANCELED_STATUS,
           },
           deletedAt: {
-            $eq: null
-          }
+            $eq: null,
+          },
         },
-        required: false
+        required: false,
       },
       {
         as: 'sprint',
         model: models.Sprint,
-        attributes: ['id', 'name', 'qaPercent']
+        attributes: ['id', 'name', 'qaPercent'],
       },
       {
         as: 'performer',
         model: models.User,
-        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameEn', 'fullNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo']
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameEn', 'fullNameRu', 'skype', 'emailPrimary', 'phone', 'mobile', 'photo'],
       },
       {
         as: 'attachments',
         model: models.TaskAttachments,
         attributes: models.TaskAttachments.defaultSelect,
         order: [
-          ['createdAt', 'ASC']
-        ]
-      }
-    ]
+          ['createdAt', 'ASC'],
+        ],
+      },
+    ],
   });
 };

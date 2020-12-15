@@ -24,7 +24,7 @@ function getDiffObject (keys, firstObject, secondObject) {
   keys.forEach((key) => {
     diffObj[key] = {
       newVal: firstObject[key],
-      oldVal: secondObject[key]
+      oldVal: secondObject[key],
     };
   });
   return diffObj;
@@ -53,7 +53,7 @@ exports.bcryptPromise = {
 
       });
     });
-  }
+  },
 };
 
 const transformAndApplyMiddleware = (method, request, response) => new Promise((resolve, reject) => {

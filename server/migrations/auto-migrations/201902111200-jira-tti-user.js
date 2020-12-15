@@ -19,11 +19,12 @@ const user = {
   email_primary: '',
   skype: '',
   created_at: moment().toISOString(),
-  updated_at: moment().toISOString()
+  updated_at: moment().toISOString(),
 };
 
 
 module.exports = {
+  // eslint-disable-next-line no-unused-vars
   up: function (queryInterface, Sequelize) {
     return bcryptPromise.hash(user.login)
       .then(password => { user.password = password; })
@@ -48,8 +49,8 @@ module.exports = {
        CREATE TYPE global_role_type AS ENUM ('ADMIN', 'VISOR', 'USER', 'EXTERNAL_USER', 'DEV_OPS');
        ALTER TABLE users ALTER COLUMN global_role TYPE global_role_type USING global_role::text::global_role_type;
        ALTER TABLE users ALTER COLUMN global_role SET DEFAULT 'USER'::global_role_type;
-       DROP TYPE global_role_type_old;`)
+       DROP TYPE global_role_type_old;`),
     ]);
-  }
+  },
 };
 
