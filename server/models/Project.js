@@ -264,7 +264,7 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     Project.hasMany(models.ProjectUsers, {
-      as: 'externalUsers',
+      as: 'projectExternalUsers',
       foreignKey: 'project_id',
     });
 
