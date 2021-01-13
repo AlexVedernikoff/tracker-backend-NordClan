@@ -128,7 +128,7 @@ exports.read = function (req, res, next) {
         order: [['id', 'DESC']],
       },
       {
-        as: 'externalUsers',
+        as: 'projectExternalUsers',
         model: models.ProjectUsers,
         attributes: models.ProjectUsers.defaultSelect,
         separate: true,
@@ -179,9 +179,9 @@ exports.read = function (req, res, next) {
   })
     .then(async model => {
       if (!model) return next(createError(404));
+      const projectRoles = await models.ProjectRolesDictionary.findAll();
       const usersData = [];
       if (model.projectUsers) {
-        const projectRoles = await models.ProjectRolesDictionary.findAll();
         model.projectUsers.forEach(projectUser => {
           usersData.push({
             id: projectUser.user.id,
@@ -197,6 +197,25 @@ exports.read = function (req, res, next) {
         });
       }
       model.dataValues.users = usersData;
+
+      const externalUsers = [];
+      if (model.projectExternalUsers) {
+        model.projectExternalUsers.forEach(externalUser => {
+          externalUsers.push({
+            id: externalUser.user.id,
+            fullNameRu: externalUser.user.fullNameRu,
+            fullNameEn: externalUser.user.fullNameEn,
+            firstNameRu: externalUser.user.firstNameRu,
+            firstNameEn: externalUser.user.firstNameEn,
+            lastNameRu: externalUser.user.lastNameRu,
+            lastNameEn: externalUser.user.lastNameEn,
+            roles: queries.projectUsers.getTransRolesToObject(externalUser.roles, projectRoles),
+            gitlabRoles: externalUser.gitlabRoles,
+          });
+        });
+      }
+      model.dataValues.externalUsers = externalUsers;
+
       if (model.dataValues.tags) {
         model.dataValues.tags = Object.keys(model.dataValues.tags).map(k => model.dataValues.tags[k].name);
       } // Преобразую теги в массив
