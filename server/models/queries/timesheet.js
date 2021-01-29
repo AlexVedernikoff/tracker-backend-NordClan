@@ -139,6 +139,17 @@ exports.isBillableFlag = async function (options) {
       },
     ],
   });
+  if (!projectUsers) {
+    const user = await models.User.findOne({
+      where: {
+        id: userId,
+      },
+    });
+    if (user && user.dataValues.active === 1 && user.dataValues.globalRole === 'DEV_OPS') {
+      return false;
+    } else return true;
+  }
+
   /** Получаем список ролей для заполнения метрик*/
   const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
   return isBillable(JSON.parse(rolesIds), models.ProjectRolesDictionary.UNBILLABLE_ID);

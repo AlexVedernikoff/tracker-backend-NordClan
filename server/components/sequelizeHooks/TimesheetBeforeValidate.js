@@ -58,8 +58,10 @@ exports.index = async (instance, options) => {
       transaction: t,
     });
     /** Получаем список ролей для заполнения метрик*/
-    const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
-    instance.userRoleId = rolesIds;/** сохраняем для метрик*/
+    if (projectUsers){
+      const rolesIds = projectUsers.get().rolesIds;/** виртуальное свойство в виде стрингифаеного массива*/
+      instance.userRoleId = rolesIds;/** сохраняем для метрик*/
+    }
   }
 
 };
