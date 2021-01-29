@@ -125,7 +125,7 @@ exports.getTimesheetByParams = async function (options) {
 };
 
 exports.isBillableFlag = async function (options) {
-  const {userId, projectId} = options;
+  const {userId, projectId, taskId} = options;
   const projectUsers = await models.ProjectUsers.findOne({
     where: {
       projectId: projectId,
@@ -145,9 +145,18 @@ exports.isBillableFlag = async function (options) {
         id: userId,
       },
     });
-    if (user && user.dataValues.active === 1 && user.dataValues.globalRole === 'DEV_OPS') {
-      return false;
-    } else return true;
+    if (user && user.dataValues.globalRole === 'DEV_OPS') {
+      const task = await models.Task
+        .findOne({
+          where: {
+            deletedAt: null,
+            id: taskId,
+          },
+        });
+      if (task && task.dataValues.isDevOps) return false;
+      else return true;
+    }
+    return true;
   }
 
   /** Получаем список ролей для заполнения метрик*/
