@@ -12,9 +12,9 @@ exports.create = async (params) => {
   }
 
   let isBill = false;
-
+  const {userId, projectId, taskId } = params;
   if (params.projectId !== null && params.projectId !== 0){
-    isBill = await queries.timesheet.isBillableFlag({userId: params.userId, projectId: params.projectId});
+    isBill = await queries.timesheet.isBillableFlag({userId, projectId, taskId});
   }
 
   const object = {...params, isBillable: isBill};
