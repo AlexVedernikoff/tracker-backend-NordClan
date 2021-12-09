@@ -9,6 +9,8 @@ const {
   ProjectRolesDictionary,
   TimesheetTypesDictionary,
   Sprint,
+  Department,
+  UserDepartments,
   sequelize,
 } = require('../../../models');
 const _ = require('lodash');
@@ -198,6 +200,126 @@ exports.getCompanyReport = async function (criteria, options) {
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
+  const users = await User.findAll({
+    where: {
+      active: 1,
+    },
+    attributes: [
+      'id',
+    ],
+    include: [
+      {
+        model: Department,
+        as: 'department',
+        required: false,
+        attributes: ['name', 'id'],
+        through: {
+          model: UserDepartments,
+          attributes: [],
+        },
+      },
+    ],
+  });
+
+  const departList = {
+    frontend: {
+      id: 5,
+      title: 'FRONTEND_TITLE',
+      label: 'FRONTEND_LABEL',
+      cities: [
+        {
+          26: 'ULYANOVSK',
+        },
+        {
+          25: 'SAINT_PETERSBURG',
+        },
+        {
+          'OTHER': 'OTHER',
+        },
+      ],
+    },
+    backend: {
+      id: 2,
+      title: 'BACKEND_TITLE',
+      label: 'BACKEND_LABEL',
+      cities: [
+        {
+          26: 'ULYANOVSK',
+        },
+        {
+          25: 'SAINT_PETERSBURG',
+        },
+        {
+          'OTHER': 'OTHER',
+        },
+      ],
+    },
+    qa: {
+      id: 10,
+      title: 'QA_TITLE',
+      label: 'QA_LABEL',
+      cities: [
+        {
+          26: 'ULYANOVSK',
+        },
+        {
+          25: 'SAINT_PETERSBURG',
+        },
+        {
+          'OTHER': 'OTHER',
+        },
+      ],
+    },
+    qaa: {
+      id: 29,
+      title: 'QAA_TITLE',
+      label: 'QAA_LABEL',
+      cities: [
+        {
+          26: 'ULYANOVSK',
+        },
+        {
+          25: 'SAINT_PETERSBURG',
+        },
+        {
+          'OTHER': 'OTHER',
+        },
+      ],
+    },
+    analytics: {
+      id: 3,
+      title: 'ANALYTICS_TITLE',
+      label: 'ANALYTICS_LABEL',
+      cities: [
+        {
+          26: 'ULYANOVSK',
+        },
+        {
+          25: 'SAINT_PETERSBURG',
+        },
+        {
+          'OTHER': 'OTHER',
+        },
+      ],
+    },
+    ml: {
+      id: 28,
+      title: 'ML_TITLE',
+      label: 'ML_LABEL',
+      cities: [
+        {
+          26: 'ULYANOVSK',
+        },
+        {
+          25: 'SAINT_PETERSBURG',
+        },
+        {
+          'OTHER': 'OTHER',
+        },
+      ],
+    },
+  };
+
   // eslint-disable-next-line no-unused-vars
   const withUserDeleteDate = timeSheetsDbData
     .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date !== null);
@@ -241,6 +363,8 @@ exports.getCompanyReport = async function (criteria, options) {
   const data = {
     info: { range: { startDate, endDate } },
     companyByUser: transformToUserList(timeSheets, lang),
+    users,
+    departList,
   };
 
   const averageNumberOfEmployees = await getAverageNumberOfEmployees(
