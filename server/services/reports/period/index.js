@@ -232,7 +232,10 @@ exports.getCompanyReport = async function (criteria, options) {
         $lte: startDate,
       },
       id: {
-        $notIn: [25, 26],
+        $notIn: [27],
+      },
+      is_office: {
+        $or: [{$eq: 0}, {$eq: null}],
       },
     },
   });
