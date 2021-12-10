@@ -1,6 +1,7 @@
 const WorkSheetTemplate = require('./workSheetTemplate');
 const i18n = require('./byCompanyUser.i18n');
 const moment = require('moment');
+const {cloneDeep} = require('lodash');
 
 const getFullName = (user, suffix) => {
   const pascalCaseSuffix = suffix.replace(/^[a-zA-Z]{1}/, symbol => symbol.toUpperCase());
@@ -96,6 +97,163 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const endAt = this._lastIndexRow;
     this._drawBorder();
     this._writeSummary(startAt, endAt);
+    this._printTablesPopulationCompany();
+  }
+
+  _printTablesPopulationCompany () {
+    let indexCol = 0;
+    let lastIndexRow = this._lastIndexRow;
+    let maxCountColumn = this._getCountColumn();
+    this._printBasePopulationTable(indexCol);
+    maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
+    indexCol += 4;
+    this._data.departmentList.forEach((item) => {
+      this._lastIndexRow = lastIndexRow;
+      this._printTable(item, indexCol);
+      maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
+      indexCol += 4;
+      if (this._columns.length < indexCol) {
+        lastIndexRow += (maxCountColumn - lastIndexRow) + 1; // 1 - space
+        indexCol = 0;
+      }
+    });
+    this._lastIndexRow = lastIndexRow;
+    this._printCitiesPopulationTable(this._data.citiesList, indexCol);
+  }
+
+  _getCountColumn (lastCount = 0, count = 0) {
+    if (!lastCount) {
+      return 0;
+    }
+    return lastCount > count ? lastCount : count;
+  }
+
+
+  _printBasePopulationTable (indexCol) {
+    this._lastIndexRow++;
+    const departList = cloneDeep(this._data.departmentList);
+    departList.push({
+      id: 'SUM',
+      name: 'SUM',
+    });
+    this._setHeaderPopulationTable('TOTAL_POPULATION', true, indexCol);
+    const startCell = `${this._columns[indexCol + 2] + (this._lastIndexRow + 1)}`;
+    departList.forEach((item, index, array) => {
+      this._lastIndexRow++;
+      const endCell = `${this._columns[indexCol + 2] + (this._lastIndexRow - 1)}`;
+      this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+      const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+      const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+      this._setCellStyle(totalLabelCell, totalCell, index, array);
+      totalLabelCell.value = item.id === 'SUM' ? this._getTitle('TOTAL_POPULATION') : `${item.name}(${this._getTitle('POPULATION')})`;
+      totalCell.value = item.id === 'SUM' ? { formula: `SUM(${startCell}:${endCell})`, result: undefined } : this._countUsers(item.id);
+    });
+  }
+
+  _printCitiesPopulationTable (citiesList, indexCol) {
+    this._lastIndexRow++;
+    this._setHeaderPopulationTable('CITIES_POPULATION', true, indexCol);
+
+    citiesList
+      .forEach((item, index, array) => {
+        this._lastIndexRow++;
+        this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+        const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+        const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+        this._setCellStyle(totalLabelCell, totalCell, index, array);
+        totalLabelCell.value = item.name === 'OTHER' ? this._getTitle(item.name) : item.name;
+        totalCell.value = item.id === 'OTHER' ? this._countRemoteUsers() : this._countUsersByCity(item.id);
+      });
+  }
+
+  _setHeaderPopulationTable (title, isTranslate = true, indexCol) {
+    this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 2] + this._lastIndexRow}`);
+    const labelCell = this._worksheet.getCell(this._columns[indexCol] + this._lastIndexRow);
+    labelCell.fill = {type: 'pattern', pattern: 'lightGray'};
+    labelCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    labelCell.border = {
+      left: {style: 'thin'},
+      right: {style: 'thin'},
+      top: {style: 'thin'},
+    };
+    labelCell.width = 14;
+    labelCell.value = isTranslate ? this._getTitle(title) : title;
+  }
+
+  _countUsers (departmentId) {
+    return this._data.users.filter((user) => {
+      return user.department.some((item) => item.id === Number(departmentId));
+    }).length;
+  }
+
+  _countUsersByCity (cityId) {
+    return this._data.users.filter((user) => {
+      return user.department.some((item) => item.id === Number(cityId));
+    }).length;
+  }
+
+  _printTable ({ id, name }, indexCol) {
+    this._lastIndexRow++;
+    this._setHeaderPopulationTable(name, false, indexCol);
+
+    this._data.citiesList.forEach((item, index, array) => {
+      this._lastIndexRow++;
+      this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+      const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+      const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+      this._setCellStyle(totalLabelCell, totalCell, index, array);
+      totalLabelCell.value = `${name}(${this._getTitle(item.id)})`;
+      totalCell.value = item.id === 'OTHER' ? this._countRemoteUsersById(id) : this._countUsersOfDepartment(item.id, id);
+    });
+  }
+
+  _setCellStyle (totalLabelCell, totalCell, index, array) {
+    totalCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    totalLabelCell.border = {
+      left: {style: 'thin'},
+    };
+    totalCell.border = {
+      left: {style: 'thin'},
+      right: {style: 'thin'},
+    };
+    if (index === array.length - 1) {
+      totalLabelCell.border = {
+        left: {style: 'thin'},
+        bottom: {style: 'thin'},
+      };
+      totalCell.border = {
+        left: {style: 'thin'},
+        bottom: {style: 'thin'},
+        right: {style: 'thin'},
+      };
+    }
+    totalLabelCell.width = 14;
+    totalLabelCell.alignment = { vertical: 'middle', horizontal: 'center' };
+  }
+
+  _countRemoteUsersById (id) {
+    return this._data.users.filter((user) => {
+      return user.department.some((item) => item.id === Number(id))
+          && !user.department.some((item) => item.id === 26)
+          && !user.department.some((item) => item.id === 25);
+    }).length;
+  }
+
+  _countRemoteUsers () {
+    return this._data.users.filter((user) => {
+      return !user.department.some((item) => item.id === 26) && !user.department.some((item) => item.id === 25);
+    }).length;
+  }
+
+  _countUsersOfDepartment (cityId, departmentId) {
+    return this._data.users.filter((user) => {
+      return user.department.some((item) => item.id === Number(departmentId)) && user.department.some((item) => item.id === Number(cityId));
+    }).length;
+  }
+
+  _getTitle (key) {
+    const locale = i18n[this.lang];
+    return locale[key];
   }
 
   _writeColumnsHeaders () {

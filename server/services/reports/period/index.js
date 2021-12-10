@@ -9,6 +9,8 @@ const {
   ProjectRolesDictionary,
   TimesheetTypesDictionary,
   Sprint,
+  Department,
+  UserDepartments,
   sequelize,
 } = require('../../../models');
 const _ = require('lodash');
@@ -198,6 +200,61 @@ exports.getCompanyReport = async function (criteria, options) {
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
+  const users = await User.findAll({
+    where: {
+      employment_date: {
+        $lte: endDate,
+      },
+      delete_date: {
+        $or: [{$gt: startDate}, {$eq: null}],
+      },
+    },
+    attributes: [
+      'id',
+    ],
+    include: [
+      {
+        model: Department,
+        as: 'department',
+        required: false,
+        attributes: ['name', 'id'],
+        through: {
+          model: UserDepartments,
+          attributes: [],
+        },
+      },
+    ],
+  });
+
+  const departmentList = await Department.findAll({
+    where: {
+      created_at: {
+        $lte: startDate,
+      },
+      id: {
+        $notIn: [25, 26],
+      },
+    },
+  });
+
+  const citiesList = await Department.findAll({
+    where: {
+      created_at: {
+        $lte: startDate,
+      },
+      is_office: 1,
+    },
+    attributes: [
+      'id',
+      'name',
+      'is_office',
+    ],
+  });
+  citiesList.push({
+    id: 'OTHER',
+    name: 'OTHER',
+  });
+
   // eslint-disable-next-line no-unused-vars
   const withUserDeleteDate = timeSheetsDbData
     .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date !== null);
@@ -241,6 +298,9 @@ exports.getCompanyReport = async function (criteria, options) {
   const data = {
     info: { range: { startDate, endDate } },
     companyByUser: transformToUserList(timeSheets, lang),
+    users,
+    departmentList,
+    citiesList,
   };
 
   const averageNumberOfEmployees = await getAverageNumberOfEmployees(
