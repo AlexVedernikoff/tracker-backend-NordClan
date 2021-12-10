@@ -202,7 +202,12 @@ exports.getCompanyReport = async function (criteria, options) {
 
   const users = await User.findAll({
     where: {
-      active: 1,
+      employment_date: {
+        $lte: endDate,
+      },
+      delete_date: {
+        $or: [{$gt: startDate}, {$eq: null}],
+      },
     },
     attributes: [
       'id',
@@ -221,104 +226,34 @@ exports.getCompanyReport = async function (criteria, options) {
     ],
   });
 
-  const departList = {
-    frontend: {
-      id: 5,
-      title: 'FRONTEND_TITLE',
-      label: 'FRONTEND_LABEL',
-      cities: [
-        {
-          26: 'ULYANOVSK',
-        },
-        {
-          25: 'SAINT_PETERSBURG',
-        },
-        {
-          'OTHER': 'OTHER',
-        },
-      ],
+  const departmentList = await Department.findAll({
+    where: {
+      created_at: {
+        $lte: startDate,
+      },
+      id: {
+        $notIn: [25, 26],
+      },
     },
-    backend: {
-      id: 2,
-      title: 'BACKEND_TITLE',
-      label: 'BACKEND_LABEL',
-      cities: [
-        {
-          26: 'ULYANOVSK',
-        },
-        {
-          25: 'SAINT_PETERSBURG',
-        },
-        {
-          'OTHER': 'OTHER',
-        },
-      ],
+  });
+
+  const citiesList = await Department.findAll({
+    where: {
+      created_at: {
+        $lte: startDate,
+      },
+      is_office: 1,
     },
-    qa: {
-      id: 10,
-      title: 'QA_TITLE',
-      label: 'QA_LABEL',
-      cities: [
-        {
-          26: 'ULYANOVSK',
-        },
-        {
-          25: 'SAINT_PETERSBURG',
-        },
-        {
-          'OTHER': 'OTHER',
-        },
-      ],
-    },
-    qaa: {
-      id: 29,
-      title: 'QAA_TITLE',
-      label: 'QAA_LABEL',
-      cities: [
-        {
-          26: 'ULYANOVSK',
-        },
-        {
-          25: 'SAINT_PETERSBURG',
-        },
-        {
-          'OTHER': 'OTHER',
-        },
-      ],
-    },
-    analytics: {
-      id: 3,
-      title: 'ANALYTICS_TITLE',
-      label: 'ANALYTICS_LABEL',
-      cities: [
-        {
-          26: 'ULYANOVSK',
-        },
-        {
-          25: 'SAINT_PETERSBURG',
-        },
-        {
-          'OTHER': 'OTHER',
-        },
-      ],
-    },
-    ml: {
-      id: 28,
-      title: 'ML_TITLE',
-      label: 'ML_LABEL',
-      cities: [
-        {
-          26: 'ULYANOVSK',
-        },
-        {
-          25: 'SAINT_PETERSBURG',
-        },
-        {
-          'OTHER': 'OTHER',
-        },
-      ],
-    },
-  };
+    attributes: [
+      'id',
+      'name',
+      'is_office',
+    ],
+  });
+  citiesList.push({
+    id: 'OTHER',
+    name: 'OTHER',
+  });
 
   // eslint-disable-next-line no-unused-vars
   const withUserDeleteDate = timeSheetsDbData
@@ -364,7 +299,8 @@ exports.getCompanyReport = async function (criteria, options) {
     info: { range: { startDate, endDate } },
     companyByUser: transformToUserList(timeSheets, lang),
     users,
-    departList,
+    departmentList,
+    citiesList,
   };
 
   const averageNumberOfEmployees = await getAverageNumberOfEmployees(

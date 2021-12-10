@@ -1,6 +1,7 @@
 const WorkSheetTemplate = require('./workSheetTemplate');
 const i18n = require('./byCompanyUser.i18n');
 const moment = require('moment');
+const {cloneDeep} = require('lodash');
 
 const getFullName = (user, suffix) => {
   const pascalCaseSuffix = suffix.replace(/^[a-zA-Z]{1}/, symbol => symbol.toUpperCase());
@@ -100,19 +101,74 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   _printTablesPopulationCompany () {
-    this._printBasePopulationTable();
-    Object.entries(this._data.departList).forEach(([, value]) => {
-      this._lastIndexRow++;
-      this._printTable(value);
+    let indexCol = 0;
+    let lastIndexRow = this._lastIndexRow;
+    let maxCountColumn = this._getCountColumn();
+    this._printBasePopulationTable(indexCol);
+    maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
+    indexCol += 4;
+    this._data.departmentList.forEach((item) => {
+      this._lastIndexRow = lastIndexRow;
+      this._printTable(item, indexCol);
+      maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
+      indexCol += 4;
+      if (this._columns.length < indexCol) {
+        lastIndexRow += (maxCountColumn - lastIndexRow) + 1; // 1 - space
+        indexCol = 0;
+      }
     });
-    this._lastIndexRow++;
-    this._printCitiesPopulationTable(this._data.departList.frontend.cities);
+    this._lastIndexRow = lastIndexRow;
+    this._printCitiesPopulationTable(this._data.citiesList, indexCol);
   }
 
-  _printBasePopulationTable () {
+  _getCountColumn (lastCount = 0, count = 0) {
+    if (!lastCount) {
+      return 0;
+    }
+    return lastCount > count ? lastCount : count;
+  }
+
+
+  _printBasePopulationTable (indexCol) {
     this._lastIndexRow++;
-    this._worksheet.mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[1] + this._lastIndexRow}`);
-    const labelCell = this._worksheet.getCell(this._columns[0] + this._lastIndexRow);
+    const departList = cloneDeep(this._data.departmentList);
+    departList.push({
+      id: 'SUM',
+      name: 'SUM',
+    });
+    this._setHeaderPopulationTable('TOTAL_POPULATION', true, indexCol);
+    const startCell = `${this._columns[indexCol + 2] + (this._lastIndexRow + 1)}`;
+    departList.forEach((item, index, array) => {
+      this._lastIndexRow++;
+      const endCell = `${this._columns[indexCol + 2] + (this._lastIndexRow - 1)}`;
+      this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+      const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+      const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+      this._setCellStyle(totalLabelCell, totalCell, index, array);
+      totalLabelCell.value = item.id === 'SUM' ? this._getTitle('TOTAL_POPULATION') : `${item.name}(${this._getTitle('POPULATION')})`;
+      totalCell.value = item.id === 'SUM' ? { formula: `SUM(${startCell}:${endCell})`, result: undefined } : this._countUsers(item.id);
+    });
+  }
+
+  _printCitiesPopulationTable (citiesList, indexCol) {
+    this._lastIndexRow++;
+    this._setHeaderPopulationTable('CITIES_POPULATION', true, indexCol);
+
+    citiesList
+      .forEach((item, index, array) => {
+        this._lastIndexRow++;
+        this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+        const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+        const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+        this._setCellStyle(totalLabelCell, totalCell, index, array);
+        totalLabelCell.value = item.name === 'OTHER' ? this._getTitle(item.name) : item.name;
+        totalCell.value = item.id === 'OTHER' ? this._countRemoteUsers() : this._countUsersByCity(item.id);
+      });
+  }
+
+  _setHeaderPopulationTable (title, isTranslate = true, indexCol) {
+    this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 2] + this._lastIndexRow}`);
+    const labelCell = this._worksheet.getCell(this._columns[indexCol] + this._lastIndexRow);
     labelCell.fill = {type: 'pattern', pattern: 'lightGray'};
     labelCell.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCell.border = {
@@ -121,81 +177,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       top: {style: 'thin'},
     };
     labelCell.width = 14;
-    labelCell.value = this._getTitle('TOTAL_POPULATION');
-
-    Object.entries(this._data.departList).forEach(([, value], index, array) => {
-      this._lastIndexRow++;
-      const totalLabelCell = this._worksheet.getCell(this._columns[0] + this._lastIndexRow);
-      const totalCell = this._worksheet.getCell(this._columns[1] + this._lastIndexRow);
-      totalCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      totalLabelCell.border = {
-        left: {style: 'thin'},
-      };
-      totalCell.border = {
-        left: {style: 'thin'},
-        right: {style: 'thin'},
-      };
-      if (index === array.length - 1) {
-        totalLabelCell.border = {
-          left: {style: 'thin'},
-          bottom: {style: 'thin'},
-        };
-        totalCell.border = {
-          left: {style: 'thin'},
-          bottom: {style: 'thin'},
-          right: {style: 'thin'},
-        };
-      }
-      totalLabelCell.width = 14;
-      totalLabelCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      totalLabelCell.value = `${this._getTitle(value.label)}(${this._getTitle('POPULATION')})`;
-      totalCell.value = this._countUsers(value.id);
-    });
-  }
-
-  _printCitiesPopulationTable (cities) {
-    this._lastIndexRow++;
-    this._worksheet.mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[1] + this._lastIndexRow}`);
-    const labelCell = this._worksheet.getCell(this._columns[0] + this._lastIndexRow);
-    labelCell.fill = {type: 'pattern', pattern: 'lightGray'};
-    labelCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    labelCell.border = {
-      left: {style: 'thin'},
-      right: {style: 'thin'},
-      top: {style: 'thin'},
-    };
-    labelCell.width = 14;
-    labelCell.value = this._getTitle('CITIES_POPULATION');
-
-    cities.forEach((item, index) => {
-      this._lastIndexRow++;
-      const [ key, value ] = Object.entries(item)[0];
-      const totalLabelCell = this._worksheet.getCell(this._columns[0] + this._lastIndexRow);
-      const totalCell = this._worksheet.getCell(this._columns[1] + this._lastIndexRow);
-      totalCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      totalLabelCell.border = {
-        left: {style: 'thin'},
-      };
-      totalCell.border = {
-        left: {style: 'thin'},
-        right: {style: 'thin'},
-      };
-      if (index === cities.length - 1) {
-        totalLabelCell.border = {
-          left: {style: 'thin'},
-          bottom: {style: 'thin'},
-        };
-        totalCell.border = {
-          left: {style: 'thin'},
-          bottom: {style: 'thin'},
-          right: {style: 'thin'},
-        };
-      }
-      totalLabelCell.width = 14;
-      totalLabelCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      totalLabelCell.value = this._getTitle(value);
-      totalCell.value = key === 'OTHER' ? this._countRemoteUsers() : this._countCityUsers(key);
-    });
+    labelCell.value = isTranslate ? this._getTitle(title) : title;
   }
 
   _countUsers (departmentId) {
@@ -204,55 +186,49 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     }).length;
   }
 
-  _countCityUsers (cityId) {
+  _countUsersByCity (cityId) {
     return this._data.users.filter((user) => {
       return user.department.some((item) => item.id === Number(cityId));
     }).length;
   }
 
-  _printTable ({ id, title, cities, label }) {
+  _printTable ({ id, name }, indexCol) {
     this._lastIndexRow++;
-    this._worksheet.mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[1] + this._lastIndexRow}`);
-    const labelCell = this._worksheet.getCell(this._columns[0] + this._lastIndexRow);
-    labelCell.fill = {type: 'pattern', pattern: 'lightGray'};
-    labelCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    labelCell.border = {
+    this._setHeaderPopulationTable(name, false, indexCol);
+
+    this._data.citiesList.forEach((item, index, array) => {
+      this._lastIndexRow++;
+      this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+      const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+      const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+      this._setCellStyle(totalLabelCell, totalCell, index, array);
+      totalLabelCell.value = `${name}(${this._getTitle(item.id)})`;
+      totalCell.value = item.id === 'OTHER' ? this._countRemoteUsersById(id) : this._countUsersOfDepartment(item.id, id);
+    });
+  }
+
+  _setCellStyle (totalLabelCell, totalCell, index, array) {
+    totalCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    totalLabelCell.border = {
+      left: {style: 'thin'},
+    };
+    totalCell.border = {
       left: {style: 'thin'},
       right: {style: 'thin'},
-      top: {style: 'thin'},
     };
-    labelCell.width = 14;
-    labelCell.value = this._getTitle(title);
-
-    cities.forEach((item, index) => {
-      this._lastIndexRow++;
-      const [ key, value ] = Object.entries(item)[0];
-      const totalLabelCell = this._worksheet.getCell(this._columns[0] + this._lastIndexRow);
-      const totalCell = this._worksheet.getCell(this._columns[1] + this._lastIndexRow);
-      totalCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    if (index === array.length - 1) {
       totalLabelCell.border = {
         left: {style: 'thin'},
+        bottom: {style: 'thin'},
       };
       totalCell.border = {
         left: {style: 'thin'},
+        bottom: {style: 'thin'},
         right: {style: 'thin'},
       };
-      if (index === cities.length - 1) {
-        totalLabelCell.border = {
-          left: {style: 'thin'},
-          bottom: {style: 'thin'},
-        };
-        totalCell.border = {
-          left: {style: 'thin'},
-          bottom: {style: 'thin'},
-          right: {style: 'thin'},
-        };
-      }
-      totalLabelCell.width = 14;
-      totalLabelCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      totalLabelCell.value = `${this._getTitle(label)}(${this._getTitle(value)})`;
-      totalCell.value = key === 'OTHER' ? this._countRemoteUsersById(id) : this._countUsersOfDepartment(key, id);
-    });
+    }
+    totalLabelCell.width = 14;
+    totalLabelCell.alignment = { vertical: 'middle', horizontal: 'center' };
   }
 
   _countRemoteUsersById (id) {

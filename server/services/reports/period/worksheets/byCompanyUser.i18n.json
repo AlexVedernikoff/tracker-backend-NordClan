@@ -37,8 +37,8 @@
     "ANALYTICS_LABEL": "Аналитика/ПМ",
     "ML_LABEL": "ML",
     "ML_TITLE": "Общая численность(ML)",
-    "ULYANOVSK": "Ульяновск",
-    "SAINT_PETERSBURG": "Санкт-Петербург",
+    "26": "Ульяновск",
+    "25": "Санкт-Петербург",
     "OTHER": "Другое"
   },
   "en": {
@@ -77,8 +77,8 @@
     "QAA_LABEL": "QAA",
     "ANALYTICS_LABEL": "ANALYTICS",
     "ML_LABEL": "ML",
-    "ULYANOVSK": "Ulyanovsk",
-    "SAINT_PETERSBURG": "Saint Petersburg",
+    "26": "Ulyanovsk",
+    "25": "Saint Petersburg",
     "OTHER": "Other",
     "POPULATION": "population",
     "CITIES_POPULATION": "Number by city"
