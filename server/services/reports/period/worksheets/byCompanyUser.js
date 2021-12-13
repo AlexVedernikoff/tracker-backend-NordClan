@@ -138,6 +138,8 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     });
     this._setHeaderPopulationTable('TOTAL_POPULATION', true, indexCol);
     const startCell = `${this._columns[indexCol + 2] + (this._lastIndexRow + 1)}`;
+    let counterTable = 0;
+
     departList.forEach((item, index, array) => {
       this._lastIndexRow++;
       const endCell = `${this._columns[indexCol + 2] + (this._lastIndexRow - 1)}`;
@@ -147,12 +149,21 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       this._setCellStyle(totalLabelCell, totalCell, index, array);
       totalLabelCell.value = item.id === 'SUM' ? this._getTitle('TOTAL_POPULATION') : `${item.name}(${this._getTitle('POPULATION')})`;
       totalCell.value = item.id === 'SUM' ? { formula: `SUM(${startCell}:${endCell})`, result: undefined } : this._countUsers(item.id);
+      counterTable += item.id !== 'SUM' ? totalCell.value : 0;
     });
+    const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - departList.length));
+    labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
+    labelCellValue.border = {
+      right: {style: 'thin'},
+      top: {style: 'thin'},
+    };
+    labelCellValue.value = counterTable;
   }
 
   _printCitiesPopulationTable (citiesList, indexCol) {
     this._lastIndexRow++;
     this._setHeaderPopulationTable('CITIES_POPULATION', true, indexCol);
+    let counterTable = 0;
 
     citiesList
       .forEach((item, index, array) => {
@@ -163,11 +174,19 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         this._setCellStyle(totalLabelCell, totalCell, index, array);
         totalLabelCell.value = item.name === 'OTHER' ? this._getTitle(item.name) : item.name;
         totalCell.value = item.id === 'OTHER' ? this._countRemoteUsers() : this._countUsersByCity(item.id);
+        counterTable += totalCell.value;
       });
+    const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.citiesList.length));
+    labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
+    labelCellValue.border = {
+      right: {style: 'thin'},
+      top: {style: 'thin'},
+    };
+    labelCellValue.value = counterTable;
   }
 
   _setHeaderPopulationTable (title, isTranslate = true, indexCol) {
-    this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 2] + this._lastIndexRow}`);
+    this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
     const labelCell = this._worksheet.getCell(this._columns[indexCol] + this._lastIndexRow);
     labelCell.fill = {type: 'pattern', pattern: 'lightGray'};
     labelCell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -195,6 +214,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   _printTable ({ id, name }, indexCol) {
     this._lastIndexRow++;
     this._setHeaderPopulationTable(name, false, indexCol);
+    let counterTable = 0;
 
     this._data.citiesList.forEach((item, index, array) => {
       this._lastIndexRow++;
@@ -204,7 +224,15 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       this._setCellStyle(totalLabelCell, totalCell, index, array);
       totalLabelCell.value = `${name}(${this._getTitle(item.id)})`;
       totalCell.value = item.id === 'OTHER' ? this._countRemoteUsersById(id) : this._countUsersOfDepartment(item.id, id);
+      counterTable += totalCell.value;
     });
+    const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.citiesList.length));
+    labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
+    labelCellValue.border = {
+      right: {style: 'thin'},
+      top: {style: 'thin'},
+    };
+    labelCellValue.value = counterTable;
   }
 
   _setCellStyle (totalLabelCell, totalCell, index, array) {
