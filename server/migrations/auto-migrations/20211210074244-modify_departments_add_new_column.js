@@ -5,9 +5,8 @@ module.exports = {
     return Promise.all([
       queryInterface.addColumn(
         'departments', // table name
-        'isOffice', // new field name
+        'is_office', // new field name
         {
-          field: 'is_office',
           type: Sequelize.INTEGER,
           allowNull: true,
         }
