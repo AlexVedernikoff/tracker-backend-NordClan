@@ -104,6 +104,10 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     let indexCol = 0;
     let lastIndexRow = this._lastIndexRow;
     let maxCountColumn = this._getCountColumn();
+    this._printIndicatorsTable(indexCol);
+    this._lastIndexRow = lastIndexRow;
+    maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
+    indexCol += 4;
     this._printBasePopulationTable(indexCol);
     maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
     indexCol += 4;
@@ -128,30 +132,54 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     return lastCount > count ? lastCount : count;
   }
 
-
-  _printBasePopulationTable (indexCol) {
+  _printIndicatorsTable (indexCol) {
     this._lastIndexRow++;
-    const departList = cloneDeep(this._data.departmentList);
-    departList.push({
-      id: 'SUM',
-      name: 'SUM',
-    });
-    this._setHeaderPopulationTable('TOTAL_POPULATION', true, indexCol);
-    const startCell = `${this._columns[indexCol + 2] + (this._lastIndexRow + 1)}`;
-    let counterTable = 0;
+    let counter = 0;
+    const productionIds = [24, 10, 28, 29, 3, 2, 5, 6];
+    const administrationIds = [17, 21, 22, 16, 15];
+    const tableRows = ['ADMINISTRATION', 'PRODUCTION'];
 
-    departList.forEach((item, index, array) => {
+    this._setHeaderPopulationTable('INDICATORS', true, indexCol);
+
+    tableRows.forEach((item, index, array) => {
       this._lastIndexRow++;
-      const endCell = `${this._columns[indexCol + 2] + (this._lastIndexRow - 1)}`;
       this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
       const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
       const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
       this._setCellStyle(totalLabelCell, totalCell, index, array);
-      totalLabelCell.value = item.id === 'SUM' ? this._getTitle('TOTAL_POPULATION') : `${item.name}(${this._getTitle('POPULATION')})`;
-      totalCell.value = item.id === 'SUM' ? { formula: `SUM(${startCell}:${endCell})`, result: undefined } : this._countUsers(item.id);
-      counterTable += item.id !== 'SUM' ? totalCell.value : 0;
+      totalLabelCell.value = `${this._getTitle(item)}(${this._getTitle('POPULATION')})`;
+      totalCell.value = !index
+        ? administrationIds.reduce((acc, id) => acc + this._countUsers(id), 0)
+        : productionIds.reduce((acc, id) => acc + this._countUsers(id), 0);
+      counter += totalCell.value;
     });
-    const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - departList.length));
+
+    const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - tableRows.length));
+    labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
+    labelCellValue.border = {
+      right: {style: 'thin'},
+      top: {style: 'thin'},
+    };
+    labelCellValue.value = counter;
+  }
+
+  _printBasePopulationTable (indexCol) {
+    this._lastIndexRow++;
+
+    this._setHeaderPopulationTable('TOTAL_POPULATION', true, indexCol);
+    let counterTable = 0;
+
+    this._data.departmentList.forEach((item, index, array) => {
+      this._lastIndexRow++;
+      this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
+      const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
+      const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
+      this._setCellStyle(totalLabelCell, totalCell, index, array);
+      totalLabelCell.value = `${item.name}(${this._getTitle('POPULATION')})`;
+      totalCell.value = this._countUsers(item.id);
+      counterTable += totalCell.value;
+    });
+    const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.departmentList.length));
     labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCellValue.border = {
       right: {style: 'thin'},
