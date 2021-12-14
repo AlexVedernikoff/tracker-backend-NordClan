@@ -39,7 +39,10 @@
     "ML_TITLE": "Общая численность(ML)",
     "26": "Ульяновск",
     "25": "Санкт-Петербург",
-    "OTHER": "Другое"
+    "OTHER": "Другое",
+    "ADMINISTRATION": "Администрация",
+    "PRODUCTION": "Производство",
+    "INDICATORS": "Показатели"
   },
   "en": {
     "OTHER_TASKS": "Other Tasks",
@@ -81,6 +84,9 @@
     "25": "Saint Petersburg",
     "OTHER": "Other",
     "POPULATION": "population",
-    "CITIES_POPULATION": "Number by city"
+    "CITIES_POPULATION": "Number by city",
+    "ADMINISTRATION": "Administration",
+    "PRODUCTION": "Production",
+    "INDICATORS": "Indicators"
   }
 }
