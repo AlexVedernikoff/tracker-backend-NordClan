@@ -202,12 +202,9 @@ exports.getCompanyReport = async function (criteria, options) {
 
   const users = await User.findAll({
     where: {
-      employment_date: {
-        $lte: endDate,
-      },
-      delete_date: {
-        $or: [{$gt: startDate}, {$eq: null}],
-      },
+      active: 1,
+      allow_vpn: true,
+      globalRole: { $not: User.EXTERNAL_USER_ROLE },
     },
     attributes: [
       'id',
@@ -301,7 +298,7 @@ exports.getCompanyReport = async function (criteria, options) {
   const data = {
     info: { range: { startDate, endDate } },
     companyByUser: transformToUserList(timeSheets, lang),
-    users,
+    users: users.filter((u) => !!u.department.length),
     departmentList,
     citiesList,
   };
