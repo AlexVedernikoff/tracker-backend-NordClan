@@ -50,7 +50,33 @@ exports.milestoneTypes = function (req, res){
     .then(data => res.json(data));
 };
 
-exports.departments = function (req, res){
+exports.departments = async function (req, res, next){
+  const dateBegin = req.query.dateBegin;
+  const dateEnd = req.query.dateEnd;
+
+  if (dateBegin && dateEnd) {
+    req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
+    req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
+
+    const validationResult = await req.getValidationResult();
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
+    return models.Department
+      .findAll({
+        where: {
+          created_at: {
+            $lte: dateEnd,
+          },
+          deleted_at: {
+            $or: [{$gte: dateEnd}, {$eq: null}],
+          },
+
+        },
+      })
+      .then(data => res.json(data));
+  }
+
   return models.Department
     .findAll()
     .then(data => res.json(data));
