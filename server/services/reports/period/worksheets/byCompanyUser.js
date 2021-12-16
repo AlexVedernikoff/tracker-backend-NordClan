@@ -200,8 +200,8 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         const totalLabelCell = this._worksheet.getCell(this._columns[indexCol + 1] + this._lastIndexRow);
         const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
         this._setCellStyle(totalLabelCell, totalCell, index, array);
-        totalLabelCell.value = item.name === 'OTHER' ? this._getTitle(item.name) : item.name;
-        totalCell.value = item.id === 'OTHER' ? this._countRemoteUsers() : this._countUsersByCity(item.id);
+        totalLabelCell.value = item.id === 27 ? this._getTitle('OTHER') : item.name;
+        totalCell.value = this._countUsersByCity(item.id);
         counterTable += totalCell.value;
       });
     const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.citiesList.length));
@@ -251,7 +251,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       const totalCell = this._worksheet.getCell(this._columns[indexCol + 2] + this._lastIndexRow);
       this._setCellStyle(totalLabelCell, totalCell, index, array);
       totalLabelCell.value = `${name}(${this._getTitle(item.id)})`;
-      totalCell.value = item.id === 'OTHER' ? this._countRemoteUsersById(id) : this._countUsersOfDepartment(item.id, id);
+      totalCell.value = item.id === 27 ? this._countRemoteUsersById(id) : this._countUsersOfDepartment(item.id, id);
       counterTable += totalCell.value;
     });
     const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.citiesList.length));
@@ -292,12 +292,6 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       return user.department.some((item) => item.id === Number(id))
           && !user.department.some((item) => item.id === 26)
           && !user.department.some((item) => item.id === 25);
-    }).length;
-  }
-
-  _countRemoteUsers () {
-    return this._data.users.filter((user) => {
-      return !user.department.some((item) => item.id === 26) && !user.department.some((item) => item.id === 25);
     }).length;
   }
 

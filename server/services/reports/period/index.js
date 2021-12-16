@@ -202,12 +202,9 @@ exports.getCompanyReport = async function (criteria, options) {
 
   const users = await User.findAll({
     where: {
-      employment_date: {
-        $lte: endDate,
-      },
-      delete_date: {
-        $or: [{$gt: startDate}, {$eq: null}],
-      },
+      active: 1,
+      allow_vpn: true,
+      globalRole: { $not: User.EXTERNAL_USER_ROLE },
     },
     attributes: [
       'id',
@@ -231,12 +228,7 @@ exports.getCompanyReport = async function (criteria, options) {
       created_at: {
         $lte: startDate,
       },
-      id: {
-        $notIn: [27],
-      },
-      is_office: {
-        $or: [{$eq: 0}, {$eq: null}],
-      },
+      type: 'department',
     },
   });
 
@@ -245,17 +237,12 @@ exports.getCompanyReport = async function (criteria, options) {
       created_at: {
         $lte: startDate,
       },
-      is_office: 1,
+      type: 'office',
     },
     attributes: [
       'id',
       'name',
-      'is_office',
     ],
-  });
-  citiesList.push({
-    id: 'OTHER',
-    name: 'OTHER',
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -303,7 +290,7 @@ exports.getCompanyReport = async function (criteria, options) {
     companyByUser: transformToUserList(timeSheets, lang),
     users,
     departmentList,
-    citiesList,
+    citiesList: citiesList.reverse(),
   };
 
   const averageNumberOfEmployees = await getAverageNumberOfEmployees(
