@@ -31,7 +31,7 @@
   "dependencies": {
     "api-error-handler": "^1.0.0",
     "async": "^2.4.1",
-    "axios": "^0.18.0",
+    "axios": "^0.24.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.2",
     "convert-layout": "^0.7.0",
