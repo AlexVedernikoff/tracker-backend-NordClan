@@ -282,6 +282,16 @@ function createWhereForRequest (req, selectWithoutTags) {
     };
   }
 
+  // отдаю таски только по выбранным проектам(стр. MyTasks)
+  if (req.query.projectIds && req.query.projectIds.length) {
+    where.projectId = {
+      in: req.query.projectIds
+        .toString()
+        .split(',')
+        .map(el => el.trim()),
+    };
+  }
+
   return where;
 }
 
