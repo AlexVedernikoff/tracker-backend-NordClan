@@ -203,6 +203,16 @@ exports.list = function (req, res, next) {
     }
   }
 
+  if (req.query.projectIds) {
+    if (Array.isArray(req.query.projectIds)) {
+      if (req.query.projectIds.some(projectId => !projectId.match(/^\d+$/))) {
+        return next(createError(400, 'projectIds must be array of int'));
+      }
+    } else if (!req.query.projectIds.match(/^\d+$/)) {
+      return next(createError(400, 'projectIds must be int'));
+    }
+  }
+
   if (req.query.dateFrom) {
     if (!moment(req.query.dateFrom, 'DD.MM.YYYY').isValid()) {
       return next(createError(400, 'dateFrom must be date format "DD.MM.YYYY"'));
