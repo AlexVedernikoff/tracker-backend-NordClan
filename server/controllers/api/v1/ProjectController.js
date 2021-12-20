@@ -815,13 +815,3 @@ exports.getProjects = async function (req, res, next) {
     next(e);
   }
 };
-
-exports.getAllProjectList = async function (req, res, next) {
-  try {
-    const projects = await Project.findAll();
-
-    res.json(projects.map(p => ({ id: p.id, name: p.name })));
-  } catch (e) {
-    next(e);
-  }
-};
