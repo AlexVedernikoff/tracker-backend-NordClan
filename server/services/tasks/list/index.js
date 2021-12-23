@@ -89,7 +89,6 @@ exports.list = async function (req) {
   if (prefixNeed) {
     tasks.forEach(task => {
       task.dataValues.prefix = task.project.prefix;
-      delete task.dataValues.project;
     });
   }
 
@@ -384,7 +383,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeProject = {
     as: 'project',
     model: models.Project,
-    attributes: ['prefix'],
+    attributes: ['prefix', 'name'],
   };
 
   const includeForSelect = [

@@ -26,7 +26,11 @@ exports.projectRoles = function (req, res){
 
 exports.timesheetTypes = function (req, res){
   return models.TimesheetTypesDictionary
-    .findAll()
+    .findAll({
+      order: [
+        ['order', 'ASC'],
+      ],
+    })
     .then(data => res.json(data));
 };
 
