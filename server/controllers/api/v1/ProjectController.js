@@ -757,7 +757,7 @@ exports.all = async function (req, res, next) {
     }
     const projects = await Project.findAll({
       where,
-      attributes: ['id', 'name'],
+      attributes: ['id', 'name', 'prefix'],
     });
     res.json(projects);
   } catch (e) {
