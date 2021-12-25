@@ -100,7 +100,7 @@ exports.getTimesheet = async function (params) {
 };
 
 exports.getTimesheetByParams = async function (options) {
-  const { onDate, typeId, taskId, projectId, taskStatusId, userId, sprintId } = options;
+  const { onDate, typeId, taskId, projectId, userId, sprintId } = options;
 
   const where = {
     onDate,
@@ -115,10 +115,6 @@ exports.getTimesheetByParams = async function (options) {
     where.projectId = projectId;
   } else {
     where.projectId = { $eq: null }; // IS NULL
-  }
-
-  if (taskStatusId) {
-    where.taskStatusId = taskStatusId;
   }
 
   return models.Timesheet.findOne({ where: where, attributes: ['id'] });
