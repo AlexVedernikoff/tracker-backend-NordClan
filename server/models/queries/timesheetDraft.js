@@ -69,10 +69,6 @@ exports.getDraftToDestroy = async function (options) {
     where.projectId = { $eq: null }; // IS NULL
   }
 
-  // if (taskStatusId) {
-  //   where.taskStatusId = taskStatusId;
-  // }
-
   const draft = await models.TimesheetDraft
     .findOne({
       where: where,
