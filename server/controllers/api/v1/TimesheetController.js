@@ -12,7 +12,6 @@ exports.create = async (req, res, next) => {
   const timesheetParams = {
     ...req.body,
     userId,
-    taskStatusId: req.body.taskStatusId || 2,
   };
 
   if (req.body.spentTime && req.body.spentTime < 0) {
