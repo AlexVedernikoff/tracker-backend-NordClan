@@ -1,4 +1,4 @@
-FROM node:8.6
+FROM node:8.13
 
 RUN apt-get update && \
     apt-get install -yq graphicsmagick && \

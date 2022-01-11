@@ -89,7 +89,6 @@ exports.list = async function (req) {
   if (prefixNeed) {
     tasks.forEach(task => {
       task.dataValues.prefix = task.project.prefix;
-      delete task.dataValues.project;
     });
   }
 
@@ -282,6 +281,16 @@ function createWhereForRequest (req, selectWithoutTags) {
     };
   }
 
+  // отдаю таски только по выбранным проектам(стр. MyTasks)
+  if (req.query.projectIds && req.query.projectIds.length) {
+    where.projectId = {
+      in: req.query.projectIds
+        .toString()
+        .split(',')
+        .map(el => el.trim()),
+    };
+  }
+
   return where;
 }
 
@@ -374,7 +383,7 @@ async function createIncludeForRequest (tagsParams, prefixNeed, performerId, rol
   const includeProject = {
     as: 'project',
     model: models.Project,
-    attributes: ['prefix'],
+    attributes: ['prefix', 'name'],
   };
 
   const includeForSelect = [

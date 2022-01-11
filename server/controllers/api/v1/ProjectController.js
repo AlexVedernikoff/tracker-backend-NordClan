@@ -746,6 +746,25 @@ exports.list = function (req, res, next) {
     .catch(err => next(err));
 };
 
+exports.all = async function (req, res, next) {
+  try {
+    const where = {};
+    if (!req.user.isGlobalAdmin && !req.user.isVisor) {
+      where.id = req.user.dataValues.projects;
+    }
+    if (req.user.isDevOps) {
+      where.id = [...where.id, ...req.user.devOpsProjects];
+    }
+    const projects = await Project.findAll({
+      where,
+      attributes: ['id', 'name', 'prefix'],
+    });
+    res.json(projects);
+  } catch (e) {
+    next(e);
+  }
+};
+
 exports.addGitlabProject = async function (req, res, next) {
   try {
     const { projectId, path } = req.body;

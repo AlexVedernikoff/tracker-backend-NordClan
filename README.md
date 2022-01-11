@@ -47,6 +47,12 @@ LDAP_URL=ldap://ldap-test.nordclan:389/dc=nordclan
 
 ### Запуск проекта в докере - фронтенд собирается и хостится здесь же
 
+### ВАЖНО
+Необходимо установить на компьютер следующие зависимости:
+- python 2
+- node-gyp 3.8
+- node js 13.0.0
+
 ```
 $ docker-compose -f docker-compose.dev.yml  build 
 $ docker-compose -f docker-compose.dev.yml  up

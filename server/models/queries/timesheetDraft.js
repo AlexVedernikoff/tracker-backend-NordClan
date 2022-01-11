@@ -53,7 +53,7 @@ exports.findDraftSheet = async function (userId, id) {
 };
 
 exports.getDraftToDestroy = async function (options) {
-  const { onDate, typeId, taskId, projectId, taskStatusId, userId } = options;
+  const { onDate, typeId, taskId, projectId, userId } = options;
 
   const where = {
     onDate,
@@ -67,10 +67,6 @@ exports.getDraftToDestroy = async function (options) {
     where.projectId = projectId;
   } else {
     where.projectId = { $eq: null }; // IS NULL
-  }
-
-  if (taskStatusId) {
-    where.taskStatusId = taskStatusId;
   }
 
   const draft = await models.TimesheetDraft
