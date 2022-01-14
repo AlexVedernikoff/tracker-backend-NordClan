@@ -10,6 +10,7 @@ const { update } = require('./update');
 const { updateDraft } = require('./updateDraft');
 const { isNeedCreateDraft } = require('./utils');
 const { submit, approve, reject } = require('./changeStatus');
+const { listTask } = require('./listTask');
 
 module.exports = {
   create,
@@ -19,6 +20,7 @@ module.exports = {
   getTracksAll,
   list,
   listProject,
+  listTask,
   update,
   updateDraft,
   isNeedCreateDraft,
