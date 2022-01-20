@@ -179,6 +179,9 @@ router.post('/task/:id/createGitlabBranch/', TaskController.createGitlabBranch);
 router.get('/task/:id/getGitlabBranchesById/', TaskController.getGitlabBranchesById);
 router.get('/task/:id/getGitlabBranchesByRepoId/', TaskController.getGitlabBranchesByRepoId);
 
+// Task time sheets
+router.get('/task/:taskId/timesheet', GlobalAccess.can('task', 'read'), TimesheetController.listTask);
+
 // Timesheets
 router.post('/timesheet/', GlobalAccess.can('timesheet', 'create'), TimesheetController.create);
 router.put('/timesheet/submit', GlobalAccess.can('timesheet', 'update'), TimesheetController.submit);

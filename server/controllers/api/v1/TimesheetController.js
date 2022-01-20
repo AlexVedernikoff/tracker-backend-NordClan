@@ -127,6 +127,14 @@ exports.listProject = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
+exports.listTask = async function (req, res, next) {
+  const taskId = req.params.taskId;
+
+  TimesheetService.listTask(taskId)
+    .then(timesheets => res.json(timesheets))
+    .catch(error => next(createError(error)));
+};
+
 exports.listAllProjects = async function (req, res, next) {
   req.checkQuery('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkQuery('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
