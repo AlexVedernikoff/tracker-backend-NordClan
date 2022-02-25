@@ -27,6 +27,10 @@
 #    image: back:t2
 ```
 
+#### Ошибка `import(url.pathToFileURL(process.env.pm_exec_path))`
+
+Изменить в файле Dockerfile версию node на 10.16 и в RUN  дописать npm install pm2 -g && \ pm2 update
+
 #### Не запускается фронтенд (висит на `Database connection...`)
 
 Раскоментировать в `docker-compose.dev.yml` весь раздел `web:` (просто убрать решётки).
