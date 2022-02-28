@@ -73,6 +73,10 @@ const USER = {
     'export': true,
     'read': true,
   },
+  userReports: {
+    'export': true,
+    'read': true,
+  },
   metrics: {
     'list': true,
   },

@@ -15,7 +15,7 @@ const {
 } = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
-const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet } = require('./worksheets');
+const { ByTaskWorkSheet, ByUserWorkSheet, ByCompanyUserWorkSheet, ByUserTimesheetsWorkSheet } = require('./worksheets');
 const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
 const { getAverageNumberOfEmployees, getWorkBook } = require('../utils');
@@ -313,6 +313,124 @@ exports.getCompanyReport = async function (criteria, options) {
   };
 };
 
+exports.getUserReport = async function (criteria, options) {
+  const { lang = 'en' } = options || {};
+  let startDate;
+  let endDate;
+  const locale = i18n[lang];
+
+  const timesheetTypes = await TimesheetTypesDictionary.findAll();
+  if (criteria) {
+    const validCriteria = validateCriteria(criteria);
+    startDate = validCriteria.startDate;
+    endDate = validCriteria.endDate;
+  }
+
+  const timeSheetsDbData = await listProjectByTimeSheets(startDate, endDate);
+  // Подгрузка словарей из БД
+  const projectRolesValues = await ProjectRolesDictionary.findAll();
+  const taskTypesValues = await TaskTypesDictionary.findAll();
+
+  const users = await User.findAll({
+    where: {
+      active: 1,
+      allow_vpn: true,
+      globalRole: { $not: User.EXTERNAL_USER_ROLE },
+    },
+    attributes: [
+      'id',
+    ],
+    include: [
+      {
+        model: Department,
+        as: 'department',
+        required: false,
+        attributes: ['name', 'id'],
+        through: {
+          model: UserDepartments,
+          attributes: [],
+        },
+      },
+    ],
+  });
+
+  const departmentList = await Department.findAll({
+    where: {
+      created_at: {
+        $lte: startDate,
+      },
+      type: 'department',
+    },
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  const withUserDeleteDate = timeSheetsDbData
+    .filter(timeSheet => timeSheet.dataValues.user.dataValues.delete_date !== null);
+  const timeSheets = timeSheetsDbData
+    .filter(timeSheet => ((timeSheet.dataValues.user.dataValues.delete_date === null
+      || new Date(timeSheet.dataValues.onDate) <= timeSheet.dataValues.user.dataValues.delete_date))
+      || timeSheet.dataValues.user.dataValues.active === 1)
+    .map(timeSheet => {
+
+      const data = timeSheet.dataValues;
+      Object.assign(data, { user: data.user.dataValues });
+
+      if (!data.taskId) {
+        const type = timesheetTypes.find(dictionary => dictionary.id === timeSheet.typeId);
+        Object.assign(data, {
+          taskId: -type.id,
+          task: {
+            name: type.name,
+            id: type.id,
+            isMagic: type.isMagicActivity,
+          },
+        });
+      } else {
+        Object.assign(data, { task: data.task.dataValues });
+      }
+
+      const currentProjectRoles = data.user.usersProjects ? data.user.usersProjects[0].roles : [];
+      const rolesIds = currentProjectRoles
+        .map(role => role.projectRoleId)
+        .sort((role1, role2) => role1 - role2);
+      const userRolesNames = rolesIds
+        .map(roleId => getProjectRoleName(roleId, projectRolesValues, lang))
+        .join(', ');
+      delete data.user.usersProjects;
+      data.user.userRolesNames = userRolesNames;
+      data.user.employment_date = formatDate(data.user.employment_date);
+      data.task.typeName = data.task.typeId ? getTaskTypeName(data.task.typeId, taskTypesValues, lang) : null;
+      return data;
+    });
+
+  const data = {
+    info: { range: { startDate, endDate } },
+    companyByUser: transformToUserList(timeSheets, lang),
+    users,
+    departmentList,
+  };
+
+  const averageNumberOfEmployees = await getAverageNumberOfEmployees(
+    startDate,
+    endDate,
+    {
+      precision: 1,
+    }
+  );
+  // employment_date
+
+  return {
+    workbook: generateUserReportExcellDocument(data, {
+      lang,
+      averageNumberOfEmployees,
+    }),
+    options: {
+      fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`,
+    },
+  };
+};
+
+
 function transformToUserList (timeSheets, lang) {
   const groupedByUser = _.groupBy(timeSheets, timeSheet => timeSheet.userId);
   const suffix = lang.replace(/^[a-zA-Z]{1}/, symbol => symbol.toUpperCase());
@@ -332,6 +450,14 @@ function generateCompanyReportExcellDocument (data, options) {
   const { lang, averageNumberOfEmployees } = options;
   const workbook = getWorkBook();
   const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang, averageNumberOfEmployees);
+  byCompanyUserSheet.init();
+  return workbook;
+}
+
+function generateUserReportExcellDocument (data, options) {
+  const { lang, averageNumberOfEmployees } = options;
+  const workbook = getWorkBook();
+  const byCompanyUserSheet = new ByUserTimesheetsWorkSheet(workbook, data, lang, averageNumberOfEmployees);
   byCompanyUserSheet.init();
   return workbook;
 }

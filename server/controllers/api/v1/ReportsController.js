@@ -15,7 +15,7 @@ exports.byPeriod = async (req, res, next) => {
   }
 
   try {
-    const {startDate, endDate, lang} = req.query;
+    const { startDate, endDate, lang } = req.query;
     const sprintId = req.query.sprintId ? req.query.sprintId : null;
     const label = req.query.label ? req.query.label : '';
 
@@ -23,10 +23,10 @@ exports.byPeriod = async (req, res, next) => {
       return next(createError(400, 'Unsupported language: ' + lang));
     }
 
-    const {workbook, options} = await ReportsService.byPeriod
+    const { workbook, options } = await ReportsService.byPeriod
       .getReport(req.params.projectId, startDate && endDate && {
         startDate, endDate, label, sprintId,
-      }, {lang});
+      }, { lang });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
     await workbook.xlsx.write(res);
@@ -38,7 +38,7 @@ exports.byPeriod = async (req, res, next) => {
 
 exports.companyByPeriod = async (req, res, next) => {
   try {
-    const {startDate, endDate, lang} = req.query;
+    const { startDate, endDate, lang } = req.query;
     const sprintId = req.query.sprintId ? req.query.sprintId : null;
     const label = req.query.label ? req.query.label : '';
 
@@ -46,10 +46,32 @@ exports.companyByPeriod = async (req, res, next) => {
       return next(createError(400, 'Unsupported language: ' + lang));
     }
 
-    const {workbook, options} = await ReportsService.byPeriod
+    const { workbook, options } = await ReportsService.byPeriod
       .getCompanyReport(startDate && endDate && {
         startDate, endDate, label, sprintId,
-      }, {lang});
+      }, { lang });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+    res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    next(createError(err));
+  }
+};
+
+exports.userByPeriod = async (req, res, next) => {
+  try {
+    const { startDate, endDate, lang } = req.query;
+
+    if (lang && !(/^(en|ru)$/).test(lang)) {
+      return next(createError(400, 'Unsupported language: ' + lang));
+    }
+
+    const { workbook, options } = await ReportsService.byPeriod
+      .getUserReport(startDate && endDate && {
+        startDate, endDate,
+      }, { lang });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
     res.setHeader('Content-Disposition', 'attachment; filename=' + encodeURIComponent(options.fileName) + '.xlsx');
@@ -67,8 +89,8 @@ exports.byTestPlan = async (req, res, next) => {
   if (!req.user.canReadProject(req.params.projectId)) {
     return next(createError(403, 'Access denied'));
   }
-  const {testPlanId} = req.params;
-  const {lang = 'en'} = req.query;
+  const { testPlanId } = req.params;
+  const { lang = 'en' } = req.query;
   try {
     const { workbook, options } = await ReportsService.byTestPlan(testPlanId, lang);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');
