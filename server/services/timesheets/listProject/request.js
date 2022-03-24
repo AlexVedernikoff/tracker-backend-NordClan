@@ -1,6 +1,6 @@
 const models = require('../../../models');
 
-exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
+exports.getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
   const where = { };
 
   if (projectId) {
@@ -21,7 +21,6 @@ exports.listByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
       gt: 0,
     };
   }
-
   return {
     attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameEn', 'fullNameEn', 'lastNameEn', 'firstNameEn', 'employmentDate', 'delete_date', 'active', 'global_role'],
     include: [
