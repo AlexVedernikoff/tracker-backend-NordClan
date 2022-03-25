@@ -4,7 +4,7 @@ const {User, Department, UserDepartments, sequelize } = require('../../models');
 const _ = require('lodash');
 const {ByCompanyUserWorkSheet, ByUserTimesheetsWorkSheet, ByUserWorkSheet, ByTaskWorkSheet} = require('./period/worksheets');
 
-exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) => {
+const getAverageNumberOfEmployees = async (startDate, endDate, { precision }) => {
   const averageNumberOfEmployees = await sequelize.query(
     `
       select avg(usersdate.total) from (select count(u.id) as total
@@ -35,7 +35,6 @@ exports.getAverageNumberOfEmployees = async (startDate, endDate, { precision }) 
 
   return averageNumberOfEmployeesToNumber;
 };
-
 
 function getWorkBook () {
   const workbook = new Excel.Workbook();
@@ -84,7 +83,7 @@ function withSuffix (baseField, lang) {
   return baseField + '_' + lang;
 }
 
-exports.filterTimesheets = (timeSheetsDbData, timesheetTypes, projectRolesValues, lang, taskTypesValues) =>timeSheetsDbData
+const filterTimesheets = (timeSheetsDbData, timesheetTypes, projectRolesValues, lang, taskTypesValues) =>timeSheetsDbData
   .filter(timeSheet => ((timeSheet.dataValues.user.dataValues.delete_date === null
             || new Date(timeSheet.dataValues.onDate) <= timeSheet.dataValues.user.dataValues.delete_date))
         || timeSheet.dataValues.user.dataValues.active === 1)
@@ -121,7 +120,7 @@ exports.filterTimesheets = (timeSheetsDbData, timesheetTypes, projectRolesValues
     return data;
   });
 
-exports.getUserListFromDB = async (where)=>{
+const getUserListFromDB = async (where)=>{
   return await User.findAll({
     where: where,
     attributes: [
@@ -290,19 +289,23 @@ function divideTimeSheetsBySprints (project, timeSheets, endDate) {
   return sprintsWithTimeSheets;
 }
 
-
-exports.getProjectRoleName = getProjectRoleName;
-exports.formatDate = formatDate;
-exports.getTaskTypeName = getTaskTypeName;
-exports.generateMessage = generateMessage;
-exports.withSuffix = withSuffix;
-exports.divideTimeSheetsBySprints = divideTimeSheetsBySprints;
-exports.groupTimeSheetsInSprint = groupTimeSheetsInSprint;
-exports.checkTimesheetInSprint = checkTimesheetInSprint;
-exports.checkRegExp = checkRegExp;
-exports.transformToUserList = transformToUserList;
-exports.generateCompanyReportExcellDocument = generateCompanyReportExcellDocument;
-exports.generateUserReportExcellDocument = generateUserReportExcellDocument;
-exports.generateExcellDocument = generateExcellDocument;
-exports.validateCriteria = validateCriteria;
-exports.getWorkBook = getWorkBook;
+module.exports = {
+  getAverageNumberOfEmployees,
+  getWorkBook,
+  getTaskTypeName,
+  getProjectRoleName,
+  formatDate,
+  generateMessage,
+  withSuffix,
+  filterTimesheets,
+  getUserListFromDB,
+  transformToUserList,
+  generateCompanyReportExcellDocument,
+  generateUserReportExcellDocument,
+  generateExcellDocument,
+  validateCriteria,
+  checkRegExp,
+  checkTimesheetInSprint,
+  groupTimeSheetsInSprint,
+  divideTimeSheetsBySprints,
+};
