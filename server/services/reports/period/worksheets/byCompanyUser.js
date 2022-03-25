@@ -228,7 +228,6 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   _countUsers (departmentId) {
-    //if (!Array.isArray(this._data.users)) {return 0;}
     return this._data.users.filter((user) => {
       return user.department.some((item) => item.id === Number(departmentId));
     }).length;
