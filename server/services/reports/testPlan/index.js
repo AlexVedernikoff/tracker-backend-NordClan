@@ -7,8 +7,8 @@ const {
   TestSuite,
   User,
 } = require('../../../models');
-const { getWorkBook } = require('../utils');
 const localize = require('./i18n.json');
+const {getWorkBook} = require('../utils');
 
 const includeOptions = [
   {

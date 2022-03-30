@@ -221,6 +221,11 @@ module.exports = function (sequelize, DataTypes) {
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' },
       employmentDate: { type: DataTypes.DATE, field: 'employment_date' },
       dismissalDate: { type: DataTypes.DATE, field: 'dismissal_date' },
+      supervisorId: {
+        field: 'supervisor_id',
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       indexes: [
@@ -300,6 +305,7 @@ module.exports = function (sequelize, DataTypes) {
     'firstNameEn',
     'telegram',
     'skype',
+    'supervisorId',
     'birthDate',
     'city',
     'company',

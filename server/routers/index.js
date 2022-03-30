@@ -55,6 +55,8 @@ router.get(
 );
 router.get('/users/devops', GlobalAccess.can('projectUsers', 'list'), UserController.devOpsUsers);
 router.get('/users/all', GlobalAccess.can('companyReports', 'read'), UserController.getAllUsers);
+router.get('/users/all', GlobalAccess.can('userReports', 'read'), UserController.getAllUsers);
+
 router.put('/users/update', GlobalAccess.can('user', 'updateUsersProfile'), UserController.updateUserProfile);
 router.post('/users/create', GlobalAccess.can('user', 'createUser'), UserController.createUser);
 router.get('/user/me', GlobalAccess.can('user', 'me'), UserController.me);
@@ -189,6 +191,7 @@ router.put('/timesheet/approve', GlobalAccess.can('timesheet', 'approve'), Times
 router.put('/timesheet/reject', GlobalAccess.can('timesheet', 'reject'), TimesheetController.reject);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/company-timesheets/', GlobalAccess.can('companyReports', 'read'), TimesheetController.listAllProjects);
+
 router.get(
   '/company-timesheets/average-employees',
   GlobalAccess.can('companyReports', 'read'),
@@ -198,6 +201,17 @@ router.get(
   '/company-timesheets/reports/period',
   GlobalAccess.can('companyReports', 'export'),
   ReportsController.companyByPeriod
+);
+router.get('/user-timesheets/', GlobalAccess.can('userReports', 'read'), TimesheetController.listAllProjects);
+router.get(
+  '/user-timesheets/average-employees',
+  GlobalAccess.can('userReports', 'read'),
+  TimesheetController.getAverageNumberOfEmployees
+);
+router.get(
+  '/user-timesheets/reports/period',
+  GlobalAccess.can('userReports', 'export'),
+  ReportsController.userByPeriod
 );
 router.get('/timesheet', GlobalAccess.can('timesheet', 'list'), TimesheetController.list);
 router.put('/timesheet', GlobalAccess.can('timesheet', 'update'), TimesheetController.update);

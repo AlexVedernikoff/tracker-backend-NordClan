@@ -34,6 +34,7 @@ const defaultUser = {
   uidNumber: '',
   userPassword: '',
   allowVPN: true,
+  supervisorId: null,
 };
 client.bind(`cn=${LOGIN},dc=nordclan`, PASSW, (err) => {
   if (err) {
@@ -53,7 +54,7 @@ module.exports = {
           }
         }
         for (const k in user) {
-          if (user[k] === '') {
+          if (user[k] === '' || user[k] === null) {
             delete user[k];
           }
         }

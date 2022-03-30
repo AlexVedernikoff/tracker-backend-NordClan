@@ -12,6 +12,74 @@ const { bcryptPromise } = require('../../../components/utils');
 const { email: { templateExternalUrl } } = require('../../../configs');
 const ssha = require('ssha');
 
+const userDepartmentInclude = {
+  model: models.Department,
+  as: 'department',
+  required: false,
+  attributes: ['name', 'id'],
+  through: {
+    model: models.UserDepartments,
+    attributes: [],
+  },
+};
+
+const getWhereStatement = (query) => {
+  const res = {};
+  if (query.first_name) {
+    res.$or = {
+      ...(res.$or ? res.$or : {}),
+      firstNameRu: { $iLike: `%${query.first_name}%` },
+      firstNameEn: { $iLike: `%${query.first_name}%` },
+    };
+  }
+  if (query.last_name) {
+    res.$or = {
+      ...(res.$or ? res.$or : {}),
+      lastNameRu: { $iLike: `%${query.last_name}%` },
+      lastNameEn: { $iLike: `%${query.last_name}%` },
+    };
+  }
+  if (query.departments) {
+    res['$department.id$'] = {
+      $in: query.departments,
+    };
+  }
+
+  if (query.employment_date_from) {
+    res.employment_date = {
+      $gt: new Date(query.employment_date_from),
+    };
+  }
+  if (query.employment_date_to) {
+    res.employment_date = {
+      ...(res.employment_date ? res.employment_date : {}),
+      $lt: new Date(query.employment_date_to),
+    };
+  }
+  if (query.birth_date_from) {
+    res.birth_date = {
+      $gt: new Date(query.birth_date_from),
+    };
+  }
+  if (query.birth_date_to) {
+    res.birth_date = {
+      ...(res.birth_date ? res.birth_date : {}),
+      $lt: new Date(query.birth_date_to),
+    };
+  }
+  if (query.phone) {
+    res.phone = { $iLike: `%${query.phone}%` };
+  }
+  if (query.telegram) {
+    res.telegram = { $iLike: `%${query.telegram}%` };
+  }
+  if (query.city) {
+    res.city = { $iLike: `%${query.city}%` };
+  }
+
+  return res;
+};
+
 exports.me = function (req, res, next) {
   try {
     res.json(req.user);
@@ -213,6 +281,31 @@ exports.devOpsUsers = async function (req, res, next) {
 
 exports.getUsersRoles = async function (req, res, next) {
   try {
+    const {
+      first_name,
+      last_name,
+      employment_date_from,
+      employment_date_to,
+      birth_date_from,
+      birth_date_to,
+      phone,
+      telegram,
+      city,
+      departments,
+    } = req.query;
+
+    const filters = {
+      employment_date_from,
+      employment_date_to,
+      birth_date_from,
+      birth_date_to,
+      city,
+      departments,
+      first_name,
+      last_name,
+      phone,
+      telegram,
+    };
 
     const stat = (req.query.status !== null && req.query.status !== undefined)
       ? req.query.status
@@ -220,40 +313,29 @@ exports.getUsersRoles = async function (req, res, next) {
 
     const users = await models.User.findAll({
       where: {
+        ...getWhereStatement(filters),
         active: stat === 'true' ? 1 : 0,
         globalRole: { $not: 'EXTERNAL_USER' },
       },
       order: [['last_name_ru']],
       attributes: [
         'id',
+        'login',
         'firstNameRu',
-        'lastNameRu',
         'firstNameEn',
+        'lastNameRu',
         'lastNameEn',
+        'birthDate',
         'globalRole',
+        'employmentDate',
+        'city',
+        'telegram',
+        'mobile',
       ],
+      include: [userDepartmentInclude],
     });
 
-    const usersWithFilteredData = users.map(user => {
-      const {
-        id,
-        firstNameRu,
-        lastNameRu,
-        globalRole,
-        firstNameEn,
-        lastNameEn,
-      } = user;
-      return {
-        id,
-        firstNameRu,
-        lastNameRu,
-        firstNameEn,
-        lastNameEn,
-        globalRole,
-      };
-    });
-
-    res.json(usersWithFilteredData);
+    res.json(users);
   } catch (err) {
     next(err);
   }
@@ -487,8 +569,9 @@ exports.updateUserProfile = async function (req, res, next) {
     }
 
     const userLdap = await LDAP.searchUser(model.dataValues.ldapLogin);
-    const deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
+
     if (userLdap) {
+      const deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
       const userLdapUpdated = await LDAP.modify(model.dataValues.ldapLogin, userLdap, {... req.body, deptNames });
       if (!userLdapUpdated) {
         transaction.rollback();
