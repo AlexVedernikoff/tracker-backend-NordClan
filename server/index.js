@@ -60,6 +60,15 @@ exports.run = function () {
   app.use(checkSystemTokenMiddleWare);
   app.use(Access.middleware);
 
+  if (process.env.TRACELOGS) {
+    const morganBody = require('morgan-body');
+
+    morganBody(app, {
+      logReqUserAgent: false,
+      logIP: false
+    });
+  }
+
   app.all('*', function (req, res, next) {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
