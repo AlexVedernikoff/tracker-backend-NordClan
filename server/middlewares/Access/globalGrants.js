@@ -152,6 +152,19 @@ module.exports = {
       'approve': true,
       'reject': true,
     },
+    user: {
+      ...USER.user,
+      'usersRoles': true,
+      'updateRole': false,
+      'createExternal': false,
+      'getExternalUsers': false,
+      'updateExternal': false,
+      'refreshTokenExternal': false,
+      'updateTestUser': false,
+      'updateUsersProfile': false,
+      'createUser': false,
+      'updateCurrentUserProfile': false,
+    },
   },
   EXTERNAL_USER: {
     user: {
