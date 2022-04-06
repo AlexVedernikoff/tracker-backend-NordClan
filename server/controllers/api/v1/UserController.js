@@ -506,18 +506,20 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
       return next(createError(404));
     }
 
+    //Если текущий пользователь не обновляет отдел, то пропускаем этот кусок.
+    if (user.departmentList) {
     // TODO: Сделать обновление без запроса всего справочника
-    const departList = await Department.findAll();
+      const departList = await Department.findAll();
 
-    const newDepartList = departList.filter(el => {
-      for (const i in user.departmentList) {
-        if (el.id === user.departmentList[i]) {
-          return el;
+      const newDepartList = departList.filter(el => {
+        for (const i in user.departmentList) {
+          if (el.id === user.departmentList[i]) {
+            return el;
+          }
         }
-      }
-    });
-
-    await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+      });
+      await model.setDepartment(newDepartList, { transaction }).catch(console.log);
+    }
 
     const updatedModel = await model.updateAttributes(user, { transaction });
     if (!updatedModel) {
