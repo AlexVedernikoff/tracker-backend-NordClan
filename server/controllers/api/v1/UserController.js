@@ -331,6 +331,9 @@ exports.getUsersRoles = async function (req, res, next) {
         'city',
         'telegram',
         'mobile',
+        'active',
+        'allowVPN',
+        'dismissalDate',
       ],
       include: [userDepartmentInclude],
     });
