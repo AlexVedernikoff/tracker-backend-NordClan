@@ -17,6 +17,12 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       type: DataTypes.TEXT,
     },
+    type: {
+      field: 'type',
+      trim: true,
+      allowNull: false,
+      type: DataTypes.TEXT,
+    },
   }, {
     underscored: true,
     timestamps: false,
