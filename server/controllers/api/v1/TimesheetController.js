@@ -154,6 +154,26 @@ exports.listAllProjects = async function (req, res, next) {
     .catch(error => next(createError(error)));
 };
 
+exports.listAllByUser = async function (req, res, next) {
+  if (req.user.globalRole !== 'ADMIN') {
+    return next(createError(400, 'The user must have the ADMIN role'));
+  }
+  req.checkQuery('userId', 'userId must be int').isInt();
+
+  const validationResult = await req.getValidationResult();
+  if (!validationResult.isEmpty()) {
+    return next(createError(400, validationResult));
+  }
+
+  const userId = req.query.userId;
+
+  TimesheetService.listByUser(userId)
+    .then(timesheets => {
+      res.json(timesheets);
+    })
+    .catch(error => next(createError(error)));
+};
+
 const updateTimesheet = async (req, res) => {
   const { taskId } = req.body; //eslint-disable-line
   await TimesheetService.update(req)

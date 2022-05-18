@@ -191,6 +191,7 @@ router.put('/timesheet/approve', GlobalAccess.can('timesheet', 'approve'), Times
 router.put('/timesheet/reject', GlobalAccess.can('timesheet', 'reject'), TimesheetController.reject);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/company-timesheets/', GlobalAccess.can('companyReports', 'read'), TimesheetController.listAllProjects);
+router.get('/user-timesheets/', GlobalAccess.can('timesheet', 'list'), TimesheetController.listAllByUser);
 
 router.get(
   '/company-timesheets/average-employees',
