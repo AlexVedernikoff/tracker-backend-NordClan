@@ -1,5 +1,6 @@
 const { list } = require('./list');
 const { listProject } = require('./listProject');
+const { listByUser } = require('./listByUser');
 const { create } = require('./create');
 const { createDraft } = require('./createDraft');
 const { getDraft } = require('./createDraft');
@@ -28,4 +29,5 @@ module.exports = {
   submit,
   approve,
   reject,
+  listByUser,
 };

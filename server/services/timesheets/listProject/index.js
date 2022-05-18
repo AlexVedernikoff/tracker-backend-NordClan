@@ -1,4 +1,4 @@
-const { getAllTimesheetsByUser, listByTimeSheets, listByUser } = require('./request');
+const { getAllTimesheetsByUser, listByTimeSheets } = require('./request');
 const { Timesheet, User } = require('../../../models');
 
 exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
