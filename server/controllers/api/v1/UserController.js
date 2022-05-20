@@ -407,16 +407,33 @@ exports.updateUserRole = async function (req, res, next) {
       return next(createError(404));
     }
 
-    const updatedModel = await model.updateAttributes({ globalRole }, { transaction });
+    await model.updateAttributes({ globalRole }, { transaction });
     await transaction.commit();
-    res.json({
-      id: updatedModel.id,
-      globalRole: updatedModel.globalRole,
-      firstNameRu: updatedModel.firstNameRu,
-      lastNameRu: updatedModel.lastNameRu,
-      firstNameEn: updatedModel.firstNameEn,
-      lastNameEn: updatedModel.lastNameEn,
+    const user = await models.User.findOne({
+      where: {
+        id,
+      },
+      order: [['last_name_ru']],
+      attributes: [
+        'id',
+        'login',
+        'firstNameRu',
+        'firstNameEn',
+        'lastNameRu',
+        'lastNameEn',
+        'birthDate',
+        'globalRole',
+        'employmentDate',
+        'city',
+        'telegram',
+        'mobile',
+        'active',
+        'allowVPN',
+        'dismissalDate',
+      ],
+      include: [userDepartmentInclude],
     });
+    res.json(user);
 
 
   } catch (err) {
