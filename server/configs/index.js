@@ -1,6 +1,9 @@
 module.exports = {
   appName: 'Epic',
   port: process.env.PORT || 8080,
+  httpsPort: process.env.HTTPS_PORT || 4433,
+  httpsCert: process.env.HTTPS_CERT || 'nordclanCA',
+  httpsKey: process.env.HTTPS_KEY || 'nordclanCA',
   featureFlags: {
     root: {
       project: {
