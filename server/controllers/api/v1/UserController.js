@@ -338,6 +338,7 @@ exports.getUsersRoles = async function (req, res, next) {
         'active',
         'allowVPN',
         'dismissalDate',
+        'delete_date',
       ],
       include: [userDepartmentInclude],
     });
