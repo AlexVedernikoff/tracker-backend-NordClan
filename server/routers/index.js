@@ -69,6 +69,7 @@ router.get('/user/roles', GlobalAccess.can('user', 'usersRoles'), UserController
 router.post('/user/external', GlobalAccess.can('user', 'createExternal'), UserController.createExternal);
 router.get('/user/external', GlobalAccess.can('user', 'getExternalUsers'), UserController.getExternalUsers);
 router.put('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), UserController.updateExternal);
+router.delete('/user/external/:id', GlobalAccess.can('user', 'updateExternal'), UserController.deleteExternal);
 router.get('/user/internal', GlobalAccess.can('companyReports', 'read'), UserController.getInternalUsers);
 
 router.put('/user/password/:token', UserController.setPassword);
@@ -124,26 +125,62 @@ router.post(
 
 // Project reports
 router.get('/project/:projectId/reports/period', GlobalAccess.can('project', 'read'), ReportsController.byPeriod);
-router.get('/project/:projectId/test-plans/:testPlanId/report', GlobalAccess.can('project', 'read'), ReportsController.byTestPlan);
+router.get(
+  '/project/:projectId/test-plans/:testPlanId/report',
+  GlobalAccess.can('project', 'read'),
+  ReportsController.byTestPlan
+);
 
 // Project time sheets
 router.get('/project/:projectId/timesheet', GlobalAccess.can('project', 'read'), TimesheetController.listProject);
 
 // Project environments
-router.get('/project/:projectId/environment/', GlobalAccess.can('environment', 'list'), ProjectEnvironmentController.get);
-router.post('/project/:projectId/environment/', GlobalAccess.can('environment', 'create'), ProjectEnvironmentController.create);
-router.delete('/project/:projectId/environment/:environmentId', GlobalAccess.can('environment', 'delete'), ProjectEnvironmentController.delete);
+router.get(
+  '/project/:projectId/environment/',
+  GlobalAccess.can('environment', 'list'),
+  ProjectEnvironmentController.get
+);
+router.post(
+  '/project/:projectId/environment/',
+  GlobalAccess.can('environment', 'create'),
+  ProjectEnvironmentController.create
+);
+router.delete(
+  '/project/:projectId/environment/:environmentId',
+  GlobalAccess.can('environment', 'delete'),
+  ProjectEnvironmentController.delete
+);
 
 // Project test run executions
 router.get('/project/:projectId/test-run', GlobalAccess.can('project', 'read'), TestRunController.getTestRuns);
 router.get('/project/:projectId/test-run/dict', GlobalAccess.can('project', 'read'), TestRunController.getTestRunsDict);
 
 // Project test run executions
-router.get('/project/:projectId/test-run-execution', GlobalAccess.can('project', 'read'), TestRunExecutionController.getCountedAll);
-router.get('/project/:projectId/test-run-execution/:id', GlobalAccess.can('project', 'read'), TestRunExecutionController.getById);
-router.post('/project/:projectId/test-run-execution', GlobalAccess.can('project', 'read'), TestRunExecutionController.create);
-router.put('/project/:projectId/test-run-execution/:id', GlobalAccess.can('project', 'read'), TestRunExecutionController.updateTestRunExecution);
-router.delete('/project/:projectId/test-run-execution/:id', GlobalAccess.can('project', 'read'), TestRunExecutionController.delete);
+router.get(
+  '/project/:projectId/test-run-execution',
+  GlobalAccess.can('project', 'read'),
+  TestRunExecutionController.getCountedAll
+);
+router.get(
+  '/project/:projectId/test-run-execution/:id',
+  GlobalAccess.can('project', 'read'),
+  TestRunExecutionController.getById
+);
+router.post(
+  '/project/:projectId/test-run-execution',
+  GlobalAccess.can('project', 'read'),
+  TestRunExecutionController.create
+);
+router.put(
+  '/project/:projectId/test-run-execution/:id',
+  GlobalAccess.can('project', 'read'),
+  TestRunExecutionController.updateTestRunExecution
+);
+router.delete(
+  '/project/:projectId/test-run-execution/:id',
+  GlobalAccess.can('project', 'read'),
+  TestRunExecutionController.delete
+);
 
 // Test Step Execution
 router.put('/test-step-execution/:id', TestRunExecutionController.updateTestStepExecution);
@@ -191,6 +228,7 @@ router.put('/timesheet/approve', GlobalAccess.can('timesheet', 'approve'), Times
 router.put('/timesheet/reject', GlobalAccess.can('timesheet', 'reject'), TimesheetController.reject);
 router.get('/timesheet/tracksAll/', GlobalAccess.can('timesheet', 'trackAll'), TimesheetController.getTracksAll);
 router.get('/company-timesheets/', GlobalAccess.can('companyReports', 'read'), TimesheetController.listAllProjects);
+router.get('/user-timesheets/', GlobalAccess.can('timesheet', 'list'), TimesheetController.listAllByUser);
 
 router.get(
   '/company-timesheets/average-employees',

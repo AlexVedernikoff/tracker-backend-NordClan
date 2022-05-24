@@ -236,4 +236,16 @@ module.exports = {
       'updateCurrentUserProfile': true,
     },
   },
+  INNER: {
+    user: {
+      'usersRoles': true,
+      'read': true,
+    },
+    project: {
+      'read': true,
+    },
+    timesheet: {
+      'list': true,
+    },
+  },
 };

@@ -9,7 +9,9 @@ const crypto = require('crypto');
 const emailService = require('../../../services/email');
 const layoutAgnostic = require('../../../services/layoutAgnostic');
 const { bcryptPromise } = require('../../../components/utils');
-const { email: { templateExternalUrl } } = require('../../../configs');
+const {
+  email: { templateExternalUrl },
+} = require('../../../configs');
 const ssha = require('ssha');
 
 const userDepartmentInclude = {
@@ -23,7 +25,7 @@ const userDepartmentInclude = {
   },
 };
 
-const getWhereStatement = (query) => {
+const getWhereStatement = query => {
   const res = {};
   if (query.first_name) {
     res.$or = {
@@ -97,7 +99,9 @@ exports.read = async function (req, res, next) {
       .isInt();
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
 
     const user = await models.User.findOne({
       where: {
@@ -140,7 +144,9 @@ exports.getUser = async function (req, res, next) {
     const ldapLogin = req.sanitize('ldapLogin').trim();
     req.checkQuery('ldapLogin', 'ldapLogin must be not empty').notEmpty();
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
 
     const user = await models.User.findOne({
       where: {
@@ -165,13 +171,14 @@ exports.autocomplete = function (req, res, next) {
   req
     .getValidationResult()
     .then(validationResult => {
-      if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
+      if (!validationResult.isEmpty()) {
+        return next(createError(400, validationResult));
+      }
       const result = [];
       const userName = req.query.userName;
       const userNameArray = userName.trim().split(/\s+/);
       const iLikeFirstName = layoutAgnostic(userNameArray[0] ? userNameArray[0] : '');
       const iLikeLastName = layoutAgnostic(userNameArray[1] ? userNameArray[1] : '');
-
 
       const $or = [
         {
@@ -208,17 +215,16 @@ exports.autocomplete = function (req, res, next) {
         },
       ];
 
-      return models.User
-        .findAll({
-          where: {
-            active: 1,
-            $or,
-          },
-          limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
-        })
-        .then((users) => {
-          users.forEach((user) => {
+      return models.User.findAll({
+        where: {
+          active: 1,
+          $or,
+        },
+        limit: req.query.pageSize ? +req.query.pageSize : 10,
+        attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn'],
+      })
+        .then(users => {
+          users.forEach(user => {
             result.push({ fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, id: user.id });
           });
           res.end(JSON.stringify(result));
@@ -307,9 +313,7 @@ exports.getUsersRoles = async function (req, res, next) {
       telegram,
     };
 
-    const stat = (req.query.status !== null && req.query.status !== undefined)
-      ? req.query.status
-      : true;
+    const stat = req.query.status !== null && req.query.status !== undefined ? req.query.status : true;
 
     const users = await models.User.findAll({
       where: {
@@ -334,6 +338,7 @@ exports.getUsersRoles = async function (req, res, next) {
         'active',
         'allowVPN',
         'dismissalDate',
+        'delete_date',
       ],
       include: [userDepartmentInclude],
     });
@@ -346,10 +351,7 @@ exports.getUsersRoles = async function (req, res, next) {
 
 exports.getInternalUsers = async function (req, res, next) {
   try {
-
-    const stat = (req.query.status !== null && req.query.status !== undefined)
-      ? req.query.status
-      : true;
+    const stat = req.query.status !== null && req.query.status !== undefined ? req.query.status : true;
 
     const users = await models.User.findAll({
       where: {
@@ -357,27 +359,11 @@ exports.getInternalUsers = async function (req, res, next) {
         globalRole: { $not: 'EXTERNAL_USER' },
       },
       order: [['last_name_ru']],
-      attributes: [
-        'id',
-        'ldapLogin',
-        'firstNameRu',
-        'lastNameRu',
-        'firstNameEn',
-        'lastNameEn',
-        'birthDate',
-      ],
+      attributes: ['id', 'ldapLogin', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'birthDate'],
     });
 
     const usersWithFilteredData = users.map(user => {
-      const {
-        id,
-        ldapLogin,
-        firstNameRu,
-        lastNameRu,
-        firstNameEn,
-        lastNameEn,
-        birthDate,
-      } = user;
+      const { id, ldapLogin, firstNameRu, lastNameRu, firstNameEn, lastNameEn, birthDate } = user;
       return {
         id,
         ldapLogin,
@@ -407,16 +393,33 @@ exports.updateUserRole = async function (req, res, next) {
       return next(createError(404));
     }
 
-    const updatedModel = await model.updateAttributes({ globalRole }, { transaction });
+    await model.updateAttributes({ globalRole }, { transaction });
     await transaction.commit();
-    res.json({
-      id: updatedModel.id,
-      globalRole: updatedModel.globalRole,
-      firstNameRu: updatedModel.firstNameRu,
-      lastNameRu: updatedModel.lastNameRu,
-      firstNameEn: updatedModel.firstNameEn,
-      lastNameEn: updatedModel.lastNameEn,
+    const user = await models.User.findOne({
+      where: {
+        id,
+      },
+      order: [['last_name_ru']],
+      attributes: [
+        'id',
+        'login',
+        'firstNameRu',
+        'firstNameEn',
+        'lastNameRu',
+        'lastNameEn',
+        'birthDate',
+        'globalRole',
+        'employmentDate',
+        'city',
+        'telegram',
+        'mobile',
+        'active',
+        'allowVPN',
+        'dismissalDate',
+      ],
+      include: [userDepartmentInclude],
     });
+    res.json(user);
 
 
   } catch (err) {
@@ -427,7 +430,6 @@ exports.updateUserRole = async function (req, res, next) {
   }
 };
 
-
 exports.updateCurrentUserProfileByParams = async function (req, res, next) {
   const { id } = req.body;
   const user = req.body;
@@ -437,7 +439,6 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
   if (!userAuth || userAuth.id !== id) {
     return next(createError(401));
   }
-
 
   if (userAuth.globalRole !== 'ADMIN') {
     return next(createError(401));
@@ -481,7 +482,6 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
     }
     await transaction.commit();
     res.sendStatus(200);
-
   } catch (err) {
     if (err) {
       await transaction.rollback();
@@ -511,7 +511,7 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
 
     //Если текущий пользователь не обновляет отдел, то пропускаем этот кусок.
     if (user.departmentList) {
-    // TODO: Сделать обновление без запроса всего справочника
+      // TODO: Сделать обновление без запроса всего справочника
       const departList = await Department.findAll();
 
       const newDepartList = departList.filter(el => {
@@ -531,7 +531,6 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
     }
     await transaction.commit();
     res.sendStatus(200);
-
   } catch (err) {
     if (err) {
       await transaction.rollback();
@@ -576,18 +575,17 @@ exports.updateUserProfile = async function (req, res, next) {
     const userLdap = await LDAP.searchUser(model.dataValues.ldapLogin);
 
     if (userLdap) {
-      const deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
-      const userLdapUpdated = await LDAP.modify(model.dataValues.ldapLogin, userLdap, {... req.body, deptNames });
+      const deptNames
+        = newDepartList && newDepartList.length > 0 ? newDepartList.map(({ name }) => name).join(', ') : '';
+      const userLdapUpdated = await LDAP.modify(model.dataValues.ldapLogin, userLdap, { ...req.body, deptNames });
       if (!userLdapUpdated) {
         transaction.rollback();
         return next(createError(500));
       }
     }
 
-
     await transaction.commit();
     res.sendStatus(200);
-
   } catch (err) {
     if (err) {
       await transaction.rollback();
@@ -605,7 +603,6 @@ exports.createUser = async function (req, res, next) {
   if (!validationResult.isEmpty()) {
     return next(createError(400, validationResult.array()));
   }
-
 
   try {
     const userModel = await models.User.findOne({
@@ -641,7 +638,7 @@ exports.createUser = async function (req, res, next) {
     params.password = crpt;
 
     User.create(params)
-      .then(async (model) => {
+      .then(async model => {
         // TODO: Сделать обновление без запроса всего справочника
         params.uidNumber = +model.id;
         req.body.uidNumber = +model.id;
@@ -655,15 +652,15 @@ exports.createUser = async function (req, res, next) {
           }
         });
 
-        await model.setDepartment(newDepartList, { transaction })
-          .catch(err => {
-            transaction.rollback();
-            return next(err);
-          });
+        await model.setDepartment(newDepartList, { transaction }).catch(err => {
+          transaction.rollback();
+          return next(err);
+        });
 
-        const objClone = {...req.body};
+        const objClone = { ...req.body };
         objClone.password = params.password;
-        objClone.deptNames = newDepartList && newDepartList.length > 0 ? newDepartList.map(({name}) => name).join(', ') : '';
+        objClone.deptNames
+          = newDepartList && newDepartList.length > 0 ? newDepartList.map(({ name }) => name).join(', ') : '';
         const userLdap = await LDAP.create(objClone);
 
         if (!userLdap) {
@@ -684,7 +681,6 @@ exports.createUser = async function (req, res, next) {
         transaction.rollback();
         next(createError(500));
       });
-
   } catch (err) {
     console.log('-----> create user ERR', err);
     if (err) {
@@ -693,8 +689,6 @@ exports.createUser = async function (req, res, next) {
     }
     next(err);
   }
-
-
 };
 
 exports.createExternal = async function (req, res, next) {
@@ -708,7 +702,13 @@ exports.createExternal = async function (req, res, next) {
   const buf = crypto.randomBytes(20);
   const setPasswordToken = buf.toString('hex');
   const setPasswordExpired = new Date(moment().add(1, 'days'));
-  const expiredDate = new Date(moment(req.body.expiredDate).millisecond(999).second(59).minute(59).hour(23));
+  const expiredDate = new Date(
+    moment(req.body.expiredDate)
+      .millisecond(999)
+      .second(59)
+      .minute(59)
+      .hour(23)
+  );
   const params = {
     active: 1,
     isActive: 0,
@@ -724,9 +724,13 @@ exports.createExternal = async function (req, res, next) {
 
   User.create(params)
     .then(model => {
-      const template = emailService.template('activateExternalUser', {
-        token: setPasswordToken,
-      }, templateExternalUrl);
+      const template = emailService.template(
+        'activateExternalUser',
+        {
+          token: setPasswordToken,
+        },
+        templateExternalUrl
+      );
       emailService.send({
         receiver: req.body.login,
         subject: template.subject,
@@ -762,9 +766,13 @@ exports.refreshTokenExternal = async function (req, res, next) {
     const updatedModel = await User.update(params, {
       where: { id: req.params.id },
     });
-    const template = emailService.template('activateExternalUser', {
-      token: setPasswordToken,
-    }, templateExternalUrl);
+    const template = emailService.template(
+      'activateExternalUser',
+      {
+        token: setPasswordToken,
+      },
+      templateExternalUrl
+    );
     emailService.send({
       receiver: req.body.login,
       subject: template.subject,
@@ -772,11 +780,8 @@ exports.refreshTokenExternal = async function (req, res, next) {
     });
     res.json(updatedModel);
   } catch (err) {
-    next(
-      createError(500, `Error when refresh token. ${err.message} `)
-    );
+    next(createError(500, `Error when refresh token. ${err.message} `));
   }
-
 };
 
 exports.updateExternal = async function (req, res, next) {
@@ -806,7 +811,6 @@ exports.updateExternal = async function (req, res, next) {
     const updatedModel = await model.updateAttributes(req.body, { transaction });
     await transaction.commit();
     res.json(updatedModel);
-
   } catch (err) {
     if (transaction) {
       await transaction.rollback();
@@ -815,14 +819,27 @@ exports.updateExternal = async function (req, res, next) {
   }
 };
 
+exports.deleteExternal = async function (req, res, next) {
+  if (!req.params.id.match(/^[0-9]+$/)) return next(createError(400, 'id must be int'));
+
+  try {
+    const isExistUser = await models.User.find({ where: { id: req.params.id } });
+    if (!isExistUser) return createError(404, 'User is not exist');
+    await models.User.destroy({ where: { id: req.params.id } });
+    res.json(String(req.params.id));
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.setPassword = async function (req, res, next) {
   try {
-    req
-      .checkBody('password', 'password must be more then 8 chars')
-      .isLength({ min: 8 });
+    req.checkBody('password', 'password must be more then 8 chars').isLength({ min: 8 });
 
     const validationResult = await req.getValidationResult();
-    if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
+    if (!validationResult.isEmpty()) {
+      return next(createError(400, validationResult));
+    }
 
     const user = await models.User.findOne({
       where: {
@@ -834,9 +851,7 @@ exports.setPassword = async function (req, res, next) {
     });
 
     if (!user) {
-      return next(
-        createError(404, 'Password set token is invalid or has expired')
-      );
+      return next(createError(404, 'Password set token is invalid or has expired'));
     }
 
     const params = {
@@ -881,10 +896,8 @@ exports.updateTestUser = async function (req, res, next) {
       req.body.password = await bcryptPromise.hash(req.body.password);
     }
 
-
     const updatedModel = await model.updateAttributes(req.body);
     res.json(updatedModel);
-
   } catch (e) {
     return next(createError(e));
   }
@@ -898,16 +911,7 @@ exports.getExternalUsers = async function (req, res, next) {
         active: 1,
       },
       order: [['first_name_ru']],
-      attributes: [
-        'id',
-        'firstNameRu',
-        'globalRole',
-        'expiredDate',
-        'active',
-        'login',
-        'isActive',
-        'description',
-      ],
+      attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive', 'description'],
     });
 
     res.json(users);
@@ -922,12 +926,17 @@ exports.autocompleteExternal = function (req, res, next) {
   req
     .getValidationResult()
     .then(validationResult => {
-      if (!validationResult.isEmpty()) { return next(createError(400, validationResult)); }
+      if (!validationResult.isEmpty()) {
+        return next(createError(400, validationResult));
+      }
 
       const result = [];
       const userName = req.query.userName.trim();
       let $iLike = layoutAgnostic(userName);
-      const reverseUserName = userName.split(' ').reverse().join(' '); //ищем Павла Ищейкина и Ищейкина Павла (хоть и пишем только в firstNameRu)
+      const reverseUserName = userName
+        .split(' ')
+        .reverse()
+        .join(' '); //ищем Павла Ищейкина и Ищейкина Павла (хоть и пишем только в firstNameRu)
       let $or = [
         {
           firstNameRu: {
@@ -935,7 +944,8 @@ exports.autocompleteExternal = function (req, res, next) {
           },
         },
       ];
-      if (reverseUserName !== userName) {//Введено и имя и фамилия или их части
+      if (reverseUserName !== userName) {
+        //Введено и имя и фамилия или их части
         $iLike = layoutAgnostic(reverseUserName);
         $or = $or.concat([
           {
@@ -945,20 +955,34 @@ exports.autocompleteExternal = function (req, res, next) {
           },
         ]);
       }
-      return models.User
-        .findAll({
-          where: {
-            globalRole: 'EXTERNAL_USER',
-            active: 1,
-            isActive: 1,
-            $or,
-          },
-          limit: req.query.pageSize ? +req.query.pageSize : 10,
-          attributes: ['id', 'active', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'fullNameRu', 'fullNameEn'],
-        })
-        .then((users) => {
-          users.forEach((user) => {
-            result.push({ fullNameRu: user.fullNameRu, fullNameEn: user.fullNameEn, firstNameEn: user.firstNameEn, firstNameRu: user.firstNameRu, id: user.id });
+      return models.User.findAll({
+        where: {
+          globalRole: 'EXTERNAL_USER',
+          active: 1,
+          isActive: 1,
+          $or,
+        },
+        limit: req.query.pageSize ? +req.query.pageSize : 10,
+        attributes: [
+          'id',
+          'active',
+          'firstNameRu',
+          'lastNameRu',
+          'firstNameEn',
+          'lastNameEn',
+          'fullNameRu',
+          'fullNameEn',
+        ],
+      })
+        .then(users => {
+          users.forEach(user => {
+            result.push({
+              fullNameRu: user.fullNameRu,
+              fullNameEn: user.fullNameEn,
+              firstNameEn: user.firstNameEn,
+              firstNameRu: user.firstNameRu,
+              id: user.id,
+            });
           });
           res.end(JSON.stringify(result));
         })
