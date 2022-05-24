@@ -15,7 +15,7 @@ exports.runHttpsServer = function () {
     requestCert: true,
     rejectUnauthorized: false,
     ca: [
-      fs.readFileSync(path.join(__dirname, '/serverstore', config.httpsKey + '.crt')), // todo move to env
+      fs.readFileSync(path.join(__dirname, '/serverstore', config.httpsKey + '.crt')),
     ],
     passphrase: 'Aa1234', // todo move to env (??)
   };
