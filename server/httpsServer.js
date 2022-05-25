@@ -71,14 +71,12 @@ exports.runHttpsServer = function () {
   });
 
   const options = {
-    key: fs.readFileSync(path.join(__dirname, '/serverstore', config.httpsKey + '.key')),
-    cert: fs.readFileSync(path.join(__dirname, '/serverstore', config.httpsCert + '.crt')),
+    key: config.certificateKey,
+    cert: config.certificateCrt,
     requestCert: true,
     rejectUnauthorized: false,
-    ca: [
-      fs.readFileSync(path.join(__dirname, '/serverstore', config.httpsCert + '.crt')),
-    ],
-    passphrase: 'Aa1234', // todo move to env (??)
+    ca: [config.certificateCrt],
+    passphrase: config.certificatePassphrase,
   };
 
   https.createServer(options, app).listen(config.httpsPort, () => {
