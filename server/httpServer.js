@@ -6,7 +6,6 @@ const cookieParser = require('cookie-parser');
 const expressValidator = require('express-validator');
 const path = require('path');
 const bodyParser = require('body-parser');
-const sequelize = require('./orm');
 const { routes } = require('./routers/index');
 const checkTokenMiddleWare = require('./middlewares/CheckTokenMiddleWare').checkToken;
 const getUserByToken = require('./middlewares/CheckTokenMiddleWare').getUserByToken;
@@ -96,15 +95,6 @@ exports.runHttpServer = function () {
       name: 'NotFoundError',
     });
   });
-
-  sequelize
-    .authenticate()
-    .then(() => {
-      console.log('Database connection has been established successfully.');
-    })
-    .catch(err => {
-      console.error('Unable to connect to the database:', err);
-    });
 
   httpServer.listen(config.port, () => {
     console.log('listen ' + config.port);
