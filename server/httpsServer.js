@@ -71,6 +71,8 @@ exports.runHttpsServer = function () {
   });
 
   try {
+    console.log('CERT PATH', config.certificateKey);
+
     const options = {
       key: fs.readFileSync(config.certificateKey),
       cert: fs.readFileSync(config.certificateCrt),
@@ -79,8 +81,6 @@ exports.runHttpsServer = function () {
       ca: [fs.readFileSync(config.certificateCrt)],
       passphrase: config.certificatePassphrase,
     };
-
-    console.log('CERT PATH', config.certificateKey);
 
     https.createServer(options, app).listen(config.httpsPort, () => {
       console.log('listen ' + config.httpsPort);
