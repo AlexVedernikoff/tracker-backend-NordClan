@@ -1,10 +1,12 @@
+const path = require('path');
+
 module.exports = {
   appName: 'Epic',
   port: process.env.PORT || 8080,
   httpsPort: process.env.HTTPS_PORT || 443,
-  certificateCrt: process.env.CERTIFICATE_CRT,
-  certificateKey: process.env.CERTIFICATE_KEY,
-  certificatePassphrase: process.env.CERTIFICATE_PASSPHRASE,
+  certificateCrt: process.env.CERTIFICATE_CRT || path.join(__dirname, '../', '/serverstore/nordclanCA.crt'),
+  certificateKey: process.env.CERTIFICATE_KEY || path.join(__dirname, '../', '/serverstore/nordclanCA.key'),
+  certificatePassphrase: process.env.CERTIFICATE_PASSPHRASE || process.env.HTTPS_PASSPHRASE,
   featureFlags: {
     root: {
       project: {
