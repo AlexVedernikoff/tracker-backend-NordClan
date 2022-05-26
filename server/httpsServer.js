@@ -70,16 +70,22 @@ exports.runHttpsServer = function () {
     });
   });
 
-  const options = {
-    key: config.certificateKey,
-    cert: config.certificateCrt,
-    requestCert: true,
-    rejectUnauthorized: false,
-    ca: [config.certificateCrt],
-    passphrase: config.certificatePassphrase,
-  };
+  try {
+    console.log('CERT PATH', config.certificateKey);
 
-  https.createServer(options, app).listen(config.httpsPort, () => {
-    console.log('listen ' + config.httpsPort);
-  });
+    const options = {
+      key: fs.readFileSync(config.certificateKey),
+      cert: fs.readFileSync(config.certificateCrt),
+      requestCert: true,
+      rejectUnauthorized: false,
+      ca: [fs.readFileSync(config.certificateCrt)],
+      passphrase: config.certificatePassphrase,
+    };
+
+    https.createServer(options, app).listen(config.httpsPort, () => {
+      console.log('listen ' + config.httpsPort);
+    });
+  } catch (err) {
+    console.error(`Failed to get certificate or key: ${err.message}`);
+  }
 };
