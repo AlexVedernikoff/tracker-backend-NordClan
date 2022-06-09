@@ -281,6 +281,9 @@ exports.updateTestCaseExecution = async (req, res, next) => {
     if (status !== undefined && status !== null && status !== 3) {
       body.whoClosed = req.user.id;
     }
+    if (status === null) {
+      body.whoClosed = null;
+    }
     await TestCaseExecution.update(body, {
       where: {
         id,
