@@ -512,7 +512,7 @@ exports.list = function (req, res, next) {
         ))
         OR (
           "Project"."id" NOT IN (SELECT project_id FROM sprints WHERE project_id IS NOT NULL AND deleted_at IS NULL)
-          AND ("Project"."completed_at" IS NULL OR "Project"."completed_at" <= '${dateSprintEnd}')
+          AND ("Project"."completed_at" IS NULL OR "Project"."completed_at" <= '${dateSprintEnd} ')  AND "Project"."created_at" <= '${dateSprintEnd}'
         )
       )`
       )
