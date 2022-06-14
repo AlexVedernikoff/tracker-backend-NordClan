@@ -7,15 +7,13 @@ exports.getTracksAll = async (startDate, endDate, userId) => {
   const dateRange = getDateRange(startDate, endDate);
   const tracksData = await Promise
     .all(dateRange.map(async (onDate) => {
+      const date = onDate;
       const tracks = await getTracks({userId, onDate});
       const scales = getScales(tracks);
-      return { tracks, scales, onDate };
+      return { date, tracks, scales };
     }));
 
-  const formatTracksData = tracksData.reduce((acc, { tracks, scales, onDate }) => {
-    acc[onDate] = { tracks, scales };
-    return acc;
-  }, {});
+  const formatTracksData = {dates: tracksData};
 
   formatTracksData.availableProjects = await getAvailableProjects(userId);
 
