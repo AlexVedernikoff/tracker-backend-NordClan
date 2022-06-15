@@ -314,6 +314,25 @@ exports.getUsersRoles = async function (req, res, next) {
     };
 
     const stat = req.query.status !== null && req.query.status !== undefined ? req.query.status : true;
+  
+    let users_id = [];
+
+    if(departments) {
+
+      const user_ids = await models.UserDepartments.findAll({
+        attributes: [
+          'user_id',
+        ],
+        raw: true,
+        nest: true,
+        where: {
+          department_id: { $in: departments }
+        }
+      });
+
+      users_id= user_ids.map(user =>  user.user_id);
+
+    }
 
     const users = await models.User.findAll({
       where: {
@@ -341,9 +360,11 @@ exports.getUsersRoles = async function (req, res, next) {
         'delete_date',
       ],
       include: [userDepartmentInclude],
+      where: { id: departments ? { $in: users_id} : { $gt: 0  }}
     });
 
     res.json(users);
+
   } catch (err) {
     next(err);
   }
