@@ -27,20 +27,38 @@ const userDepartmentInclude = {
 
 const getWhereStatement = query => {
   const res = {};
-  if (query.first_name) {
+
+  if (query.first_name && query.last_name){
     res.$or = {
-      ...(res.$or ? res.$or : {}),
-      firstNameRu: { $iLike: `%${query.first_name}%` },
-      firstNameEn: { $iLike: `%${query.first_name}%` },
+      $and: {
+        firstNameEn: { $iLike: `%${query.first_name}%` },
+        lastNameEn: { $iLike: `%${query.last_name}%` },
+      },
+      $or: {
+        $and: {
+          firstNameRu: { $iLike: `%${query.first_name}%` },
+          lastNameRu: { $iLike: `%${query.first_name}%` },
+        },
+      },
     };
+  } else {
+    if (query.first_name) {
+      res.$or = {
+        ...(res.$or ? res.$or : {}),
+        firstNameRu: { $iLike: `%${query.first_name}%` },
+        firstNameEn: { $iLike: `%${query.first_name}%` },
+      };
+    }
+    if (query.last_name) {
+      res.$or = {
+        ...(res.$or ? res.$or : {}),
+        lastNameRu: { $iLike: `%${query.last_name}%` },
+        lastNameEn: { $iLike: `%${query.last_name}%` },
+      };
+    }
+
   }
-  if (query.last_name) {
-    res.$or = {
-      ...(res.$or ? res.$or : {}),
-      lastNameRu: { $iLike: `%${query.last_name}%` },
-      lastNameEn: { $iLike: `%${query.last_name}%` },
-    };
-  }
+
   if (query.departments) {
     res['$department.id$'] = {
       $in: query.departments,
@@ -314,10 +332,12 @@ exports.getUsersRoles = async function (req, res, next) {
     };
 
     const stat = req.query.status !== null && req.query.status !== undefined ? req.query.status : true;
-  
-    let users_id = [];
 
-    if(departments) {
+    let users_id = [];
+    let deparmentWhere = {};
+
+
+    if (departments) {
 
       const user_ids = await models.UserDepartments.findAll({
         attributes: [
@@ -326,12 +346,12 @@ exports.getUsersRoles = async function (req, res, next) {
         raw: true,
         nest: true,
         where: {
-          department_id: { $in: departments }
-        }
+          department_id: { $in: departments },
+        },
       });
 
-      users_id= user_ids.map(user =>  user.user_id);
-
+      users_id = user_ids.map(user => user.user_id);
+      deparmentWhere = { where: { id: departments ? { $in: users_id} : { $gt: 0 }}};
     }
 
     const users = await models.User.findAll({
@@ -360,7 +380,7 @@ exports.getUsersRoles = async function (req, res, next) {
         'delete_date',
       ],
       include: [userDepartmentInclude],
-      where: { id: departments ? { $in: users_id} : { $gt: 0  }}
+      ...deparmentWhere,
     });
 
     res.json(users);
