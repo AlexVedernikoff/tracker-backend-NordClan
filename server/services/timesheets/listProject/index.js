@@ -3,10 +3,12 @@ const { Timesheet, User } = require('../../../models');
 
 exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
   const request = getAllTimesheetsByUser(dateBegin, dateEnd, projectId, isSystemUser);
+
   const users = await User.findAll(request)
     .filter(user => user.dataValues.timesheet.length > 0
       || user.dataValues.active === 1);
-  return createResponse(users);
+
+  return createResponse(users.filter(user => user.dataValues.active === 1));
 };
 
 exports.listProjectByTimeSheets = async (dateBegin, dateEnd, projectId, isSystemUser) => {
