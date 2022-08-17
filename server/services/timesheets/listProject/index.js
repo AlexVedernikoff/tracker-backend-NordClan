@@ -1,5 +1,6 @@
 const { getAllTimesheetsByUser, listByTimeSheets } = require('./request');
 const { Timesheet, User } = require('../../../models');
+const moment = require('moment');
 
 exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
   const request = getAllTimesheetsByUser(dateBegin, dateEnd, projectId, isSystemUser);
@@ -8,7 +9,11 @@ exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
     .filter(user => user.dataValues.timesheet.length > 0
       || user.dataValues.active === 1);
 
-  return createResponse(users.filter(user => user.dataValues.active === 1));
+  if (projectId === undefined) {
+    return createResponse(users.filter(user => user.dataValues.delete_date === undefined || moment(user.dataValues.delete_date).isAfter(dateBegin)));
+  } else {
+    return createResponse(users);
+  }
 };
 
 exports.listProjectByTimeSheets = async (dateBegin, dateEnd, projectId, isSystemUser) => {
