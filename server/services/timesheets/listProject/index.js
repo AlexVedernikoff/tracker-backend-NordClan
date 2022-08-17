@@ -2,6 +2,10 @@ const { getAllTimesheetsByUser, listByTimeSheets } = require('./request');
 const { Timesheet, User } = require('../../../models');
 const moment = require('moment');
 
+const isAfterDateBegin = (delete_date, dateBegin) => {
+  return moment(delete_date).isAfter(dateBegin);
+};
+
 exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
   const request = getAllTimesheetsByUser(dateBegin, dateEnd, projectId, isSystemUser);
 
@@ -10,7 +14,9 @@ exports.listProject = async (dateBegin, dateEnd, projectId, isSystemUser) => {
       || user.dataValues.active === 1);
 
   if (projectId === undefined) {
-    return createResponse(users.filter(user => user.dataValues.delete_date === undefined || moment(user.dataValues.delete_date).isAfter(dateBegin)));
+    return createResponse(users.filter(({dataValues: {delete_date}}) => {
+      return (delete_date && isAfterDateBegin(delete_date, dateBegin)) || !delete_date;
+    }));
   } else {
     return createResponse(users);
   }
