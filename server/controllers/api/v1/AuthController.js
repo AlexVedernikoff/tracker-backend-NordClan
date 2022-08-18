@@ -38,7 +38,7 @@ exports.login = function (req, res, next) {
         ],
       },
     ],
-    attributes: [...User.defaultSelect, 'ldapLogin', 'password', 'isTest'],
+    attributes: [...User.defaultSelect, 'ldapLogin', 'password', 'isTest', 'createdAt'],
   })
     .then(user => {
       if (!user) return next(createError(404, 'Invalid Login or Password'));
