@@ -43,6 +43,17 @@ build_docker_be:
   tags:
     - docker
 
+deploy_staging:
+  variables:
+    CURRENT_DEPLOYMENT_ENV: "staging"
+    CURRENT_DEPLOYMENT_KEY: "$DEPLOYMENT_DEV_KEY"
+  only:
+    - staging
+  environment:
+    name: $CURRENT_DEPLOYMENT_ENV
+    url: http://track-staging.docker.nordclan/
+  extends: .deploy_ansible
+
 deploy_dev:
   variables:
     CURRENT_DEPLOYMENT_ENV: "dev"
