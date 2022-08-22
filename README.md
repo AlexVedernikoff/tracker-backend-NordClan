@@ -1,5 +1,12 @@
 ## Nordclan track backend
 
+### Процесс создания МР
+#### МР считается сразу же не пройденным, если данные условия не были выполнены:
+
+- МР делается на ветку develop, после успешного прохождения тестирования на ветке develop, создается МР на ветку staging
+- Каждый МР должен содержать ссылку на задачу в описании
+- Каждый МР должен содержать только ОДИН коммит, касающийся задачи. Исправления по ревью должны объединятся с этим коммитом
+
 ### Запуск проекта в докере
 
 #### Ошибка `data directory "/var/lib/postgresql/data" has wrong ownership`
@@ -72,10 +79,6 @@ $ docker-compose -f docker-compose.dev.yml  up
 #### Для изменения настроек сервера и подключения к базе отредактируйте:
 ./.docker-compose-dev.env
 
-### Заметки
-
-Используется ldap, Вы должны быть в сетке Nordclan 
-
 ## Прочее:
 ### Настройки crontab
 
@@ -87,9 +90,6 @@ $ docker-compose -f docker-compose.dev.yml  up
         0 1 * * * cd /var/www/back && /usr/local/bin/node /var/www/back/cronjobs/createDrafts/index.js >/dev/null 2>&1
 
 Back up PostgreSQL databases using cron jobs https://www.a2hosting.com/kb/developer-corner/postgresql/postgresql-database-backups-using-cron-jobs
-
-### Запуск тестов
-`npm test`
 
 ### Сделать ручной dump базы на проде
 pg_dump -U postgres -F c -f dump.tar.gz 'sim-track' -W --host 127.0.0.1
