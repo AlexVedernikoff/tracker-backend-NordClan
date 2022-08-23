@@ -43,27 +43,15 @@ build_docker_be:
   tags:
     - docker
 
-deploy_dev:
+deploy_staging:
   variables:
-    CURRENT_DEPLOYMENT_ENV: "dev"
+    CURRENT_DEPLOYMENT_ENV: "staging"
     CURRENT_DEPLOYMENT_KEY: "$DEPLOYMENT_DEV_KEY"
   only:
     - staging
   environment:
     name: $CURRENT_DEPLOYMENT_ENV
-    url: http://track-dev.docker.nordclan/
-  extends: .deploy_ansible
-
-deploy_test:
-  variables:
-    CURRENT_DEPLOYMENT_ENV: "test"
-    CURRENT_DEPLOYMENT_KEY: "$DEPLOYMENT_DEV_KEY"
-  only:
-    - test
-  when: manual
-  environment:
-    name: $CURRENT_DEPLOYMENT_ENV
-    url: http://track-test.docker.nordclan/
+    url: http://track-staging.docker.nordclan/
   extends: .deploy_ansible
 
 deploy_to_prod:
