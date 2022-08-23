@@ -29,8 +29,6 @@
 
 #### Ошибка `import(url.pathToFileURL(process.env.pm_exec_path))`
 
-Изменить в файле Dockerfile версию node на 10.16 и в RUN  дописать npm install pm2 -g && \ pm2 update
-
 #### Не запускается фронтенд (висит на `Database connection...`)
 
 Раскоментировать в `docker-compose.dev.yml` весь раздел `web:` (просто убрать решётки).
@@ -58,8 +56,8 @@ LDAP_URL=ldap://ldap-test.nordclan:389/dc=nordclan
 - node js 13.0.0
 
 ```
-$ docker-compose -f docker-compose.dev.yml  build 
-$ docker-compose -f docker-compose.dev.yml  up
+$ docker-compose -f docker-compose.dev.yml build 
+$ docker-compose -f docker-compose.dev.yml up
 ```
 
 ### Настройки 
