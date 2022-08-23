@@ -48,7 +48,7 @@ deploy_dev:
     CURRENT_DEPLOYMENT_ENV: "dev"
     CURRENT_DEPLOYMENT_KEY: "$DEPLOYMENT_DEV_KEY"
   only:
-    - develop
+    - staging
   environment:
     name: $CURRENT_DEPLOYMENT_ENV
     url: http://track-dev.docker.nordclan/
