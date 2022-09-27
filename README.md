@@ -37,10 +37,6 @@
 
 #### Ошибка `import(url.pathToFileURL(process.env.pm_exec_path))`
 
-#### Не запускается фронтенд (висит на `Database connection...`)
-
-Раскоментировать в `docker-compose.dev.yml` весь раздел `web:` (просто убрать решётки).
-
 #### Ошибка `502 Bad Gateway` при авторизации
 
 Поменять `LDAP_URL` в файле `.docker-compose-dev.env`:
@@ -55,8 +51,6 @@ LDAP_URL=ldap://ldap-test.nordclan:389
 LDAP_URL=ldap://ldap-test.nordclan:389/dc=nordclan
 ```
 
-### Запуск проекта в докере - фронтенд собирается и хостится здесь же
-
 ### ВАЖНО
 Необходимо установить на компьютер следующие зависимости:
 - python 2
@@ -69,11 +63,6 @@ $ docker-compose -f docker-compose.dev.yml up
 ```
 
 ### Настройки 
-
-#### Фронт и бек должны быть расположены в одной директории, например
-
-~/projects/track-back
-~/projects/track-front
 
 #### Для изменения настроек сервера и подключения к базе отредактируйте:
 ./.docker-compose-dev.env
