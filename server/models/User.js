@@ -55,6 +55,14 @@ module.exports = function (sequelize, DataTypes) {
           len: [2, 100],
         },
       },
+      middleNameEn: {
+        field: "middle_name_en",
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          len: [2, 100],
+        },
+      },
       lastNameRu: {
         field: 'last_name_ru',
         type: DataTypes.STRING,
@@ -65,6 +73,14 @@ module.exports = function (sequelize, DataTypes) {
       },
       firstNameRu: {
         field: 'first_name_ru',
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          len: [2, 100],
+        },
+      },
+      middleNameRu: {
+        field: "middle_name_ru",
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
@@ -240,13 +256,13 @@ module.exports = function (sequelize, DataTypes) {
       tableName: 'users',
       getterMethods: {
         fullNameRu: function () {
-          const fullNameRuArr = [this.firstNameRu, this.lastNameRu].filter(
+          const fullNameRuArr = [this.firstNameRu, this.lastNameRu, this.middleNameRu].filter(
             i => i
           );
           return fullNameRuArr.join(' ') || this.getDataValue('fullNameRu');
         },
         fullNameEn: function () {
-          const fullNameEnArr = [this.firstNameEn, this.lastNameEn].filter(
+          const fullNameEnArr = [this.firstNameEn, this.lastNameEn, this.middleNameEn].filter(
             i => i
           );
           return fullNameEnArr.join(' ') || this.getDataValue('fullNameEn');
@@ -299,10 +315,12 @@ module.exports = function (sequelize, DataTypes) {
     'fullNameRu',
     'firstNameRu',
     'lastNameRu',
+    'middleNameRu',
     ['ldap_login', 'fullNameEn'],
     'fullNameEn',
     'lastNameEn',
     'firstNameEn',
+    'middleNameEn',
     'telegram',
     'skype',
     'supervisorId',

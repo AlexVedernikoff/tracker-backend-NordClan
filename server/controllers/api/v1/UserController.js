@@ -368,6 +368,8 @@ exports.getUsersRoles = async function (req, res, next) {
         'firstNameEn',
         'lastNameRu',
         'lastNameEn',
+        'middleNameRu',
+        'middleNameEn',
         'birthDate',
         'globalRole',
         'employmentDate',
