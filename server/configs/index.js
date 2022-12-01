@@ -72,6 +72,7 @@ module.exports = {
       username: process.env.RABBITMQ_USERNAME || 'guest',
       password: process.env.RABBITMQ_PASSWORD || 'guest',
     },
-    queue: process.env.RABBITMQ_QUEUE || "track"
+    exchange: process.env.RABBITMQ_EXCHANGE || "track-exchange",
+    routingKey: process.env.RABBITMQ_ROUTING_KEY || "track.users",
   }
 };
