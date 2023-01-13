@@ -182,6 +182,7 @@ module.exports = {
     projectUsers: {
       'list': true,
     },
+    timesheet: USER.timesheet,
     portfolio: {
       'list': true,
       'read': true,
