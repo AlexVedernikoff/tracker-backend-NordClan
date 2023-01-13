@@ -13,6 +13,8 @@ const {
   email: { templateExternalUrl },
 } = require('../../../configs');
 const ssha = require('ssha');
+const sendToRMQ = require("../../../services/rabbitmq").sendToRMQ;
+const constants = require("../../../services/rabbitmq").constants;
 
 const userDepartmentInclude = {
   model: models.Department,
@@ -368,6 +370,8 @@ exports.getUsersRoles = async function (req, res, next) {
         'firstNameEn',
         'lastNameRu',
         'lastNameEn',
+        'middleNameRu',
+        'middleNameEn',
         'birthDate',
         'globalRole',
         'employmentDate',
@@ -378,6 +382,8 @@ exports.getUsersRoles = async function (req, res, next) {
         'allowVPN',
         'dismissalDate',
         'delete_date',
+        'emailPrimary',
+        'emailSecondary',
       ],
       include: [userDepartmentInclude],
       ...deparmentWhere,
@@ -570,6 +576,7 @@ exports.updateCurrentUserProfile = async function (req, res, next) {
       await transaction.rollback();
       return next(createError(404));
     }
+    await sendToRMQ({ type: constants.messageType.UPDATE_USER, id: updatedModel.dataValues.id })
     await transaction.commit();
     res.sendStatus(200);
   } catch (err) {
@@ -626,6 +633,7 @@ exports.updateUserProfile = async function (req, res, next) {
     }
 
     await transaction.commit();
+    await sendToRMQ({ type: constants.messageType.UPDATE_USER, id: updatedModel.dataValues.id })
     res.sendStatus(200);
   } catch (err) {
     if (err) {
@@ -710,6 +718,7 @@ exports.createUser = async function (req, res, next) {
         }
 
         await transaction.commit();
+        await sendToRMQ({ type: constants.messageType.CREATE_USER, id: model.dataValues.id })
         res.sendStatus(200);
       })
       .catch(err => {

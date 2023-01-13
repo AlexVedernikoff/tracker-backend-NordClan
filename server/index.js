@@ -1,6 +1,7 @@
 const sequelize = require('./orm');
 const { runHttpServer } = require('./httpServer');
 const { runHttpsServer } = require('./httpsServer');
+const {initRMQ} = require("./services/rabbitmq");
 
 exports.run = function () {
   sequelize
@@ -14,4 +15,5 @@ exports.run = function () {
 
   runHttpServer();
   runHttpsServer();
+  initRMQ();
 };
