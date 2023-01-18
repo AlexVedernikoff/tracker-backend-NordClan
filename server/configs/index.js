@@ -65,4 +65,13 @@ module.exports = {
   ttiUrl: process.env.TTI_HOST,
   metricManagerPort: process.env.METRIC_MANAGER_PORT || 8881,
   imagesSalt: process.env.IMAGES_SALT || 'someSaltForImagesHere',
+  rabbitMq: {
+    options: {
+      hostname: process.env.RABBITMQ_HOST || 'rabbitmq',
+      port: process.env.RABBITMQ_PORT || 5672,
+      username: process.env.RABBITMQ_USERNAME || 'guest',
+      password: process.env.RABBITMQ_PASSWORD || 'guest',
+    },
+    queue: process.env.RABBITMQ_QUEUE || "track"
+  }
 };
