@@ -152,6 +152,7 @@ exports.read = function (req, res, next) {
               'emailPrimary',
               'mobile',
               'description',
+              'externalUserType',
             ],
           },
           {
@@ -209,6 +210,7 @@ exports.read = function (req, res, next) {
             firstNameEn: externalUser.user.firstNameEn,
             lastNameRu: externalUser.user.lastNameRu,
             lastNameEn: externalUser.user.lastNameEn,
+            externalUserType: externalUser.user.externalUserType,
             roles: queries.projectUsers.getTransRolesToObject(externalUser.roles, projectRoles),
             gitlabRoles: externalUser.gitlabRoles,
           });

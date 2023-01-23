@@ -43,7 +43,8 @@
     "OTHER": "Другое",
     "ADMINISTRATION": "Администрация",
     "PRODUCTION": "Производство",
-    "INDICATORS": "Показатели"
+    "INDICATORS": "Показатели",
+    "EXTERNAL_USER": "Внешний пользователь"
   },
   "en": {
     "OTHER_TASKS": "Other Tasks",
@@ -89,6 +90,7 @@
     "CITIES_POPULATION": "Number by city",
     "ADMINISTRATION": "Administration",
     "PRODUCTION": "Production",
-    "INDICATORS": "Indicators"
+    "INDICATORS": "Indicators",
+    "EXTERNAL_USER": "External user"
   }
 }

@@ -1,7 +1,7 @@
 const models = require('../../../models');
 
 exports.getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
-  const where = { };
+  const where = {};
 
   if (projectId) {
     where.projectId = projectId;
@@ -22,7 +22,20 @@ exports.getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSyst
     };
   }
   return {
-    attributes: ['id', 'firstNameRu', 'lastNameRu', 'fullNameEn', 'fullNameEn', 'lastNameEn', 'firstNameEn', 'employmentDate', 'delete_date', 'active', 'global_role'],
+    attributes: [
+      'id',
+      'firstNameRu',
+      'lastNameRu',
+      'fullNameEn',
+      'fullNameEn',
+      'lastNameEn',
+      'firstNameEn',
+      'employmentDate',
+      'delete_date',
+      'active',
+      'global_role'
+    ],
+    where: { externalUserType: { $not: 'Client' } },
     include: [
       {
         model: models.Timesheet,
@@ -54,7 +67,7 @@ exports.getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSyst
 };
 
 exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) {
-  const where = { };
+  const where = {};
 
   if (projectId) {
     where.projectId = projectId;
@@ -86,7 +99,7 @@ exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser
 };
 
 
-function getInclude () {
+function getInclude() {
   const include = [
     {
       as: 'task',
@@ -129,7 +142,7 @@ function getInclude () {
       as: 'user',
       model: models.User,
       required: false,
-      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'active', 'employment_date', 'delete_date'],
+      attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'active', 'employment_date', 'delete_date', "global_role"],
       paranoid: false,
       include: [
         {
