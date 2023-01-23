@@ -1,7 +1,7 @@
 const WorkSheetTemplate = require('./workSheetTemplate');
 const i18n = require('./byCompanyUser.i18n');
 const moment = require('moment');
-const {cloneDeep} = require('lodash');
+const { cloneDeep } = require('lodash');
 
 const getFullName = (user, suffix) => {
   const pascalCaseSuffix = suffix.replace(/^[a-zA-Z]{1}/, symbol => symbol.toUpperCase());
@@ -14,13 +14,13 @@ const getDepartmentsName = departments => {
 };
 
 class ByCompanyUserWorkSheet extends WorkSheetTemplate {
-  constructor (workbook, data, lang, averageNumberOfEmployees) {
+  constructor(workbook, data, lang, averageNumberOfEmployees) {
     super(workbook, data, lang);
     this._lastIndexRow = 0;
     this._averageNumberOfEmployees = averageNumberOfEmployees;
   }
 
-  _writeUserTimesheets (userElement) {
+  _writeUserTimesheets(userElement) {
     if (userElement.timeSheets.length > 0) {
       userElement.timeSheets.forEach(data => {
         this._writeUserRow(data);
@@ -28,7 +28,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     }
   }
 
-  _writeUserRow (timesheet) {
+  _writeUserRow(timesheet) {
     this._lastIndexRow++;
     this._tableColumns.forEach((v, i) => {
       const cell = this._worksheet.getCell(this._columns[i] + this._lastIndexRow);
@@ -39,7 +39,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     });
   }
 
-  _writeSummary (startAt, endAt) {
+  _writeSummary(startAt, endAt) {
     const index = this._tableColumns.findIndex(v => v.isSummary);
     const locale = i18n[this.lang];
     const self = this;
@@ -59,7 +59,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       {
         label: locale.BUSY,
         numFmt: '00.00%',
-        get formula () { return `${self._columns[index + 1]}${self._lastIndexRow - 3} / ${self._columns[index + 1]}${self._lastIndexRow - 1}`; },
+        get formula() { return `${self._columns[index + 1]}${self._lastIndexRow - 3} / ${self._columns[index + 1]}${self._lastIndexRow - 1}`; },
       },
       {
         label: locale.AVERAGE_NUMBER_OF_EMPLOYEES,
@@ -85,7 +85,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     this._lastIndexRow++;
   }
 
-  init () {
+  init() {
     this._worksheet = this._workbook.addWorksheet(this._name);
     this._setHeader(this._worksheet, this._data.info);
     this._lastIndexRow = 2;
@@ -100,7 +100,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     this._printTablesPopulationCompany();
   }
 
-  _printTablesPopulationCompany () {
+  _printTablesPopulationCompany() {
     let indexCol = 0;
     let lastIndexRow = this._lastIndexRow;
     let maxCountColumn = this._getCountColumn();
@@ -125,14 +125,14 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     this._printCitiesPopulationTable(this._data.citiesList, indexCol);
   }
 
-  _getCountColumn (lastCount = 0, count = 0) {
+  _getCountColumn(lastCount = 0, count = 0) {
     if (!lastCount) {
       return 0;
     }
     return lastCount > count ? lastCount : count;
   }
 
-  _printIndicatorsTable (indexCol) {
+  _printIndicatorsTable(indexCol) {
     this._lastIndexRow++;
     let counter = 0;
     const productionIds = [24, 10, 28, 29, 3, 2, 5, 6];
@@ -157,13 +157,13 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - tableRows.length));
     labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCellValue.border = {
-      right: {style: 'thin'},
-      top: {style: 'thin'},
+      right: { style: 'thin' },
+      top: { style: 'thin' },
     };
     labelCellValue.value = counter;
   }
 
-  _printBasePopulationTable (indexCol) {
+  _printBasePopulationTable(indexCol) {
     this._lastIndexRow++;
 
     this._setHeaderPopulationTable('TOTAL_POPULATION', true, indexCol);
@@ -182,13 +182,13 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.departmentList.length));
     labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCellValue.border = {
-      right: {style: 'thin'},
-      top: {style: 'thin'},
+      right: { style: 'thin' },
+      top: { style: 'thin' },
     };
     labelCellValue.value = counterTable;
   }
 
-  _printCitiesPopulationTable (citiesList, indexCol) {
+  _printCitiesPopulationTable(citiesList, indexCol) {
     this._lastIndexRow++;
     this._setHeaderPopulationTable('CITIES_POPULATION', true, indexCol);
     let counterTable = 0;
@@ -207,39 +207,39 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.citiesList.length));
     labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCellValue.border = {
-      right: {style: 'thin'},
-      top: {style: 'thin'},
+      right: { style: 'thin' },
+      top: { style: 'thin' },
     };
     labelCellValue.value = counterTable;
   }
 
-  _setHeaderPopulationTable (title, isTranslate = true, indexCol) {
+  _setHeaderPopulationTable(title, isTranslate = true, indexCol) {
     this._worksheet.mergeCells(`${this._columns[indexCol] + this._lastIndexRow}:${this._columns[indexCol + 1] + this._lastIndexRow}`);
     const labelCell = this._worksheet.getCell(this._columns[indexCol] + this._lastIndexRow);
-    labelCell.fill = {type: 'pattern', pattern: 'lightGray'};
+    labelCell.fill = { type: 'pattern', pattern: 'lightGray' };
     labelCell.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCell.border = {
-      left: {style: 'thin'},
-      right: {style: 'thin'},
-      top: {style: 'thin'},
+      left: { style: 'thin' },
+      right: { style: 'thin' },
+      top: { style: 'thin' },
     };
     labelCell.width = 14;
     labelCell.value = isTranslate ? this._getTitle(title) : title;
   }
 
-  _countUsers (departmentId) {
+  _countUsers(departmentId) {
     return this._data.users.filter((user) => {
       return user.department.some((item) => item.id === Number(departmentId));
     }).length;
   }
 
-  _countUsersByCity (cityId) {
+  _countUsersByCity(cityId) {
     return this._data.users.filter((user) => {
       return user.department.some((item) => item.id === Number(cityId));
     }).length;
   }
 
-  _printTable ({ id, name }, indexCol) {
+  _printTable({ id, name }, indexCol) {
     this._lastIndexRow++;
     this._setHeaderPopulationTable(name, false, indexCol);
     let counterTable = 0;
@@ -257,56 +257,56 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     const labelCellValue = this._worksheet.getCell(this._columns[indexCol + 2] + (this._lastIndexRow - this._data.citiesList.length));
     labelCellValue.alignment = { vertical: 'middle', horizontal: 'center' };
     labelCellValue.border = {
-      right: {style: 'thin'},
-      top: {style: 'thin'},
+      right: { style: 'thin' },
+      top: { style: 'thin' },
     };
     labelCellValue.value = counterTable;
   }
 
-  _setCellStyle (totalLabelCell, totalCell, index, array) {
+  _setCellStyle(totalLabelCell, totalCell, index, array) {
     totalCell.alignment = { vertical: 'middle', horizontal: 'center' };
     totalLabelCell.border = {
-      left: {style: 'thin'},
+      left: { style: 'thin' },
     };
     totalCell.border = {
-      left: {style: 'thin'},
-      right: {style: 'thin'},
+      left: { style: 'thin' },
+      right: { style: 'thin' },
     };
     if (index === array.length - 1) {
       totalLabelCell.border = {
-        left: {style: 'thin'},
-        bottom: {style: 'thin'},
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
       };
       totalCell.border = {
-        left: {style: 'thin'},
-        bottom: {style: 'thin'},
-        right: {style: 'thin'},
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
       };
     }
     totalLabelCell.width = 14;
     totalLabelCell.alignment = { vertical: 'middle', horizontal: 'center' };
   }
 
-  _countRemoteUsersById (id) {
+  _countRemoteUsersById(id) {
     return this._data.users.filter((user) => {
       return user.department.some((item) => item.id === Number(id))
-          && !user.department.some((item) => item.id === 26)
-          && !user.department.some((item) => item.id === 25);
+        && !user.department.some((item) => item.id === 26)
+        && !user.department.some((item) => item.id === 25);
     }).length;
   }
 
-  _countUsersOfDepartment (cityId, departmentId) {
+  _countUsersOfDepartment(cityId, departmentId) {
     return this._data.users.filter((user) => {
       return user.department.some((item) => item.id === Number(departmentId)) && user.department.some((item) => item.id === Number(cityId));
     }).length;
   }
 
-  _getTitle (key) {
+  _getTitle(key) {
     const locale = i18n[this.lang];
     return locale[key];
   }
 
-  _writeColumnsHeaders () {
+  _writeColumnsHeaders() {
     this._lastIndexRow++;
     this._tableColumns.map((column, index) => {
       const address = this._columns[index] + this._lastIndexRow;
@@ -323,18 +323,18 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     this._worksheet.autoFilter = `${this._columns[0]}${this._lastIndexRow}:${this._columns[this._columns.length - 1]}${this._lastIndexRow}`;
   }
 
-  _drawBorder () {
+  _drawBorder() {
     this._lastIndexRow++;
     this._worksheet
       .mergeCells(`${this._columns[0] + this._lastIndexRow}:${this._columns[this._columns.length - 1] + this._lastIndexRow}`);
     this._worksheet
       .getCell(this._columns[0] + this._lastIndexRow)
       .border = {
-        top: { style: 'medium' },
-      };
+      top: { style: 'medium' },
+    };
   }
 
-  _setHeader (sheet, info) {
+  _setHeader(sheet, info) {
     const locale = i18n[this.lang];
     const dateFrom = info.range.startDate && moment(info.range.startDate).locale(this.lang).format('DD MMMM YYYY');
     const dateTo = info.range.endDate && moment(info.range.endDate).locale(this.lang).format('DD MMMM YYYY');
@@ -353,13 +353,15 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     period.border = { ...border };
   }
 
-  get _tableColumns () {
+  get _tableColumns() {
     const locale = i18n[this.lang];
     return [
       { calculate: d => getFullName(d.user, this.lang), width: 24, text: locale.PERSON },
       { calculate: d => d.user.employment_date ? d.user.employment_date : '', width: 16, text: locale.EMPLOYMENT_DATE },
       {
-        calculate: d => getDepartmentsName(d.user.department).replace(/\*Направление/gi, ''),
+        calculate: d => d.user.global_role === 'EXTERNAL_USER'
+          ? i18n[this.lang].EXTERNAL_USER
+          : getDepartmentsName(d.user.department).replace(/\*Направление/gi, ''),
         width: 22,
         text: locale.DEPARTMENT,
         alignment: { wrapText: true, vertical: 'top' },
@@ -409,12 +411,12 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
     ];
   }
 
-  get _name () {
+  get _name() {
     const locale = i18n[this.lang];
     return locale.SHEET_TITLE;
   }
 
-  get _columns () {
+  get _columns() {
     return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
   }
 }
