@@ -5,7 +5,9 @@ const globalGrants = require('./globalGrants');
 exports.can = (resource, action) => {
   return (req, _res, next) => {
     try {
-      const role = req.user.globalRole;
+      const role = req.user.globalRole === 'EXTERNAL_USER'
+        ? req.user.externalUserType.toUpperCase()
+        : req.user.globalRole;
       const permission = getPermission(role, resource, action);
       if (permission) {
         return next();
@@ -17,7 +19,7 @@ exports.can = (resource, action) => {
   };
 };
 
-function getPermission (role, resource, action) {
+function getPermission(role, resource, action) {
   if (
     globalGrants[role]
     && globalGrants[role][resource]

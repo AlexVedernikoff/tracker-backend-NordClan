@@ -30,7 +30,7 @@ const userDepartmentInclude = {
 const getWhereStatement = query => {
   const res = {};
 
-  if (query.first_name && query.last_name){
+  if (query.first_name && query.last_name) {
     res.$or = {
       $and: {
         firstNameEn: { $iLike: `%${query.first_name}%` },
@@ -353,7 +353,7 @@ exports.getUsersRoles = async function (req, res, next) {
       });
 
       users_id = user_ids.map(user => user.user_id);
-      deparmentWhere = { where: { id: departments ? { $in: users_id} : { $gt: 0 }}};
+      deparmentWhere = { where: { id: departments ? { $in: users_id } : { $gt: 0 } } };
     }
 
     const users = await models.User.findAll({
@@ -384,6 +384,7 @@ exports.getUsersRoles = async function (req, res, next) {
         'delete_date',
         'emailPrimary',
         'emailSecondary',
+        'externalUserType',
       ],
       include: [userDepartmentInclude],
       ...deparmentWhere,
@@ -858,7 +859,14 @@ exports.updateExternal = async function (req, res, next) {
       return next(createError(404));
     }
 
-    const updatedModel = await model.updateAttributes(req.body, { transaction });
+    const updatedModel = await model.updateAttributes({
+      ...req.body,
+      fullNameRu:
+        [req.body.firstNameRu || model.firstNameRu, req.body.lastNameRu || model.lastNameRu].filter(i => i).join(' '),
+      fullNameEn:
+        //TODO: remove null setting when all external users will have english names in all DBs
+        [req.body.firstNameEn || model.firstNameEn, req.body.lastNameEn || model.lastNameEn].filter(i => i).join(' ') || null,
+    }, { transaction });
     await transaction.commit();
     res.json(updatedModel);
   } catch (err) {
@@ -961,7 +969,20 @@ exports.getExternalUsers = async function (req, res, next) {
         active: 1,
       },
       order: [['first_name_ru']],
-      attributes: ['id', 'firstNameRu', 'globalRole', 'expiredDate', 'active', 'login', 'isActive', 'description'],
+      attributes: [
+        'id',
+        'firstNameRu',
+        'lastNameEn',
+        'firstNameEn',
+        'lastNameRu',
+        'globalRole',
+        'expiredDate',
+        'active',
+        'login',
+        'isActive',
+        'description',
+        'externalUserType'
+      ],
     });
 
     res.json(users);

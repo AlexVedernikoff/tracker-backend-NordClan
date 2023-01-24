@@ -215,6 +215,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      externalUserType: {
+        field: 'external_user_type',
+        type: DataTypes.ENUM("Client", "Performer", "None"),
+      },
       isTest: {
         field: 'is_test',
         type: DataTypes.BOOLEAN,
@@ -342,6 +346,7 @@ module.exports = function (sequelize, DataTypes) {
     ['allow_vpn', 'allowVPN'],
     'allowVPN',
     'deleteDate',
+    'externalUserType',
   ];
 
   User.EXTERNAL_USER_ROLE = 'EXTERNAL_USER';

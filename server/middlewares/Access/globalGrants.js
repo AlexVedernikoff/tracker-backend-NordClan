@@ -82,6 +82,52 @@ const USER = {
   },
 };
 
+const EXTERNAL_USER = {
+  user: {
+    'autocomplete': true,
+    'me': true,
+    'read': true,
+  },
+  tag: {
+    'autocompliter': true,
+    'list': true,
+  },
+  project: {
+    'read': true,
+  },
+  projectUsers: {
+    'list': true,
+  },
+  portfolio: {
+    'list': true,
+    'read': true,
+  },
+  sprint: {
+    'read': true,
+    'list': true,
+  },
+  task: {
+    'create': true,
+    'read': true,
+    'update': true,
+    'list': true,
+  },
+  taskLinks: {
+    'create': true,
+    'delete': true,
+  },
+  comment: {
+    'create': true,
+    'update': true,
+    'delete': true,
+    'list': true,
+  },
+  attachment: {
+    'upload': true,
+    'delete': true,
+  },
+}
+
 module.exports = {
   USER: {
     ...USER,
@@ -166,50 +212,12 @@ module.exports = {
       'updateCurrentUserProfile': false,
     },
   },
-  EXTERNAL_USER: {
-    user: {
-      'autocomplete': true,
-      'me': true,
-      'read': true,
-    },
-    tag: {
-      'autocompliter': true,
-      'list': true,
-    },
-    project: {
-      'read': true,
-    },
-    projectUsers: {
-      'list': true,
-    },
-    portfolio: {
-      'list': true,
-      'read': true,
-    },
-    sprint: {
-      'read': true,
-      'list': true,
-    },
-    task: {
-      'create': true,
-      'read': true,
-      'update': true,
-      'list': true,
-    },
-    taskLinks: {
-      'create': true,
-      'delete': true,
-    },
-    comment: {
-      'create': true,
-      'update': true,
-      'delete': true,
-      'list': true,
-    },
-    attachment: {
-      'upload': true,
-      'delete': true,
-    },
+  CLIENT: {
+    ...EXTERNAL_USER
+  },
+  PERFORMER: {
+    ...EXTERNAL_USER,
+    timesheet: USER.timesheet
   },
   EXTERNAL_SERVICE: {
     jira: {

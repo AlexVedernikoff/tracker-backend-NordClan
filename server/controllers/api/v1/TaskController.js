@@ -1,6 +1,6 @@
 const createError = require('http-errors');
 const models = require('../../../models');
-const { Task } = models;
+const { Task, User } = models;
 const TasksChannel = require('../../../channels/Tasks');
 const TimesheetsChannel = require('../../../channels/Timesheets');
 const TasksService = require('../../../services/tasks');
@@ -23,6 +23,13 @@ exports.create = async function (req, res, next) {
 
   if (req.user.isDevOpsProject(req.body.projectId)) {
     return next(createError(403, 'Access denied'));
+  }
+
+  if (req.body.performerId) {
+    const performer = await User.findByPrimary(req.body.performerId);
+    if (performer.externalUserType === 'Client') {
+      return next(createError(400, 'Client can not be assigned as a performer'));
+    }
   }
 
   if (req.body.tags) {
@@ -104,6 +111,13 @@ exports.update = async function (req, res, next) {
     return next(createError(400, 'Planned Execution Time must be lower than 99 hours'));
   }
 
+  if (req.body.performerId) {
+    const performer = await User.findByPrimary(req.body.performerId);
+    if (performer.externalUserType === 'Client') {
+      return next(createError(400, 'Client can not be assigned as a performer'));
+    }
+  }
+
   const taskId = req.params.id;
 
   try {
@@ -149,11 +163,11 @@ exports.updateAllByAttribute = async function (req, res, next) {
   }
 };
 
-function isErrorReqUpdateAll (req) {
+function isErrorReqUpdateAll(req) {
   return !req.body.taskIds || !req.body.taskIds.length || isNaN(req.body.sprintId) || req.body.taskIds.some(id => isNaN(id));
 }
 
-function sendUpdates (io, userId, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData) {
+function sendUpdates(io, userId, updatedTasks, updatedTask, activeTask, createdDraft, projectId, changedTaskData) {
   if (changedTaskData.statusId || changedTaskData.performerId) {
     TimesheetsChannel.sendAction('setActiveTask', updatedTask, io, updatedTask.dataValues.performerId);
   }

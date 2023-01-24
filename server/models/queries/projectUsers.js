@@ -32,7 +32,15 @@ exports.getUsersByProject = function (projectId, isExternal, attributes = ['user
             ],
             globalRole: isExternal ? models.User.EXTERNAL_USER_ROLE : { $not: models.User.EXTERNAL_USER_ROLE },
           },
-          attributes: ['id', 'firstNameRu', 'lastNameRu', 'firstNameEn', 'lastNameEn', 'login'],
+          attributes: [
+            'id',
+            'firstNameRu',
+            'lastNameRu',
+            'firstNameEn',
+            'lastNameEn',
+            'login',
+            'externalUserType'
+          ],
         },
         {
           as: 'roles',
@@ -101,7 +109,7 @@ exports.findAllUsersByProjectId = function (projectId) {
 };
 
 
-function getTransRolesToObject (rolesIds, projectRoles) {
+function getTransRolesToObject(rolesIds, projectRoles) {
   const projectRoleIds = rolesIds ? rolesIds.map((role) => role.projectRoleId) : [];
 
   return projectRoles.reduce((acc, el) => ({
