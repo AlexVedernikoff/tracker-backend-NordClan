@@ -80,6 +80,10 @@ const USER = {
   metrics: {
     'list': true,
   },
+  guide: {
+    'read': true,
+    'update': true,
+  }
 };
 
 const EXTERNAL_USER = {
@@ -126,6 +130,10 @@ const EXTERNAL_USER = {
     'upload': true,
     'delete': true,
   },
+  guide: {
+    'read': true,
+    'update': true,
+  }
 }
 
 module.exports = {
@@ -186,6 +194,10 @@ module.exports = {
       'read': true,
       'create': true,
     },
+    guide: {
+      'read': true,
+      'update': true,
+    }
   },
   VISOR: {
     ...USER,
@@ -224,6 +236,10 @@ module.exports = {
       'setStatus': true,
       'synchronize': true,
     },
+    guide: {
+      'read': true,
+      'update': true,
+    }
   },
   HR: {
     ...USER,
@@ -255,5 +271,9 @@ module.exports = {
     timesheet: {
       'list': true,
     },
+    guide: {
+      'read': true,
+      'update': true,
+    }
   },
 };
