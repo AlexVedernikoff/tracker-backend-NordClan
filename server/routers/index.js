@@ -7,6 +7,7 @@ const TaskController = require('../controllers/api/v1/TaskController');
 const AuthController = require('../controllers/api/v1/AuthController');
 const TagController = require('../controllers/api/v1/TagController');
 const UserController = require('../controllers/api/v1/UserController');
+const UserGuideController = require('../controllers/api/v1/UserGuideController');
 const DictionaryController = require('../controllers/api/v1/DictionaryController');
 const ProjectUsersController = require('../controllers/api/v1/ProjectUsersController');
 const ReportsController = require('../controllers/api/v1/ReportsController');
@@ -78,6 +79,10 @@ router.get('/user/:id', GlobalAccess.can('user', 'read'), UserController.read);
 router.get('/user', GlobalAccess.can('user', 'read'), UserController.getUser);
 router.post('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.uploadAvatar);
 router.delete('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), UploadController.deleteAvatar);
+
+// User Guides
+router.get('/guides', GlobalAccess.can('guide', 'read'), UserGuideController.read);
+router.put('/guides', GlobalAccess.can('guide', 'update'), UserGuideController.setGuideStatus);
 
 // Tags
 router.get('/project/:projectId/tags', GlobalAccess.can('project', 'read'), TagController.listByProject);
