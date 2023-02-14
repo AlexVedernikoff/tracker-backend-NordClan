@@ -1,6 +1,7 @@
 const models = require('../../../models');
+const { TIMESHEET_USER_TYPE_FILTER, USER_GLOBAL_ROLES } = require('../../../../common/constants')
 
-exports.getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
+const getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSystemUser) {
   const where = {};
 
   if (projectId) {
@@ -66,7 +67,7 @@ exports.getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSyst
   };
 };
 
-exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) {
+const listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) {
   const where = {};
 
   if (projectId) {
@@ -98,8 +99,49 @@ exports.listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser
   };
 };
 
+const listByParameters = function (params) {
+  const result = listByTimeSheets(params.startDate, params.endDate, params.projectId, params.isSystemUser)
 
-function getInclude() {
+  const extraFilters = {};
+
+  if (params.userTypeFilter === TIMESHEET_USER_TYPE_FILTER.EXTERNAL_USER) {
+    extraFilters.user = {
+      global_role: USER_GLOBAL_ROLES.EXTERNAL_USER
+    };
+  } else if (params.userTypeFilter === TIMESHEET_USER_TYPE_FILTER.NOT_EXTERNAL_USER) {
+    extraFilters.user = {
+      global_role: { $not: USER_GLOBAL_ROLES.EXTERNAL_USER }
+    };
+  }
+
+  if (params.projectFilter.length > 0) {
+    result.where.projectId = { $in: params.projectFilter };
+  }
+
+  let userFilter = [];
+  if (params.departmentFilter.length > 0) {
+    const filter = `(SELECT user_id FROM user_departments WHERE user_departments.department_id in (${params.departmentFilter.join(', ')}))`
+    userFilter.push({ id: { $in: models.sequelize.literal(filter) } });
+  }
+
+  if (params.userFilter.length > 0) {
+    userFilter.push({ id: { $in: params.userFilter } });
+  }
+
+  if (userFilter.length > 0) {
+    extraFilters.user = {
+      ...(extraFilters.user || {}),
+      $and: userFilter
+    }
+  }
+
+  return {
+    ...result,
+    include: getInclude(extraFilters),
+  }
+};
+
+function getInclude(filters) {
   const include = [
     {
       as: 'task',
@@ -141,9 +183,9 @@ function getInclude() {
     {
       as: 'user',
       model: models.User,
-      required: false,
       attributes: ['id', 'firstNameRu', 'lastNameRu', 'lastNameEn', 'firstNameEn', 'active', 'employment_date', 'delete_date', "global_role"],
       paranoid: false,
+      where: filters ? filters.user : undefined,
       include: [
         {
           as: 'department',
@@ -156,4 +198,10 @@ function getInclude() {
   ];
 
   return include;
+}
+
+module.exports = {
+  listByParameters,
+  listByTimeSheets,
+  getAllTimesheetsByUser
 }
