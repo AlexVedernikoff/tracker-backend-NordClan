@@ -35,12 +35,21 @@ exports.byPeriod = async (req, res, next) => {
     next(createError(err));
   }
 };
+const convertStrToNumberArray = (value) => {
+  if (!value) return []
+  return value.substring(1, value.length - 1).split(',').map(v => parseInt(v, 10))
+}
 
 exports.companyByPeriod = async (req, res, next) => {
   try {
     const { startDate, endDate, lang } = req.query;
     const sprintId = req.query.sprintId ? req.query.sprintId : null;
     const label = req.query.label ? req.query.label : '';
+    const userTypeFilter = req.query.userType;
+    const projectFilter = convertStrToNumberArray(req.query.projects);
+    const departmentFilter = convertStrToNumberArray(req.query.departments);
+    const userFilter = convertStrToNumberArray(req.query.users);
+    const statusFilter = convertStrToNumberArray(req.query.statuses);
 
     if (lang && !(/^(en|ru)$/).test(lang)) {
       return next(createError(400, 'Unsupported language: ' + lang));
@@ -48,7 +57,15 @@ exports.companyByPeriod = async (req, res, next) => {
 
     const { workbook, options } = await ReportsService.byPeriod
       .getCompanyReport(startDate && endDate && {
-        startDate, endDate, label, sprintId,
+        startDate,
+        endDate,
+        label,
+        sprintId,
+        userTypeFilter,
+        projectFilter,
+        departmentFilter,
+        userFilter,
+        statusFilter
       }, { lang });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats');

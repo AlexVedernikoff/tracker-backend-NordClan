@@ -14,7 +14,7 @@ const {
 } = require('../../../models');
 const _ = require('lodash');
 const moment = require('moment');
-const { listProjectByTimeSheets } = require('../../timesheets/listProject/index.js');
+const { listProjectByTimeSheets, listProjectByParameters } = require('../../timesheets/listProject/index.js');
 const i18n = require('./i18n.json');
 const { getAverageNumberOfEmployees, getTaskTypeName, getProjectRoleName,
   withSuffix, filterTimesheets, getUserListFromDB, generateUserReportExcellDocument, transformToUserList,
@@ -185,6 +185,13 @@ exports.getReport = async function (projectId, criteria, options) {
 
 exports.getCompanyReport = async function (criteria, options) {
   const { lang = 'en' } = options || {};
+  const {
+    userTypeFilter,
+    projectFilter,
+    departmentFilter,
+    userFilter,
+    statusFilter,
+  } = criteria;
   let startDate;
   let endDate;
   const locale = i18n[lang];
@@ -196,7 +203,15 @@ exports.getCompanyReport = async function (criteria, options) {
     endDate = validCriteria.endDate;
   }
 
-  const timeSheetsDbData = await listProjectByTimeSheets(startDate, endDate);
+  const timeSheetsDbData = await listProjectByParameters({
+    startDate,
+    endDate,
+    userTypeFilter,
+    projectFilter,
+    departmentFilter,
+    userFilter,
+    statusFilter
+  });
   // Подгрузка словарей из БД
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
