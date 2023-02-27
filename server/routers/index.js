@@ -83,6 +83,7 @@ router.delete('/user/:id/avatar', GlobalAccess.can('user', 'changeAvatar'), Uplo
 // User Guides
 router.get('/guides', GlobalAccess.can('guide', 'read'), UserGuideController.read);
 router.put('/guides', GlobalAccess.can('guide', 'update'), UserGuideController.setGuideStatus);
+router.put('/guides/hideModal', GlobalAccess.can('guide', 'update'), UserGuideController.resetIsGuideModalShown);
 
 // Tags
 router.get('/project/:projectId/tags', GlobalAccess.can('project', 'read'), TagController.listByProject);

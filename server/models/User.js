@@ -289,6 +289,14 @@ module.exports = function (sequelize, DataTypes) {
       },
     });
 
+    User.hasOne(models.UserGuide, {
+      as: 'userGuide',
+      foreignKey: {
+        name: 'userId',
+        field: 'user_id',
+      },
+    });
+
     User.hasMany(models.ProjectUsers, {
       as: 'usersProjects',
       foreignKey: {

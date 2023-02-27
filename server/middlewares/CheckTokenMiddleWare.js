@@ -81,6 +81,12 @@ const handleToken = (req, res, next) => {
         required: false,
       },
       {
+        model: models.UserGuide,
+        as: 'userGuide',
+        required: false,
+        attributes: ['isGuideModalShown'],
+      },
+      {
         model: models.Department,
         as: 'department',
         required: false,
