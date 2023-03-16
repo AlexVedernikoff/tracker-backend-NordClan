@@ -687,7 +687,7 @@ exports.createUser = async function (req, res, next) {
     const crpt = ssha.create(params.password);
     params.password = crpt;
 
-    User.create(params)
+    User.create(params, {transaction})
       .then(async model => {
         // TODO: Сделать обновление без запроса всего справочника
         params.uidNumber = +model.id;
