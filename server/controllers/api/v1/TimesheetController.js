@@ -208,11 +208,11 @@ exports.update = async (req, res, next) => {
       return updateTimesheet(singleReq, res);
     });
     Promise.all(requests)
-      .then(res.end())
+      .then(() => res.end())
       .catch(e => next(createError(e)));
   } else {
     updateTimesheet(req, res)
-      .then(res.end())
+      .then(() => res.end())
       .catch(e => next(createError(e)));
   }
 };
