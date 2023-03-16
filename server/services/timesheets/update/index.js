@@ -1,5 +1,6 @@
 const models = require('../../../models');
 const createError = require('http-errors');
+const { TimesheetStatusesDictionary } = models;
 
 exports.update = async (req) => {
 
@@ -21,6 +22,7 @@ exports.update = async (req) => {
 function getWhere (req) {
   const where = {
     id: req.body.sheetId,
+    statusId: { $notIn: [TimesheetStatusesDictionary.Statuses.submitted, TimesheetStatusesDictionary.Statuses.sendForConfirmation] }
   };
 
   const userId = req.body.userId || req.user.id; // Todo: validate user rights
