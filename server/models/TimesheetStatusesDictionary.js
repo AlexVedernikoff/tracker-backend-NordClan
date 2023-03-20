@@ -1,3 +1,11 @@
+const Statuses = {
+  inprogress: 1,
+  rejected: 2,
+  submitted: 3,
+  approved: 4,
+  sendForConfirmation: 5,
+}
+
 module.exports = function (sequelize, DataTypes) {
   const TimesheetStatusesDictionary = sequelize.define('TimesheetStatusesDictionary', {
     id: {
@@ -36,10 +44,12 @@ module.exports = function (sequelize, DataTypes) {
     {id: 2, name: 'rejected', nameRu: 'Отменено', isBlocked: false},
     {id: 3, name: 'submitted', nameRu: 'Отправлено', isBlocked: true},
     {id: 4, name: 'approved', nameRu: 'Согласовано', isBlocked: true},
+    {id: 5, name: 'send for confirmation', nameRu: 'Отправлено на согласование', isBlocked: true},
   ];
 
   TimesheetStatusesDictionary.NON_BLOCKED_IDS = [1, 2];
   TimesheetStatusesDictionary.ALL_IDS = [1, 2, 3, 4];
+  TimesheetStatusesDictionary.Statuses = Statuses;
 
   return TimesheetStatusesDictionary;
 };
