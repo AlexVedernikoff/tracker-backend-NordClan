@@ -4,10 +4,9 @@ const queries = require('../../../models/queries');
 
 exports.update = async (req) => {
   const { sheetId } = req.body;
-  const { globalRole, id: userId } = req.user;
+  const { id: userId } = req.user;
 
-  const canChangeAnyTimesheetRoles = ["ADMIN", "VISOR"];
-  const canChangeAnyTimesheet = canChangeAnyTimesheetRoles.includes(globalRole);
+  const canChangeAnyTimesheet = req.user.isGlobalAdmin || req.user.isVisor;
 
   const existedTimesheet = await queries.timesheet.getTimesheet({id: {$eq: sheetId}});
 
