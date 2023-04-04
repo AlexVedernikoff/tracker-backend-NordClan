@@ -84,6 +84,10 @@ module.exports = {
         }
 
 
+        if (data.birthDate) {
+            user.birthday = moment(data.birthDate).format("YYYYMMDDHHmmSS.0") + "Z";
+        }
+
         client.add(`uid=${uid},dc=nordclan`, user, (err) => {
           if (err) {
             reject(err);
@@ -236,6 +240,10 @@ module.exports = {
           // const password = crypto.randomBytes(40).toString('base64').substring(0,50); // 304 bits, 50 charestres
           const password = crypto.randomBytes(50).toString('hex'); // 400 bits, 100 charestres
           addDataToArray(updateDataArray, 'userPassword', password);
+        }
+
+        if (newData.birthDate) {
+          addDataToArray(updateDataArray, "birthday", moment(newData.birthDate).format("YYYYMMDDHHmmSS.0") + "Z");
         }
 
         if (updateDataArray.length > 0) {
