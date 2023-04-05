@@ -207,7 +207,7 @@ exports.getCompanyReport = async function (criteria, options) {
     startDate,
     endDate,
     userTypeFilter,
-    projectFilter,
+    projectId: projectFilter,
     departmentFilter,
     userFilter,
     statusFilter
