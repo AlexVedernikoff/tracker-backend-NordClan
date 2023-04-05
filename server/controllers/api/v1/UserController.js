@@ -196,48 +196,12 @@ exports.autocomplete = function (req, res, next) {
       }
       const result = [];
       const userName = req.query.userName;
-      const userNameArray = userName.trim().split(/\s+/);
-      const iLikeFirstName = layoutAgnostic(userNameArray[0] ? userNameArray[0] : '');
-      const iLikeLastName = layoutAgnostic(userNameArray[1] ? userNameArray[1] : '');
-
-      const $or = [
-        {
-          firstNameEn: {
-            $iLike: iLikeFirstName,
-          },
-          lastNameEn: {
-            $iLike: iLikeLastName,
-          },
-        },
-        {
-          firstNameRu: {
-            $iLike: iLikeFirstName,
-          },
-          lastNameRu: {
-            $iLike: iLikeLastName,
-          },
-        },
-        {
-          firstNameEn: {
-            $iLike: iLikeLastName,
-          },
-          lastNameEn: {
-            $iLike: iLikeFirstName,
-          },
-        },
-        {
-          firstNameRu: {
-            $iLike: iLikeLastName,
-          },
-          lastNameRu: {
-            $iLike: iLikeFirstName,
-          },
-        },
-      ];
+      const $or = getOrForAutocomplete(userName)
 
       return models.User.findAll({
         where: {
           active: 1,
+          globalRole: { $not: "EXTERNAL_USER" },
           $or,
         },
         limit: req.query.pageSize ? +req.query.pageSize : 10,
@@ -1002,30 +966,9 @@ exports.autocompleteExternal = function (req, res, next) {
       }
 
       const result = [];
-      const userName = req.query.userName.trim();
-      let $iLike = layoutAgnostic(userName);
-      const reverseUserName = userName
-        .split(' ')
-        .reverse()
-        .join(' '); //ищем Павла Ищейкина и Ищейкина Павла (хоть и пишем только в firstNameRu)
-      let $or = [
-        {
-          firstNameRu: {
-            $iLike,
-          },
-        },
-      ];
-      if (reverseUserName !== userName) {
-        //Введено и имя и фамилия или их части
-        $iLike = layoutAgnostic(reverseUserName);
-        $or = $or.concat([
-          {
-            firstNameRu: {
-              $iLike,
-            },
-          },
-        ]);
-      }
+      const userName = req.query.userName;
+      const $or = getOrForAutocomplete(userName);
+
       return models.User.findAll({
         where: {
           globalRole: 'EXTERNAL_USER',
@@ -1063,3 +1006,44 @@ exports.autocompleteExternal = function (req, res, next) {
     })
     .catch(err => next(createError(err)));
 };
+
+function getOrForAutocomplete(userName) {
+  const userNameArray = userName.trim().split(/\s+/);
+  const iLikeFirstName = layoutAgnostic(userNameArray[0] ? userNameArray[0] : '');
+  const iLikeLastName = layoutAgnostic(userNameArray[1] ? userNameArray[1] : '');
+
+  return [
+    {
+      firstNameEn: {
+        $iLike: iLikeFirstName,
+      },
+      lastNameEn: {
+        $iLike: iLikeLastName,
+      },
+    },
+    {
+      firstNameRu: {
+        $iLike: iLikeFirstName,
+      },
+      lastNameRu: {
+        $iLike: iLikeLastName,
+      },
+    },
+    {
+      firstNameEn: {
+        $iLike: iLikeLastName,
+      },
+      lastNameEn: {
+        $iLike: iLikeFirstName,
+      },
+    },
+    {
+      firstNameRu: {
+        $iLike: iLikeLastName,
+      },
+      lastNameRu: {
+        $iLike: iLikeFirstName,
+      },
+    },
+  ];
+}
