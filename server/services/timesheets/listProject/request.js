@@ -71,7 +71,11 @@ const listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) 
   const where = {};
 
   if (projectId) {
-    where.projectId = projectId;
+    if (Array.isArray(projectId)) {
+      where.projectId = { $in: projectId }
+    } else {
+      where.projectId = projectId;
+    }
   }
 
   if (dateBegin && dateEnd) {
@@ -112,10 +116,6 @@ const listByParameters = function (params) {
     extraFilters.user = {
       global_role: { $not: USER_GLOBAL_ROLES.EXTERNAL_USER }
     };
-  }
-
-  if (params.projectFilter.length > 0) {
-    result.where.projectId = { $in: params.projectFilter };
   }
 
   let userFilter = [];
