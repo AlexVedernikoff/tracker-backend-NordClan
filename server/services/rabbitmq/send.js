@@ -1,7 +1,8 @@
 const amqp = require("amqplib/callback_api")
 const config = require('../../configs').rabbitMq;
 
-const queue = config.queue;
+const exchange = config.exchange;
+const routingKey = config.routingKey;
 
 let channel;
 
@@ -11,7 +12,6 @@ const initRMQ = () => {
       return
     }
     connection.createChannel((err, ch) => {
-      ch.assertQueue(queue)
       channel = ch
     })
   })
@@ -19,11 +19,10 @@ const initRMQ = () => {
 
 const sendToRMQ = async(body) => {
   if (!channel) {
-    return
+    return;
   }
   const message = typeof body === "object" ? JSON.stringify(body) : body.toString();
-  channel.assertQueue(queue)
-  await channel.sendToQueue(queue, Buffer.from(message))
+  await channel.publish(exchange, routingKey, Buffer.from(message))
 }
 
 module.exports = {
