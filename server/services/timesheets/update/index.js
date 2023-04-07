@@ -11,6 +11,10 @@ exports.update = async (req) => {
 
   const existedTimesheet = await queries.timesheet.getTimesheet({id: {$eq: sheetId}});
 
+  if (!existedTimesheet) {
+    throw createError(404, "Timesheet was not found")
+  }
+
   if (existedTimesheet.dataValues.userId !== userId && !canChangeAnyTimesheet) {
     throw createError(403, "You are not the timesheet owner!");
   }
