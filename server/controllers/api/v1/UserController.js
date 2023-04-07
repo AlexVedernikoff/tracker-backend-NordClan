@@ -486,6 +486,14 @@ exports.updateCurrentUserProfileByParams = async function (req, res, next) {
     newUser.birthDate = user.birthDate;
     newUser.skype = user.skype;
     newUser.photo = user.photo;
+    newUser.firstNameRu = user.firstNameRu ? user.firstNameRu : "";
+    newUser.firstNameEn = user.firstNameEn ? user.firstNameEn : "";
+    newUser.lastNameRu = user.lastNameRu ? user.lastNameRu : "";
+    newUser.lastNameEn = user.lastNameEn ? user.lastNameEn : "";
+    newUser.middleNameRu = user.middleNameRu ? user.middleNameRu : "";
+    newUser.middleNameEn = user.middleNameEn ? user.middleNameEn : "";
+    newUser.emailPrimary = user.emailPrimary ? user.emailPrimary : "";
+    newUser.city = user.city ? user.city : "";
 
     const updatedModel = await model.updateAttributes(newUser, { transaction });
     if (!updatedModel) {
