@@ -15,6 +15,13 @@ exports.update = async (req) => {
     throw createError(404, "Timesheet was not found")
   }
 
+  if ([
+    TimesheetStatusesDictionary.Statuses.submitted,
+    TimesheetStatusesDictionary.Statuses.sendForConfirmation
+  ].includes(existedTimesheet.dataValues.statusId)) {
+    throw createError(403, "Timesheet can be changed only if status is \"rejected\" or \"send for confirmation\"!");
+  }
+
   if (existedTimesheet.dataValues.userId !== userId && !canChangeAnyTimesheet) {
     throw createError(403, "You are not the timesheet owner!");
   }
@@ -36,7 +43,6 @@ exports.update = async (req) => {
 function getWhere (req, canChangeAnyTimesheet) {
   const where = {
     id: req.body.sheetId,
-    statusId: { $notIn: [TimesheetStatusesDictionary.Statuses.submitted, TimesheetStatusesDictionary.Statuses.sendForConfirmation] }
   };
 
   const userId = req.body.userId || req.user.id;
