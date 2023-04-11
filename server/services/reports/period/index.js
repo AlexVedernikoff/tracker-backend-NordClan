@@ -216,11 +216,7 @@ exports.getCompanyReport = async function (criteria, options) {
   const projectRolesValues = await ProjectRolesDictionary.findAll();
   const taskTypesValues = await TaskTypesDictionary.findAll();
 
-  const users = await getUserListFromDB({
-    active: 1,
-    allow_vpn: true,
-    globalRole: { $not: User.EXTERNAL_USER_ROLE },
-  });
+  const users = await getUserListFromDB({});
   const departmentList = await Department.findAll({
     where: {
       created_at: {

@@ -84,9 +84,6 @@ function withSuffix (baseField, lang) {
 }
 
 const filterTimesheets = (timeSheetsDbData, timesheetTypes, projectRolesValues, lang, taskTypesValues) =>timeSheetsDbData
-  .filter(timeSheet => ((timeSheet.dataValues.user.dataValues.delete_date === null
-            || new Date(timeSheet.dataValues.onDate) <= timeSheet.dataValues.user.dataValues.delete_date))
-        || timeSheet.dataValues.user.dataValues.active === 1)
   .map(timeSheet => {
 
     const data = timeSheet.dataValues;
