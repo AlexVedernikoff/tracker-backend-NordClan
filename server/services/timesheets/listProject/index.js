@@ -29,34 +29,9 @@ exports.listProjectByTimeSheets = async (dateBegin, dateEnd, projectId, isSystem
   return createResponse(timesheets);
 };
 
-const filterByStatus = (statusFilter, timesheets) => {
-  if (statusFilter == undefined || statusFilter.length <= 0) return timesheets;
-
-  const userStatuses = timesheets.reduce((curUserStatuses, ts) => {
-    if (!(ts.dataValues.userId in curUserStatuses)) {
-      curUserStatuses[ts.dataValues.userId] = ts.dataValues.statusId
-    } else if (curUserStatuses[ts.dataValues.userId] !== ts.dataValues.statusId) {
-      curUserStatuses[ts.dataValues.userId] = null
-    }
-    return curUserStatuses;
-  }, {})
-
-
-
-  result = timesheets.filter(timesheet => {
-    return (
-      statusFilter.includes(TIMESHEET_REPORT_STATUS_SEND_FOR_CONFIRMATION) && userStatuses[timesheet.dataValues.userId] === null
-      || statusFilter.includes(userStatuses[timesheet.dataValues.userId])
-    )
-  })
-
-  return result
-}
-
 exports.listProjectByParameters = async (params) => {
   const request = listByParameters(params);
   let timesheets = await Timesheet.findAll(request);
-  timesheets = filterByStatus(params.statusFilter, timesheets);
   return createResponse(timesheets);
 };
 

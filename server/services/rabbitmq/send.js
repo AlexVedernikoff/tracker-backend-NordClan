@@ -12,7 +12,7 @@ const initRMQ = () => {
       return
     }
     connection.createChannel((err, ch) => {
-      channel = ch
+      // channel = ch
     })
   })
 }
