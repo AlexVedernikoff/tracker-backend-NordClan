@@ -135,6 +135,12 @@ const listByParameters = function (params) {
     }
   }
 
+  if (Array.isArray(params.statusFilter) && params.statusFilter.length > 0) {
+    extraFilters.statusId = {
+      $in: params.statusFilter
+    }
+  }
+
   return {
     ...result,
     include: getInclude(extraFilters),
