@@ -83,7 +83,7 @@ const USER = {
   guide: {
     'read': true,
     'update': true,
-  }
+  },
 };
 
 const EXTERNAL_USER = {
@@ -133,8 +133,8 @@ const EXTERNAL_USER = {
   guide: {
     'read': true,
     'update': true,
-  }
-}
+  },
+};
 
 module.exports = {
   USER: {
@@ -197,7 +197,7 @@ module.exports = {
     guide: {
       'read': true,
       'update': true,
-    }
+    },
   },
   VISOR: {
     ...USER,
@@ -221,15 +221,15 @@ module.exports = {
       'updateTestUser': false,
       'updateUsersProfile': false,
       'createUser': false,
-      'updateCurrentUserProfile': false,
+      'updateCurrentUserProfile': true,
     },
   },
   CLIENT: {
-    ...EXTERNAL_USER
+    ...EXTERNAL_USER,
   },
   PERFORMER: {
     ...EXTERNAL_USER,
-    timesheet: USER.timesheet
+    timesheet: USER.timesheet,
   },
   EXTERNAL_SERVICE: {
     jira: {
@@ -239,7 +239,7 @@ module.exports = {
     guide: {
       'read': true,
       'update': true,
-    }
+    },
   },
   HR: {
     ...USER,
@@ -274,6 +274,6 @@ module.exports = {
     guide: {
       'read': true,
       'update': true,
-    }
+    },
   },
 };
