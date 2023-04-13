@@ -67,7 +67,7 @@ const getAllTimesheetsByUser = function (dateBegin, dateEnd, projectId, isSystem
   };
 };
 
-const listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) {
+const listByTimeSheets = function ({dateBegin, dateEnd, projectId, statusId, isSystemUser}) {
   const where = {};
 
   if (projectId) {
@@ -93,6 +93,10 @@ const listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) 
     };
   }
 
+  if (Array.isArray(statusId) && statusId.length) {
+    where.statusId = { $in: statusId }
+  }
+
   return {
     attributes: ['id', [models.sequelize.literal('to_char(on_date, \'YYYY-MM-DD\')'), 'onDate'], 'typeId', 'taskId', 'spentTime', 'comment', 'isBillable', 'userRoleId', 'taskStatusId', 'statusId', 'userId', 'projectId'],
     where,
@@ -104,7 +108,13 @@ const listByTimeSheets = function (dateBegin, dateEnd, projectId, isSystemUser) 
 };
 
 const listByParameters = function (params) {
-  const result = listByTimeSheets(params.startDate, params.endDate, params.projectId, params.isSystemUser)
+  const result = listByTimeSheets({
+    dateBegin: params.startDate,
+    dateEnd: params.endDate,
+    projectId: params.projectId,
+    isSystemUser: params.isSystemUser,
+    statusId: params.statusFilter
+  })
 
   const extraFilters = {};
 
@@ -132,12 +142,6 @@ const listByParameters = function (params) {
     extraFilters.user = {
       ...(extraFilters.user || {}),
       $and: userFilter
-    }
-  }
-
-  if (Array.isArray(params.statusFilter) && params.statusFilter.length > 0) {
-    extraFilters.statusId = {
-      $in: params.statusFilter
     }
   }
 
