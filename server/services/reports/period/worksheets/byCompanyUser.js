@@ -13,11 +13,20 @@ const getDepartmentsName = departments => {
   return '';
 };
 
+const getStatusName = (lang, statusId, statuses) => {
+  const status = statuses.find(status => status.id === statusId);
+  if (status) {
+    return lang === "en" ? status.name : status.nameRu;
+  }
+  return "";
+}
+
 class ByCompanyUserWorkSheet extends WorkSheetTemplate {
-  constructor(workbook, data, lang, averageNumberOfEmployees) {
+  constructor(workbook, data, lang, averageNumberOfEmployees, timesheetStatuses) {
     super(workbook, data, lang);
     this._lastIndexRow = 0;
     this._averageNumberOfEmployees = averageNumberOfEmployees;
+    this._timesheetStatuses = timesheetStatuses;
   }
 
   _writeUserTimesheets(userElement) {
@@ -116,7 +125,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
       this._printTable(item, indexCol);
       maxCountColumn = this._getCountColumn(this._lastIndexRow, maxCountColumn);
       indexCol += 4;
-      if (this._columns.length < indexCol) {
+      if (this._columns.length < indexCol + 2) {
         lastIndexRow += (maxCountColumn - lastIndexRow) + 1; // 1 - space
         indexCol = 0;
       }
@@ -385,6 +394,11 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
         text: locale.DATE,
         width: 13,
       },
+      { calculate: d => getStatusName(this.lang, d.statusId, this._timesheetStatuses),
+        text: locale.STATUS,
+        width: 16,
+        alignment: { wrapText: true }
+      },
       {
         calculate: d => {
           if (!d.isBillable) { return null; }
@@ -417,7 +431,7 @@ class ByCompanyUserWorkSheet extends WorkSheetTemplate {
   }
 
   get _columns() {
-    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
   }
 }
 
