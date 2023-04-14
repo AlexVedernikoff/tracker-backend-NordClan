@@ -154,9 +154,9 @@ function transformToUserList (timeSheets, lang) {
 }
 
 function generateCompanyReportExcellDocument (data, options) {
-  const { lang, averageNumberOfEmployees } = options;
+  const { lang, averageNumberOfEmployees, timesheetStatuses } = options;
   const workbook = getWorkBook();
-  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang, averageNumberOfEmployees);
+  const byCompanyUserSheet = new ByCompanyUserWorkSheet(workbook, data, lang, averageNumberOfEmployees, timesheetStatuses);
   byCompanyUserSheet.init();
   return workbook;
 }

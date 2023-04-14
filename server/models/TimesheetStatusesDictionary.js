@@ -48,7 +48,7 @@ module.exports = function (sequelize, DataTypes) {
   ];
 
   TimesheetStatusesDictionary.NON_BLOCKED_IDS = [1, 2];
-  TimesheetStatusesDictionary.ALL_IDS = [1, 2, 3, 4];
+  TimesheetStatusesDictionary.ALL_IDS = [1, 2, 3, 4, 5];
   TimesheetStatusesDictionary.Statuses = Statuses;
 
   return TimesheetStatusesDictionary;

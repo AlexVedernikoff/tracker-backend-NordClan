@@ -44,7 +44,8 @@
     "ADMINISTRATION": "Администрация",
     "PRODUCTION": "Производство",
     "INDICATORS": "Показатели",
-    "EXTERNAL_USER": "Внешний пользователь"
+    "EXTERNAL_USER": "Внешний пользователь",
+    "STATUS": "Статус"
   },
   "en": {
     "OTHER_TASKS": "Other Tasks",
@@ -91,6 +92,7 @@
     "ADMINISTRATION": "Administration",
     "PRODUCTION": "Production",
     "INDICATORS": "Indicators",
-    "EXTERNAL_USER": "External user"
+    "EXTERNAL_USER": "External user",
+    "STATUS": "Status"
   }
 }

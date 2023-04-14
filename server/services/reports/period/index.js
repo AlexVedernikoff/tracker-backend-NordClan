@@ -8,6 +8,7 @@ const {
   ProjectUsersRoles,
   ProjectRolesDictionary,
   TimesheetTypesDictionary,
+  TimesheetStatusesDictionary,
   Sprint,
   Department,
   sequelize,
@@ -197,6 +198,7 @@ exports.getCompanyReport = async function (criteria, options) {
   const locale = i18n[lang];
 
   const timesheetTypes = await TimesheetTypesDictionary.findAll();
+  const timesheetStatuses = await TimesheetStatusesDictionary.findAll();
   if (criteria) {
     const validCriteria = validateCriteria(criteria);
     startDate = validCriteria.startDate;
@@ -262,6 +264,7 @@ exports.getCompanyReport = async function (criteria, options) {
     workbook: generateCompanyReportExcellDocument(data, {
       lang,
       averageNumberOfEmployees,
+      timesheetStatuses: timesheetStatuses.map(ts => ts.dataValues)
     }),
     options: {
       fileName: `Report - ${criteria ? (startDate + ' - ' + endDate) : locale.FOR_ALL_THE_TIME} - ${lang}`,
