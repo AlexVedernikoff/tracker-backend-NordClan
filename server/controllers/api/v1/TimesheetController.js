@@ -296,6 +296,7 @@ exports.submit = async function (req, res, next) {
 };
 
 exports.approve = async function (req, res, next) {
+  console.log("approve")
   req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('userId', 'userId must be int').isInt();
@@ -316,6 +317,7 @@ exports.approve = async function (req, res, next) {
 };
 
 exports.reject = async function (req, res, next) {
+  console.log("reject")
   req.checkBody('dateBegin', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('dateEnd', 'date must be in YYYY-MM-DD format').isISO8601();
   req.checkBody('userId', 'userId must be int').isInt();
