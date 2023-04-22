@@ -20,22 +20,22 @@ services:
     entrypoint: |
       bash -c './app_boot.sh'
 
-  web:
-    build: ./../track-front
-    volumes:
-      - ./../track-front:/app
-    ports:
-      - 8080:8080
-    env_file:
-      - .docker-compose-dev.env
-    entrypoint: |
-      bash -c 'bash -s <<EOF
-      npm install
-      npm rebuild
-      npm start
-      EOF'
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+  # web:
+  #   build: ./../track-front
+  #   volumes:
+  #     - ./../track-front:/app
+  #   ports:
+  #     - 8080:8080
+  #   env_file:
+  #     - .docker-compose-dev.env
+  #   entrypoint: |
+  #     bash -c 'bash -s <<EOF
+  #     npm install
+  #     npm rebuild
+  #     npm start
+  #     EOF'
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
 
   rabbitmq:
     image: rabbitmq:3.11.4
